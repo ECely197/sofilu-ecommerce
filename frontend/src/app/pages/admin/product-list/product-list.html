@@ -1,0 +1,38 @@
+<header class="page-header">
+  <h1>Tus Productos</h1>
+  <!-- Este enlace nos llevará a la página de "Crear Producto" en el futuro -->
+  <a routerLink="/admin/products/new" class="add-button">
+    <span>+</span>
+    Añadir Nuevo Producto
+  </a>
+</header>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Imagen</th>
+        <th>Nombre del Producto</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let product of products">
+        <td>
+          <img [src]="product.imageUrl" [alt]="product.name" class="product-thumbnail">
+        </td>
+        <td class="product-name">{{ product.name }}</td>
+        <td>{{ product.price | currency:'COP':'symbol':'1.0-0' }}</td>
+        <td>100</td> <!-- Placeholder para el stock -->
+        <td>
+          <div class="action-buttons">
+            <a [routerLink]="['/admin/products/edit', product._id]" class="action-button">Editar</a>
+            <button class="action-button delete">Eliminar</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

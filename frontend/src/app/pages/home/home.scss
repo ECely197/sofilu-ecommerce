@@ -1,0 +1,104 @@
+.home-container {
+  // Un contenedor general para añadir padding si es necesario en el futuro.
+}
+
+// -- Estilos de la Sección Hero --
+.hero-section {
+  text-align: center;
+  padding: 5rem 1rem; // py-20, px-4
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-title {
+  font-size: 3.75rem; // text-6xl (aproximado)
+  font-weight: 700;
+  color: var(--text-charcoal);
+  margin-bottom: 1.5rem;
+  max-width: 42rem; // max-w-2xl
+}
+
+.hero-subtitle {
+  max-width: 42rem;
+  margin: 0 auto 2.5rem auto; // mx-auto, mb-10
+  color: rgba(54, 69, 79, 0.8);
+  font-size: 1.125rem; // text-lg
+}
+
+.hero-button {
+  height: 3.5rem; // h-14
+  padding: 0 2.5rem; // px-10
+  border-radius: 9999px; // rounded-full
+  background-color: var(--pastel-pink);
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); // shadow-lg
+  transition: all 0.3s ease-in-out;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+
+  &:hover {
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); // shadow-xl
+    transform: scale(1.05);
+  }
+}
+
+// -- Estilos de la Sección de Categorías --
+.categories-section {
+  padding: 4rem 4rem; // py-16 lg:px-16
+}
+
+.section-title {
+  font-size: 2.25rem; // text-4xl
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr); // Base para móviles
+  gap: 2rem;
+
+  @media (min-width: 640px) { // sm:
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) { // lg:
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-decoration: none;
+  
+  .category-image {
+    width: 100%;
+    padding-bottom: 100%; // Truco para hacerlo cuadrado (aspect-square)
+    background-position: center;
+    background-size: cover;
+    border-radius: 1.5rem; // rounded-3xl
+    transition: box-shadow 0.3s ease-in-out;
+
+    &:hover {
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+  }
+
+  .category-title {
+    font-size: 1.25rem; // text-xl
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-charcoal);
+    transition: color 0.3s ease-in-out;
+  }
+
+  &:hover .category-title {
+    color: var(--pastel-pink);
+  }
+}

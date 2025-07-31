@@ -1,0 +1,13 @@
+// Hacemos que el componente raíz (nuestra "carcasa") ocupe al menos toda la altura de la pantalla
+// y usamos flexbox para organizar sus hijos (header, main, footer).
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  // Esta propiedad hace que el contenido principal crezca para ocupar
+  // todo el espacio disponible entre el header y el footer.
+  flex-grow: 1;
+}

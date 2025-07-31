@@ -1,0 +1,22 @@
+<div class="admin-container">
+  <!-- Barra de Navegación Lateral -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1 class="sidebar-logo">Sofilu Admin</h1>
+    </div>
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/admin/products" routerLinkActive="active">Productos</a>
+      <a routerLink="/admin/orders" routerLinkActive="active">Pedidos</a>
+      <a routerLink="/admin/customers" routerLinkActive="active">Clientes</a>
+      <a routerLink="/admin/coupons" routerLinkActive="active">Cupones</a>
+      <a routerLink="/admin/settings" routerLinkActive="active">Ajustes</a>
+    </nav>
+  </aside>
+
+  <!-- Área de Contenido Principal -->
+  <main class="main-content">
+    <!-- El enrutador de Angular renderizará aquí las diferentes páginas del admin -->
+    <router-outlet></router-outlet>
+  </main>
+</div>

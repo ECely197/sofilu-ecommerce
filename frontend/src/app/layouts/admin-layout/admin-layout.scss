@@ -1,0 +1,69 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--soft-white);
+}
+
+.admin-container {
+  display: flex;
+}
+
+// Barra Lateral
+.sidebar {
+  width: 256px; // w-64
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: var(--background);
+  border-right: 1px solid var(--soft-gray);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  .sidebar-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: var(--text-charcoal);
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: var(--soft-gray);
+    }
+
+    &.active {
+      background-color: var(--pastel-pink);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+  }
+}
+
+// Contenido Principal
+.main-content {
+  flex-grow: 1;
+  margin-left: 256px; // El mismo ancho que el sidebar
+  padding: 2rem;
+}

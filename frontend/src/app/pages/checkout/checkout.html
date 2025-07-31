@@ -1,0 +1,69 @@
+<div class="checkout-container">
+  <div class="main-content">
+    <!-- Logo Simplificado del Header -->
+    <div class="header-simple">
+      <a routerLink="/">
+        <span class="logo-text">Sofilu</span>
+      </a>
+    </div>
+
+    <!-- Formularios -->
+    <div class="forms-section">
+      <div class="form-group">
+        <h2 class="section-title">Información de Contacto</h2>
+        <input type="email" placeholder="Correo Electrónico" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <h2 class="section-title">Dirección de Envío</h2>
+        <input type="text" placeholder="Dirección Completa" class="form-input">
+        <div class="form-grid">
+          <input type="text" placeholder="Ciudad" class="form-input">
+          <input type="text" placeholder="Código Postal" class="form-input">
+        </div>
+      </div>
+
+      <!-- Aquí irían los métodos de envío y pago en el futuro -->
+
+    </div>
+  </div>
+
+  <!-- Columna del Resumen del Pedido -->
+  <aside class="summary-sidebar">
+    <div class="summary-card">
+      <h2 class="summary-title">Tu Pedido</h2>
+      
+      <div class="summary-items">
+        <!-- Hacemos un bucle para mostrar los productos del carrito -->
+        <div *ngFor="let item of cartService.cartItems()" class="summary-item">
+          <div class="item-image" [style.backgroundImage]="'url(' + item.product.imageUrl + ')'">
+            <span class="item-quantity">{{ item.quantity }}</span>
+          </div>
+          <p class="item-name">{{ item.product.name }}</p>
+          <p class="item-price">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="summary-details">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Envío</span>
+          <span>$10,000</span>
+        </div>
+        <hr>
+        <div class="summary-row total">
+          <span>Total</span>
+          <!-- Aquí sumaríamos el envío en el futuro -->
+          <span>{{ (cartService.subTotal() + 10000) | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <button class="pay-button" (click)="handlePayment()">Pagar Ahora</button>
+    </div>
+  </aside>
+</div>

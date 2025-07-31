@@ -1,0 +1,231 @@
+.product-detail-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: auto;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.main-image {
+  width: 100%;
+  padding-bottom: 125%; // Proporción 4/5
+  background-size: cover;
+  background-position: center;
+  border-radius: 1rem;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.product-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.product-price {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-charcoal);
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.add-to-cart-btn {
+    background-color: var(--pastel-pink);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 9999px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.9;
+    }
+}
+
+.wishlist-btn {
+    background-color: var(--soft-gray);
+    color: var(--text-charcoal);
+    border: none;
+    padding: 1rem;
+    border-radius: 9999px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: #dcd5cd;
+    }
+}
+
+.details-accordion {
+    margin-top: 2rem;
+    border-top: 1px solid var(--soft-gray);
+    padding-top: 1rem;
+}
+
+.reviews-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--soft-gray);
+}
+
+.reviews-title {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.review-card {
+  background-color: var(--soft-white);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--soft-gray);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.review-author {
+  font-weight: 700;
+}
+
+.review-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.review-rating .star {
+  color: #e0e0e0; // Color de estrella vacía
+  &.filled {
+    color: #ffc107; // Color de estrella llena
+  }
+}
+
+.review-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.review-comment {
+  line-height: 1.6;
+}
+
+// Estilos del Formulario de Reseñas
+.review-form-container {
+  background-color: var(--soft-white);
+  padding: 2rem;
+  border-radius: 1rem;
+  margin-top: 3rem;
+  border: 1px solid var(--soft-gray);
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.form-field {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--soft-gray);
+  border-radius: 0.5rem;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  }
+}
+
+textarea.form-input {
+  resize: vertical; // Permite al usuario ajustar la altura
+}
+
+.submit-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 9999px;
+  background-color: var(--pastel-pink);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden; // Necesario para el efecto ripple
+  transition: background-color 0.3s;
+
+  &:disabled {
+    background-color: #dcd5cd;
+    cursor: not-allowed;
+  }
+
+  // --- ANIMACIÓN RIPPLE (MATERIAL YOU) ---
+  &:not(:disabled)::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    width: 100px;
+    height: 100px;
+    margin-top: -50px;
+    margin-left: -50px;
+    top: 50%;
+    left: 50%;
+    animation: ripple 1s;
+    opacity: 0;
+  }
+
+  &:not(:disabled):focus:not(:active)::after {
+    animation: none;
+  }
+}
+
+@keyframes ripple {
+  from {
+    opacity: 1;
+    transform: scale(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(10);
+  }
+}

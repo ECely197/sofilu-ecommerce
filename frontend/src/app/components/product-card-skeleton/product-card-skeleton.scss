@@ -1,0 +1,48 @@
+.skeleton-card {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin: 1rem;
+  background-color: #fff;
+}
+
+.skeleton-image {
+  width: 100%;
+  height: 200px;
+  background-color: #e0e0e0;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeleton-content {
+  padding: 1rem;
+}
+
+.skeleton-text {
+  height: 1rem;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+}
+
+.skeleton-line-1 {
+  width: 90%;
+}
+
+.skeleton-line-2 {
+  width: 75%;
+}
+
+// La animación que crea el efecto de pulso
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

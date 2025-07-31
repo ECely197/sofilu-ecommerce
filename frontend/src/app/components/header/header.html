@@ -1,0 +1,62 @@
+<header class="sofilu-header">
+  <div class="header-content">
+    <!-- Sección Izquierda: Logo y Navegación Principal -->
+    <div class="header-left">
+      <a class="logo-link" routerLink="/">
+        <svg class="logo-svg" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z">
+          </path>
+        </svg>
+        <span class="logo-text">Sofilu</span>
+      </a>
+      <nav class="main-nav">
+        <a class="pill-button" routerLink="/sabanas" routerLinkActive="active">Sábanas</a>
+        <a class="pill-button" routerLink="/products" routerLinkActive="active">Pijamas</a>
+        <a class="pill-button" routerLink="/toallas" routerLinkActive="active">Toallas</a>
+        <a class="pill-button" routerLink="/batas" routerLinkActive="active">Batas</a>
+      </nav>
+    </div>
+
+    <!-- Sección Derecha: Buscador y Acciones de Usuario -->
+    <div class="header-right">
+      <a routerLink="/wishlist" class="icon-button">
+  <svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+</a>
+
+      <!-- ¡NUESTRO BOTÓN DE CARRITO FUNCIONAL! -->
+      <a routerLink="/cart" class="cart-button">
+        <svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.658-.463 1.243-1.117 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.116 1.007zM8.25 10.5a2.25 2.25 0 01-4.5 0"
+            stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path>
+        </svg>
+        <span *ngIf="CartService.totalItems() > 0" class="cart-badge">
+          {{ CartService.totalItems() }}
+        </span>
+      </a>
+
+      <!-- Icono de Perfil de Usuario (funcionalidad futura) -->
+      @if (authService.currentUser(); as user) {
+
+  <!-- SI HAY UN USUARIO CONECTADO, MOSTRAMOS ESTO: -->
+  <div class="user-profile">
+    <button class="profile-button">
+      <!-- Usamos un @if anidado para verificar que el email no sea nulo -->
+      @if (user.email) {
+        <span>{{ user.email.charAt(0).toUpperCase() }}</span>
+      }
+    </button>
+    <!-- Botón para cerrar sesión -->
+    <button (click)="logout()" class="logout-button">Cerrar Sesión</button>
+  </div>
+  
+} @else {
+  
+  <!-- SI NO HAY UN USUARIO CONECTADO, MOSTRAMOS ESTO: -->
+  <a routerLink="/login" class="pill-button">Iniciar Sesión</a>
+
+}
+    </div>
+  </div>
+</header>

@@ -1,0 +1,14 @@
+<div class="product-grid">
+  <!-- SI ESTÁ CARGANDO, MOSTRAMOS LOS ESQUELETOS -->
+  @if (isLoading()) {
+    <!-- Creamos un bucle "falso" para mostrar 8 esqueletos -->
+    @for (item of [].constructor(8); track $index) {
+      <app-product-card-skeleton></app-product-card-skeleton>
+    }
+  } @else {
+    <!-- SI YA HA CARGADO, MOSTRAMOS LAS TARJETAS REALES -->
+    @for (product of products; track product._id) {
+      <app-product-card [product]="product"></app-product-card>
+    }
+  }
+</div>

@@ -1,0 +1,11 @@
+<!-- 1. Envolvemos todo en un <a> con el routerLink -->
+<a [routerLink]="['/product', product._id]" class="card-link">
+  <div *ngIf="product" class="card">
+    <img [src]="product.imageUrl" [alt]="product.name">
+    <div class="card-content">
+      <h3>{{ product.name }}</h3>
+      <p>{{ product.description }}</p>
+      <p class="price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</p>
+    </div>
+  </div>
+</a>

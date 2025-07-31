@@ -1,0 +1,44 @@
+.wishlist-container {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.wishlist-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.empty-wishlist {
+  text-align: center;
+  padding: 4rem 1rem;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    max-width: 500px;
+    margin: 0 auto 2rem auto;
+    color: var(--text-secondary);
+  }
+
+  .explore-button {
+    display: inline-block;
+    background-color: var(--pastel-pink);
+    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    text-decoration: none;
+    font-weight: 700;
+  }
+}

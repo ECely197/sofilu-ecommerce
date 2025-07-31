@@ -1,0 +1,59 @@
+<div class="cart-container">
+  <h2 class="cart-title">Carrito de Compras</h2>
+
+  <!-- Usamos un ng-container para verificar si el carrito está vacío -->
+  <ng-container *ngIf="cartService.totalItems() > 0; else emptyCart">
+    <div class="cart-grid">
+      <!-- Columna de Items -->
+      <div class="items-column">
+        <div *ngFor="let item of cartService.cartItems()" class="cart-item">
+          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+          <div class="item-info">
+            <h3 class="item-name">{{ item.product.name }}</h3>
+            <p class="item-price">{{ item.product.price | currency:'COP':'symbol':'1.0-0' }}</p>
+          </div>
+          <div class="item-actions">
+            <div class="quantity-selector">
+              <button (click)="cartService.updateQuantity(item.product._id, item.quantity - 1)">-</button>
+              <span class="quantity-text">{{ item.quantity }}</span>
+              <button (click)="cartService.updateQuantity(item.product._id, item.quantity + 1)">+</button>
+            </div>
+            <button (click)="cartService.removeItem(item.product._id)" class="remove-button">Eliminar</button>
+          </div>
+          <p class="item-total">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
+        </div>
+      </div>
+
+      <!-- Columna de Resumen -->
+      <div class="summary-column">
+        <div class="summary-card">
+          <h3 class="summary-title">Resumen del Pedido</h3>
+          <div class="summary-details">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Envío</span>
+              <span>Por calcular</span>
+            </div>
+            <hr>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+          <a routerLink="/checkout" class="checkout-button">Finalizar Compra</a>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Plantilla para el carrito vacío -->
+  <ng-template #emptyCart>
+    <div class="empty-cart-message">
+      <p>Tu carrito de sueños está vacío.</p>
+      <a routerLink="/products" class="explore-button">Explorar productos</a>
+    </div>
+  </ng-template>
+</div>

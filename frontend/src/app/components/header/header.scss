@@ -1,0 +1,178 @@
+.sofilu-header {
+  width: 100%;
+  padding: 1rem 4rem;
+  position: sticky;
+  top: 0;
+  z-index: 100; // Un z-index alto para que siempre esté por encima
+  background-color: rgba(250, 243, 233, 0.8); // Color de fondo con transparencia
+  backdrop-filter: blur(8px); // Efecto "cristal esmerilado"
+  border-bottom: 1px solid var(--soft-gray);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  color: var(--text-charcoal);
+}
+
+.logo-svg {
+  height: 2rem;
+  width: 2rem;
+  color: var(--pastel-pink);
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.main-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pill-button {
+  border-radius: 9999px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  color: var(--text-charcoal);
+  background-color: transparent;
+  border: 2px solid transparent;
+
+  &:hover {
+    background-color: var(--soft-gray);
+    cursor: pointer;
+  }
+
+  // Estilo para el enlace de la página activa
+  &.active {
+    background-color: var(--pastel-pink);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+}
+
+// Ocultar la navegación en pantallas pequeñas (Responsive Design)
+@media (max-width: 768px) {
+  .main-nav {
+    display: none;
+  }
+  .sofilu-header {
+    padding: 1rem 1.5rem;
+  }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; // Espacio entre los botones
+}
+
+.icon-button {
+  width: 2.5rem; // w-10
+  height: 2.5rem; // h-10
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px; // rounded-full
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--soft-gray);
+  }
+}
+
+.icon-svg {
+  width: 1.5rem; // w-6
+  height: 1.5rem; // h-6
+  color: var(--text-charcoal);
+}
+
+// Estos son los estilos que ya teníamos, solo que ahora los juntamos
+.cart-button {
+  position: relative;
+  // Usamos las mismas clases que icon-button para consistencia
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+  text-decoration: none; // Para que no se subraye el enlace
+
+  &:hover {
+    background-color: var(--soft-gray);
+  }
+}
+
+.cart-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #e53e3e; // Un rojo más vibrante
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  transform: translate(25%, -25%); // Lo mueve un poco para que se vea mejor
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-button {
+  width: 2.5rem; // 40px
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--pastel-pink);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  border: none;
+  cursor: pointer;
+}
+
+.logout-button {
+  background: none;
+  border: none;
+  color: var(--text-charcoal);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

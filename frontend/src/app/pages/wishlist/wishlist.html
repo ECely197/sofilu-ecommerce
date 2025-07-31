@@ -1,0 +1,19 @@
+<div class="wishlist-container">
+  <h1 class="wishlist-title">Mi Lista de Deseos</h1>
+
+  <!-- Verificamos si la lista de productos tiene items -->
+  <div *ngIf="wishlistService.wishlistProducts().length > 0; else emptyWishlist" class="products-grid">
+    <!-- Reutilizamos nuestro ProductCardComponent para mostrar cada producto -->
+    <app-product-card *ngFor="let product of wishlistService.wishlistProducts()" [product]="product"></app-product-card>
+  </div>
+
+  <!-- Plantilla para la lista de deseos vacía -->
+  <ng-template #emptyWishlist>
+    <div class="empty-wishlist">
+      <!-- Aquí puedes poner la ilustración de Stitch para la wishlist vacía -->
+      <h2>Tu lista de deseos te espera</h2>
+      <p>Aún no has guardado ninguno de tus productos favoritos. ¡Busca ese tesoro que te hace soñar y guárdalo aquí haciendo clic en el corazón!</p>
+      <a routerLink="/products" class="explore-button">Explorar Productos</a>
+    </div>
+  </ng-template>
+</div>

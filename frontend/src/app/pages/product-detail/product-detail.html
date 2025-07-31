@@ -1,0 +1,108 @@
+<!-- Mostramos el contenido solo si el objeto 'product' ya ha sido cargado -->
+<div *ngIf="product; else loading" class="product-detail-container">
+
+  <!-- Columna de Imágenes -->
+  <div class="image-gallery">
+    <div class="main-image" [style.backgroundImage]="'url(' + product.imageUrl + ')'"></div>
+    <!-- Aquí podríamos añadir miniaturas en el futuro -->
+  </div>
+
+  <!-- Columna de Información y Acciones -->
+  <div class="product-info">
+    <h1 class="product-title">{{ product.name }}</h1>
+    <p class="product-price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</p>
+
+    <!-- Aquí irían los selectores de talla, color, etc. en el futuro -->
+
+    <div class="actions">
+      <button class="add-to-cart-btn" (click)="addToCart()">Añadir al carrito</button>
+      <button class="wishlist-btn" (click)="toggleWishlist()">
+        <!-- Cambiamos el texto del botón dinámicamente -->
+        @if (isProductInWishlist()) {
+        Quitar de la lista de deseos
+        } @else {
+        Añadir a la lista de deseos
+        }
+      </button>
+    </div>
+
+    <div class="details-accordion">
+      <h3>Descripción</h3>
+      <p>{{ product.description }}</p>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- SECCIÓN DE RESEÑAS -->
+<div class="reviews-section">
+  <h2 class="reviews-title">Opiniones de nuestros clientes</h2>
+
+  <!-- Lista de reseñas existentes -->
+  <div class="reviews-list">
+    @for (review of reviews(); track review._id) {
+    <div class="review-card">
+      <div class="review-header">
+        <span class="review-author">{{ review.author }}</span>
+        <span class="review-date">{{ review.createdAt | date:'longDate' }}</span>
+      </div>
+      <div class="review-rating">
+        <!-- Aquí mostraremos las estrellas -->
+        @for (star of [].constructor(review.rating); track $index) {
+        <span class="star filled">★</span>
+        }
+        @for (star of [].constructor(5 - review.rating); track $index) {
+        <span class="star">★</span>
+        }
+      </div>
+      <h3 class="review-title">{{ review.title }}</h3>
+      <p class="review-comment">{{ review.comment }}</p>
+    </div>
+    } @empty {
+    <p>Este producto aún no tiene reseñas. ¡Sé el primero!</p>
+    }
+  </div>
+
+  <!-- Formulario para añadir una nueva reseña (lo haremos en el siguiente paso) -->
+
+</div>
+
+<!-- Formulario para añadir una nueva reseña -->
+<div class="review-form-container">
+  <h3>Comparte tu opinión</h3>
+  <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+    
+    <!-- Input para la Calificación (Estrellas) - Lo haremos simple por ahora -->
+    <div class="form-field">
+      <label for="rating">Calificación</label>
+      <select id="rating" formControlName="rating" class="form-input">
+        <option [ngValue]="null" disabled>Selecciona una calificación</option>
+        <option [value]="5">5 Estrellas</option>
+        <option [value]="4">4 Estrellas</option>
+        <option [value]="3">3 Estrellas</option>
+        <option [value]="2">2 Estrellas</option>
+        <option [value]="1">1 Estrella</option>
+      </select>
+    </div>
+
+    <!-- Input para el Título -->
+    <div class="form-field">
+      <label for="title">Título de tu reseña</label>
+      <input id="title" type="text" formControlName="title" placeholder="Ej: ¡Me encantó!" class="form-input">
+    </div>
+
+    <!-- Input para el Comentario -->
+    <div class="form-field">
+      <label for="comment">Tu reseña</label>
+      <textarea id="comment" formControlName="comment" placeholder="Cuéntanos más sobre tu experiencia..." rows="4" class="form-input"></textarea>
+    </div>
+
+    <button type="submit" [disabled]="reviewForm.invalid" class="submit-button">Enviar mi reseña</button>
+  </form>
+</div>
+
+<!-- Plantilla que se muestra mientras 'product' es nulo (está cargando) -->
+<ng-template #loading>
+  <p>Cargando detalles del producto...</p>
+</ng-template>
