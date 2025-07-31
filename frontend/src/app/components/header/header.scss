@@ -1,12 +1,34 @@
+:host {
+  // Por defecto, nuestro header estará posicionado de forma pegajosa (sticky) en la parte superior.
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  // Añadimos una transición para que el cambio de color sea suave.
+  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
 .sofilu-header {
   width: 100%;
   padding: 1rem 4rem;
   position: sticky;
   top: 0;
   z-index: 100; // Un z-index alto para que siempre esté por encima
-  background-color: rgba(250, 243, 233, 0.8); // Color de fondo con transparencia
-  backdrop-filter: blur(8px); // Efecto "cristal esmerilado"
-  border-bottom: 1px solid var(--soft-gray);
+}
+
+:host {
+  // ESTADO INICIAL (TOP = 0)
+  background-color: transparent; // Empezamos sin fondo
+  border-bottom: 1px solid transparent; // Y con un borde transparente
+
+  // ESTADO "SCROLLED"
+  // Cuando <app-header> tenga la clase .scrolled, se aplicarán estos estilos.
+  &.scrolled {
+    background-color: rgba(250, 243, 233, 0.8); // Fondo con opacidad
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--soft-gray);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); // Una sombra sutil
+  }
 }
 
 .header-content {

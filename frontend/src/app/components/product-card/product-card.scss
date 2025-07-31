@@ -1,10 +1,23 @@
 .card {
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 16px; // Un poco más redondeado
   overflow: hidden;
   margin: 1rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  background-color: white; // Aseguramos fondo blanco
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); // Una sombra más suave
+  
+  // --- NUEVOS ESTILOS PARA LA ANIMACIÓN 3D ---
+  // Aplicamos una transición a la transformación
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  // 'transform-style' es necesario para que las transformaciones 3D de los hijos funcionen
+  transform-style: preserve-3d;
+
+  &:hover {
+    // Al pasar el ratón, elevamos la tarjeta y le damos una sombra más pronunciada
+    transform: scale(1.05) perspective(1000px) rotateY(0deg) rotateX(0deg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
 }
 
 .card:hover {
@@ -27,6 +40,8 @@
 }
 
 .card-link {
-  text-decoration: none; // Quita el subrayado del enlace
-  color: inherit; // Hereda el color del texto para que no se vea azul
+  text-decoration: none;
+  color: inherit;
+  display: block; // Importante para que ocupe todo el espacio
+  perspective: 1000px; // La "profundidad" de nuestra escena 3D
 }
