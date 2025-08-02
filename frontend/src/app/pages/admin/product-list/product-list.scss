@@ -80,3 +80,12 @@
     color: #b91c1c; // Rojo oscuro
   }
 }
+
+.status-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: #e5e7eb; // Gris claro por defecto
+  color: #374151; // Gris oscuro
+}

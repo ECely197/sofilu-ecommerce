@@ -1,0 +1,53 @@
+<header class="page-header">
+  <!-- El título cambia dependiendo si estamos creando o editando -->
+  <h1>{{ isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto' }}</h1>
+</header>
+
+<form [formGroup]="productForm" (ngSubmit)="handleSubmit()" class="form-container">
+  <div class="main-column">
+    <!-- Tarjeta de Información Principal -->
+    <div class="card">
+      <h2 class="card-title">Información Principal</h2>
+      <div class="form-field">
+        <label for="name">Nombre del producto</label>
+        <input id="name" type="text" formControlName="name" class="form-input">
+      </div>
+      <div class="form-field">
+        <label for="description">Descripción</label>
+        <textarea id="description" formControlName="description" rows="6" class="form-input"></textarea>
+      </div>
+    </div>
+    <!-- Aquí iría la tarjeta de variantes en el futuro -->
+  </div>
+
+  <div class="sidebar-column">
+    <!-- Tarjeta de Precio -->
+    <div class="card">
+      <h2 class="card-title">Precio</h2>
+      <div class="form-field">
+        <label for="price">Precio</label>
+        <input id="price" type="number" formControlName="price" class="form-input">
+      </div>
+    </div>
+    <!-- Tarjeta de Categoría -->
+    <div class="card">
+      <h2 class="card-title">Organización</h2>
+      <div class="form-field">
+        <label for="category">Categoría</label>
+        <input id="category" type="text" formControlName="category" class="form-input">
+      </div>
+      <div class="form-field">
+        <label for="imageUrl">URL de la Imagen</label>
+        <input id="imageUrl" type="text" formControlName="imageUrl" class="form-input">
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones del Formulario -->
+  <div class="form-actions">
+    <a routerLink="/admin/products" class="cancel-button">Descartar</a>
+    <button type="submit" [disabled]="productForm.invalid" class="save-button">
+      {{ isEditMode ? 'Guardar Cambios' : 'Guardar Producto' }}
+    </button>
+  </div>
+</form>

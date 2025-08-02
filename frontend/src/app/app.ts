@@ -19,12 +19,19 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 export class App implements OnInit {
   public router = inject(Router);
   isCheckoutPage: boolean = false;
+  showGlobalHeaderAndFooter: boolean = true;
 
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.isCheckoutPage = event.urlAfterRedirects.includes('/checkout');
+      const url = event.urlAfterRedirects;
+      // La condición ahora es: ¿La URL incluye '/checkout' O empieza con '/admin'?
+      if (url.includes('/checkout') || url.startsWith('/admin')) {
+        this.showGlobalHeaderAndFooter = false;
+      } else {
+        this.showGlobalHeaderAndFooter = true;
+      }
     });
   }
 }

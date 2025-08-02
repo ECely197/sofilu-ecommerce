@@ -1,0 +1,43 @@
+<header class="page-header">
+  <h1>Pedidos de Clientes</h1>
+</header>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nº Pedido</th>
+        <th>Fecha</th>
+        <th>Cliente</th>
+        <th>Total</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let order of orders">
+        <td class="product-name">#{{ order._id.slice(-6) }}</td> <!-- Mostramos los últimos 6 dígitos del ID -->
+        <td>{{ order.createdAt | date:'medium' }}</td>
+        <td>{{ order.customerInfo.name }}</td>
+        <td>{{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }}</td>
+        <td>
+          <!-- En el futuro, el color cambiará según el estado -->
+          <span class="status-chip" 
+      [ngClass]="{
+        'procesando': order.status === 'Procesando',
+        'enviado': order.status === 'Enviado',
+        'entregado': order.status === 'Entregado',
+        'cancelado': order.status === 'Cancelado'
+      }">
+  {{ order.status }}
+</span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <a [routerLink]="['/admin/orders', order._id]" class="action-button">Ver Detalles</a>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

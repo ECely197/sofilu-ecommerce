@@ -1,0 +1,29 @@
+<header class="page-header">
+  <h1>Clientes Registrados</h1>
+</header>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Nombre</th>
+        <th>Fecha de Registro</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let customer of customers">
+        <td class="product-name">{{ customer.email }}</td>
+        <td>{{ customer.displayName || 'No especificado' }}</td>
+        <td>{{ customer.creationTime | date:'medium' }}</td>
+        <td>
+          <div class="action-buttons">
+            <!-- En el futuro, este enlace nos llevará al detalle del cliente -->
+            <a class="action-button">Ver Detalles</a>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

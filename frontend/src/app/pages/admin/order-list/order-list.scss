@@ -1,0 +1,38 @@
+// Importamos los estilos de la lista de productos para reutilizarlos
+@use "../product-list/product-list.scss";
+
+// --- ESTILOS ESPECÍFICOS PARA LOS ESTADOS DE PEDIDO ---
+// Esta es la parte nueva que nos faltaba
+
+.status-chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize; // Pone la primera letra en mayúscula
+
+  // Estilo por defecto (por si llega un estado desconocido)
+  background-color: #e5e7eb; // Gris claro
+  color: #374151; // Gris oscuro
+  
+  // Estilos condicionales que aplicaremos en el HTML
+  &.procesando {
+    background-color: #FEF3C7; // Amarillo claro
+    color: #92400E; // Amarillo oscuro
+  }
+
+  &.enviado {
+    background-color: #DBEAFE; // Azul claro
+    color: #1E40AF; // Azul oscuro
+  }
+
+  &.entregado {
+    background-color: #D1FAE5; // Verde claro
+    color: #065F46; // Verde oscuro
+  }
+
+  &.cancelado {
+    background-color: #FEE2E2; // Rojo claro
+    color: #991B1B; // Rojo oscuro
+  }
+}

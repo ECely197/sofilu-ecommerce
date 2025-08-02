@@ -11,6 +11,10 @@ import { Wishlist } from './pages/wishlist/wishlist';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { Dashboard } from './pages/admin/dashboard/dashboard';
 import { ProductList as AdminProductList } from './pages/admin/product-list/product-list';
+import { ProductForm } from './pages/admin/product-form/product-form';
+import { OrderList } from './pages/admin/order-list/order-list';
+import { OrderDetail } from './pages/admin/order-detail/order-detail';
+import { CustomerList } from './pages/admin/customer-list/customer-list';
 
 export const routes: Routes = [
 
@@ -77,6 +81,27 @@ export const routes: Routes = [
         path: 'products', // La ruta será /admin/products
         component: AdminProductList
       },
+      // --- NUEVAS RUTAS ---
+      {
+        path: 'products/new', // Ruta para crear un producto nuevo
+        component: ProductForm
+      },
+      {
+        path: 'products/edit/:id', // Ruta para editar un producto existente
+        component: ProductForm
+      },
+      {
+      path: 'orders', // La ruta será /admin/orders
+        component: OrderList
+      },
+      {
+        path:'orders/:id',
+        component: OrderDetail
+      },
+      {
+        path:'customers',
+        component: CustomerList
+      }
     ]
   }
 ];

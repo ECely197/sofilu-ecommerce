@@ -1,0 +1,60 @@
+<div *ngIf="order" class="order-detail-container">
+    <header class="page-header">
+        <h1>Pedido #{{ order._id.slice(-6) }}</h1>
+        <div class="header-actions">
+            <button class="action-button">Imprimir Guía</button>
+            <button class="action-button primary">Contactar Cliente</button>
+        </div>
+    </header>
+
+    <div class="details-grid">
+        <div class="main-content">
+            <div class="card">
+                <h2 class="card-title">Artículos del Pedido</h2>
+                <div *ngFor="let item of order.items" class="order-item">
+                    <!-- Accedemos a las propiedades a través de 'item.product' -->
+                    <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+                    <div class="item-info">
+                        <p class="item-name">{{ item.product.name }}</p>
+                        <p class="item-sku">SKU: {{ item.product.sku || 'N/A' }}</p>
+                    </div>
+                    <p class="item-price-quantity">{{ item.quantity }} x {{ item.price | currency:'COP':'symbol':'1.0-0'
+                        }}</p>
+                    <p class="item-total">{{ (item.quantity * item.price) | currency:'COP':'symbol':'1.0-0' }}</p>
+                </div>
+                <div class="totals-summary">
+                    <!-- Aquí irían Subtotal, Envío, Impuestos... -->
+                    <div class="total-row">
+                        <strong>Total</strong>
+                        <strong>{{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="sidebar-content">
+            <div class="card">
+                <h2 class="card-title">Información del Cliente</h2>
+                <p><strong>{{ order.customerInfo.name }}</strong></p>
+                <p class="text-secondary">{{ order.customerInfo.email }}</p>
+            </div>
+            <div class="card">
+  <h2 class="card-title">Estado y Notas</h2>
+  
+  <!-- Usamos ngSubmit para llamar a nuestro método updateStatus -->
+  <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
+    <div class="form-field">
+      <label for="status">Cambiar Estado del Pedido</label>
+      <select id="status" formControlName="status" class="form-input">
+        <option *ngFor="let status of orderStatuses" [value]="status">{{ status }}</option>
+      </select>
+    </div>
+    
+    <!-- En el futuro, aquí podría ir un campo para notas -->
+    
+    <button type="submit" class="submit-button">Guardar Cambios</button>
+  </form>
+</div>
+        </aside>
+    </div>
+</div>

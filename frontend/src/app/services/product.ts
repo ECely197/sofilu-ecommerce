@@ -45,4 +45,13 @@ export class ProductServices {
     return this.http.post<Review>(`http://localhost:3000/api/reviews/${productId}`, reviewData);
   }
 
+  createProduct(productData: Partial<Product>): Observable<Product> {
+    return this.http.post<Product>(this.apiUrl, productData);
+  }
+
+  updateProduct(productId: string, productData: Partial<Product>): Observable<Product> {
+    // Forma segura: Une la URL base y el ID.
+    return this.http.put<Product>(`${this.apiUrl}/${productId}`, productData);
+  }
+
 }

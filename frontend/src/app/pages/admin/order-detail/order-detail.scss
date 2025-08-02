@@ -1,0 +1,129 @@
+// Estilos generales de la página
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  h1 { font-size: 2.25rem; }
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  .action-button {
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    border: 1px solid var(--soft-gray);
+    background-color: white;
+    cursor: pointer;
+    &.primary {
+      background-color: var(--pastel-pink);
+      color: white;
+      border-color: var(--pastel-pink);
+    }
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+// Estilos para los ítems del pedido
+.order-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--soft-gray);
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.item-image {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.item-name {
+  font-weight: 600;
+}
+
+.item-sku {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.item-price-quantity, .item-total {
+  text-align: right;
+}
+
+.totals-summary {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--soft-gray);
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.25rem;
+  }
+}
+
+// ... (estilos existentes) ...
+
+.form-field {
+  margin-bottom: 1rem;
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--soft-gray);
+  border-radius: 0.5rem;
+  background-color: var(--soft-white);
+}
+
+.submit-button {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: var(--pastel-pink);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
