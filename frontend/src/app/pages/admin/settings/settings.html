@@ -1,0 +1,42 @@
+<header class="page-header">
+  <h1>Ajustes de la Tienda</h1>
+</header>
+
+<!-- Usamos un solo FormGroup que contiene grupos anidados -->
+<form [formGroup]="settingsForm" (ngSubmit)="handleSubmit()">
+  
+  <!-- Tarjeta de Información de la Tienda -->
+  <div class="card" formGroupName="storeInfo">
+    <h2 class="card-title">Información de la Tienda</h2>
+    <div class="form-field">
+      <label for="name">Nombre de la Tienda</label>
+      <input id="name" type="text" formControlName="name" class="form-input">
+    </div>
+    <div class="form-field">
+      <label for="email">Correo Electrónico de Contacto</label>
+      <input id="email" type="email" formControlName="email" class="form-input">
+    </div>
+  </div>
+
+  <!-- Tarjeta de Ajustes de Envío -->
+  <div class="card" style="margin-top: 1.5rem;" formGroupName="shipping">
+    <h2 class="card-title">Envíos</h2>
+    <div class="form-field">
+      <label class="flex items-center gap-2">
+        <input type="checkbox" formControlName="enableFreeShipping">
+        <span>Habilitar envío gratuito por compras superiores a:</span>
+      </label>
+    </div>
+    <div class="form-field">
+      <label for="freeShippingThreshold">Monto mínimo para envío gratuito</label>
+      <input id="freeShippingThreshold" type="number" formControlName="freeShippingThreshold" class="form-input">
+    </div>
+  </div>
+
+  <!-- Acciones del Formulario -->
+  <div class="form-actions">
+    <button type="submit" [disabled]="settingsForm.invalid" class="save-button">
+      Guardar Cambios
+    </button>
+  </div>
+</form>

@@ -17,6 +17,7 @@ import { OrderDetail } from './pages/admin/order-detail/order-detail';
 import { CustomerList } from './pages/admin/customer-list/customer-list';
 import { CouponList } from './pages/admin/coupon-list/coupon-list';
 import { couponForm } from './pages/admin/coupon-form/coupon-form';
+import { settings } from './pages/admin/settings/settings';
 
 export const routes: Routes = [
 
@@ -109,7 +110,11 @@ export const routes: Routes = [
         component: CouponList
       },
       { path: 'coupons/new', component: couponForm },
-      { path: 'coupons/edit/:id', component: couponForm }
+      { path: 'coupons/edit/:id', component: couponForm },
+      {
+        path: 'settings',
+        component: settings
+      },
     ]
   }
 ];
