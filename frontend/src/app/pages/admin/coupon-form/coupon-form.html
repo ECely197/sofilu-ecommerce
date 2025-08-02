@@ -1,0 +1,55 @@
+<header class="page-header">
+      <h1>{{ isEditMode ? 'Editar Cupón' : 'Crear Nuevo Cupón' }}</h1>
+    </header>
+
+    <form [formGroup]="couponForm" (ngSubmit)="handleSubmit()" class="form-container">
+      <div class="main-column">
+        <!-- Tarjeta de Información General -->
+        <div class="card">
+          <h2 class="card-title">Información General</h2>
+          <div class="form-field">
+            <label for="code">Código del cupón (ej: VERANO20)</label>
+            <input id="code" type="text" formControlName="code" class="form-input">
+          </div>
+        </div>
+        
+        <!-- Tarjeta de Restricciones -->
+        <div class="card">
+          <h2 class="card-title">Restricciones de Uso</h2>
+          <div class="form-field">
+            <label for="usageLimit">Límite total de usos (opcional)</label>
+            <input id="usageLimit" type="number" formControlName="usageLimit" class="form-input">
+          </div>
+          <div class="form-field">
+            <label for="expirationDate">Fecha de expiración (opcional)</label>
+            <input id="expirationDate" type="date" formControlName="expirationDate" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-column">
+        <!-- Tarjeta de Datos del Cupón -->
+        <div class="card">
+          <h2 class="card-title">Datos del Cupón</h2>
+          <div class="form-field">
+            <label for="discountType">Tipo de descuento</label>
+            <select id="discountType" formControlName="discountType" class="form-input">
+              <option value="Porcentaje">Porcentaje</option>
+              <option value="Monto Fijo">Monto Fijo</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="value">Valor</label>
+            <input id="value" type="number" formControlName="value" class="form-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div class="form-actions">
+        <a routerLink="/admin/coupons" class="cancel-button">Descartar</a>
+        <button type="submit" [disabled]="couponForm.invalid" class="save-button">
+          {{ isEditMode ? 'Guardar Cambios' : 'Guardar Cupón' }}
+        </button>
+      </div>
+    </form>

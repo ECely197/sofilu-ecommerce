@@ -1,22 +1,12 @@
 const express = require('express');
 const router = express.Router();
+// ¡Importamos admin, pero no lo inicializamos aquí!
 const admin = require('firebase-admin');
 
-// Carga la llave de servicio que descargaste
-const serviceAccount = require('../../serviceAccountKey.json');
-
-// Inicializa la app de Firebase Admin (solo si no se ha hecho antes)
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-}
-
 // --- OBTENER TODOS LOS USUARIOS (PARA EL ADMIN) ---
-// GET /api/users
 router.get('/', async (req, res) => {
   try {
-    const userRecords = await admin.auth().listUsers(1000); // Obtiene hasta 1000 usuarios
+    const userRecords = await admin.auth().listUsers(1000);
     const users = userRecords.users.map(user => ({
       uid: user.uid,
       email: user.email,

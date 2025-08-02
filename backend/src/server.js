@@ -1,103 +1,109 @@
+// ==========================================================================
+// 1. IMPORTACIONES
+// ==========================================================================
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const admin = require("firebase-admin");
+const path = require('path'); // ¡Importante para construir la ruta!
 require("dotenv").config();
-const Product = require("./models/Product");
 
+// Importación de Rutas
 const wishlistRoutes = require("./routes/wishlist");
 const reviewRoutes = require("./routes/reviews");
-const orderRoutes = require("./routes/orders"); // ¡Importar!
-const userRoutes = require('./routes/users'); 
+const orderRoutes = require("./routes/orders");
+const userRoutes = require("./routes/users");
+const couponRoutes = require("./routes/coupons");
 
+// ==========================================================================
+// 2. INICIALIZACIÓN
+// ==========================================================================
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Inicialización de Firebase Admin (¡Esta es la forma correcta y robusta!)
+const serviceAccountPath = path.join(__dirname, '..', 'serviceAccountKey.json');
+const serviceAccount = require(serviceAccountPath);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+// ==========================================================================
+// 3. MIDDLEWARES
+// ==========================================================================
 app.use(cors());
 app.use(express.json());
 
+// ==========================================================================
+// 4. CONEXIÓN A LA BASE DE DATOS
+// ==========================================================================
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Conectado a MongoDB Atlas con exito"))
-  .catch((error) => console.error("Error al coenctar a MOngoDB", error));
+  .then(() => console.log("Conectado a MongoDB Atlas con éxito"))
+  .catch((error) => console.error("Error al conectar a MongoDB", error));
 
-//Ruta para obtener todos los productos
+// ==========================================================================
+// 5. RUTAS DE LA API
+// ==========================================================================
+
+// --- Moveremos las rutas de productos a su propio archivo más adelante ---
+// Por ahora, las dejamos aquí para simplificar.
+const Product = require("./models/Product");
+
 app.get("/api/products", async (req, res) => {
   try {
     const products = await Product.find();
-
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los productos" });
   }
 });
 
-// Ruta para obtener producto por id
-
 app.get("/api/products/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
-
     res.json(product);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener el producto" });
   }
 });
 
-// --- NUEVA RUTA: Crear un nuevo producto (POST) ---
 app.post("/api/products", async (req, res) => {
-  // Creamos una nueva instancia de nuestro modelo Product con los datos
-  // que nos llegan en el 'body' de la petición desde el frontend.
-  const newProduct = new Product({
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-    imageUrl: req.body.imageUrl,
-    category: req.body.category,
-  });
+  const newProduct = new Product(req.body);
   try {
-    // Guardamos el nuevo producto en la base de datos.
     const savedProduct = await newProduct.save();
-    // Respondemos con el producto guardado (incluyendo el _id que le dio MongoDB).
     res.status(201).json(savedProduct);
   } catch (error) {
     res.status(400).json({ message: "Error al crear el producto" });
   }
 });
 
-// --- NUEVA RUTA: Actualizar un producto existente (PUT) ---
 app.put("/api/products/:id", async (req, res) => {
   try {
-    // Buscamos el producto por su ID y lo actualizamos con los nuevos datos del 'body'.
-    // { new: true } le dice a Mongoose que nos devuelva el documento actualizado.
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedProduct) {
-      return res
-        .status(404)
-        .json({ message: "Producto no encontrado para actualizar" });
+      return res.status(404).json({ message: "Producto no encontrado para actualizar" });
     }
-    // Respondemos con el producto actualizado.
     res.json(updatedProduct);
   } catch (error) {
     res.status(400).json({ message: "Error al actualizar el producto" });
   }
 });
+
+// --- Rutas Modulares ---
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
-pp.use('/api/users', userRoutes); // ¡Usar!
-app.get("/api/greeting", (req, res) => {
-  res.json({
-    message: "¡Conectado! Este mensaje viene desde el backend de Sofilu.",
-  });
-});
+app.use("/api/users", userRoutes);
+app.use("/api/coupons", couponRoutes);
+
+// ==========================================================================
+// 6. ARRANQUE DEL SERVIDOR
+// ==========================================================================
 app.listen(PORT, () => {
   console.log(`Servidor de Sofilu corriendo en http://localhost:${PORT}`);
 });

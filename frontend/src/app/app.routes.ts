@@ -15,46 +15,48 @@ import { ProductForm } from './pages/admin/product-form/product-form';
 import { OrderList } from './pages/admin/order-list/order-list';
 import { OrderDetail } from './pages/admin/order-detail/order-detail';
 import { CustomerList } from './pages/admin/customer-list/customer-list';
+import { CouponList } from './pages/admin/coupon-list/coupon-list';
+import { couponForm } from './pages/admin/coupon-form/coupon-form';
 
 export const routes: Routes = [
 
-    {
-        path: '',
-        component: Home
-    },
-    {
-        path: 'products',
-        component: ProductList
-    },
-    {
-        path: 'product/:id',
-        component: ProductDetailComponent
-    },
-    {
-        path: 'cart',
-        component: Cart
-    },
-    {
-        path: 'checkout',
-        component: Checkout
-    },
-    {
-        path: 'order-confirmation',
-        component: OrderConfirmation
-    },
-    {
-        path: 'login', component: Login
-    },
-    {
-        path: 'register', component: Register
-    },
-    {
-        path: 'wishlist', component: Wishlist
-    },
-    { path: 'login', component: Login },
-    { path: 'register', component: Register },
+  {
+    path: '',
+    component: Home
+  },
+  {
+    path: 'products',
+    component: ProductList
+  },
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent
+  },
+  {
+    path: 'cart',
+    component: Cart
+  },
+  {
+    path: 'checkout',
+    component: Checkout
+  },
+  {
+    path: 'order-confirmation',
+    component: OrderConfirmation
+  },
+  {
+    path: 'login', component: Login
+  },
+  {
+    path: 'register', component: Register
+  },
+  {
+    path: 'wishlist', component: Wishlist
+  },
+  { path: 'login', component: Login },
+  { path: 'register', component: Register },
 
-    {
+  {
     path: 'admin',
     component: AdminLayout, // ¡Usa nuestra nueva carcasa para TODAS las rutas de admin!
     // 'children' define las rutas que se renderizarán DENTRO del <router-outlet> del AdminLayout
@@ -91,17 +93,23 @@ export const routes: Routes = [
         component: ProductForm
       },
       {
-      path: 'orders', // La ruta será /admin/orders
+        path: 'orders', // La ruta será /admin/orders
         component: OrderList
       },
       {
-        path:'orders/:id',
+        path: 'orders/:id',
         component: OrderDetail
       },
       {
-        path:'customers',
+        path: 'customers',
         component: CustomerList
-      }
+      },
+      {
+        path: 'coupons',
+        component: CouponList
+      },
+      { path: 'coupons/new', component: couponForm },
+      { path: 'coupons/edit/:id', component: couponForm }
     ]
   }
 ];
