@@ -5,7 +5,7 @@ import { Auth, User, onAuthStateChanged, createUserWithEmailAndPassword, signInW
   providedIn: 'root'
 })
 export class AuthService {
-  private auth: Auth = inject(Auth);
+  public auth: Auth = inject(Auth);
 
    currentUser = signal<User | null | undefined>(undefined);
 

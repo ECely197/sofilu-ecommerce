@@ -54,4 +54,9 @@ export class ProductServices {
     return this.http.put<Product>(`${this.apiUrl}/${productId}`, productData);
   }
 
+  deleteProduct(productId: string): Observable<any> {
+    // Hacemos una petición DELETE a la URL específica del producto.
+    return this.http.delete<any>(`${this.apiUrl}/${productId}`);
+  }
+
 }

@@ -21,4 +21,18 @@ export class CouponList implements OnInit {
       this.cdr.detectChanges();
     });
   }
+
+  deleteCoupon(couponId: string): void {
+    if (confirm('¿Estás seguro de que quieres eliminar este cupón?')) {
+      this.couponService.deleteCoupon(couponId).subscribe({
+        next: () => {
+          console.log('Cupón eliminado con éxito');
+          // Actualizamos la lista localmente
+          this.coupons = this.coupons.filter(coupon => coupon._id !== couponId);
+          this.cdr.detectChanges(); // Forzamos la actualización de la vista
+        },
+        error: (err) => console.error('Error al eliminar el cupón:', err)
+      });
+    }
+  }
 }

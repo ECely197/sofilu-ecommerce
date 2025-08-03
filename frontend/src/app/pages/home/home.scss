@@ -1,6 +1,6 @@
-.home-container {
-  // Un contenedor general para añadir padding si es necesario en el futuro.
-}
+@use '../../../../buttons';
+
+
 
 // -- Estilos de la Sección Hero --
 .hero-section {
@@ -26,24 +26,9 @@
   font-size: 1.125rem; // text-lg
 }
 
+// BORRA la definición vieja de .hero-button si la tienes
 .hero-button {
-  height: 3.5rem; // h-14
-  padding: 0 2.5rem; // px-10
-  border-radius: 9999px; // rounded-full
-  background-color: var(--pastel-pink);
-  color: white;
-  font-weight: 700;
-  font-size: 1.125rem;
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); // shadow-lg
-  transition: all 0.3s ease-in-out;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-
-  &:hover {
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); // shadow-xl
-    transform: scale(1.05);
-  }
+  @extend .btn-material; // Hereda todos los estilos de nuestro botón principal
 }
 
 // -- Estilos de la Sección de Categorías --

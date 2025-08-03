@@ -3,7 +3,7 @@ import { Home } from './pages/home/home';
 import { ProductList } from './components/product-list/product-list';
 import { ProductDetailComponent } from './pages/product-detail/product-detail';
 import { Cart } from './pages/cart/cart';
-import { Checkout } from './pages/checkout/checkout';
+import { checkout } from './pages/checkout/checkout';
 import { OrderConfirmation } from './pages/order-confirmation/order-confirmation';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
@@ -18,6 +18,7 @@ import { CustomerList } from './pages/admin/customer-list/customer-list';
 import { CouponList } from './pages/admin/coupon-list/coupon-list';
 import { couponForm } from './pages/admin/coupon-form/coupon-form';
 import { settings } from './pages/admin/settings/settings';
+import { AuthGuard } from '@angular/fire/auth-guard';
 
 export const routes: Routes = [
 
@@ -39,7 +40,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout',
-    component: Checkout
+    component: checkout
   },
   {
     path: 'order-confirmation',
@@ -56,11 +57,10 @@ export const routes: Routes = [
   },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-
   {
     path: 'admin',
-    component: AdminLayout, // ¡Usa nuestra nueva carcasa para TODAS las rutas de admin!
-    // 'children' define las rutas que se renderizarán DENTRO del <router-outlet> del AdminLayout
+    component: AdminLayout, 
+    canActivate: [AuthGuard],
     children: [
       {
         path: '', // Redirige /admin a /admin/dashboard
@@ -78,6 +78,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
+    canActivate: [AuthGuard],
     children: [
       // ... (ruta de dashboard)
       {

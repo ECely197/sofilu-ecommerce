@@ -23,4 +23,8 @@ export class OrderService {
     // Hacemos una petición PUT, enviando el nuevo estado en el cuerpo
     return this.http.put<any>(url, body);
   }
+  createOrder(orderData: any): Observable<any> {
+    // Hacemos una petición POST, enviando los datos del cliente y los ítems.
+    return this.http.post<any>(this.apiUrl, orderData);
+  }
 }

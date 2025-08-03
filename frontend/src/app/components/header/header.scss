@@ -108,6 +108,7 @@
 }
 
 .icon-button {
+   position: relative;
   width: 2.5rem; // w-10
   height: 2.5rem; // h-10
   display: flex;
@@ -132,8 +133,10 @@
 
 // Estos son los estilos que ya teníamos, solo que ahora los juntamos
 .cart-button {
-  position: relative;
-  // Usamos las mismas clases que icon-button para consistencia
+  // Le decimos al botón que sea el punto de referencia para sus hijos posicionados absolutamente
+  position: relative; 
+
+  // ... (el resto de los estilos: width, height, etc. se quedan igual)
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -141,7 +144,9 @@
   justify-content: center;
   border-radius: 9999px;
   transition: background-color 0.2s;
-  text-decoration: none; // Para que no se subraye el enlace
+  background-color: transparent; // Aseguramos que sea transparente
+  border: none; // Sin borde
+  cursor: pointer;
 
   &:hover {
     background-color: var(--soft-gray);

@@ -25,4 +25,8 @@ export class Coupon {
   updateCoupon(couponId: string, couponData: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${couponId}`, couponData);
   }
+
+  deleteCoupon(couponId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${couponId}`);
+  }
 }

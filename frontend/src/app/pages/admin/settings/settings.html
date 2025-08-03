@@ -2,10 +2,11 @@
   <h1>Ajustes de la Tienda</h1>
 </header>
 
-<!-- Usamos un solo FormGroup que contiene grupos anidados -->
+<!-- Enlazamos el formulario principal -->
 <form [formGroup]="settingsForm" (ngSubmit)="handleSubmit()">
   
   <!-- Tarjeta de Información de la Tienda -->
+  <!-- 'formGroupName' conecta esta sección con el FormGroup anidado 'storeInfo' -->
   <div class="card" formGroupName="storeInfo">
     <h2 class="card-title">Información de la Tienda</h2>
     <div class="form-field">
@@ -21,11 +22,10 @@
   <!-- Tarjeta de Ajustes de Envío -->
   <div class="card" style="margin-top: 1.5rem;" formGroupName="shipping">
     <h2 class="card-title">Envíos</h2>
-    <div class="form-field">
-      <label class="flex items-center gap-2">
-        <input type="checkbox" formControlName="enableFreeShipping">
-        <span>Habilitar envío gratuito por compras superiores a:</span>
-      </label>
+    <div class="form-field" style="display: flex; align-items: center; gap: 0.5rem;">
+      <!-- Un 'checkbox' normal de HTML funciona perfectamente con formControlName -->
+      <input type="checkbox" id="enableFreeShipping" formControlName="enableFreeShipping">
+      <label for="enableFreeShipping">Habilitar envío gratuito por compras superiores a:</label>
     </div>
     <div class="form-field">
       <label for="freeShippingThreshold">Monto mínimo para envío gratuito</label>

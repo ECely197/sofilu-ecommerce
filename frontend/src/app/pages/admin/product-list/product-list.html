@@ -29,7 +29,8 @@
         <td>
           <div class="action-buttons">
             <a [routerLink]="['/admin/products/edit', product._id]" class="action-button">Editar</a>
-            <button class="action-button delete">Eliminar</button>
+            <!-- Conectamos el evento (click) a nuestro nuevo método -->
+            <button (click)="deleteProduct(product._id)" class="action-button delete">Eliminar</button>
           </div>
         </td>
       </tr>

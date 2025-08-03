@@ -1,0 +1,68 @@
+<!-- Contenedor principal que maneja la visibilidad y el fondo oscuro -->
+<div 
+  class="flyout-container" 
+  [class.visible]="uiStateService.isCartFlyoutVisible()"
+  (click)="uiStateService.closeCartFlyout()">
+  
+  <!-- Fondo oscuro -->
+  <div class="flyout-backdrop"></div>
+
+  <!-- Panel del carrito que se desliza (con stopPropagation para evitar que se cierre al hacer clic dentro) -->
+  <div class="flyout-panel" (click)="$event.stopPropagation()">
+    
+    <header class="flyout-header">
+      <h1 class="flyout-title">Tu Carrito</h1>
+      <button (click)="uiStateService.closeCartFlyout()" class="close-button">✕</button>
+    </header>
+
+    <!-- Contenido principal: se muestra si hay productos o si está vacío -->
+    <div class="content-wrapper">
+      @if (cartService.totalItems() > 0) {
+        <!-- Si hay productos, los mostramos -->
+        <div class="items-list">
+          @for (item of cartService.cartItems(); track item.product._id) {
+            <div class="cart-item">
+              <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+              <div class="item-details">
+                <h3 class="item-name">{{ item.product.name }}</h3>
+                <p class="item-price">{{ item.product.price | currency:'COP':'symbol':'1.0-0' }}</p>
+                <div class="quantity-selector">
+                  <button (click)="cartService.updateQuantity(item.product._id, item.quantity - 1)">-</button>
+                  <span>{{ item.quantity }}</span>
+                  <button (click)="cartService.updateQuantity(item.product._id, item.quantity + 1)">+</button>
+                </div>
+              </div>
+              <button (click)="cartService.removeItem(item.product._id)" class="remove-button">
+                <!-- SVG de Papelera -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Si el carrito está vacío, mostramos el estado vacío -->
+        <div class="empty-cart-content">
+          <img alt="Gato dormido en la luna" class="empty-cart-image" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsD-RvNTSykGgOKozEUdyL1WN9kDesNA4rXlSLtwGaGx4qoaEgKSImFq21pAsc7JfXwXUmsuDfPwdWs6sDVSR1TN-PYJtYUlMXiIZMYg47A9_SLleOPV7UJs8UtjBhRcQvhqe5ucHf-wgDkDoTd_H5zITchjy33OmpoPxwnwC6EhHBwJuztPFuMYYYP_rxVWlfOcdzZHlwEkQcInTWJkFsEgwMp4-m6nK7cS9gM-Eg-6GSBgtQDobXvbgT_gFXxckkmU_-g3g6wP0"/>
+          <p class="empty-cart-title">Aún no has añadido sueños a tu carrito.</p>
+          <a routerLink="/products" (click)="uiStateService.closeCartFlyout()" class="explore-button">
+            Descubrir productos
+          </a>
+        </div>
+      }
+    </div>
+
+    <!-- Footer siempre visible (si hay productos) -->
+    @if (cartService.totalItems() > 0) {
+      <footer class="flyout-footer">
+        <div class="subtotal-row">
+          <span>Subtotal</span>
+          <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+        <p class="shipping-notice">Gastos de envío e impuestos calculados al finalizar la compra.</p>
+        <a routerLink="/cart" (click)="uiStateService.closeCartFlyout()" class="checkout-button">
+          Ir al Carrito
+        </a>
+      </footer>
+    }
+  </div>
+</div>

@@ -5,7 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const admin = require("firebase-admin");
-const path = require('path'); // ¡Importante para construir la ruta!
+const path = require("path"); // ¡Importante para construir la ruta!
 require("dotenv").config();
 
 // Importación de Rutas
@@ -22,7 +22,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Inicialización de Firebase Admin (¡Esta es la forma correcta y robusta!)
-const serviceAccountPath = path.join(__dirname, '..', 'serviceAccountKey.json');
+const serviceAccountPath = path.join(__dirname, "..", "serviceAccountKey.json");
 const serviceAccount = require(serviceAccountPath);
 
 admin.initializeApp({
@@ -32,6 +32,7 @@ admin.initializeApp({
 // ==========================================================================
 // 3. MIDDLEWARES
 // ==========================================================================
+const authMiddleware = require('./middleware/authMiddleware');
 app.use(cors());
 app.use(express.json());
 
@@ -82,15 +83,40 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-app.put("/api/products/:id", async (req, res) => {
+app.put("/api/products/:id", authMiddleware, async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
     if (!updatedProduct) {
-      return res.status(404).json({ message: "Producto no encontrado para actualizar" });
+      return res
+        .status(404)
+        .json({ message: "Producto no encontrado para actualizar" });
     }
     res.json(updatedProduct);
   } catch (error) {
     res.status(400).json({ message: "Error al actualizar el producto" });
+  }
+});
+
+app.delete("/api/products/:id", authMiddleware, async (req, res) => {
+  try {
+    // Usamos el método de Mongoose 'findByIdAndDelete' para buscar y borrar en un solo paso.
+    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+
+    if (!deletedProduct) {
+      // Si no se encuentra un producto con ese ID, devolvemos un 404.
+      return res
+        .status(404)
+        .json({ message: "Producto no encontrado para eliminar" });
+    }
+
+    // Si se elimina con éxito, enviamos un mensaje de confirmación.
+    res.json({ message: "Producto eliminado con éxito" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el producto" });
   }
 });
 

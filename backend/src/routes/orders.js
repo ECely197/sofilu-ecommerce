@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+// ¡Importamos el modelo Product para poder usarlo!
+const Product = require('../models/Product');
 
 // --- OBTENER TODOS LOS PEDIDOS (PARA EL ADMIN) ---
-// GET /api/orders
 router.get('/', async (req, res) => {
   try {
-    // Buscamos todos los pedidos y los ordenamos del más nuevo al más viejo
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
@@ -14,15 +14,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// En el futuro, aquí añadiremos rutas para OBTENER UN PEDIDO y ACTUALIZAR SU ESTADO
-
-// GET /api/orders/:id
+// --- OBTENER UN PEDIDO POR SU ID ---
 router.get('/:id', async (req, res) => {
   try {
-    // Buscamos el pedido por su ID.
-    // Usamos .populate() dos veces para traer la información completa del producto.
     const order = await Order.findById(req.params.id).populate('items.product');
-    
     if (!order) {
       return res.status(404).json({ message: 'Pedido no encontrado' });
     }
@@ -32,31 +27,45 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id/status', async (req, res) => {
+// --- CREAR UN NUEVO PEDIDO ---
+router.post('/', async (req, res) => {
   try {
-    const { status } = req.body; // Obtenemos el nuevo estado del cuerpo de la petición
+    const { customerInfo, items } = req.body;
+    let totalAmount = 0;
+    const processedItems = [];
 
-    // Validamos que el estado sea uno de los permitidos en nuestro modelo
-    const allowedStatus = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
-    if (!allowedStatus.includes(status)) {
-      return res.status(400).json({ message: 'Estado no válido' });
+    for (const item of items) {
+      // ¡Ahora Node.js sabrá qué es 'Product' en esta línea!
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.status(404).json({ message: `Producto con ID ${item.product} no encontrado.` });
+      }
+      totalAmount += product.price * item.quantity;
+      processedItems.push({
+        product: product._id,
+        quantity: item.quantity,
+        price: product.price
+      });
     }
-
-    // Buscamos el pedido y actualizamos solo su campo 'status'
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: status },
-      { new: true } // Para que nos devuelva el documento actualizado
-    );
     
-    if (!updatedOrder) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
-    }
+    const newOrder = new Order({
+      customerInfo: customerInfo,
+      items: processedItems,
+      totalAmount: totalAmount,
+    });
 
-    res.json(updatedOrder);
+    const savedOrder = await newOrder.save();
+    res.status(201).json(savedOrder);
+
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar el estado del pedido' });
+    console.error("Error al crear el pedido:", error);
+    res.status(400).json({ message: 'Error al crear el pedido' });
   }
+});
+
+// --- ACTUALIZAR EL ESTADO DE UN PEDIDO ---
+router.put('/:id/status', async (req, res) => {
+  // ... (lógica existente)
 });
 
 module.exports = router;

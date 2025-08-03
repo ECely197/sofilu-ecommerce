@@ -1,36 +1,40 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { RouterOutlet} from '@angular/router';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common'; 
+import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { CartFlyout } from './components/cart-flyout/cart-flyout';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Header, Footer, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    RouterOutlet, 
+    Header, 
+    Footer,
+    CartFlyout
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
-  public router = inject(Router);
-  isCheckoutPage: boolean = false;
-  showGlobalHeaderAndFooter: boolean = true;
+  private router = inject(Router);
+  
+  // Signal para controlar la visibilidad del header/footer
+  showGlobalHeaderAndFooter = signal(true);
 
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       const url = event.urlAfterRedirects;
-      // La condición ahora es: ¿La URL incluye '/checkout' O empieza con '/admin'?
+      // Oculta el header/footer en las rutas de checkout y admin
       if (url.includes('/checkout') || url.startsWith('/admin')) {
-        this.showGlobalHeaderAndFooter = false;
+        this.showGlobalHeaderAndFooter.set(false);
       } else {
-        this.showGlobalHeaderAndFooter = true;
+        this.showGlobalHeaderAndFooter.set(true);
       }
     });
   }

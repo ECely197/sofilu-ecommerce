@@ -13,7 +13,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 })
 export class ProductList implements OnInit {
   private productService = inject(ProductServices);
-  private route = inject(ActivatedRoute); 
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   public products: Product[] = [];
 
@@ -31,5 +31,25 @@ export class ProductList implements OnInit {
       this.products = data;
       this.cdr.detectChanges();
     });
+  }
+
+  deleteProduct(productId: string): void {
+    // ¡Paso de seguridad crucial! Pedimos confirmación al usuario.
+    const confirmation = confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.');
+
+    if (confirmation) {
+      // Si el usuario confirma, llamamos al servicio.
+      this.productService.deleteProduct(productId).subscribe({
+        next: () => {
+          console.log('Producto eliminado con éxito');
+          // Para una experiencia de usuario fluida, actualizamos la lista localmente
+          // en lugar de volver a pedir todos los productos a la API.
+          this.products = this.products.filter(product => product._id !== productId);
+          // Forzamos la detección de cambios por si acaso.
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error('Error al eliminar el producto:', err)
+      });
+    }
   }
 }

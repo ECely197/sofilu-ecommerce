@@ -44,4 +44,19 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// --- NUEVA RUTA: Eliminar un cupón (DELETE) ---
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedCoupon = await Coupon.findByIdAndDelete(req.params.id);
+    
+    if (!deletedCoupon) {
+      return res.status(404).json({ message: "Cupón no encontrado para eliminar" });
+    }
+
+    res.json({ message: "Cupón eliminado con éxito" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el cupón" });
+  }
+});
+
 module.exports = router;

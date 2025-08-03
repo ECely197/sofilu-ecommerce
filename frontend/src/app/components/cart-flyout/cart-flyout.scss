@@ -1,0 +1,218 @@
+// El :host es el contenedor principal que ocupa toda la pantalla.
+// Controla el fondo oscuro y la visibilidad general del flyout.
+:host {
+  position: fixed;
+  inset: 0; // Abarca top, right, bottom, left = 0
+  z-index: 200; // Se asegura de que esté por encima de todo
+  
+  // Por defecto está oculto
+  opacity: 0;
+  visibility: hidden;
+  
+  // Transición suave para el efecto de aparición
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+
+  // Cuando el componente tiene la clase 'visible', se muestra
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+
+    // Y el panel interior se desliza a su posición
+    .flyout-panel {
+      transform: translateX(0);
+    }
+  }
+}
+
+// Este es el fondo oscuro semitransparente
+.flyout-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+// Este es el panel blanco que se desliza desde la derecha
+.flyout-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--soft-white);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+  
+  // Estado inicial (fuera de la pantalla) y transición suave
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// --- Estilos para el contenido DENTRO del panel ---
+
+.flyout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--soft-gray);
+  flex-shrink: 0; // Evita que se encoja
+}
+
+.flyout-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  overflow-y: auto; // Permite scroll si hay muchos productos
+}
+
+.items-list {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.item-name {
+  font-weight: 700;
+}
+
+.item-price {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.quantity-selector {
+    max-width: 35%;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--soft-gray);
+  border-radius: 9999px;
+  margin-top: 0.5rem;
+
+  button {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    cursor: pointer;
+  }
+  span {
+    padding: 0 0.25rem;
+    min-width: 2ch;
+    text-align: center;
+  }
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  &:hover {
+    color: #e53e3e;
+  }
+}
+
+.empty-cart-content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+.empty-cart-image {
+  width: 12rem;
+  height: 12rem;
+  margin-bottom: 1.5rem;
+}
+
+.empty-cart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-charcoal);
+}
+
+.explore-button {
+  margin-top: 1.5rem;
+  background-color: var(--pastel-pink);
+  color: var(--text-primary);
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.flyout-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--soft-gray);
+  background-color: var(--background);
+  flex-shrink: 0;
+}
+
+.subtotal-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.shipping-notice {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.checkout-button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background-color: var(--pastel-pink);
+  color: white;
+  padding: 0.875rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-weight: 700;
+}
