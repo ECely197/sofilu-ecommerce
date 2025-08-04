@@ -1,13 +1,27 @@
-// Hacemos que el componente raíz (nuestra "carcasa") ocupe al menos toda la altura de la pantalla
-// y usamos flexbox para organizar sus hijos (header, main, footer).
 :host {
+  // display: block; // Cambiamos esto por una estructura de layout
+}
+
+// Contenedor principal que envuelve toda la app
+.app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
 .main-content {
-  // Esta propiedad hace que el contenido principal crezca para ocupar
-  // todo el espacio disponible entre el header y el footer.
-  flex-grow: 1;
+  flex-grow: 1; 
+  // ¡Paso Clave! Añadimos un padding-top igual a la altura del header
+  // para que el contenido no empiece oculto detrás de él.
+  // Esto es una aproximación, lo ajustaremos si es necesario.
+  padding-top: 80px; 
+}
+
+app-header {
+  // Hacemos que el header sea fijo en la parte superior
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
 }

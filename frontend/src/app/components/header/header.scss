@@ -1,42 +1,36 @@
-:host {
-  // Por defecto, nuestro header estará posicionado de forma pegajosa (sticky) en la parte superior.
-  position: sticky;
-  top: 0;
-  z-index: 100;
+a {
+  cursor: pointer;
+}
 
-  // Añadimos una transición para que el cambio de color sea suave.
+:host {
+  display: block; // Sigue siendo un bloque
+  // Ya no necesita 'position: sticky' porque lo maneja el app.component.scss
   transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.sofilu-header {
-  width: 100%;
-  padding: 1rem 4rem;
-  position: sticky;
-  top: 0;
-  z-index: 100; // Un z-index alto para que siempre esté por encima
-}
-
-:host {
-  // ESTADO INICIAL (TOP = 0)
-  background-color: transparent; // Empezamos sin fondo
-  border-bottom: 1px solid transparent; // Y con un borde transparente
-
-  // ESTADO "SCROLLED"
-  // Cuando <app-header> tenga la clase .scrolled, se aplicarán estos estilos.
-  &.scrolled {
-    background-color: rgba(250, 243, 233, 0.8); // Fondo con opacidad
+  border-bottom: 1px solid transparent;
+  
+    background-color: rgba(250, 243, 233, 0.8);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); // Para compatibilidad con Safari
+
+  &.scrolled {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     border-bottom: 1px solid var(--soft-gray);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); // Una sombra sutil
   }
 }
 
+.sofilu-header {
+  padding: 1rem 4rem; // Espaciado interior del header
+}
+
+// ¡LA REGLA CLAVE QUE FALTABA!
+// Este contenedor usa flexbox para posicionar sus dos hijos (izquierda y derecha)
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; // Esto empuja la sección izq y der a los extremos
 }
 
+// --- Sección Izquierda ---
 .header-left {
   display: flex;
   align-items: center;
@@ -60,11 +54,15 @@
 .logo-text {
   font-size: 1.5rem;
   font-weight: 700;
+  font-family: 'Playfair Display', serif;
 }
 
 .main-nav {
-  display: flex;
-  gap: 0.5rem;
+  display: none;
+  @media (min-width: 768px) {
+    display: flex;
+    gap: 0.5rem;
+  }
 }
 
 .pill-button {
@@ -77,80 +75,44 @@
   color: var(--text-charcoal);
   background-color: transparent;
   border: 2px solid transparent;
-
-  &:hover {
-    background-color: var(--soft-gray);
-    cursor: pointer;
-  }
-
-  // Estilo para el enlace de la página activa
+  &:hover { background-color: var(--soft-gray); }
   &.active {
     background-color: var(--pastel-pink);
     color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 }
 
-// Ocultar la navegación en pantallas pequeñas (Responsive Design)
-@media (max-width: 768px) {
-  .main-nav {
-    display: none;
-  }
 
-  .sofilu-header {
-    padding: 1rem 1.5rem;
-  }
-}
-
+// --- Sección Derecha ---
 .header-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem; // Espacio entre los botones
+  gap: 0.75rem;
 }
 
 .icon-button {
   position: relative;
-  width: 2.5rem; // w-10
-  height: 2.5rem; // h-10
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px; // rounded-full
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: var(--soft-gray);
-  }
-}
-
-.icon-svg {
-  width: 1.5rem; // w-6
-  height: 1.5rem; // h-6
-  color: var(--text-charcoal);
-}
-
-// Estos son los estilos que ya teníamos, solo que ahora los juntamos
-.cart-button {
-  // Le decimos al botón que sea el punto de referencia para sus hijos posicionados absolutamente
-  position: relative;
-
-  // ... (el resto de los estilos: width, height, etc. se quedan igual)
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
+  border-radius: 50%;
   transition: background-color 0.2s;
-  background-color: transparent; // Aseguramos que sea transparente
-  border: none; // Sin borde
+  background-color: transparent;
+  border: none;
   cursor: pointer;
+  text-decoration: none;
 
   &:hover {
     background-color: var(--soft-gray);
+  }
+
+  .icon-svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--text-charcoal);
   }
 }
 
@@ -158,7 +120,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  background-color: #e53e3e; // Un rojo más vibrante
+  background-color: #e53e3e;
   color: white;
   border-radius: 50%;
   width: 20px;
@@ -168,17 +130,15 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: bold;
-  transform: translate(25%, -25%); // Lo mueve un poco para que se vea mejor
+  transform: translate(25%, -25%);
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.profile-menu-container {
+  position: relative;
 }
 
 .profile-button {
-  width: 2.5rem; // 40px
+  width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
   background-color: var(--pastel-pink);
@@ -192,27 +152,59 @@
   cursor: pointer;
 }
 
-.logout-button {
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 250px;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 1px solid var(--soft-gray);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-header, .menu-links, .menu-footer {
+  padding: 0.5rem;
+}
+.menu-header {
+  border-bottom: 1px solid var(--soft-gray);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.menu-footer {
+  border-top: 1px solid var(--soft-gray);
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+}
+.user-email {
+  font-weight: 500;
+  text-align: center;
+  word-break: break-all;
+  padding: 0 0.5rem;
+}
+.menu-links a, .logout-button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
   background: none;
   border: none;
-  color: var(--text-charcoal);
   cursor: pointer;
+  text-decoration: none;
+  color: var(--text-charcoal);
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
   font-weight: 500;
-  font-size: 0.875rem;
 
   &:hover {
-    text-decoration: underline;
+    background-color: var(--soft-gray);
   }
 }
 
-.admin-button {
-  // Usamos el estilo de píldora que ya teníamos
-  @extend .pill-button;
-  // Pero con un color diferente para destacarlo
-  background-color: #e53e3e; // Un color rojo o distintivo
-  color: white;
-
-  &:hover {
-    background-color: #c53030;
-  }
+.logout-button:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
 }

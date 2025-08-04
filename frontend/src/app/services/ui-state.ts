@@ -4,19 +4,21 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class UiState {
-   // Creamos un signal que guardará si el flyout está visible.
-  // Por defecto, está oculto (false).
-  isCartFlyoutVisible = signal(false);
+  private _isCartFlyoutVisible = signal(false);
+
+  // Creamos una propiedad pública de solo lectura para que los componentes
+  // puedan leer el estado del signal de forma segura.
+  public isCartFlyoutVisible = this._isCartFlyoutVisible.asReadonly();
 
   constructor() { }
 
-  // Método para abrir el flyout
+  // Método público para abrir el flyout
   openCartFlyout(): void {
-    this.isCartFlyoutVisible.set(true);
+    this._isCartFlyoutVisible.set(true);
   }
 
-  // Método para cerrar el flyout
+  // Método público para cerrar el flyout
   closeCartFlyout(): void {
-    this.isCartFlyoutVisible.set(false);
+    this._isCartFlyoutVisible.set(false);
   }
 }
