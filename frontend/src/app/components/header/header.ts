@@ -1,10 +1,12 @@
-import { Component, inject, ChangeDetectorRef, HostBinding, HostListener } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
-import { map } from 'rxjs';
-import { UiState } from '../../services/ui-state';
+import { Observable } from 'rxjs';
+import { User } from '@angular/fire/auth';
+// Asegúrate de que UiStateService está importado
+import { UiState } from '../../services/ui-state'; 
 
 @Component({
   selector: 'app-header',
@@ -14,31 +16,19 @@ import { UiState } from '../../services/ui-state';
   styleUrl: './header.scss'
 })
 export class Header {
-  public CartService = inject(CartService);
-  public authService = inject(AuthService);
+  private authService = inject(AuthService);
   private router = inject(Router);
+  public cartService = inject(CartService);
+  // Asegúrate de inyectar y hacer público el UiStateService
   public uiStateService = inject(UiState);
 
-  private isScrolled = false;
-
-  @HostBinding('class.scrolled') get scrolled() {
-    return this.isScrolled;
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll() {
-    const scrollPosition = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    
-    this.isScrolled = scrollPosition > 10;
-  }
-
-
+  // Exponemos los observables del servicio al template
+  currentUser$: Observable<User | null> = this.authService.currentUser$;
+  isAdmin$: Observable<boolean> = this.authService.isAdmin$;
+  
   logout(): void {
     this.authService.logout()
-      .then(() => {
-        this.router.navigate(['/']);
-        console.log('Sesión cerrada');
-      })
+      .then(() => this.router.navigate(['/']))
       .catch(error => console.error('Error al cerrar sesión:', error));
   }
 }

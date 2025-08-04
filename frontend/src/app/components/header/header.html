@@ -1,5 +1,6 @@
 <header class="sofilu-header">
   <div class="header-content">
+    
     <!-- Sección Izquierda: Logo y Navegación Principal -->
     <div class="header-left">
       <a class="logo-link" routerLink="/">
@@ -10,7 +11,7 @@
       </a>
       <nav class="main-nav">
         <a class="pill-button" routerLink="/sabanas" routerLinkActive="active">Sábanas</a>
-        <a class="pill-button" routerLink="/products" routerLinkActive="active">Pijamas</a>
+        <a class="pill-button" routerLink="/pijamas" routerLinkActive="active">Pijamas</a>
         <a class="pill-button" routerLink="/toallas" routerLinkActive="active">Toallas</a>
         <a class="pill-button" routerLink="/batas" routerLinkActive="active">Batas</a>
       </nav>
@@ -19,38 +20,35 @@
     <!-- Sección Derecha: Buscador y Acciones de Usuario -->
     <div class="header-right">
       
-      <!-- Icono de Wishlist -->
       <a routerLink="/wishlist" class="icon-button">
-        <svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+        <svg class="icon-svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+        </svg>
       </a>
 
-      <!-- Botón del Carrito que abre el flyout -->
       <button (click)="uiStateService.openCartFlyout()" class="icon-button cart-button">
-    <!-- SVG del Carrito (versión limpia de heroicons) -->
-    <svg class="icon-svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.658-.463 1.243-1.117 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.116 1.007Z" />
-    </svg>
-    @if (CartService.totalItems() > 0) {
-      <span class="cart-badge">{{ CartService.totalItems() }}</span>
-    }
-  </button>
+        <svg class="icon-svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.658-.463 1.243-1.117 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.116 1.007Z" />
+        </svg>
+        <span *ngIf="(cartService.totalItems() > 0)" class="cart-badge">
+          {{ cartService.totalItems() }}
+        </span>
+      </button>
 
       <!-- Lógica Condicional para el Perfil de Usuario -->
-      @if (authService.currentUser(); as user) {
-        <!-- Si hay un usuario conectado, mostramos el perfil -->
+      <div *ngIf="currentUser$ | async as user; else showLogin">
         <div class="user-profile">
+          <a *ngIf="isAdmin$ | async" routerLink="/admin" class="admin-button">Admin</a>
           <button class="profile-button">
-            @if (user.email) {
-              <span>{{ user.email.charAt(0).toUpperCase() }}</span>
-            }
+            <span *ngIf="user.email">{{ user.email.charAt(0).toUpperCase() }}</span>
           </button>
           <button (click)="logout()" class="logout-button">Cerrar Sesión</button>
         </div>
-      } @else {
-        <!-- Si no hay un usuario conectado, mostramos el botón de login -->
+      </div>
+      <ng-template #showLogin>
         <a routerLink="/login" class="pill-button">Iniciar Sesión</a>
-      }
-    
+      </ng-template>
+
     </div>
   </div>
 </header>

@@ -30,7 +30,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(), // Nota: zoneless es avanzado, asegúrate de que es lo que quieres.
     provideRouter(routes), 
     provideClientHydration(withEventReplay()),
-    provideRouter(routes, withHashLocation()),
+    provideRouter(routes),
     
     // --- ESTA ES LA LÍNEA UNIFICADA Y CORRECTA ---
     // Provee HttpClient, habilita fetch Y registra nuestro interceptor, todo en una sola llamada.
