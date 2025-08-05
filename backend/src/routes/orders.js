@@ -4,7 +4,6 @@ const Order = require("../models/Order");
 // ¡Importamos el modelo Product para poder usarlo!
 const Product = require("../models/Product");
 
-
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
 // --- OBTENER TODOS LOS PEDIDOS (PARA EL ADMIN) ---
@@ -68,14 +67,16 @@ router.post("/", [authMiddleware], async (req, res) => {
 });
 
 // --- ACTUALIZAR EL ESTADO DE UN PEDIDO ---
-router.put('/:id/status', [authMiddleware, adminOnly], async (req, res) => {
+router.put("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const { status } = req.body;
 
-    const allowedStatus = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
+    const allowedStatus = ["Procesando", "Enviado", "Entregado", "Cancelado"];
     if (!status || !allowedStatus.includes(status)) {
       // Añadimos una validación extra
-      return res.status(400).json({ message: 'Estado no válido proporcionado' });
+      return res
+        .status(400)
+        .json({ message: "Estado no válido proporcionado" });
     }
 
     const updatedOrder = await Order.findByIdAndUpdate(
@@ -83,16 +84,18 @@ router.put('/:id/status', [authMiddleware, adminOnly], async (req, res) => {
       { status: status }, // Actualizamos solo el campo 'status'
       { new: true }
     );
-    
+
     if (!updatedOrder) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
+      return res.status(404).json({ message: "Pedido no encontrado" });
     }
 
     // ¡La respuesta debe enviarse!
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar el estado:", error); // Log más detallado
-    res.status(500).json({ message: 'Error al actualizar el estado del pedido' });
+    res
+      .status(500)
+      .json({ message: "Error al actualizar el estado del pedido" });
   }
 });
 

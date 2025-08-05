@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-// Necesitaremos una interfaz para Order en el futuro, por ahora usamos 'any'
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/orders';
+  private apiUrl = `${environment.apiUrl}/orders`; 
 
   getOrders(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);

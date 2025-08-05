@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth';
 import { take, switchMap } from 'rxjs/operators';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { take, switchMap } from 'rxjs/operators';
 export class WishlistService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private apiUrl = 'http://localhost:3000/api/wishlist';
+  private apiUrl = `${environment.apiUrl}/wishlist`; 
   
   // Signals para el estado local
   wishlistProductIds = signal<string[]>([]);

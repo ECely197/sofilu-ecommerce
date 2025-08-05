@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product } from '../interfaces/product.interface';
-
+import { environment } from '../../environments/environment.prod';
 
 export interface Review {
   _id: string;
@@ -21,7 +21,7 @@ export class ProductServices {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://localhost:3000/api/products';
+  private apiUrl = `${environment.apiUrl}/products`; 
 
   constructor() { }
 
