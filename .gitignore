@@ -1,0 +1,2 @@
+# Ignorar archivos de build de Angular
+# /dist/  <-- Comenta o elimina esta línea
