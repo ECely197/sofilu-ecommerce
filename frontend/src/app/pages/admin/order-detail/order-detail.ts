@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute} from '@angular/router';
+// ¡Asegúrate de que FormGroup, FormControl y ReactiveFormsModule estén importados!
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OrderService } from '../../../services/order';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-order-detail',
@@ -12,13 +14,13 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
   styleUrl: './order-detail.scss'
 })
 export class OrderDetail implements OnInit {
- private route = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
   private cdr = inject(ChangeDetectorRef);
 
   public order: any;
-  // 1. Declaramos el FormGroup, pero NO lo inicializamos aquí.
-  statusForm!: FormGroup; 
+  // Declaramos el FormGroup, pero lo inicializaremos en ngOnInit
+  statusForm!: FormGroup;
 
   orderStatuses = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
 
@@ -27,11 +29,10 @@ export class OrderDetail implements OnInit {
     if (orderId) {
       this.orderService.getOrderById(orderId).subscribe(data => {
         this.order = data;
-        
-        // 2. INICIALIZAMOS EL FORMULARIO AQUÍ, una vez que tenemos los datos.
+
+        // Inicializamos el formulario aquí, con el valor y un validador
         this.statusForm = new FormGroup({
-          // Le damos el estado actual del pedido como valor inicial.
-          status: new FormControl(this.order.status) 
+          status: new FormControl(this.order.status, [Validators.required])
         });
 
         this.cdr.detectChanges();
@@ -39,20 +40,29 @@ export class OrderDetail implements OnInit {
     }
   }
 
+  // Este es el método que se llama al hacer clic
   updateStatus(): void {
-    // La lógica de 'updateStatus' no necesita cambiar
+    console.log('Intentando actualizar estado...'); // Log para depurar
+
+    // Añadimos una guarda para asegurarnos de que el formulario existe
+    if (!this.statusForm) {
+      console.error('El formulario de estado no está inicializado.');
+      return;
+    }
+
     if (this.statusForm.valid && this.order) {
       const newStatus = this.statusForm.value.status;
       if (newStatus) {
         this.orderService.updateOrderStatus(this.order._id, newStatus)
           .subscribe(updatedOrder => {
             this.order = updatedOrder;
-            alert('¡Estado del pedido actualizado con éxito!');
-            // Volvemos a inicializar el formulario con el nuevo estado
+            // Rellenamos el formulario de nuevo con el nuevo estado
             this.statusForm.patchValue({ status: this.order.status });
+            alert('¡Estado del pedido actualizado con éxito!');
           });
       }
+    } else {
+      console.log('El formulario no es válido:', this.statusForm.errors);
     }
   }
-  
 }

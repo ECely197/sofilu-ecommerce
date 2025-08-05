@@ -32,7 +32,7 @@ admin.initializeApp({
 // ==========================================================================
 // 3. MIDDLEWARES
 // ==========================================================================
-const authMiddleware = require('./middleware/authMiddleware');
+const { authMiddleware, adminOnly } = require("./middleware/authMiddleware");
 app.use(cors());
 app.use(express.json());
 
@@ -73,7 +73,7 @@ app.get("/api/products/:id", async (req, res) => {
   }
 });
 
-app.post("/api/products", async (req, res) => {
+app.post("/api/products", [authMiddleware, adminOnly], async (req, res) => {
   const newProduct = new Product(req.body);
   try {
     const savedProduct = await newProduct.save();
@@ -83,7 +83,7 @@ app.post("/api/products", async (req, res) => {
   }
 });
 
-app.put("/api/products/:id", authMiddleware, async (req, res) => {
+app.put("/api/products/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
@@ -101,24 +101,28 @@ app.put("/api/products/:id", authMiddleware, async (req, res) => {
   }
 });
 
-app.delete("/api/products/:id", authMiddleware, async (req, res) => {
-  try {
-    // Usamos el método de Mongoose 'findByIdAndDelete' para buscar y borrar en un solo paso.
-    const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+app.delete(
+  "/api/products/:id",
+  [authMiddleware, adminOnly],
+  async (req, res) => {
+    try {
+      // Usamos el método de Mongoose 'findByIdAndDelete' para buscar y borrar en un solo paso.
+      const deletedProduct = await Product.findByIdAndDelete(req.params.id);
 
-    if (!deletedProduct) {
-      // Si no se encuentra un producto con ese ID, devolvemos un 404.
-      return res
-        .status(404)
-        .json({ message: "Producto no encontrado para eliminar" });
+      if (!deletedProduct) {
+        // Si no se encuentra un producto con ese ID, devolvemos un 404.
+        return res
+          .status(404)
+          .json({ message: "Producto no encontrado para eliminar" });
+      }
+
+      // Si se elimina con éxito, enviamos un mensaje de confirmación.
+      res.json({ message: "Producto eliminado con éxito" });
+    } catch (error) {
+      res.status(500).json({ message: "Error al eliminar el producto" });
     }
-
-    // Si se elimina con éxito, enviamos un mensaje de confirmación.
-    res.json({ message: "Producto eliminado con éxito" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el producto" });
   }
-});
+);
 
 // --- Rutas Modulares ---
 app.use("/api/wishlist", wishlistRoutes);

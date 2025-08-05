@@ -39,22 +39,24 @@
                 <p class="text-secondary">{{ order.customerInfo.email }}</p>
             </div>
             <div class="card">
-  <h2 class="card-title">Estado y Notas</h2>
-  
-  <!-- Usamos ngSubmit para llamar a nuestro método updateStatus -->
-  <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
-    <div class="form-field">
-      <label for="status">Cambiar Estado del Pedido</label>
-      <select id="status" formControlName="status" class="form-input">
-        <option *ngFor="let status of orderStatuses" [value]="status">{{ status }}</option>
-      </select>
-    </div>
-    
-    <!-- En el futuro, aquí podría ir un campo para notas -->
-    
-    <button type="submit" class="submit-button">Guardar Cambios</button>
-  </form>
-</div>
+                <h2 class="card-title">Estado y Notas</h2>
+
+                <!-- Usamos ngSubmit para llamar a nuestro método updateStatus -->
+                <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
+                    <div class="form-field">
+                        <label for="status">Cambiar Estado del Pedido</label>
+                        <select id="status" formControlName="status" class="form-input">
+                            <option *ngFor="let status of orderStatuses" [value]="status">{{ status }}</option>
+                        </select>
+                    </div>
+
+                    <!-- En el futuro, aquí podría ir un campo para notas -->
+
+                    <button type="submit" class="submit-button" [disabled]="!statusForm || statusForm.invalid">
+                        Guardar Cambios
+                    </button>
+                </form>
+            </div>
         </aside>
     </div>
 </div>

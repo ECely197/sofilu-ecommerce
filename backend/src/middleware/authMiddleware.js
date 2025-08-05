@@ -27,4 +27,22 @@ async function authMiddleware(req, res, next) {
   }
 }
 
-module.exports = authMiddleware;
+function adminOnly(req, res, next) {
+  // Este middleware se ejecuta DESPUÉS de authMiddleware,
+  // por lo que ya tenemos la información del usuario en 'req.user'.
+  const user = req.user;
+
+  // Verificamos si el usuario tiene el 'custom claim' de admin.
+  if (user && user.admin === true) {
+    // Si es admin, le permitimos continuar a la siguiente función (la lógica de la ruta).
+    next();
+  } else {
+    // Si no es admin, le denegamos el acceso con un error 403 (Prohibido).
+    res.status(403).send({ message: 'Acceso denegado. Se requiere rol de administrador.' });
+  }
+}
+
+module.exports = {
+  authMiddleware,
+  adminOnly
+};

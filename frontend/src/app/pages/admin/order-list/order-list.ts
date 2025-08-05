@@ -13,7 +13,7 @@ import { OrderService } from '../../../services/order';
 export class OrderList implements OnInit {
   private orderService = inject(OrderService);
   public orders: any[] = []; // Usamos 'any' por ahora
-  
+
   private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
@@ -21,6 +21,18 @@ export class OrderList implements OnInit {
       this.orders = data;
       this.cdr.detectChanges();
     });
-    
+
+  }
+  deleteOrder(orderId: string): void {
+    if (confirm('¿Estás seguro de que quieres eliminar este pedido permanentemente?')) {
+      this.orderService.deleteOrder(orderId).subscribe({
+        next: () => {
+          this.orders = this.orders.filter(order => order._id !== orderId);
+          this.cdr.detectChanges();
+        },
+        error: (err) => alert('Error al eliminar el pedido.')
+      });
+      this.cdr.detectChanges();
+    }
   }
 }

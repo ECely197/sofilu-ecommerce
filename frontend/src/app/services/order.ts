@@ -27,4 +27,9 @@ export class OrderService {
     // Hacemos una petición POST, enviando los datos del cliente y los ítems.
     return this.http.post<any>(this.apiUrl, orderData);
   }
+
+  deleteOrder(orderId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${orderId}`);
+  }
+
 }

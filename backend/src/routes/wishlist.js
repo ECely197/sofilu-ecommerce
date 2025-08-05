@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Wishlist = require('../models/Wishlist');
 
+const { authMiddleware, adminOnly } = require("./middleware/authMiddleware");
+
 // --- OBTENER LA WISHLIST DE UN USUARIO ---
 // GET /api/wishlist/:userId
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', [authMiddleware], async (req, res) => {
   try {
     const wishlist = await Wishlist.findOne({ userId: req.params.userId }).populate('products');
     if (!wishlist) {
@@ -21,7 +23,7 @@ router.get('/:userId', async (req, res) => {
 
 // --- AÑADIR UN PRODUCTO A LA WISHLIST ---
 // POST /api/wishlist/:userId
-router.post('/:userId', async (req, res) => {
+router.post('/:userId', [authMiddleware], async (req, res) => {
   const { productId } = req.body;
   try {
     // Buscamos la wishlist del usuario. Usamos 'findOneAndUpdate' para buscar y actualizar.
@@ -41,7 +43,7 @@ router.post('/:userId', async (req, res) => {
 
 // --- ELIMINAR UN PRODUCTO DE LA WISHLIST ---
 // DELETE /api/wishlist/:userId/:productId
-router.delete('/:userId/:productId', async (req, res) => {
+router.delete('/:userId/:productId', [authMiddleware], async (req, res) => {
   try {
     // Usamos '$pull' para eliminar un valor específico de un array.
     const updatedWishlist = await Wishlist.findOneAndUpdate(

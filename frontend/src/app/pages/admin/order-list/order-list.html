@@ -22,19 +22,19 @@
         <td>{{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }}</td>
         <td>
           <!-- En el futuro, el color cambiará según el estado -->
-          <span class="status-chip" 
-      [ngClass]="{
+          <span class="status-chip" [ngClass]="{
         'procesando': order.status === 'Procesando',
         'enviado': order.status === 'Enviado',
         'entregado': order.status === 'Entregado',
         'cancelado': order.status === 'Cancelado'
       }">
-  {{ order.status }}
-</span>
+            {{ order.status }}
+          </span>
         </td>
         <td>
           <div class="action-buttons">
-            <a [routerLink]="['/admin/orders', order._id]" class="action-button">Ver Detalles</a>
+            <a [routerLink]="['/admin/orders', order._id]" class="action-button">Detalles</a>
+            <button (click)="deleteOrder(order._id)" class="action-button delete">Eliminar</button>
           </div>
         </td>
       </tr>
