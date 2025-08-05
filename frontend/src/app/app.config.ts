@@ -1,46 +1,38 @@
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter, withHashLocation } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-// Importa todo lo necesario de HttpClient en una línea
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideZonelessChangeDetection, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-// Importa tu interceptor
+// Importa tu interceptor con el nombre de archivo correcto
 import { authInterceptor } from './interceptors/auth-interceptor';
-
-// Asumo que tienes tus credenciales de Firebase en un archivo de entorno,
-// pero por ahora lo dejo como lo tenías.
-const firebaseConfig = {
-  projectId: "sofilu-ecommerce",
-  appId: "1:111482082352:web:641d8709858152a60149f5",
-  storageBucket: "sofilu-ecommerce.firebasestorage.app",
-  apiKey: "AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM",
-  authDomain: "sofilu-ecommerce.firebaseapp.com",
-  messagingSenderId: "111482082352",
-  measurementId: "G-540KE76XXS"
-};
+// Importa tus credenciales desde el archivo de entorno
+import { environment } from '../environments/environment.prod';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZonelessChangeDetection(), // Nota: zoneless es avanzado, asegúrate de que es lo que quieres.
+    // 1. Configuración del Enrutador (una sola vez)
     provideRouter(routes), 
-    provideClientHydration(withEventReplay()),
-    provideRouter(routes),
     
-    // --- ESTA ES LA LÍNEA UNIFICADA Y CORRECTA ---
-    // Provee HttpClient, habilita fetch Y registra nuestro interceptor, todo en una sola llamada.
+    // 2. Configuración de HttpClient (con interceptor)
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     
-    // Configuración de Firebase
-    provideFirebaseApp(() => initializeApp(firebaseConfig)), 
+    // 3. Habilitar Animaciones
+    provideAnimations(),
+    
+    // 4. Configuración de Firebase (usando las credenciales de 'environment')
+    provideFirebaseApp(() => initializeApp(environment.firebase)), 
     provideAuth(() => getAuth()), 
     provideStorage(() => getStorage()),
-    
-    provideAnimations()
+
+    // 5. Habilitar los Módulos de Formularios (necesarios para ReactiveFormsModule)
+    // Aunque son módulos y no funciones 'provide', en la nueva configuración 'standalone'
+    // se pueden importar directamente en el array de providers.
+    FormsModule,
+    ReactiveFormsModule
   ]
 };

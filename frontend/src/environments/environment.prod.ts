@@ -1,7 +1,17 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://sofilu-ecommerce-api.onrender.com', // La llenaremos después
+
+  // ¡La URL de tu API en Render!
+  apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
+
+  // Las credenciales de Firebase son las mismas.
   firebase: {
-    // ... Tus credenciales de Firebase van aquí ...
+    apiKey: "AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM",
+    authDomain: "sofilu-ecommerce.firebaseapp.com",
+    projectId: "sofilu-ecommerce",
+    storageBucket: "sofilu-ecommerce.firebasestorage.app",
+    messagingSenderId: "111482082352",
+    appId: "1:111482082352:web:641d8709858152a60149f5",
+    measurementId: "G-540KE76XXS"
   }
 };
