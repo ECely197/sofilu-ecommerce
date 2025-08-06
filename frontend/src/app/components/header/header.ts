@@ -1,4 +1,4 @@
-import { Component, inject, HostBinding, HostListener, ChangeDetectorRef  } from '@angular/core';
+import { Component, inject, HostBinding, HostListener, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -17,14 +17,18 @@ import { Observable } from 'rxjs';
   styleUrl: './header.scss',   // Usando tu convención de nombres
   animations: [
     trigger('flyInOut', [
+      // Transición para cuando el elemento entra en la vista
       transition(':enter', [
-        style({ transform: 'scale(0.95) translateY(-10px)', opacity: 0 }),
-        animate('150ms cubic-bezier(0.4, 0, 0.2, 1)', 
-                style({ transform: 'scale(1) translateY(0)', opacity: 1 }))
+        // Estado inicial: invisible y ligeramente desplazado/escalado
+        style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
+        // Animación hacia el estado final
+        animate('150ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({ opacity: 1, transform: 'scale(1) translateY(0)' }))
       ]),
+      // Transición para cuando el elemento sale de la vista
       transition(':leave', [
-        animate('150ms cubic-bezier(0.4, 0, 0.2, 1)', 
-                style({ transform: 'scale(0.95) translateY(-10px)', opacity: 0 }))
+        animate('150ms cubic-bezier(0.4, 0, 0.2, 1)',
+          style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }))
       ])
     ])
   ]
@@ -44,20 +48,22 @@ export class Header {
 
   private isScrolled = false;
 
+  private elementRef = inject(ElementRef);
+
   @HostBinding('class.scrolled') get scrolled() {
     return this.isScrolled;
   }
 
-   @HostListener('window:scroll')
+  @HostListener('window:scroll')
   onWindowScroll() {
     const scrollPosition = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    
+
     // Guardamos el estado anterior para ver si ha cambiado
     const wasScrolled = this.isScrolled;
 
     // Actualizamos el nuevo estado
     this.isScrolled = scrollPosition > 10;
-    
+
     // ¡EL PASO CLAVE!
     // Si el estado ha cambiado (de no-scrolled a scrolled, o viceversa),
     // forzamos a Angular a que lo detecte y actualice el HostBinding.
@@ -66,14 +72,27 @@ export class Header {
     }
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    // 1. Verificamos si el menú está abierto
+    // 2. Verificamos si el objetivo del clic (event.target) NO está contenido
+    //    dentro del elemento HTML de nuestro componente (this.elementRef.nativeElement).
+    if (this.isProfileMenuOpen && !this.elementRef.nativeElement.contains(event.target)) {
+      // Si ambas condiciones son ciertas, cerramos el menú.
+      this.isProfileMenuOpen = false;
+    }
+  }
+
   toggleProfileMenu(): void {
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
   }
-  
+
   logout(): void {
-    this.isProfileMenuOpen = false;
+    this.isProfileMenuOpen = false; // Cerramos el menú al hacer logout
     this.authService.logout()
       .then(() => this.router.navigate(['/']))
       .catch(error => console.error('Error al cerrar sesión:', error));
   }
+
+
 }

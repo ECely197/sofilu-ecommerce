@@ -9,7 +9,7 @@
   background-color: var(--soft-white);
   padding: 2.5rem;
   border-radius: 1rem;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 450px;
 }
@@ -23,6 +23,7 @@
 
 .form-field {
   margin-bottom: 1.5rem;
+
   label {
     display: block;
     margin-bottom: 0.5rem;
@@ -35,6 +36,7 @@
   padding: 0.75rem 1rem;
   border: 1px solid var(--soft-gray);
   border-radius: 0.5rem;
+
   &:focus {
     outline: none;
     border-color: var(--pastel-pink);
@@ -74,12 +76,56 @@
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.875rem;
+
   a {
     color: var(--pastel-pink);
     font-weight: 700;
     text-decoration: none;
+
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+// ... (al final del archivo)
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--soft-gray);
+  }
+
+  &::before {
+    margin-right: 0.5rem;
+  }
+
+  &::after {
+    margin-left: 0.5rem;
+  }
+}
+
+.google-button {
+  @extend .auth-button; // Hereda los estilos base de nuestros botones
+  background-color: white;
+  color: var(--text-charcoal);
+  border: 1px solid var(--soft-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+
+  &:hover {
+    background-color: var(--soft-gray);
+    opacity: 1; // Sobrescribimos la opacidad del hover
   }
 }

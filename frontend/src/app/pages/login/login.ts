@@ -5,10 +5,10 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../services/auth';
 
 @Component({
-  selector: 'app-login',standalone: true,
+  selector: 'app-login', standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
-  styleUrl: '../register/register.scss' 
+  styleUrl: '../register/register.scss'
 })
 export class Login {
   private authService = inject(AuthService);
@@ -37,4 +37,14 @@ export class Login {
         });
     }
   }
+
+  handleGoogleLogin(): void {
+    this.authService.loginWithGoogle()
+      .then(response => {
+        console.log('¡Inicio de sesión con Google exitoso!', response);
+        this.router.navigate(['/']);
+      })
+      .catch(error => console.error('Error en el inicio de sesión con Google:', error));
+  }
+
 }
