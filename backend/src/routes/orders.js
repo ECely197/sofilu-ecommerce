@@ -18,17 +18,31 @@ router.get("/", async (req, res) => {
 
 // --- ¡LA RUTA QUE FALTABA! OBTENER PEDIDOS DE UN USUARIO ESPECÍFICO ---
 // GET /api/orders/user/:userId
-router.get('/user/:userId', [authMiddleware], async (req, res) => {
-  // Verificamos que el usuario que pide los datos sea el dueño de esos datos
+router.get("/user/:userId", [authMiddleware], async (req, res) => {
+  console.log("BACKEND ORDERS: Petición recibida en /user/:userId"); // Log #6
+  console.log(
+    "BACKEND ORDERS: Buscando pedidos para el userId:",
+    req.params.userId
+  ); // Log #7
+
   if (req.user.uid !== req.params.userId) {
-    return res.status(403).json({ message: 'No tienes permiso para ver estos pedidos.' });
+    console.log(
+      "BACKEND ORDERS: ¡Acceso denegado! UID del token no coincide con el de la URL."
+    ); // Log de Seguridad
+    return res.status(403).json({ message: "No tienes permiso." });
   }
+
   try {
-    // Buscamos todos los pedidos que coincidan con el userId
-    const orders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 }).populate('items.product');
+    const orders = await Order.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 })
+      .populate("items.product");
+    console.log(`BACKEND ORDERS: Se encontraron ${orders.length} pedidos.`); // Log #8
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los pedidos del usuario' });
+    console.error("BACKEND ORDERS: Error en la base de datos:", error); // Log de Error
+    res
+      .status(500)
+      .json({ message: "Error al obtener los pedidos del usuario" });
   }
 });
 
@@ -49,16 +63,20 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
 router.post("/", [authMiddleware], async (req, res) => {
   try {
     const { customerInfo, items } = req.body;
+    // ¡Obtenemos el UID del usuario gracias al middleware!
+    const userId = req.user.uid; 
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "El carrito no puede estar vacío." });
+    }
+
     let totalAmount = 0;
     const processedItems = [];
 
     for (const item of items) {
-      // ¡Ahora Node.js sabrá qué es 'Product' en esta línea!
       const product = await Product.findById(item.product);
       if (!product) {
-        return res
-          .status(404)
-          .json({ message: `Producto con ID ${item.product} no encontrado.` });
+        return res.status(404).json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
       totalAmount += product.price * item.quantity;
       processedItems.push({
@@ -68,7 +86,9 @@ router.post("/", [authMiddleware], async (req, res) => {
       });
     }
 
+    // Creamos el nuevo documento de Pedido
     const newOrder = new Order({
+      userId: userId, // <-- ¡AÑADIMOS LA LÍNEA QUE FALTABA!
       customerInfo: customerInfo,
       items: processedItems,
       totalAmount: totalAmount,
@@ -76,6 +96,7 @@ router.post("/", [authMiddleware], async (req, res) => {
 
     const savedOrder = await newOrder.save();
     res.status(201).json(savedOrder);
+    
   } catch (error) {
     console.error("Error al crear el pedido:", error);
     res.status(400).json({ message: "Error al crear el pedido" });

@@ -16,33 +16,40 @@ import { take, filter } from 'rxjs/operators';
 export class MyOrdersComponent implements OnInit {
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
-  private router = inject(Router); // Inyectamos el Router
+  private router = inject(Router);
   
   public orders: any[] = [];
   public isLoadingOrders = true;
 
   ngOnInit(): void {
-    // Esta es la lógica que carga los pedidos para el usuario actual
+    console.log('MY-ORDERS COMPONENT: ngOnInit disparado. Esperando estado de autenticación...'); // Log #1
+    
     this.authService.currentUser$.pipe(
       filter(user => user !== undefined),
       take(1)
     ).subscribe(user => {
       if (user) {
-        this.orderService.getOrdersForUser(user.uid).subscribe(data => {
-          this.orders = data;
-          this.isLoadingOrders = false;
+        console.log('MY-ORDERS COMPONENT: Usuario encontrado. UID:', user.uid); // Log #2
+        this.isLoadingOrders = true;
+        this.orderService.getOrdersForUser(user.uid).subscribe({
+            next: (data) => {
+              console.log('MY-ORDERS COMPONENT: Pedidos recibidos de la API:', data); // Log #3
+              this.orders = data;
+              this.isLoadingOrders = false;
+            },
+            error: (err) => {
+              console.error('MY-ORDERS COMPONENT: ERROR en la llamada getOrdersForUser', err); // Log de Error Frontend
+              this.isLoadingOrders = false;
+            }
         });
       } else {
+        console.log('MY-ORDERS COMPONENT: No se encontró usuario en la sesión.'); // Log #4
         this.isLoadingOrders = false;
       }
     });
   }
 
-  // ¡AQUÍ ESTÁ EL MÉTODO QUE FALTABA!
-  // Se ejecutará cuando el usuario haga clic en el botón "Ver Detalles"
   viewOrderDetails(orderId: string): void {
-    // Por ahora, solo lo mostraremos en la consola.
-    // En el futuro, crearemos la página de detalle del pedido para el cliente.
     console.log('Navegar a la orden con ID:', orderId);
     // this.router.navigate(['/account/orders', orderId]);
   }

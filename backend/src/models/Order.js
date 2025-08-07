@@ -11,7 +11,7 @@ const orderItemSchema = new Schema({
 // Esta es la plantilla para el pedido completo
 const orderSchema = new Schema({
   // En un futuro, aquí iría el ID del usuario que hizo la compra
-  // userId: { type: String, required: true },
+  userId: { type: String, required: true },
   customerInfo: {
     name: { type: String, required: true },
     email: { type: String, required: true }

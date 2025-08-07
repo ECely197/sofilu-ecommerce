@@ -33,6 +33,7 @@ export class OrderService {
   }
 
   getOrdersForUser(userId: string): Observable<any[]> {
+    console.log('ORDER SERVICE: Haciendo petición a la URL:');
     return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
   }
 
