@@ -6,7 +6,7 @@ const addressSchema = new Schema({
   fullName: { type: String, required: true },
   phone: { type: String, required: true },
   streetAddress: { type: String, required: true },
-  addressDetails: { type: String }, // Detalles opcionales
+  addressDetails: { type: String },
   department: { type: String, required: true },
   city: { type: String, required: true },
   postalCode: { type: String, required: true },
@@ -15,16 +15,13 @@ const addressSchema = new Schema({
 });
 
 const userSchema = new Schema({
-  // Usamos el UID de Firebase como el _id de nuestro documento
-  _id: { type: String, required: true },
+  // ¡EL CAMBIO CLAVE!
+  // Ya no forzamos el _id a ser un String. Dejamos que Mongoose lo maneje,
+  // pero añadimos un campo 'uid' para guardar la referencia de Firebase.
+  uid: { type: String, required: true, unique: true, index: true },
   email: { type: String, required: true, unique: true },
   displayName: { type: String },
-  // Un usuario puede tener un array de direcciones
   addresses: [addressSchema] 
 });
-
-// Le decimos a Mongoose que no añada un campo '_id' adicional al subdocumento de dirección
-// addressSchema.set('id', false); // Esto puede ayudar a evitar conflictos
-// userSchema.set('_id', false); // El _id lo proveeremos nosotros
 
 module.exports = mongoose.model('User', userSchema);
