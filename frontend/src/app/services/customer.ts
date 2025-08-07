@@ -18,11 +18,15 @@ export class Customer {
 
   // --- MÉTODOS NUEVOS PARA DIRECCIONES ---
   getAddresses(uid: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${uid}/addresses`);
+    const url = `${this.apiUrl}/${uid}/addresses`;
+    console.log('CUSTOMER SERVICE: Haciendo petición GET a:', url); // Log #3
+    return this.http.get<any[]>(url);
   }
 
   addAddress(uid: string, addressData: any): Observable<any[]> {
-    return this.http.post<any[]>(`${this.apiUrl}/${uid}/addresses`, addressData);
+    const url = `${this.apiUrl}/${uid}/addresses`;
+    console.log('CUSTOMER SERVICE: Haciendo petición POST a:', url, 'con los datos:', addressData); // Log #C
+    return this.http.post<any[]>(url, addressData);
   }
 
   deleteAddress(uid: string, addressId: string): Observable<any[]> {

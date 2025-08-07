@@ -37,14 +37,17 @@ export class MyAddressesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('MY-ADDRESSES: ngOnInit disparado. Esperando usuario...'); // Log #1
     this.authService.currentUser$.pipe(
       filter(user => user !== undefined),
       take(1)
     ).subscribe(user => {
       this.currentUser = user;
       if (user) {
+        console.log('MY-ADDRESSES: Usuario encontrado. UID:', user.uid); // Log #2
         this.loadAddresses(user.uid);
       } else {
+        console.log('MY-ADDRESSES: No se encontró usuario.'); // Log #2.1
         this.isLoading = false;
       }
     });
@@ -52,20 +55,45 @@ export class MyAddressesComponent implements OnInit {
 
   loadAddresses(uid: string): void {
     this.isLoading = true;
-    this.customerService.getAddresses(uid).subscribe(data => {
-      this.addresses = data;
-      this.isLoading = false;
+    this.customerService.getAddresses(uid).subscribe({
+      next: (data) => {
+        console.log('MY-ADDRESSES: Direcciones recibidas de la API:', data); // Log #4
+        this.addresses = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('MY-ADDRESSES: ERROR al obtener direcciones', err); // Log de Error Frontend
+        this.isLoading = false;
+      }
     });
   }
 
-  submitAddress(): void {
-    if (this.addressForm.invalid || !this.currentUser) return;
+   submitAddress(): void {
+    console.log('ADDRESS FORM: Botón "Guardar Dirección" presionado.'); // Log #A
+
+    if (this.addressForm.invalid) {
+      console.error('ADDRESS FORM: El formulario es inválido. No se enviará.', this.addressForm.errors); // Log de Error
+      return;
+    }
+    if (!this.currentUser) {
+      console.error('ADDRESS FORM: No hay un usuario actual para asignar la dirección.'); // Log de Error
+      return;
+    }
     
-    this.customerService.addAddress(this.currentUser.uid, this.addressForm.value)
-      .subscribe(updatedAddresses => {
-        this.addresses = updatedAddresses;
-        this.showForm = false;
-        this.addressForm.reset();
+    const addressData = this.addressForm.getRawValue();
+    console.log('ADDRESS FORM: Datos del formulario a enviar:', addressData); // Log #B
+
+    this.customerService.addAddress(this.currentUser.uid, addressData)
+      .subscribe({
+        next: (updatedAddresses) => {
+          console.log('ADDRESS FORM: Dirección guardada con éxito. API devolvió:', updatedAddresses); // Log #D
+          this.addresses = updatedAddresses;
+          this.showForm = false;
+          this.addressForm.reset();
+        },
+        error: (err) => {
+          console.error('ADDRESS FORM: ERROR al guardar la dirección', err); // Log de Error Frontend
+        }
       });
   }
   
