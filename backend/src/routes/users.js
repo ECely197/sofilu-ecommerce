@@ -22,44 +22,51 @@ router.get('/', [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // --- OBTENER TODAS LAS DIRECCIONES DE UN USUARIO ---
+// GET /api/users/:uid/addresses
 router.get('/:uid/addresses', [authMiddleware], async (req, res) => {
   if (req.user.uid !== req.params.uid) return res.status(403).json({ message: 'No autorizado' });
   try {
-    // Usamos el modelo 'User' para buscar en MongoDB
     const user = await User.findById(req.params.uid).select('addresses');
-    if (!user) return res.status(404).json({ message: 'Usuario no encontrado en la base de datos local' });
+    if (!user) {
+      // Si el usuario no existe en nuestra DB, no tiene direcciones
+      return res.json([]); 
+    }
     res.json(user.addresses);
   } catch (error) {
+    console.error("Error al obtener direcciones:", error);
     res.status(500).json({ message: 'Error al obtener las direcciones' });
   }
 });
 
 // --- AÑADIR UNA NUEVA DIRECCIÓN ---
+// POST /api/users/:uid/addresses
 router.post('/:uid/addresses', [authMiddleware], async (req, res) => {
   if (req.user.uid !== req.params.uid) return res.status(403).json({ message: 'No autorizado' });
   try {
     let user = await User.findById(req.params.uid);
+    
+    // Si el usuario no existe en nuestra DB de MongoDB, lo creamos
     if (!user) {
-      // Si el usuario no existe, lo creamos y le añadimos la dirección
       user = new User({
         _id: req.user.uid,
         email: req.user.email,
         displayName: req.user.displayName || '',
-        addresses: [req.body] // Añade la dirección directamente
+        addresses: []
       });
-      await user.save();
-      return res.status(201).json(user.addresses);
     }
-    // Si el usuario existe, añadimos la dirección normalmente
+    
     user.addresses.push(req.body);
-    await user.save();
-    res.status(201).json(user.addresses);
+    const savedUser = await user.save();
+    res.status(201).json(savedUser.addresses);
+
   } catch (error) {
-    res.status(500).json({ message: 'Error al añadir la dirección', error });
+    console.error("Error al añadir dirección:", error);
+    res.status(500).json({ message: 'Error al añadir la dirección' });
   }
 });
 
 // --- ELIMINAR UNA DIRECCIÓN ---
+// DELETE /api/users/:uid/addresses/:addressId
 router.delete('/:uid/addresses/:addressId', [authMiddleware], async (req, res) => {
   if (req.user.uid !== req.params.uid) return res.status(403).json({ message: 'No autorizado' });
   try {
@@ -68,8 +75,10 @@ router.delete('/:uid/addresses/:addressId', [authMiddleware], async (req, res) =
       { $pull: { addresses: { _id: req.params.addressId } } },
       { new: true }
     );
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
     res.json(user.addresses);
   } catch (error) {
+    console.error("Error al eliminar dirección:", error);
     res.status(500).json({ message: 'Error al eliminar la dirección' });
   }
 });
