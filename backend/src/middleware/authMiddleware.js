@@ -1,48 +1,42 @@
 const admin = require('firebase-admin');
 
+// Middleware para verificar el token de Firebase
 async function authMiddleware(req, res, next) {
-  // 1. Buscamos el token en la cabecera 'Authorization' de la petición.
-  // El formato estándar es "Bearer <token>".
   const headerToken = req.headers.authorization;
   if (!headerToken || !headerToken.startsWith('Bearer ')) {
     return res.status(401).send({ message: 'No se proporcionó token o el formato es incorrecto.' });
   }
 
-  // 2. Extraemos el token puro.
   const idToken = headerToken.split('Bearer ')[1];
 
   try {
-    // 3. Le pedimos a Firebase Admin que verifique si el token es válido.
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
-    // 4. Si el token es válido, guardamos la información del usuario en la petición (req)
-    // para que las rutas que vienen después puedan usarla.
+    // --- Log de Depuración #1 ---
+    // Esto nos mostrará el contenido completo del token verificado.
+    console.log('--- AuthMiddleware: Token Verificado ---');
+    console.log(decodedToken);
+    
+    // Añadimos el objeto de usuario decodificado al objeto 'req'
     req.user = decodedToken;
     
-    // 5. 'next()' es la palabra clave que le dice al guardia: "Todo en orden, deja pasar a la siguiente función".
+    // Damos paso a la siguiente función en la cadena (la lógica de la ruta)
     next();
   } catch (error) {
-    console.error('Error al verificar el token:', error);
+    console.error("--- AuthMiddleware: ERROR al verificar token ---", error);
     return res.status(403).send({ message: 'Token inválido o expirado.' });
   }
 }
 
+// Middleware para verificar si el usuario es admin
 function adminOnly(req, res, next) {
-  // Este middleware se ejecuta DESPUÉS de authMiddleware,
-  // por lo que ya tenemos la información del usuario en 'req.user'.
-  const user = req.user;
-
-  // Verificamos si el usuario tiene el 'custom claim' de admin.
-  if (user && user.admin === true) {
-    // Si es admin, le permitimos continuar a la siguiente función (la lógica de la ruta).
-    next();
+  // Este middleware asume que 'authMiddleware' ya se ejecutó
+  if (req.user && req.user.admin === true) {
+    next(); // Si es admin, puede continuar
   } else {
-    // Si no es admin, le denegamos el acceso con un error 403 (Prohibido).
+    // Si no es admin, se le deniega el acceso
     res.status(403).send({ message: 'Acceso denegado. Se requiere rol de administrador.' });
   }
 }
 
-module.exports = {
-  authMiddleware,
-  adminOnly
-};
+module.exports = { authMiddleware, adminOnly };

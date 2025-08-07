@@ -60,14 +60,32 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // --- CREAR UN NUEVO PEDIDO ---
+// Protegido: solo usuarios logueados pueden crear pedidos
 router.post("/", [authMiddleware], async (req, res) => {
   try {
     const { customerInfo, items } = req.body;
-    // ¡Obtenemos el UID del usuario gracias al middleware!
-    const userId = req.user.uid; 
+
+    // --- Log de Depuración #2 ---
+    // Verificamos qué hay en req.user justo cuando llega a la ruta
+    console.log("--- Ruta POST /api/orders: Contenido de req.user ---");
+    console.log(req.user);
+
+    // Obtenemos el UID del usuario desde el token verificado por el middleware
+    const userId = req.user.uid;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "FATAL: userId no fue encontrado en el token después de la verificación del middleware.",
+        });
+    }
 
     if (!items || items.length === 0) {
-      return res.status(400).json({ message: "El carrito no puede estar vacío." });
+      return res
+        .status(400)
+        .json({ message: "El carrito no puede estar vacío." });
     }
 
     let totalAmount = 0;
@@ -76,7 +94,9 @@ router.post("/", [authMiddleware], async (req, res) => {
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
-        return res.status(404).json({ message: `Producto con ID ${item.product} no encontrado.` });
+        return res
+          .status(404)
+          .json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
       totalAmount += product.price * item.quantity;
       processedItems.push({
@@ -86,9 +106,8 @@ router.post("/", [authMiddleware], async (req, res) => {
       });
     }
 
-    // Creamos el nuevo documento de Pedido
     const newOrder = new Order({
-      userId: userId, // <-- ¡AÑADIMOS LA LÍNEA QUE FALTABA!
+      userId: userId,
       customerInfo: customerInfo,
       items: processedItems,
       totalAmount: totalAmount,
@@ -96,9 +115,8 @@ router.post("/", [authMiddleware], async (req, res) => {
 
     const savedOrder = await newOrder.save();
     res.status(201).json(savedOrder);
-    
   } catch (error) {
-    console.error("Error al crear el pedido:", error);
+    console.error("--- Ruta POST /api/orders: ERROR ---", error);
     res.status(400).json({ message: "Error al crear el pedido" });
   }
 });
