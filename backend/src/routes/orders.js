@@ -16,8 +16,24 @@ router.get("/", async (req, res) => {
   }
 });
 
-// --- OBTENER UN PEDIDO POR SU ID ---
-router.get("/:id", async (req, res) => {
+// --- ¡LA RUTA QUE FALTABA! OBTENER PEDIDOS DE UN USUARIO ESPECÍFICO ---
+// GET /api/orders/user/:userId
+router.get('/user/:userId', [authMiddleware], async (req, res) => {
+  // Verificamos que el usuario que pide los datos sea el dueño de esos datos
+  if (req.user.uid !== req.params.userId) {
+    return res.status(403).json({ message: 'No tienes permiso para ver estos pedidos.' });
+  }
+  try {
+    // Buscamos todos los pedidos que coincidan con el userId
+    const orders = await Order.find({ userId: req.params.userId }).sort({ createdAt: -1 }).populate('items.product');
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los pedidos del usuario' });
+  }
+});
+
+// --- OBTENER UN PEDIDO POR SU ID (Para el Admin) ---
+router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("items.product");
     if (!order) {

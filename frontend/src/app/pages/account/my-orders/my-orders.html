@@ -1,0 +1,30 @@
+<section class="orders-section">
+  <h2 class="section-title">Historial de Pedidos</h2>
+
+  <div *ngIf="isLoadingOrders" class="loading-state">
+    Cargando tus pedidos...
+  </div>
+
+  <div *ngIf="!isLoadingOrders && orders.length > 0" class="orders-list">
+    <div *ngFor="let order of orders" class="order-card">
+      <p class="order-meta">{{ order.createdAt | date:'longDate' }} • TOTAL: {{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }} • PEDIDO #{{ order._id.slice(-6) }}</p>
+      <div class="order-items">
+        <div *ngFor="let item of order.items" class="order-item">
+          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+          <div>
+            <h3 class="item-name">{{ item.product.name }}</h3>
+            <p class="item-quantity">{{ item.quantity }} artículo(s)</p>
+          </div>
+        </div>
+      </div>
+      <button (click)="viewOrderDetails(order._id)" class="details-button" appRipple>
+        Ver Detalles del Pedido
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="!isLoadingOrders && orders.length === 0" class="empty-state">
+    <h3>Aún no has realizado ningún pedido.</h3>
+    <a routerLink="/products" class="explore-button" appRipple>Empezar a comprar</a>
+  </div>
+</section>

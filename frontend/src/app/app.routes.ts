@@ -5,6 +5,7 @@ import { AdminLayout} from './layouts/admin-layout/admin-layout';
 
 // Guards
 import { AuthGuard } from './guards/auth-guard'; // ¡Importamos la CLASE!
+import { LoginGuard } from './guards/login-guard';
 
 // Componentes de Página del Cliente
 import { Home} from './pages/home/home';
@@ -16,6 +17,10 @@ import { OrderConfirmation } from './pages/order-confirmation/order-confirmation
 import { Login } from './pages/login/login';
 import { Register} from './pages/register/register';
 import { WishlistComponent } from './pages/wishlist/wishlist';
+import { Account } from './pages/account/account/account';
+import { MyOrdersComponent } from './pages/account/my-orders/my-orders';
+import { MyAddressesComponent } from './pages/account/my-addresses/my-addresses';
+import { MyDetailsComponent } from './pages/account/my-details/my-details';
 
 // Componentes de Página del Admin
 import { Dashboard } from './pages/admin/dashboard/dashboard';
@@ -39,6 +44,32 @@ export const routes: Routes = [
   { path: 'login', component: Login},
   { path: 'register', component: Register },
   { path: 'wishlist', component: WishlistComponent },
+
+// --- Rutas del Área de Cuenta (Protegidas) ---
+{
+    path: 'account',
+    component: Account, // La "carcasa" con la barra lateral
+    canActivate: [LoginGuard],
+    children: [ // ¡Rutas hijas!
+      {
+        path: '', // Si la ruta es solo /account, redirige a /account/orders
+        redirectTo: 'orders',
+        pathMatch: 'full'
+      },
+      {
+        path: 'orders',
+        component: MyOrdersComponent
+      },
+      {
+        path: 'addresses',
+        component: MyAddressesComponent
+      },
+      {
+        path: 'details',
+        component: MyDetailsComponent
+      }
+    ]
+  }, 
 
   // --- Rutas del Panel de Administración (Protegidas) ---
   {

@@ -32,4 +32,8 @@ export class OrderService {
     return this.http.delete<any>(`${this.apiUrl}/${orderId}`);
   }
 
+  getOrdersForUser(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
+  }
+
 }
