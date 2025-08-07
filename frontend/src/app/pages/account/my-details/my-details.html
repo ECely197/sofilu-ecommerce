@@ -1,1 +1,14 @@
-<p>my-details works!</p>
+<section class="account-section">
+  <h2 class="section-title">Detalles de la Cuenta</h2>
+  <div *ngIf="currentUser$ | async as user" class="details-card">
+    <div class="detail-row">
+      <strong>Nombre:</strong>
+      <span>{{ user.displayName || 'No especificado' }}</span>
+    </div>
+    <div class="detail-row">
+      <strong>Email:</strong>
+      <span>{{ user.email }}</span>
+    </div>
+    <!-- En el futuro, aquí iría un botón para "Editar" -->
+  </div>
+</section>

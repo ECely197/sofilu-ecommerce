@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router'; // Importamos Router y RouterLink
 import { AuthService } from '../../../services/auth';
@@ -17,7 +17,7 @@ export class MyOrdersComponent implements OnInit {
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
   private router = inject(Router);
-  
+  private cdr = inject(ChangeDetectorRef);
   public orders: any[] = [];
   public isLoadingOrders = true;
 
@@ -36,15 +36,18 @@ export class MyOrdersComponent implements OnInit {
               console.log('MY-ORDERS COMPONENT: Pedidos recibidos de la API:', data); // Log #3
               this.orders = data;
               this.isLoadingOrders = false;
+              this.cdr.detectChanges(); // <-- Aquí actualiza la vista después de recibir los datos
             },
             error: (err) => {
               console.error('MY-ORDERS COMPONENT: ERROR en la llamada getOrdersForUser', err); // Log de Error Frontend
               this.isLoadingOrders = false;
+              this.cdr.detectChanges(); // <-- Aquí actualiza la vista después de un error
             }
         });
       } else {
         console.log('MY-ORDERS COMPONENT: No se encontró usuario en la sesión.'); // Log #4
         this.isLoadingOrders = false;
+        
       }
     });
   }

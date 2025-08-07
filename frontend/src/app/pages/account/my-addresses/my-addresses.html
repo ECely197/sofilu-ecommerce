@@ -1,1 +1,68 @@
-<p>my-addresses works!</p>
+<section class="account-section">
+  <div class="section-header">
+    <h2 class="section-title">Mis Direcciones</h2>
+    <button (click)="showForm = !showForm" class="add-button" appRipple>
+      {{ showForm ? 'Cancelar' : '+ Añadir Dirección' }}
+    </button>
+  </div>
+
+  <!-- Formulario para añadir/editar dirección -->
+  <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="submitAddress()" class="address-form card-style">
+    <h3 class="form-title">Añadir una nueva dirección</h3>
+    
+    <div class="form-grid">
+      <div class="form-field full-width">
+        <label for="fullName">Nombre completo (nombre y apellido)</label>
+        <input id="fullName" type="text" formControlName="fullName" class="form-input">
+      </div>
+      <div class="form-field full-width">
+        <label for="phone">Número de teléfono</label>
+        <input id="phone" type="tel" formControlName="phone" class="form-input">
+      </div>
+      <div class="form-field full-width">
+        <label for="streetAddress">Calle/Número/Apartamento</label>
+        <input id="streetAddress" type="text" formControlName="streetAddress" class="form-input">
+      </div>
+      <div class="form-field full-width">
+        <label for="addressDetails">Detalles adicionales (opcional)</label>
+        <input id="addressDetails" type="text" formControlName="addressDetails" class="form-input" placeholder="Ej: Golpear al lado de la reja roja">
+      </div>
+      <div class="form-field">
+        <label for="department">Departamento</label>
+        <input id="department" type="text" formControlName="department" class="form-input">
+      </div>
+      <div class="form-field">
+        <label for="city">Ciudad/Municipio</label>
+        <input id="city" type="text" formControlName="city" class="form-input">
+      </div>
+      <div class="form-field full-width">
+        <label for="postalCode">Código postal</label>
+        <input id="postalCode" type="text" formControlName="postalCode" class="form-input">
+      </div>
+    </div>
+    
+    <button type="submit" [disabled]="addressForm.invalid" class="submit-button" appRipple>
+      Guardar Dirección
+    </button>
+  </form>
+
+  <!-- Lista de direcciones guardadas -->
+  <div *ngIf="!showForm" class="address-list">
+    <div *ngFor="let addr of addresses" class="address-card card-style">
+      <div>
+        <strong>{{ addr.fullName }}</strong>
+        <p>{{ addr.streetAddress }}</p>
+        <p>{{ addr.addressDetails }}</p>
+        <p>{{ addr.city }}, {{ addr.department }}, {{ addr.postalCode }}</p>
+        <p>Teléfono: {{ addr.phone }}</p>
+      </div>
+      <div class="card-actions">
+        <button class="action-link">Editar</button>
+        <button (click)="deleteAddress(addr._id)" class="action-link delete">Eliminar</button>
+      </div>
+    </div>
+    <div *ngIf="addresses.length === 0">
+      <p>No tienes ninguna dirección guardada.</p>
+    </div>
+  </div>
+</section>
