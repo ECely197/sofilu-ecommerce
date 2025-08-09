@@ -4,19 +4,19 @@
   overflow: hidden;
   margin: 1rem;
   background-color: white; // Aseguramos fondo blanco
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08); // Una sombra más suave
-  
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); // Una sombra más suave
+
   // --- NUEVOS ESTILOS PARA LA ANIMACIÓN 3D ---
   // Aplicamos una transición a la transformación
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   // 'transform-style' es necesario para que las transformaciones 3D de los hijos funcionen
   transform-style: preserve-3d;
 
   &:hover {
     // Al pasar el ratón, elevamos la tarjeta y le damos una sombra más pronunciada
     transform: scale(1.05) perspective(1000px) rotateY(0deg) rotateX(0deg);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -44,4 +44,53 @@
   color: inherit;
   display: block; // Importante para que ocupe todo el espacio
   perspective: 1000px; // La "profundidad" de nuestra escena 3D
+}
+
+.image-container {
+  position: relative;
+  overflow: hidden; // Para que las burbujas no se salgan
+}
+
+.action-bubbles {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  // Animación de entrada
+  transform: translateX(150%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Cuando el ratón pasa por encima de la tarjeta, las burbujas aparecen
+.card:hover .action-bubbles {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.bubble-button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--soft-gray);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  font-size: 1.25rem;
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: white;
+  }
+
+  &.active {
+    color: red; // El corazón se pone rojo si está en la wishlist
+  }
 }

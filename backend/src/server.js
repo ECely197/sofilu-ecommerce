@@ -61,6 +61,30 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
+// --- NUEVA RUTA: OBTENER PRODUCTOS DESTACADOS (FEATURED) ---
+// GET /api/products/featured
+app.get("/section/featured", async (req, res) => {
+  try {
+    // Busca hasta 4 productos que estén marcados como 'isFeatured'
+    const featuredProducts = await Product.find({ isFeatured: true }).limit(4);
+    res.json(featuredProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener productos destacados" });
+  }
+});
+
+// --- NUEVA RUTA: OBTENER PRODUCTOS EN OFERTA (ON SALE) ---
+// GET /api/products/sale
+app.get("/section/sale", async (req, res) => {
+  try {
+    // Busca todos los productos que estén marcados como 'isOnSale'
+    const saleProducts = await Product.find({ isOnSale: true });
+    res.json(saleProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener productos en oferta" });
+  }
+});
+
 app.get("/api/products/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);

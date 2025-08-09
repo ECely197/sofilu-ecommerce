@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
@@ -17,7 +17,7 @@ import { RippleDirective } from '../../../directives/ripple';
 export class MyAddressesComponent implements OnInit {
   private authService = inject(AuthService);
   private customerService = inject(Customer);
-
+  private cdr = inject(ChangeDetectorRef);
   addresses: any[] = [];
   isLoading = true;
   showForm = false;
@@ -46,9 +46,11 @@ export class MyAddressesComponent implements OnInit {
       if (user) {
         console.log('MY-ADDRESSES: Usuario encontrado. UID:', user.uid); // Log #2
         this.loadAddresses(user.uid);
+        this.cdr.detectChanges();
       } else {
         console.log('MY-ADDRESSES: No se encontró usuario.'); // Log #2.1
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -60,10 +62,12 @@ export class MyAddressesComponent implements OnInit {
         console.log('MY-ADDRESSES: Direcciones recibidas de la API:', data); // Log #4
         this.addresses = data;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('MY-ADDRESSES: ERROR al obtener direcciones', err); // Log de Error Frontend
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -90,9 +94,11 @@ export class MyAddressesComponent implements OnInit {
           this.addresses = updatedAddresses;
           this.showForm = false;
           this.addressForm.reset();
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('ADDRESS FORM: ERROR al guardar la dirección', err); // Log de Error Frontend
+          this.cdr.detectChanges();
         }
       });
   }
@@ -103,6 +109,9 @@ export class MyAddressesComponent implements OnInit {
     this.customerService.deleteAddress(this.currentUser.uid, addressId)
       .subscribe(updatedAddresses => {
         this.addresses = updatedAddresses;
+        this.cdr.detectChanges();
       });
   }
 }
+
+

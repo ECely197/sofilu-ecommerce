@@ -21,7 +21,7 @@ export class ProductServices {
 
   private http = inject(HttpClient);
 
-  private apiUrl = `${environment.apiUrl}/products`; 
+  private apiUrl = `${environment.apiUrl}/products`;
 
   constructor() { }
 
@@ -57,6 +57,15 @@ export class ProductServices {
   deleteProduct(productId: string): Observable<any> {
     // Hacemos una petición DELETE a la URL específica del producto.
     return this.http.delete<any>(`${this.apiUrl}/${productId}`);
+  }
+
+  getFeaturedProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${environment.apiUrl}/products/section/featured`);
+  }
+
+  // --- MÉTODO NUEVO ---
+  getSaleProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${environment.apiUrl}/products/section/sale`);
   }
 
 }

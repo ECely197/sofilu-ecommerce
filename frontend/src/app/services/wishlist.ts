@@ -11,12 +11,12 @@ import { environment } from '../../environments/environment.prod';
 export class WishlistService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private apiUrl = `${environment.apiUrl}/wishlist`; 
-  
+  private apiUrl = `${environment.apiUrl}/wishlist`;
+
   // Signals para el estado local
   wishlistProductIds = signal<string[]>([]);
   wishlistProducts = signal<Product[]>([]);
-  
+
   constructor() {
     // Nos suscribimos a los cambios del usuario para cargar/limpiar la wishlist
     this.authService.currentUser$.pipe(
@@ -34,6 +34,24 @@ export class WishlistService {
     });
   }
 
+  toggleProduct(product: Product): void {
+    this.http.post<{ products: Product[] }>(this.apiUrl, { productId: product._id })
+      .pipe(take(1))
+      .subscribe(updatedWishlist => {
+        this.updateLocalWishlist(updatedWishlist.products);
+      });
+  }
+
+  private updateLocalWishlist(products: Product[]): void {
+    const productIds = products.map(p => p._id);
+    this.wishlistProductIds.set(productIds);
+    this.wishlistProducts.set(products);
+  }
+
+  isInWishlist(productId: string): boolean {
+    return this.wishlistProductIds().includes(productId);
+  }
+
   addProduct(product: Product): void {
     this.authService.currentUser$.pipe(take(1)).subscribe(user => {
       if (!user) return;
@@ -42,7 +60,7 @@ export class WishlistService {
         .subscribe(updatedWishlist => this.updateLocalWishlist(updatedWishlist.products));
     });
   }
-  
+
   removeProduct(product: Product): void {
     this.authService.currentUser$.pipe(take(1)).subscribe(user => {
       if (!user) return;
@@ -50,17 +68,5 @@ export class WishlistService {
         .pipe(take(1))
         .subscribe(updatedWishlist => this.updateLocalWishlist(updatedWishlist.products));
     });
-  }
-
-  // Método privado para no repetir código
-  private updateLocalWishlist(products: Product[]): void {
-    const productIds = products.map(p => p._id);
-    this.wishlistProductIds.set(productIds);
-    this.wishlistProducts.set(products);
-  }
-
-  // Este ya no es un signal, es un método que lee un signal
-  isInWishlist(productId: string): boolean {
-    return this.wishlistProductIds().includes(productId);
   }
 }

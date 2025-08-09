@@ -2,6 +2,14 @@
 <a [routerLink]="['/product', product._id]" class="card-link">
   <div *ngIf="product" class="card">
     <img [src]="product.imageUrl" [alt]="product.name">
+    <div *ngIf="authService.currentUser$ | async" class="action-bubbles">
+      <button (click)="toggleWishlist($event)" class="bubble-button" [class.active]="isProductInWishlist()">
+        ❤️
+      </button>
+      <button (click)="addToCart($event)" class="bubble-button">
+        🛒
+      </button>
+    </div>
     <div class="card-content">
       <h3>{{ product.name }}</h3>
       <p>{{ product.description }}</p>

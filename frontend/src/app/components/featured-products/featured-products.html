@@ -1,0 +1,11 @@
+<!-- Usamos un color de fondo diferente para esta sección, como en el diseño de Stitch -->
+<section class="section-container">
+  <h2 class="section-title" data-aos="fade-up">Nuestros Favoritos</h2>
+  <!-- El disparador de la animación en cascada se aplica aquí -->
+  <div class="products-grid" [@cardAnimation]>
+    <!-- Reutilizamos nuestro ProductCardComponent para mostrar los productos -->
+    @for (product of featuredProducts; track product._id) {
+      <app-product-card [product]="product"></app-product-card>
+    }
+  </div>
+</section>

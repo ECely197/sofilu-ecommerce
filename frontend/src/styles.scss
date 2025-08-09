@@ -10,6 +10,12 @@
   --pastel-pink: #F4C2C2;
   --soft-white: #FBF8F9;
   --soft-gray: #EAE3D9;
+  --primary: #F4C2C2;
+  --border: #F1EAE9;           // Un color de borde sutil que combina
+  --text-primary: #36454F;      // Nuestro gris carbón para textos principales
+  --text-secondary: #8E807A;
+  --background-sec: #FCF8F7;
+  --primary-light: #FFF5EE;
 }
 
 // -- Reseteo Básico y Estilos del Body --
@@ -27,7 +33,12 @@ body {
 }
 
 // -- Estilos para Títulos --
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Playfair Display', serif;
   margin: 0; // Quitamos márgenes por defecto para tener más control
 }
@@ -62,3 +73,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 // Creamos una clase 'btn-material' que podremos aplicar a cualquier <a> o <button>
+
+.page-container {
+  width: 100%;
+  max-width: 1440px; // El ancho máximo para nuestro contenido
+  margin: 0 auto; // Centra el contenedor
+  padding: 0 2rem; // Espacio en los lados
+}
