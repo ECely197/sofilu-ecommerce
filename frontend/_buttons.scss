@@ -1,27 +1,29 @@
+// --- BOTÓN PRINCIPAL (MATERIAL DESIGN) ---
 .btn-material {
   // Propiedades base del botón
-  position: relative; // Necesario para el ripple y la capa de estado
-  overflow: hidden;   // Oculta lo que se salga del botón
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 2rem; // 14px 32px
+  padding: 0.875rem 2rem;
   border-radius: 9999px; // Píldora
   border: none;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  user-select: none; // Evita que el texto se seleccione al hacer doble clic
+  user-select: none;
   outline: none;
   
-  // Colores (usaremos nuestras variables)
+  // Colores (usando nuestras variables)
   background-color: var(--pastel-pink);
   color: white;
 
   // Sombra y transición para el efecto de elevación
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1), 
-              transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+              transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.28s; // Añadimos transición para el color
 
   // La capa de estado (State Layer)
   &::before {
@@ -31,25 +33,52 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: white; // La capa será blanca
-    opacity: 0; // Inicialmente invisible
+    background-color: white;
+    opacity: 0;
     transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  // -- ESTADOS --
+  // --- ESTADOS ---
   &:hover {
-    // Al pasar el ratón, elevamos el botón y mostramos la capa de estado
     transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
 
     &::before {
-      opacity: 0.08; // Hacemos la capa blanca ligeramente visible
+      opacity: 0.08;
     }
   }
 
   &:active {
-    // Al hacer clic, quitamos la elevación para que se sienta "presionado"
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+}
+
+
+// --- ¡BOTÓN SECUNDARIO (DEFINICIÓN CORRECTA)! ---
+.btn-secondary {
+  @extend .btn-material; // Hereda toda la estructura y comportamiento del botón principal
+
+  // Sobrescribimos solo los colores y bordes
+  background-color: transparent;
+  color: var(--text-charcoal);
+  border: 1px solid var(--soft-gray);
+  box-shadow: none; // Sin sombra por defecto
+
+  // La capa de estado ahora es oscura para que contraste con el fondo claro
+  &::before {
+    background-color: var(--text-charcoal);
+  }
+
+  // Estados sobrescritos para el botón secundario
+  &:hover {
+    background-color: var(--background-sec);
+    border-color: var(--text-charcoal);
+    box-shadow: none;
+    transform: none; // Sin efecto de elevación para un look más plano
+
+    &::before {
+      opacity: 0.08;
+    }
   }
 }

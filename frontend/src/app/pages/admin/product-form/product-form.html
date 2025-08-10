@@ -1,13 +1,14 @@
+<!-- En: src/app/pages/admin/product-form/product-form.html -->
 <header class="page-header">
   <h1>{{ isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto' }}</h1>
 </header>
 
 <form [formGroup]="productForm" (ngSubmit)="handleSubmit()" class="form-container">
-  
-  <!-- Columna Principal de Información -->
+  <!-- Columna Principal (Izquierda) -->
   <div class="main-column">
     <div class="card">
       <h2 class="card-title">Información Principal</h2>
+      <!-- ... (campos de nombre y descripción sin cambios) ... -->
       <div class="form-field">
         <label for="name">Nombre del producto</label>
         <input id="name" type="text" formControlName="name" class="form-input">
@@ -17,58 +18,97 @@
         <textarea id="description" formControlName="description" rows="6" class="form-input"></textarea>
       </div>
     </div>
-    
-    <!-- Aquí irá la gestión de variantes en el futuro -->
 
+    <div class="card" formArrayName="variants">
+      <!-- ... (código de variantes sin cambios) ... -->
+      <div class="card-header">
+        <h2 class="card-title">Variantes</h2>
+        <button type="button" (click)="addVariant()" class="add-button-small" appRipple>+ Añadir Variante</button>
+      </div>
+      
+      @for (variant of variants.controls; track variant; let i = $index) {
+        <div class="variant-group" [formGroupName]="i">
+          <div class="variant-header">
+            <input type="text" formControlName="name" placeholder="Nombre de la variante (ej. Talla)" class="form-input">
+            <button type="button" (click)="removeVariant(i)" class="delete-button-small">✖</button>
+          </div>
+          
+          <div class="options-group" formArrayName="options">
+            <label class="options-label">Opciones</label>
+            <div class="options-list">
+              @for (option of variantOptions(i).controls; track option; let j = $index) {
+                <div class="option-item" [formGroupName]="j">
+                  <input type="text" formControlName="name" placeholder="Valor (ej. S)" class="form-input-small">
+                  <button type="button" (click)="removeVariantOption(i, j)" class="delete-button-tiny">✖</button>
+                </div>
+              }
+            </div>
+            <button type="button" (click)="addVariantOption(i)" class="add-button-tiny" appRipple>+ Añadir opción</button>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
-  <!-- Columna Lateral de Organización y Precio -->
+  <!-- Columna Lateral (Derecha) -->
   <div class="sidebar-column">
-    
-    <!-- Tarjeta para la Imagen del Producto -->
-    <div class="card">
-      <h2 class="card-title">Imagen del Producto</h2>
-      
-      <!-- Vista previa de la imagen (se muestra si hay una URL en el formulario) -->
-      @if (productForm.value.imageUrl) {
-        <img [src]="productForm.value.imageUrl" alt="Vista previa" class="image-preview">
+    <!-- TARJETA DE IMÁGENES POR URL -->
+    <div class="card" formArrayName="images">
+      <h2 class="card-title">Imágenes del Producto (URLs)</h2>
+      <p class="card-subtitle">La primera URL será la imagen principal.</p>
+
+      @for (imageUrlControl of images.controls; track imageUrlControl; let i = $index) {
+        <div class="image-url-field">
+          <input type="url" [formControlName]="i" placeholder="https://ejemplo.com/imagen.jpg" class="form-input">
+          @if (images.controls.length > 1) {
+            <button type="button" (click)="removeImageControl(i)" class="delete-button-tiny">✖</button>
+          }
+        </div>
+        <!-- Vista previa de la imagen -->
+        @if (imageUrlControl.value) {
+          <img [src]="imageUrlControl.value" alt="Vista previa" class="image-preview">
+        }
       }
-
-      <!-- Opción 1: Subir un archivo -->
-      <div class="form-field">
-        <label for="image-upload" class="upload-button">
-          {{ isUploading ? 'Subiendo...' : 'Seleccionar Archivo' }}
-        </label>
-        <input id="image-upload" type="file" (change)="onFileSelected($event)" accept="image/*">
-      </div>
-
-      <!-- Opción 2: Pegar una URL -->
-      <div class="form-field">
-        <label for="imageUrl">O pegar URL de la imagen</label>
-        <input id="imageUrl" type="text" formControlName="imageUrl" class="form-input">
-      </div>
+      <button type="button" (click)="addImageControl()" class="add-button-tiny" appRipple>+ Añadir otra URL</button>
     </div>
-    
-    <!-- Tarjeta para Precio y Categoría -->
+
+    <!-- ... (tarjetas de Organización y Precio sin cambios) ... -->
     <div class="card">
       <h2 class="card-title">Organización</h2>
       <div class="form-field">
-        <label for="price">Precio</label>
-        <input id="price" type="number" formControlName="price" class="form-input">
-      </div>
-      <div class="form-field">
-        <label for="category">Categoría</label>
+        <label for="category">Categoría (ID)</label>
         <input id="category" type="text" formControlName="category" class="form-input">
       </div>
+      <div class="checkbox-field">
+        <input id="isFeatured" type="checkbox" formControlName="isFeatured">
+        <label for="isFeatured">Producto Destacado (Más Vendido)</label>
+      </div>
+      <div class="checkbox-field">
+        <input id="isOnSale" type="checkbox" formControlName="isOnSale">
+        <label for="isOnSale">Producto en Oferta</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Precio</h2>
+      <div class="form-field">
+        <label for="price">Precio Base</label>
+        <input id="price" type="number" formControlName="price" class="form-input">
+      </div>
+      @if (productForm.get('isOnSale')?.value) {
+        <div class="form-field">
+          <label for="salePrice">Precio de Oferta</label>
+          <input id="salePrice" type="number" formControlName="salePrice" class="form-input">
+        </div>
+      }
     </div>
   </div>
 
-  <!-- Acciones del Formulario al final -->
+  <!-- Acciones del Formulario -->
   <div class="form-actions">
     <a routerLink="/admin/products" class="cancel-button">Descartar</a>
-    <button type="submit" [disabled]="productForm.invalid || isUploading" class="save-button" appRipple>
-      <!-- Mostramos un texto diferente si se está subiendo la imagen -->
-      {{ isUploading ? 'Subiendo imagen...' : (isEditMode ? 'Guardar Cambios' : 'Guardar Producto') }}
+    <button type="submit" [disabled]="productForm.invalid" class="save-button" appRipple>
+      {{ isEditMode ? 'Guardar Cambios' : 'Guardar Producto' }}
     </button>
   </div>
 </form>

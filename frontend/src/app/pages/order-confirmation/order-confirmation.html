@@ -1,5 +1,5 @@
 <div class="confirmation-container">
-  <div class="confirmation-card">
+  <div class="confirmation-card" data-aos="zoom-in" data-aos-duration="500">
     <div class="icon-container">
       <!-- Icono de check (puedes usar un SVG si lo prefieres) -->
       <span>✓</span>
@@ -8,9 +8,11 @@
     <p class="confirmation-subtitle">
       Hemos recibido tu pedido y ya lo estamos preparando. Recibirás un correo con todos los detalles.
     </p>
+    @if (orderId()) {
     <div class="order-number">
-      Pedido #SFL-12345
+      Pedido #SFL-{{ orderId()!.substring(orderId()!.length - 8).toUpperCase() }}
     </div>
+    }
     <hr>
     <div class="next-steps">
       <h3 class="steps-title">Próximos Pasos</h3>
@@ -21,7 +23,7 @@
       </ul>
     </div>
     <div class="actions">
-      <a routerLink="/" class="continue-button">Seguir Explorando</a>
+      <a routerLink="/" class="btn-secondary" appRipple>Seguir Explorando</a>
     </div>
   </div>
 </div>

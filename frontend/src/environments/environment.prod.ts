@@ -3,6 +3,7 @@ export const environment = {
 
   // ¡La URL de tu API en Render!
   apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
+  //apiUrl: 'http://localhost:3000/api',
 
   // Las credenciales de Firebase son las mismas.
   firebase: {

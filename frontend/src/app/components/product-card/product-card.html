@@ -1,7 +1,9 @@
 <!-- 1. Envolvemos todo en un <a> con el routerLink -->
 <a [routerLink]="['/product', product._id]" class="card-link">
   <div *ngIf="product" class="card">
-    <img [src]="product.imageUrl" [alt]="product.name">
+    <img *ngIf="product.images && product.images.length > 0"
+         [src]="product.images[0]"
+         [alt]="product.name">
     <div *ngIf="authService.currentUser$ | async" class="action-bubbles">
       <button (click)="toggleWishlist($event)" class="bubble-button" [class.active]="isProductInWishlist()">
         ❤️

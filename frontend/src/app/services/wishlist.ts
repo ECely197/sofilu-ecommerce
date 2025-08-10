@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth';
 import { take, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 @Injectable({
@@ -18,28 +19,31 @@ export class WishlistService {
   wishlistProducts = signal<Product[]>([]);
 
   constructor() {
-    // Nos suscribimos a los cambios del usuario para cargar/limpiar la wishlist
+    // Suscribirse a cambios de usuario para cargar/limpiar la wishlist
     this.authService.currentUser$.pipe(
       switchMap(user => {
         if (user) {
-          // Si hay usuario, hacemos la petición a la API
           return this.http.get<{ products: Product[] }>(`${this.apiUrl}/${user.uid}`);
         } else {
-          // Si no hay usuario, devolvemos un objeto que simula una wishlist vacía
-          return [{ products: [] }];
+          return of({ products: [] }); // <-- Usar 'of' para Observable vacío
         }
       })
-    ).subscribe(wishlist => {
-      this.updateLocalWishlist(wishlist.products);
+    ).subscribe({
+      next: wishlist => this.updateLocalWishlist(wishlist.products),
+      error: err => console.error('Error cargando wishlist:', err)
     });
   }
 
   toggleProduct(product: Product): void {
-    this.http.post<{ products: Product[] }>(this.apiUrl, { productId: product._id })
-      .pipe(take(1))
-      .subscribe(updatedWishlist => {
-        this.updateLocalWishlist(updatedWishlist.products);
-      });
+    this.authService.currentUser$.pipe(take(1)).subscribe(user => {
+      if (!user) return;
+      this.http.post<{ products: Product[] }>(`${this.apiUrl}/${user.uid}`, { productId: product._id })
+        .pipe(take(1))
+        .subscribe({
+          next: updatedWishlist => this.updateLocalWishlist(updatedWishlist.products),
+          error: err => console.error('Error al alternar producto en wishlist:', err)
+        });
+    });
   }
 
   private updateLocalWishlist(products: Product[]): void {
@@ -57,7 +61,10 @@ export class WishlistService {
       if (!user) return;
       this.http.post<{ products: Product[] }>(`${this.apiUrl}/${user.uid}`, { productId: product._id })
         .pipe(take(1))
-        .subscribe(updatedWishlist => this.updateLocalWishlist(updatedWishlist.products));
+        .subscribe({
+          next: updatedWishlist => this.updateLocalWishlist(updatedWishlist.products),
+          error: err => console.error('Error al agregar producto a wishlist:', err)
+        });
     });
   }
 
@@ -66,7 +73,10 @@ export class WishlistService {
       if (!user) return;
       this.http.delete<{ products: Product[] }>(`${this.apiUrl}/${user.uid}/${product._id}`)
         .pipe(take(1))
-        .subscribe(updatedWishlist => this.updateLocalWishlist(updatedWishlist.products));
+        .subscribe({
+          next: updatedWishlist => this.updateLocalWishlist(updatedWishlist.products),
+          error: err => console.error('Error al eliminar producto de wishlist:', err)
+        });
     });
   }
 }

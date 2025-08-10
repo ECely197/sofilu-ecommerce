@@ -1,48 +1,54 @@
 <div class="checkout-layout">
   <!-- Columna de Formularios a la Izquierda -->
-  <div class="form-column">
+  <div class="form-column" [@formAnimation]>
     <div class="logo-header">
       <a routerLink="/" class="logo-link">
         <span class="logo-text">Sofilu</span>
       </a>
     </div>
 
-    <form [formGroup]="checkoutForm" (ngSubmit)="handlePayment()" novalidate class="checkout-form">
-      
+    <form [formGroup]="checkoutForm" (ngSubmit)="handlePayment()" novalidate class="checkout-form" [@formAnimation]>
+
       <div class="form-section" formGroupName="contactInfo">
         <h2 class="section-title">Información de Contacto</h2>
-        <div class="form-field">
-          <label for="email">Correo Electrónico</label>
-          <input id="email" type="email" class="form-input" formControlName="email">
+        <div class="material-field">
+          <input id="email" type="email" class="material-input" formControlName="email" placeholder=" ">
+          <label for="email" class="material-label">Correo Electrónico</label>
+
         </div>
       </div>
 
       <div class="form-section" formGroupName="shippingAddress">
         <h2 class="section-title">Dirección de Envío</h2>
-        <div class="form-field">
-          <label for="name">Nombre y Apellido</label>
-          <input id="name" type="text" class="form-input" formControlName="name">
+        <div class="material-field">
+          <input id="name" type="text" class="material-input" formControlName="name" placeholder=" ">
+          <label for="name" class="material-label">Nombre y Apellido</label>
+
         </div>
-        <div class="form-field">
-          <label for="address">Dirección Completa</label>
-          <input id="address" type="text" class="form-input" formControlName="address">
+        <div class="material-field">
+          <input id="address" type="text" class="material-input" formControlName="address" placeholder=" ">
+          <label for="address" class="material-label">Dirección Completa</label>
+
         </div>
         <div class="form-grid">
-          <div class="form-field">
-            <label for="city">Ciudad</label>
-            <input id="city" type="text" class="form-input" formControlName="city">
+          <div class="material-field">
+            <input id="city" type="text" class="material-input" formControlName="city" placeholder=" ">
+            <label for="city" class="material-label">Ciudad</label>
+
           </div>
-          <div class="form-field">
-            <label for="postalCode">Código Postal</label>
-            <input id="postalCode" type="text" class="form-input" formControlName="postalCode">
+          <div class="material-field">
+            <input id="postalCode" type="text" class="material-input" formControlName="postalCode" placeholder=" ">
+            <label for="postalCode" class="material-label">Código Postal</label>
+
           </div>
         </div>
-         <div class="form-field">
-            <label for="phone">Teléfono</label>
-            <input id="phone" type="tel" class="form-input" formControlName="phone">
-          </div>
+        <div class="material-field">
+          <input id="phone" type="tel" class="material-input" formControlName="phone" placeholder=" ">
+          <label for="phone" class="material-label">Teléfono</label>
+
+        </div>
       </div>
-      
+
       <div class="form-actions">
          <button type="submit" [disabled]="checkoutForm.invalid" class="pay-button" appRipple>Pagar Ahora</button>
       </div>
@@ -53,16 +59,25 @@
   <aside class="summary-column">
     <div class="summary-card">
       <h2 class="summary-title">Tu Pedido</h2>
-      
+
       <div class="summary-items">
         @for (item of cartService.cartItems(); track item.product._id) {
-          <div class="summary-item">
-            <div class="item-image" [style.backgroundImage]="'url(' + item.product.imageUrl + ')'">
+        <div class="summary-item">
+          <!-- SOLUCIÓN: Usamos un *ngIf para verificar que existan imágenes -->
+          <div *ngIf="item.product.images && item.product.images.length > 0; else noImagePlaceholder" class="item-image"
+            [style.backgroundImage]="'url(' + item.product.images[0] + ')'">
+            <span class="item-quantity">{{ item.quantity }}</span>
+          </div>
+          <!-- Plantilla de respaldo si no hay imagen -->
+          <ng-template #noImagePlaceholder>
+            <div class="item-image placeholder-image">
               <span class="item-quantity">{{ item.quantity }}</span>
             </div>
-            <p class="item-name">{{ item.product.name }}</p>
-            <p class="item-price">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
-          </div>
+          </ng-template>
+
+          <p class="item-name">{{ item.product.name }}</p>
+          <p class="item-price">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
+        </div>
         }
       </div>
 

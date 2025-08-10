@@ -22,7 +22,7 @@
         <div class="items-list">
           @for (item of cartService.cartItems(); track item.product._id) {
             <div class="cart-item">
-              <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+              <img [src]="item.product.images[0]" [alt]="item.product.name" class="item-image">
               <div class="item-details">
                 <h3 class="item-name">{{ item.product.name }}</h3>
                 <p class="item-price">{{ item.product.price | currency:'COP':'symbol':'1.0-0' }}</p>

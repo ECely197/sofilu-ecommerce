@@ -1,92 +1,198 @@
-.product-detail-container {
+// Importamos los botones para usar @extend
+@use '../../../../buttons';
+
+// --- Estructura Principal ---
+.product-detail-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
   padding: 2rem;
   max-width: 1200px;
-  margin: auto;
+  margin: 2rem auto;
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4rem;
   }
+}
+
+// --- Galería de Imágenes ---
+.image-gallery {
+  width: 100%;
 }
 
 .main-image {
   width: 100%;
-  padding-bottom: 125%; // Proporción 4/5
+  aspect-ratio: 4 / 5;
   background-size: cover;
   background-position: center;
-  border-radius: 1rem;
-}
-
-.product-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.product-title {
-  font-size: 2.5rem;
+  border-radius: 1.5rem; // Bordes más redondeados
   margin-bottom: 1rem;
 }
 
+.placeholder-image {
+  background-color: var(--soft-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Opcional: poner un icono
+}
+
+.thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.thumbnail {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-size: cover;
+  background-position: center;
+  border-radius: 1rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &.active {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 10px rgba(244, 194, 194, 0.5);
+  }
+}
+
+// --- Información del Producto ---
+.product-info {
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+}
+
+.product-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
 .product-price {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   margin-bottom: 2rem;
   color: var(--text-charcoal);
+  font-weight: 500;
 }
 
-.actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 2rem;
+// --- Variantes ---
+.variant-group {
+  margin-bottom: 2rem;
 }
 
-.add-to-cart-btn {
+.variant-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.variant-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.variant-button {
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--soft-gray);
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    border-color: var(--text-charcoal);
+    background-color: var(--background-sec);
+  }
+
+  &.active {
     background-color: var(--pastel-pink);
     color: white;
-    border: none;
-    padding: 1rem;
-    border-radius: 9999px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:hover {
-        opacity: 0.9;
-    }
+    border-color: var(--pastel-pink);
+  }
 }
 
-.wishlist-btn {
-    background-color: var(--soft-gray);
-    color: var(--text-charcoal);
-    border: none;
-    padding: 1rem;
-    border-radius: 9999px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-
-    &:hover {
-        background-color: #dcd5cd;
-    }
-}
-
-.details-accordion {
-    margin-top: 2rem;
-    border-top: 1px solid var(--soft-gray);
-    padding-top: 1rem;
-}
-
-.reviews-section {
-  margin-top: 3rem;
+// --- Botones de Acción ---
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: auto; // Empuja los botones hacia abajo
   padding-top: 2rem;
-  border-top: 1px solid var(--soft-gray);
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
 }
 
-.reviews-title {
-  font-size: 2rem;
+// --- Pestañas (Tabs) ---
+.product-tabs-container {
+  grid-column: 1 / -1;
+  margin-top: 4rem;
+}
+
+.tab-header {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--soft-gray);
+}
+
+.tab-link {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+
+  &.active {
+    color: var(--text-charcoal);
+    border-bottom-color: var(--pastel-pink);
+  }
+}
+
+.tab-content {
+  padding: 2.5rem 0;
+}
+
+.prose {
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+// --- Sección de Reseñas ---
+.reviews-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
+}
+
+.reviews-summary-title {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .reviews-list {
@@ -96,17 +202,22 @@
 }
 
 .review-card {
-  background-color: var(--soft-white);
+  background-color: white;
   padding: 1.5rem;
   border-radius: 1rem;
   border: 1px solid var(--soft-gray);
+}
+
+.review-header,
+.review-rating,
+.review-title {
+  margin-bottom: 0.75rem;
 }
 
 .review-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .review-author {
@@ -119,35 +230,43 @@
 }
 
 .review-rating .star {
-  color: #e0e0e0; // Color de estrella vacía
+  color: var(--soft-gray);
+  font-size: 1.25rem;
+
   &.filled {
-    color: #ffc107; // Color de estrella llena
+    color: #ffc107;
   }
 }
 
 .review-title {
   font-size: 1.125rem;
   font-weight: 700;
-  margin: 0.5rem 0;
 }
 
 .review-comment {
   line-height: 1.6;
+  color: var(--text-secondary);
 }
 
-// Estilos del Formulario de Reseñas
+.empty-reviews-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+// --- Formulario de reseña ---
 .review-form-container {
-  background-color: var(--soft-white);
+  background-color: var(--background-sec);
   padding: 2rem;
   border-radius: 1rem;
   margin-top: 3rem;
   border: 1px solid var(--soft-gray);
+}
 
-  h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-  }
+.review-form-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
 }
 
 .form-field {
@@ -177,55 +296,37 @@
 }
 
 textarea.form-input {
-  resize: vertical; // Permite al usuario ajustar la altura
+  resize: vertical;
 }
 
-.submit-button {
+.btn-material[type="submit"] {
   width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 9999px;
-  background-color: var(--pastel-pink);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden; // Necesario para el efecto ripple
-  transition: background-color 0.3s;
-
-  &:disabled {
-    background-color: #dcd5cd;
-    cursor: not-allowed;
-  }
-
-  // --- ANIMACIÓN RIPPLE (MATERIAL YOU) ---
-  &:not(:disabled)::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.3);
-    width: 100px;
-    height: 100px;
-    margin-top: -50px;
-    margin-left: -50px;
-    top: 50%;
-    left: 50%;
-    animation: ripple 1s;
-    opacity: 0;
-  }
-
-  &:not(:disabled):focus:not(:active)::after {
-    animation: none;
-  }
 }
 
-@keyframes ripple {
-  from {
-    opacity: 1;
-    transform: scale(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(10);
-  }
+// --- Estado de Carga ---
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+// --- Iconos de Material Symbols ---
+// (Opcional pero recomendado para que el corazón se vea bien)
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }

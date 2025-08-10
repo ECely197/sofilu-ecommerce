@@ -1,3 +1,5 @@
+@use '../../../../buttons';
+
 :host {
   display: flex;
   align-items: center;
@@ -96,4 +98,17 @@ hr {
   &:hover {
     background-color: #dcd5cd;
   }
+}
+
+.btn-secondary {
+    @extend .btn-material; // Hereda todo
+    background-color: var(--soft-gray);
+    color: var(--text-primary);
+    box-shadow: none;
+
+    &:hover {
+        background-color: var(--border); // Un color de hover un poco más oscuro
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transform: translateY(-1px);
+    }
 }

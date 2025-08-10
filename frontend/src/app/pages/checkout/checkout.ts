@@ -6,14 +6,27 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
 import { RippleDirective } from '../../directives/ripple';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 
 // ¡El decorador @Component es fundamental!
 @Component({
   selector: 'app-checkout',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RippleDirective],
-  templateUrl: './checkout.html', // Usando tu convención de nombres
-  styleUrl: './checkout.scss'     // Usando tu convención de nombres
+  templateUrl: './checkout.html',
+  styleUrl: './checkout.scss',
+  animations: [
+    trigger('formAnimation', [
+      transition(':enter', [
+        query('.auth-card > *', [
+          style({ opacity: 0, transform: 'translateY(30px)' }),
+          stagger('100ms', [
+            animate('500ms cubic-bezier(0.35, 0, 0.25, 1)', style({ opacity: 1, transform: 'none' }))
+          ])
+        ])
+      ])
+    ])
+  ]  
 })
 // ¡Nombre de clase corregido y OnInit implementado!
 export class checkout implements OnInit {
@@ -82,7 +95,7 @@ export class checkout implements OnInit {
       next: (savedOrder) => {
         console.log('¡Pedido creado con éxito!', savedOrder);
         this.cartService.clearCart();
-        this.router.navigate(['/order-confirmation']);
+        this.router.navigate(['/order-confirmation', savedOrder._id]);
       },
       error: (err) => {
         console.error('Error al crear el pedido:', err);

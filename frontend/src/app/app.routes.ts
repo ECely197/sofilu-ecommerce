@@ -40,7 +40,7 @@ export const routes: Routes = [
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: Cart},
   { path: 'checkout', component: checkout },
-  { path: 'order-confirmation', component: OrderConfirmation },
+  { path: 'order-confirmation/:id', component: OrderConfirmation },
   { path: 'login', component: Login},
   { path: 'register', component: Register },
   { path: 'wishlist', component: WishlistComponent },

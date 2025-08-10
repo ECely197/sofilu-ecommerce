@@ -1,3 +1,5 @@
+@use '../../../../buttons';
+
 // Estilos generales del contenedor del carrito
 .cart-container {
   max-width: 1280px;
@@ -131,25 +133,12 @@
   }
 
   .checkout-button {
-    // --- PROPIEDADES NUEVAS ---
-    display: block; // Le dice al <a> que ocupe todo el ancho y se comporte como un bloque.
-    text-align: center; // Centra el texto dentro del bloque.
-    text-decoration: none; // Quita el subrayado por defecto de los enlaces.
-    margin-top: 2rem;
-    width: 100%;
-    border-radius: 9999px;
-    background-color: var(--pastel-pink);
-    padding: 0.875rem 0;
-    font-weight: 700;
-    color: var(--text-primary);
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s;
-
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
+  // BORRA todas las propiedades y REEMPLAZA por esto:
+  @extend .btn-material;
+  display: block; // Para que ocupe todo el ancho
+  text-decoration: none;
+  margin-top: 2rem;
+}
 }
 
 // Estado de carrito vacío
@@ -158,13 +147,19 @@
   padding: 4rem 1rem;
 
   .explore-button {
-    margin-top: 1rem;
-    display: inline-block;
-    background-color: var(--pastel-pink);
-    color: var(--text-primary);
-    padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
-    text-decoration: none;
-    font-weight: 700;
-  }
+  @extend .btn-material;
+  text-decoration: none;
+  margin-top: 1rem;
+}
+}
+
+.placeholder-image {
+  background-color: var(--soft-gray);
+}
+
+.total-amount {
+  display: inline-block; // Necesario para que transform scale funcione
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease-in-out;
 }

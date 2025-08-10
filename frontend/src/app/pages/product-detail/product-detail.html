@@ -1,108 +1,152 @@
-<!-- Mostramos el contenido solo si el objeto 'product' ya ha sido cargado -->
-<div *ngIf="product; else loading" class="product-detail-container">
-
-  <!-- Columna de Imágenes -->
+@if (product()) {
+<div class="product-detail-layout" data-aos="fade-in" data-aos-duration="600">
+  <!-- ======================================= -->
+  <!-- COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES -->
+  <!-- ======================================= -->
   <div class="image-gallery">
-    <div class="main-image" [style.backgroundImage]="'url(' + product.imageUrl + ')'"></div>
-    <!-- Aquí podríamos añadir miniaturas en el futuro -->
-  </div>
+    <!-- Imagen Principal (reacciona a la selección) -->
+    @if (product()!.images.length > 0) {
+      <div class="main-image" [style.backgroundImage]="'url(' + selectedImage() + ')'"></div>
+    } @else {
+      <div class="main-image placeholder-image"></div>
+    }
 
-  <!-- Columna de Información y Acciones -->
-  <div class="product-info">
-    <h1 class="product-title">{{ product.name }}</h1>
-    <p class="product-price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</p>
-
-    <!-- Aquí irían los selectores de talla, color, etc. en el futuro -->
-
-    <div class="actions">
-      <button class="add-to-cart-btn" (click)="addToCart()">Añadir al carrito</button>
-      <button class="wishlist-btn" (click)="toggleWishlist()">
-        <!-- Cambiamos el texto del botón dinámicamente -->
-        @if (isProductInWishlist()) {
-        Quitar de la lista de deseos
-        } @else {
-        Añadir a la lista de deseos
-        }
-      </button>
-    </div>
-
-    <div class="details-accordion">
-      <h3>Descripción</h3>
-      <p>{{ product.description }}</p>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- SECCIÓN DE RESEÑAS -->
-<div class="reviews-section">
-  <h2 class="reviews-title">Opiniones de nuestros clientes</h2>
-
-  <!-- Lista de reseñas existentes -->
-  <div class="reviews-list">
-    @for (review of reviews(); track review._id) {
-    <div class="review-card">
-      <div class="review-header">
-        <span class="review-author">{{ review.author }}</span>
-        <span class="review-date">{{ review.createdAt | date:'longDate' }}</span>
+    <!-- Miniaturas (se muestran si hay más de una imagen) -->
+    @if (product()!.images.length > 1) {
+    <div class="thumbnail-grid">
+      @for (image of product()!.images; track image) {
+      <div class="thumbnail" 
+           [style.backgroundImage]="'url(' + image + ')'" 
+           (click)="selectedImage.set(image)"
+           [class.active]="selectedImage() === image">
       </div>
-      <div class="review-rating">
-        <!-- Aquí mostraremos las estrellas -->
-        @for (star of [].constructor(review.rating); track $index) {
-        <span class="star filled">★</span>
-        }
-        @for (star of [].constructor(5 - review.rating); track $index) {
-        <span class="star">★</span>
-        }
-      </div>
-      <h3 class="review-title">{{ review.title }}</h3>
-      <p class="review-comment">{{ review.comment }}</p>
+      }
     </div>
-    } @empty {
-    <p>Este producto aún no tiene reseñas. ¡Sé el primero!</p>
     }
   </div>
 
-  <!-- Formulario para añadir una nueva reseña (lo haremos en el siguiente paso) -->
+  <!-- ========================================== -->
+  <!-- COLUMNA DERECHA: INFORMACIÓN Y ACCIONES -->
+  <!-- ========================================== -->
+  <div class="product-info">
+    <h1 class="product-title">{{ product()!.name }}</h1>
+    <p class="product-price">{{ product()!.price | currency:'COP':'symbol':'1.0-0' }}</p>
 
+    <!-- SECCIÓN DE VARIANTES -->
+    @for (variant of product()!.variants; track variant.name) {
+    <div class="variant-group">
+      <p class="variant-name">{{ variant.name }}</p>
+      <div class="variant-options">
+        @for (option of variant.options; track option.name) {
+        <button class="variant-button" 
+                [class.active]="isSelected(variant.name, option.name)"
+                (click)="selectOption(variant.name, option.name)">
+          {{ option.name }}
+        </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- ACCIONES PRINCIPALES -->
+    <div class="actions">
+      <button class="btn-material" appRipple (click)="addToCart()">Añadir al carrito</button>
+      <button class="btn-secondary" appRipple (click)="toggleWishlist()">
+        <!-- Usamos un icono de Material Symbols para el corazón -->
+        <span class="material-symbols-outlined">
+          {{ isProductInWishlist() ? 'favorite' : 'favorite_border' }}
+        </span>
+        {{ isProductInWishlist() ? 'En tu lista' : 'Añadir a la lista' }}
+      </button>
+    </div>
+  </div>
 </div>
 
-<!-- Formulario para añadir una nueva reseña -->
-<div class="review-form-container">
-  <h3>Comparte tu opinión</h3>
-  <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
-    
-    <!-- Input para la Calificación (Estrellas) - Lo haremos simple por ahora -->
-    <div class="form-field">
-      <label for="rating">Calificación</label>
-      <select id="rating" formControlName="rating" class="form-input">
-        <option [ngValue]="null" disabled>Selecciona una calificación</option>
-        <option [value]="5">5 Estrellas</option>
-        <option [value]="4">4 Estrellas</option>
-        <option [value]="3">3 Estrellas</option>
-        <option [value]="2">2 Estrellas</option>
-        <option [value]="1">1 Estrella</option>
-      </select>
-    </div>
+<!-- ======================================= -->
+<!-- SECCIÓN DE PESTAÑAS (TABS) ABAJO      -->
+<!-- ======================================= -->
+<div class="product-tabs-container" data-aos="fade-up">
+  <div class="tab-header">
+    <button class="tab-link" [class.active]="activeTab() === 'description'" (click)="activeTab.set('description')">Descripción</button>
+    <button class="tab-link" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">Opiniones ({{ reviews().length }})</button>
+  </div>
 
-    <!-- Input para el Título -->
-    <div class="form-field">
-      <label for="title">Título de tu reseña</label>
-      <input id="title" type="text" formControlName="title" placeholder="Ej: ¡Me encantó!" class="form-input">
-    </div>
+  <div class="tab-content">
+    <!-- Contenido Pestaña Descripción -->
+    @if (activeTab() === 'description') {
+    <div class="prose" [innerHTML]="product()!.description"></div>
+    }
 
-    <!-- Input para el Comentario -->
-    <div class="form-field">
-      <label for="comment">Tu reseña</label>
-      <textarea id="comment" formControlName="comment" placeholder="Cuéntanos más sobre tu experiencia..." rows="4" class="form-input"></textarea>
-    </div>
+    <!-- Contenido Pestaña Reseñas -->
+    @if (activeTab() === 'reviews') {
+    <div class="reviews-section">
+      <div class="reviews-summary">
+        <div>
+          <h3 class="reviews-summary-title">Opiniones de nuestros clientes</h3>
+        </div>
+        @if(canWriteReview()){
+        <button class="btn-secondary" (click)="scrollToReviewForm()">Escribir una reseña</button>
+        }
+      </div>
 
-    <button type="submit" [disabled]="reviewForm.invalid" class="submit-button">Enviar mi reseña</button>
-  </form>
+      <div class="reviews-list">
+        @for (review of reviews(); track review._id) {
+        <div class="review-card">
+          <div class="review-header">
+            <span class="review-author">{{ review.author }}</span>
+            <span class="review-date">{{ review.createdAt | date:'longDate' }}</span>
+          </div>
+          <div class="review-rating">
+            @for (star of [].constructor(review.rating); track $index) {
+            <span class="star filled">★</span>
+            }
+            @for (star of [].constructor(5 - review.rating); track $index) {
+            <span class="star">★</span>
+            }
+          </div>
+          <h3 class="review-title">{{ review.title }}</h3>
+          <p class="review-comment">{{ review.comment }}</p>
+        </div>
+        } @empty {
+        <p class="empty-reviews-message">Este producto aún no tiene reseñas. ¡Sé el primero en compartir tu opinión!</p>
+        }
+      </div>
+
+      @if (canWriteReview()) {
+      <div class="review-form-container" #reviewFormElement>
+        <h3 class="review-form-title">Comparte tu opinión</h3>
+        <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+          <div class="form-field">
+            <label for="rating">Calificación</label>
+            <select id="rating" formControlName="rating" class="form-input">
+              <option [ngValue]="null" disabled>Selecciona una calificación</option>
+              <option [value]="5">5 Estrellas - Excelente</option>
+              <option [value]="4">4 Estrellas - Bueno</option>
+              <option [value]="3">3 Estrellas - Regular</option>
+              <option [value]="2">2 Estrellas - Malo</option>
+              <option [value]="1">1 Estrella - Pésimo</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="title">Título de tu reseña</label>
+            <input id="title" type="text" formControlName="title" placeholder="Ej: ¡Me encantó!" class="form-input">
+          </div>
+          <div class="form-field">
+            <label for="comment">Tu reseña</label>
+            <textarea id="comment" formControlName="comment" placeholder="Cuéntanos más sobre tu experiencia..."
+              rows="4" class="form-input"></textarea>
+          </div>
+          <button type="submit" [disabled]="reviewForm.invalid" class="btn-material">Enviar mi reseña</button>
+        </form>
+      </div>
+      }
+    </div>
+    }
+  </div>
 </div>
-
-<!-- Plantilla que se muestra mientras 'product' es nulo (está cargando) -->
-<ng-template #loading>
+} @else {
+<div class="loading-container">
   <p>Cargando detalles del producto...</p>
-</ng-template>
+  <!-- Aquí podrías poner un spinner animado -->
+</div>
+}

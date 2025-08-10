@@ -3,12 +3,25 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 
 @Component({
   selector: 'app-login', standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.html',
-  styleUrl: '../register/register.scss'
+  styleUrl: '../register/register.scss',
+  animations: [
+    trigger('formAnimation', [
+      transition(':enter', [
+        query('.auth-card > *', [
+          style({ opacity: 0, transform: 'translateY(30px)' }),
+          stagger('100ms', [
+            animate('500ms cubic-bezier(0.35, 0, 0.25, 1)', style({ opacity: 1, transform: 'none' }))
+          ])
+        ])
+      ])
+    ])
+  ]
 })
 export class Login {
   private authService = inject(AuthService);

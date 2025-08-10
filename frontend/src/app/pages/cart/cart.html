@@ -5,9 +5,14 @@
   <ng-container *ngIf="cartService.totalItems() > 0; else emptyCart">
     <div class="cart-grid">
       <!-- Columna de Items -->
-      <div class="items-column">
+      <div class="items-column" [@itemAnimation]="cartService.cartItems().length">
         <div *ngFor="let item of cartService.cartItems()" class="cart-item">
-          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
+          @if (item.product.images && item.product.images.length > 0) {
+          <img [src]="item.product.images[0]" [alt]="item.product.name" class="item-image">
+          } @else {
+          <!-- Imagen de respaldo si el producto no tiene -->
+          <div class="item-image placeholder-image"></div>
+          }
           <div class="item-info">
             <h3 class="item-name">{{ item.product.name }}</h3>
             <p class="item-price">{{ item.product.price | currency:'COP':'symbol':'1.0-0' }}</p>
@@ -40,7 +45,9 @@
             <hr>
             <div class="summary-row total">
               <span>Total</span>
-              <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+              <span class="total-amount" [@flash]="totalAnimationState()">
+                {{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}
+              </span>
             </div>
           </div>
           <a routerLink="/checkout" class="checkout-button">Finalizar Compra</a>
