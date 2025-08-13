@@ -1,39 +1,96 @@
 <header class="page-header">
   <h1>Tus Productos</h1>
-  <!-- Este enlace nos llevará a la página de "Crear Producto" en el futuro -->
-  <a routerLink="/admin/products/new" class="add-button">
-    <span>+</span>
-    Añadir Nuevo Producto
+  <a routerLink="/admin/products/new" class="add-button" appRipple>
+    <span class="material-symbols-outlined">add</span>
+    Añadir Nuevo
   </a>
 </header>
 
 <div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Imagen</th>
-        <th>Nombre del Producto</th>
-        <th>Precio</th>
-        <th>Stock</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let product of products">
-        <td>
-          <img [src]="product.images[0]" [alt]="product.name" class="product-thumbnail">
-        </td>
-        <td class="product-name">{{ product.name }}</td>
-        <td>{{ product.price | currency:'COP':'symbol':'1.0-0' }}</td>
-        <td>100</td> <!-- Placeholder para el stock -->
-        <td>
-          <div class="action-buttons">
-            <a [routerLink]="['/admin/products/edit', product._id]" class="action-button">Editar</a>
-            <!-- Conectamos el evento (click) a nuestro nuevo método -->
-            <button (click)="deleteProduct(product._id)" class="action-button delete">Eliminar</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Estado de Carga (Esqueleto) -->
+  @if (isLoading()) {
+  <div class="skeleton-list">
+    @for (item of [1, 2, 3]; track item) {
+    <div class="skeleton-item">
+      <div class="skeleton-img"></div>
+      <div class="skeleton-text-group">
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text short"></div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Lista de Productos (Tabla en Desktop, Tarjetas en Móvil) -->
+  @if (!isLoading() && products().length > 0) {
+  <div class="product-list" [@listAnimation]="products().length">
+    <!-- Cabecera de la tabla (solo visible en desktop) -->
+    <div class="product-item header">
+      <div class="cell">Imagen</div>
+      <div class="cell">Nombre del Producto</div>
+      <div class="cell">Precio</div>
+      <div class="cell">Stock</div>
+      <div class="cell">Acciones</div>
+    </div>
+
+    <!-- Filas de productos -->
+    @for (product of products(); track product._id) {
+    <div class="product-item">
+      <!-- Celda de Imagen (sin cambios) -->
+      <div class="cell" data-label="Imagen">
+        @if(product.images && product.images.length > 0) {
+        <img
+          [src]="product.images[0]"
+          [alt]="product.name"
+          class="product-thumbnail"
+        />
+        } @else {
+        <div class="product-thumbnail placeholder"></div>
+        }
+      </div>
+
+      <div class="cell product-name" data-label="Nombre">
+        {{ product.name }}
+      </div>
+
+      <div class="product-details-wrapper">
+        <div class="cell" data-label="Precio">
+          {{ product.price | currency : "COP" : "symbol" : "1.0-0" }}
+        </div>
+        <div class="cell" data-label="Stock">100</div>
+      </div>
+
+      <div class="cell" data-label="Acciones">
+        <div class="action-buttons">
+          <a
+            [routerLink]="['/admin/products/edit', product._id]"
+            class="action-button edit"
+            appRipple
+            >Editar</a
+          >
+          <button
+            (click)="deleteProduct(product._id)"
+            class="action-button delete"
+            appRipple
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Estado Vacío -->
+  @if (!isLoading() && products().length === 0) {
+  <div class="empty-state">
+    <p>Aún no has creado ningún producto.</p>
+    <a routerLink="/admin/products/new" class="add-button" appRipple>
+      <span class="material-symbols-outlined">add</span>
+      Crear tu primer producto
+    </a>
+  </div>
+  }
 </div>

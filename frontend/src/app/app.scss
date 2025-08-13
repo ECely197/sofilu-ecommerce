@@ -10,11 +10,11 @@
 }
 
 .main-content {
-  flex-grow: 1; 
+  flex-grow: 1;
   // ¡Paso Clave! Añadimos un padding-top igual a la altura del header
   // para que el contenido no empiece oculto detrás de él.
   // Esto es una aproximación, lo ajustaremos si es necesario.
-  padding-top: 80px; 
+  padding-top: 80px;
 }
 
 app-header {

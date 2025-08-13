@@ -1,54 +1,81 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import {
+  trigger,
+  transition,
+  style,
+  animate,
+  query,
+  stagger,
+} from '@angular/animations';
+
 import { ProductServices } from '../../../services/product';
 import { Product } from '../../../interfaces/product.interface';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RippleDirective],
   templateUrl: './product-list.html',
-  styleUrl: './product-list.scss'
+  styleUrl: './product-list.scss',
+  animations: [
+    trigger('listAnimation', [
+      transition('* => *', [
+        // Se activa en cualquier cambio
+        query(
+          ':enter',
+          [
+            style({ opacity: 0, transform: 'translateY(20px)' }),
+            stagger('80ms', [
+              animate(
+                '400ms cubic-bezier(0.35, 0, 0.25, 1)',
+                style({ opacity: 1, transform: 'none' })
+              ),
+            ]),
+          ],
+          { optional: true }
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductList implements OnInit {
   private productService = inject(ProductServices);
-  private route = inject(ActivatedRoute);
-  private cdr = inject(ChangeDetectorRef);
-  public products: Product[] = [];
+
+  // Usamos signals para un manejo de estado más moderno
+  products = signal<Product[]>([]);
+  isLoading = signal<boolean>(true);
 
   ngOnInit() {
-    // Nos suscribimos a los eventos de la ruta. Esto se disparará
-    // de forma fiable cada vez que esta ruta esté activa.
-    this.route.url.subscribe(() => {
-      console.log('Ruta de lista de productos (admin) activada. Obteniendo productos...');
-      this.fetchProducts();
-    });
+    this.fetchProducts();
   }
 
   fetchProducts(): void {
-    this.productService.getProducts().subscribe(data => {
-      this.products = data;
-      this.cdr.detectChanges();
+    this.isLoading.set(true); // Inicia la carga
+    this.productService.getProducts().subscribe({
+      next: (data) => {
+        this.products.set(data);
+        this.isLoading.set(false); // Finaliza la carga
+      },
+      error: (err) => {
+        console.error('Error al obtener productos:', err);
+        this.isLoading.set(false); // Finaliza la carga incluso si hay error
+      },
     });
   }
 
   deleteProduct(productId: string): void {
-    // ¡Paso de seguridad crucial! Pedimos confirmación al usuario.
-    const confirmation = confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.');
-
-    if (confirmation) {
-      // Si el usuario confirma, llamamos al servicio.
+    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       this.productService.deleteProduct(productId).subscribe({
         next: () => {
-          console.log('Producto eliminado con éxito');
-          // Para una experiencia de usuario fluida, actualizamos la lista localmente
-          // en lugar de volver a pedir todos los productos a la API.
-          this.products = this.products.filter(product => product._id !== productId);
-          // Forzamos la detección de cambios por si acaso.
-          this.cdr.detectChanges();
+          // Actualizamos el signal filtrando el producto eliminado
+          this.products.update((currentProducts) =>
+            currentProducts.filter((p) => p._id !== productId)
+          );
         },
-        error: (err) => console.error('Error al eliminar el producto:', err)
+        error: (err) => console.error('Error al eliminar el producto:', err),
       });
     }
   }

@@ -1,0 +1,58 @@
+// Contenido para: frontend/src/app/pages/admin/_admin-shared.scss
+
+// --- Estilos de Formulario Compartidos ---
+.form-field {
+  position: relative;
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  // Icono para desplegables
+  &.has-arrow::after {
+    content: "expand_more";
+    font-family: "Material Symbols Outlined";
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(25%);
+    pointer-events: none;
+    color: var(--text-secondary);
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--soft-gray);
+  border-radius: 0.75rem;
+  background-color: var(--soft-white);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  }
+
+  // Estilos específicos para <select>
+  &[as="select"] {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    option {
+      font-family: "Manrope", sans-serif;
+      color: var(--text-charcoal);
+      background-color: white;
+    }
+  }
+}

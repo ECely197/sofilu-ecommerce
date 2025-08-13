@@ -1,20 +1,74 @@
 .card {
+  // Necesitamos que la tarjeta sea un contenedor de posicionamiento
+  // para las burbujas. Es probable que ya lo tengas, pero confírmalo.
+  position: relative;
+}
+
+.image-container {
+  // Esto asegura que las burbujas no se salgan de la imagen
+  position: relative;
+  overflow: hidden;
+}
+
+.action-bubbles {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+
+  // Animación de entrada
+  transform: translateX(150%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Cuando el ratón pasa por encima de la tarjeta, las burbujas aparecen
+.card:hover .action-bubbles {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.bubble-button {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--soft-gray);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  color: var(--text-charcoal);
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: white;
+  }
+
+  &.active {
+    background-color: var(--pastel-pink);
+    color: white;
+    border-color: var(--pastel-pink);
+  }
+}
+
+.card {
   border: 1px solid #ddd;
-  border-radius: 16px; // Un poco más redondeado
+  border-radius: 16px;
   overflow: hidden;
   margin: 1rem;
-  background-color: white; // Aseguramos fondo blanco
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); // Una sombra más suave
-
-  // --- NUEVOS ESTILOS PARA LA ANIMACIÓN 3D ---
-  // Aplicamos una transición a la transformación
+  background-color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
     box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  // 'transform-style' es necesario para que las transformaciones 3D de los hijos funcionen
   transform-style: preserve-3d;
 
   &:hover {
-    // Al pasar el ratón, elevamos la tarjeta y le damos una sombra más pronunciada
     transform: scale(1.05) perspective(1000px) rotateY(0deg) rotateX(0deg);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   }

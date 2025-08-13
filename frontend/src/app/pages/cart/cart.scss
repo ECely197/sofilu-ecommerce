@@ -1,4 +1,4 @@
-@use '../../../../buttons';
+@use "../../../../buttons";
 
 // Estilos generales del contenedor del carrito
 .cart-container {
@@ -99,7 +99,7 @@
 // Columna del resumen
 .summary-column {
   .summary-card {
-    background-color: var(--brand-secondary, #FFF5EE);
+    background-color: var(--brand-secondary, #fff5ee);
     padding: 1.5rem;
     border-radius: 1rem;
     position: sticky;
@@ -133,12 +133,12 @@
   }
 
   .checkout-button {
-  // BORRA todas las propiedades y REEMPLAZA por esto:
-  @extend .btn-material;
-  display: block; // Para que ocupe todo el ancho
-  text-decoration: none;
-  margin-top: 2rem;
-}
+    // BORRA todas las propiedades y REEMPLAZA por esto:
+    @extend .btn-material;
+    display: block; // Para que ocupe todo el ancho
+    text-decoration: none;
+    margin-top: 2rem;
+  }
 }
 
 // Estado de carrito vacío
@@ -147,10 +147,10 @@
   padding: 4rem 1rem;
 
   .explore-button {
-  @extend .btn-material;
-  text-decoration: none;
-  margin-top: 1rem;
-}
+    @extend .btn-material;
+    text-decoration: none;
+    margin-top: 1rem;
+  }
 }
 
 .placeholder-image {
@@ -162,4 +162,29 @@
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;
   transition: all 0.3s ease-in-out;
+}
+
+.item-name {
+  font-weight: 700;
+  margin-bottom: 0.25rem; // Añadimos un pequeño margen inferior
+}
+
+// --- ¡NUEVOS ESTILOS AQUÍ! ---
+.item-variants {
+  display: flex;
+  flex-wrap: wrap; // Permite que se apilen si hay muchas variantes
+  gap: 0.25rem 1rem; // Espacio vertical y horizontal entre variantes
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem; // Espacio antes del precio
+
+  span {
+    // Estilo para cada par "Talla: S"
+  }
+}
+// ----------------------------
+
+.item-price {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }

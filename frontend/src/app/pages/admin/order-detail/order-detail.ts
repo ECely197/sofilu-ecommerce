@@ -1,68 +1,112 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { RouterLink } from '@angular/router';
+// Contenido completo para: src/app/pages/admin/order-detail/order-detail.ts
+
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute} from '@angular/router';
-// ¡Asegúrate de que FormGroup, FormControl y ReactiveFormsModule estén importados!
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { trigger, transition, style, animate } from '@angular/animations';
+
 import { OrderService } from '../../../services/order';
+import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './order-detail.html',
-  styleUrl: './order-detail.scss'
+  styleUrl: './order-detail.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate(
+          '300ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
+        ),
+      ]),
+      transition(':leave', [
+        animate(
+          '300ms ease-in',
+          style({ opacity: 0, transform: 'translateY(10px)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class OrderDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
-  private cdr = inject(ChangeDetectorRef);
 
-  public order: any;
-  // Declaramos el FormGroup, pero lo inicializaremos en ngOnInit
+  order = signal<any | null>(null);
+  isLoading = signal<boolean>(true);
+
   statusForm!: FormGroup;
-
   orderStatuses = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
 
   ngOnInit() {
+    // Inicializamos el formulario vacío para evitar errores
+    this.statusForm = new FormGroup({
+      status: new FormControl('', Validators.required),
+    });
+
     const orderId = this.route.snapshot.paramMap.get('id');
     if (orderId) {
-      this.orderService.getOrderById(orderId).subscribe(data => {
-        this.order = data;
-
-        // Inicializamos el formulario aquí, con el valor y un validador
-        this.statusForm = new FormGroup({
-          status: new FormControl(this.order.status, [Validators.required])
-        });
-
-        this.cdr.detectChanges();
-      });
+      this.fetchOrder(orderId);
+    } else {
+      this.isLoading.set(false);
+      // Aquí podrías redirigir o mostrar un mensaje de error
     }
   }
 
-  // Este es el método que se llama al hacer clic
-  updateStatus(): void {
-    console.log('Intentando actualizar estado...'); // Log para depurar
+  fetchOrder(orderId: string): void {
+    this.isLoading.set(true);
+    this.orderService.getOrderById(orderId).subscribe({
+      next: (data) => {
+        this.order.set(data);
+        // Rellenamos el formulario con el valor del pedido cargado
+        this.statusForm.patchValue({ status: data.status });
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar el pedido:', err);
+        this.isLoading.set(false);
+      },
+    });
+  }
 
-    // Añadimos una guarda para asegurarnos de que el formulario existe
-    if (!this.statusForm) {
-      console.error('El formulario de estado no está inicializado.');
+  updateStatus(): void {
+    if (this.statusForm.invalid || !this.order()) {
       return;
     }
 
-    if (this.statusForm.valid && this.order) {
-      const newStatus = this.statusForm.value.status;
-      if (newStatus) {
-        this.orderService.updateOrderStatus(this.order._id, newStatus)
-          .subscribe(updatedOrder => {
-            this.order = updatedOrder;
-            // Rellenamos el formulario de nuevo con el nuevo estado
-            this.statusForm.patchValue({ status: this.order.status });
+    const newStatus = this.statusForm.value.status;
+    const currentOrder = this.order();
+
+    if (newStatus && currentOrder) {
+      this.orderService
+        .updateOrderStatus(currentOrder._id, newStatus)
+        .subscribe({
+          next: (updatedOrder) => {
+            this.order.set(updatedOrder);
+            this.statusForm.patchValue({ status: updatedOrder.status });
             alert('¡Estado del pedido actualizado con éxito!');
-          });
-      }
-    } else {
-      console.log('El formulario no es válido:', this.statusForm.errors);
+          },
+          error: (err) => {
+            console.error('Error al actualizar el estado:', err);
+            alert('No se pudo actualizar el estado del pedido.');
+          },
+        });
     }
+  }
+  public objectKeys(obj: object): string[] {
+    if (!obj) {
+      return []; // Añadimos una guarda para evitar errores si el objeto es nulo
+    }
+    return Object.keys(obj);
   }
 }

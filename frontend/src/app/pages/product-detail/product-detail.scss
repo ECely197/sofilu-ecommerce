@@ -1,5 +1,5 @@
 // Importamos los botones para usar @extend
-@use '../../../../buttons';
+@use "../../../../buttons";
 
 // --- Estructura Principal ---
 .product-detail-layout {
@@ -72,7 +72,7 @@
 }
 
 .product-title {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
@@ -316,7 +316,7 @@ textarea.form-input {
 // --- Iconos de Material Symbols ---
 // (Opcional pero recomendado para que el corazón se vea bien)
 .material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
+  font-family: "Material Symbols Outlined";
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -327,6 +327,6 @@ textarea.form-input {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  -webkit-font-feature-settings: 'liga';
+  -webkit-font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }

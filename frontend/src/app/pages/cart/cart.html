@@ -1,66 +1,117 @@
-<div class="cart-container">
+<!-- Contenido completo para: src/app/pages/cart/cart.html -->
+
+<div class="cart-container" @listAnimation>
   <h2 class="cart-title">Carrito de Compras</h2>
 
-  <!-- Usamos un ng-container para verificar si el carrito está vacío -->
-  <ng-container *ngIf="cartService.totalItems() > 0; else emptyCart">
-    <div class="cart-grid">
-      <!-- Columna de Items -->
-      <div class="items-column" [@itemAnimation]="cartService.cartItems().length">
-        <div *ngFor="let item of cartService.cartItems()" class="cart-item">
+  @if (cartService.totalItems() > 0) {
+  <div class="cart-grid">
+    <!-- Columna de Items -->
+    <div class="items-column">
+      @for (item of cartService.cartItems(); track item.id) {
+      <div class="cart-item">
+        <div class="item-image-container">
           @if (item.product.images && item.product.images.length > 0) {
-          <img [src]="item.product.images[0]" [alt]="item.product.name" class="item-image">
+          <img
+            [src]="item.product.images[0]"
+            [alt]="item.product.name"
+            class="item-image"
+          />
           } @else {
-          <!-- Imagen de respaldo si el producto no tiene -->
           <div class="item-image placeholder-image"></div>
           }
-          <div class="item-info">
-            <h3 class="item-name">{{ item.product.name }}</h3>
-            <p class="item-price">{{ item.product.price | currency:'COP':'symbol':'1.0-0' }}</p>
-          </div>
-          <div class="item-actions">
-            <div class="quantity-selector">
-              <button (click)="cartService.updateQuantity(item.product._id, item.quantity - 1)">-</button>
-              <span class="quantity-text">{{ item.quantity }}</span>
-              <button (click)="cartService.updateQuantity(item.product._id, item.quantity + 1)">+</button>
-            </div>
-            <button (click)="cartService.removeItem(item.product._id)" class="remove-button">Eliminar</button>
-          </div>
-          <p class="item-total">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
         </div>
-      </div>
 
-      <!-- Columna de Resumen -->
-      <div class="summary-column">
-        <div class="summary-card">
-          <h3 class="summary-title">Resumen del Pedido</h3>
-          <div class="summary-details">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
-            </div>
-            <div class="summary-row">
-              <span>Envío</span>
-              <span>Por calcular</span>
-            </div>
-            <hr>
-            <div class="summary-row total">
-              <span>Total</span>
-              <span class="total-amount" [@flash]="totalAnimationState()">
-                {{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}
-              </span>
-            </div>
+        <div class="item-info">
+          <h3 class="item-name">{{ item.product.name }}</h3>
+
+          <!-- ¡NUEVO! Mostramos las variantes seleccionadas -->
+          <div class="item-variants">
+            @for (variantKey of objectKeys(item.selectedVariants); track
+            variantKey) {
+            <span
+              >{{ variantKey }}:
+              <strong>{{ item.selectedVariants[variantKey] }}</strong></span
+            >
+            }
           </div>
-          <a routerLink="/checkout" class="checkout-button">Finalizar Compra</a>
+
+          <p class="item-price">
+            {{ item.product.price | currency : "COP" : "symbol" : "1.0-0" }}
+          </p>
         </div>
+
+        <div class="item-actions">
+          <div class="quantity-selector">
+            <!-- ¡ACTUALIZADO! Los botones ahora usan el item.id único -->
+            <button
+              (click)="cartService.updateQuantity(item.id, item.quantity - 1)"
+              appRipple
+            >
+              -
+            </button>
+            <span class="quantity-text">{{ item.quantity }}</span>
+            <button
+              (click)="cartService.updateQuantity(item.id, item.quantity + 1)"
+              appRipple
+            >
+              +
+            </button>
+          </div>
+          <button
+            (click)="cartService.removeItem(item.id)"
+            class="remove-button"
+            appRipple
+          >
+            Eliminar
+          </button>
+        </div>
+
+        <p class="item-total">
+          {{
+            item.product.price * item.quantity
+              | currency : "COP" : "symbol" : "1.0-0"
+          }}
+        </p>
       </div>
+      }
     </div>
-  </ng-container>
 
+    <!-- Columna de Resumen (sin cambios lógicos) -->
+    <aside class="summary-column">
+      <div class="summary-card">
+        <h3 class="summary-title">Resumen del Pedido</h3>
+        <div class="summary-details">
+          <div class="summary-row">
+            <span>Subtotal ({{ cartService.totalItems() }} productos)</span>
+            <span>{{
+              cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Envío</span>
+            <span>Por calcular</span>
+          </div>
+          <hr />
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>{{
+              cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+        </div>
+        <a routerLink="/checkout" class="btn-material" appRipple
+          >Finalizar Compra</a
+        >
+      </div>
+    </aside>
+  </div>
+  } @else {
   <!-- Plantilla para el carrito vacío -->
-  <ng-template #emptyCart>
-    <div class="empty-cart-message">
-      <p>Tu carrito de sueños está vacío.</p>
-      <a routerLink="/products" class="explore-button">Explorar productos</a>
-    </div>
-  </ng-template>
+  <div class="empty-cart-message">
+    <p>Tu carrito de sueños está vacío.</p>
+    <a routerLink="/products" class="btn-material" appRipple
+      >Explorar productos</a
+    >
+  </div>
+  }
 </div>

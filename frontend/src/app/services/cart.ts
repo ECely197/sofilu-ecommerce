@@ -1,11 +1,11 @@
+// Contenido completo para: src/app/services/cart.ts
+
 import { Injectable, computed, signal } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 import { CartItem } from '../interfaces/cart-item.interface';
 import { Product } from '../interfaces/product.interface';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CartService {
   cartItems = signal<CartItem[]>([]);
@@ -15,46 +15,68 @@ export class CartService {
   );
 
   subTotal = computed(() =>
-    this.cartItems().reduce((total, item) => total + (item.product.price * item.quantity), 0)
+    this.cartItems().reduce(
+      (total, item) => total + item.product.price * item.quantity,
+      0
+    )
   );
 
-  constructor() { }
+  constructor() {}
 
-  addItem(product: Product): void {
-    this.cartItems.update(items => {
-      const existingItem = items.find(item => item.product._id === product._id);
+  private generateItemId(
+    productId: string,
+    variants: { [key: string]: string }
+  ): string {
+    const sortedVariantKeys = Object.keys(variants).sort();
+    const variantString = sortedVariantKeys
+      .map((key) => `${key}-${variants[key]}`)
+      .join('-');
+    return `${productId}-${variantString}`;
+  }
+
+  addItem(product: Product, selectedVariants: { [key: string]: string }): void {
+    const itemId = this.generateItemId(product._id, selectedVariants);
+
+    this.cartItems.update((items) => {
+      const existingItem = items.find((item) => item.id === itemId);
+
       if (existingItem) {
-        return items.map(item =>
-          item.product._id === product._id
+        return items.map((item) =>
+          item.id === itemId
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : { ...item }
         );
       } else {
-        return [...items, { product, quantity: 1 }];
+        const newItem: CartItem = {
+          id: itemId,
+          product,
+          quantity: 1,
+          selectedVariants,
+        };
+        return [...items, newItem];
       }
     });
+
+    console.log('Carrito actualizado:', this.cartItems());
   }
 
-  removeItem(productId: string): void {
-    this.cartItems.update(items =>
-      items.filter(item => item.product._id !== productId)
+  removeItem(itemId: string): void {
+    this.cartItems.update((items) =>
+      items.filter((item) => item.id !== itemId)
     );
   }
-
-  updateQuantity(productId: string, newQuantity: number): void {
-    this.cartItems.update(items => {
+  updateQuantity(itemId: string, newQuantity: number): void {
+    this.cartItems.update((items) => {
       if (newQuantity <= 0) {
-        return items.filter(item => item.product._id !== productId);
+        return items.filter((item) => item.id !== itemId);
       }
-      return items.map(item =>
-        item.product._id === productId
-          ? { ...item, quantity: newQuantity }
-          : item
+      return items.map((item) =>
+        item.id === itemId ? { ...item, quantity: newQuantity } : { ...item }
       );
     });
   }
+
   clearCart(): void {
     this.cartItems.set([]);
   }
-
 }

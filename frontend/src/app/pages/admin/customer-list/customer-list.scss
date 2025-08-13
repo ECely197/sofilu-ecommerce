@@ -1,0 +1,168 @@
+// Contenido completo para: src/app/pages/admin/customer-list/customer-list.scss
+@use "../../../../../buttons";
+
+// --- Cabecera de la Página ---
+.page-header {
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
+}
+
+// --- Contenedor Principal ---
+.table-container {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+// --- Lista de Clientes (Estilo Tabla en Desktop) ---
+.customer-list {
+  width: 100%;
+}
+
+.customer-item {
+  display: grid;
+  // 4 columnas: email, nombre, fecha, acciones
+  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--soft-gray);
+  transition: background-color 0.2s ease-in-out;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:not(.header):hover {
+    background-color: var(--background-sec);
+  }
+}
+
+// Cabecera de la tabla
+.customer-item.header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding-bottom: 1rem;
+}
+
+// Celdas
+.cell {
+  padding: 0 0.5rem;
+}
+
+.customer-email {
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.action-button {
+  @extend .btn-secondary;
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  border: none;
+  background-color: var(--soft-gray);
+}
+
+// --- MEDIA QUERY PARA MÓVIL (La transformación a tarjetas) ---
+@media (max-width: 767px) {
+  .customer-item.header {
+    display: none;
+  }
+
+  .customer-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--soft-gray);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background-color: white;
+  }
+
+  .cell {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 0;
+
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-right: 1rem;
+    }
+  }
+
+  .customer-email {
+    font-size: 1rem;
+    font-weight: 700;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--soft-gray);
+    // Ocultamos el pseudo-título para el email que es el principal
+    &::before {
+      display: none;
+    }
+  }
+
+  .action-buttons {
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: flex-end;
+  }
+}
+
+// --- Esqueleto de Carga ---
+.skeleton-list {
+  .skeleton-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--soft-gray);
+  }
+  .skeleton-text-group {
+    width: 100%;
+  }
+  .skeleton-text {
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--soft-gray);
+    margin-bottom: 0.75rem;
+  }
+  .skeleton-text.short {
+    width: 60%;
+  }
+
+  .skeleton-text {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// --- Estado Vacío ---
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+  }
+}

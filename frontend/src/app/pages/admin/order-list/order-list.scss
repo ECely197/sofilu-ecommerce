@@ -1,38 +1,208 @@
-// Importamos los estilos de la lista de productos para reutilizarlos
-@use "../product-list/product-list.scss";
+// Contenido completo para: src/app/pages/admin/order-list/order-list.scss
+@use "../../../../../buttons";
 
-// --- ESTILOS ESPECÍFICOS PARA LOS ESTADOS DE PEDIDO ---
-// Esta es la parte nueva que nos faltaba
+// --- Cabecera de la Página ---
+.page-header {
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
+}
 
+// --- Contenedor Principal ---
+.table-container {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+// --- Lista de Pedidos (Estilo Tabla en Desktop) ---
+.order-list {
+  width: 100%;
+}
+
+.order-item {
+  display: grid;
+  // 6 columnas: pedido, fecha, cliente, total, estado, acciones
+  grid-template-columns: 1fr 1.5fr 1.5fr 1fr 1fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--soft-gray);
+  transition: background-color 0.2s ease-in-out;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:not(.header):hover {
+    background-color: var(--background-sec);
+  }
+}
+
+// Cabecera de la tabla
+.order-item.header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding-bottom: 1rem;
+}
+
+// Celdas
+.cell {
+  padding: 0 0.5rem;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  @extend .btn-secondary; // Usamos nuestro botón global
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  border: none;
+
+  &.details {
+    background-color: var(--soft-gray);
+  }
+  &.delete {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+// --- Fichas de Estado (Status Chips) ---
 .status-chip {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
-  text-transform: capitalize; // Pone la primera letra en mayúscula
+  text-transform: capitalize;
 
-  // Estilo por defecto (por si llega un estado desconocido)
-  background-color: #e5e7eb; // Gris claro
-  color: #374151; // Gris oscuro
-  
-  // Estilos condicionales que aplicaremos en el HTML
+  // Clases basadas en el estado del pedido (en minúsculas)
   &.procesando {
-    background-color: #FEF3C7; // Amarillo claro
-    color: #92400E; // Amarillo oscuro
+    background-color: #fef3c7;
+    color: #92400e;
   }
-
   &.enviado {
-    background-color: #DBEAFE; // Azul claro
-    color: #1E40AF; // Azul oscuro
+    background-color: #dbeafe;
+    color: #1e40af;
   }
-
   &.entregado {
-    background-color: #D1FAE5; // Verde claro
-    color: #065F46; // Verde oscuro
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  &.cancelado {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+}
+
+// --- MEDIA QUERY PARA MÓVIL (La transformación a tarjetas) ---
+@media (max-width: 991px) {
+  .order-item.header {
+    display: none;
   }
 
-  &.cancelado {
-    background-color: #FEE2E2; // Rojo claro
-    color: #991B1B; // Rojo oscuro
+  .order-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--soft-gray);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    background-color: white;
+  }
+
+  .cell {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed var(--soft-gray);
+
+    // El pseudo-elemento actúa como el título de la columna
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-right: 1rem;
+    }
+  }
+
+  // Estilos especiales para la primera y última celda en la tarjeta
+  .cell:first-child {
+    font-size: 1.125rem;
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--soft-gray); // Línea sólida para separar
+    &::before {
+      display: none;
+    }
+  }
+
+  .cell[data-label="Acciones"] {
+    border-bottom: none;
+    padding-top: 1.5rem;
+    justify-content: flex-end;
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// --- Esqueleto de Carga ---
+.skeleton-list {
+  .skeleton-item {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background-color: white;
+    border-radius: 1rem;
+  }
+  .skeleton-text-group {
+    width: 100%;
+  }
+  .skeleton-text {
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    background-color: var(--soft-gray);
+    margin-bottom: 0.75rem;
+  }
+  .skeleton-text.short {
+    width: 60%;
+  }
+
+  .skeleton-text {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// --- Estado Vacío ---
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
   }
 }

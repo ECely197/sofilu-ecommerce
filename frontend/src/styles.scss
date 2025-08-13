@@ -5,17 +5,17 @@
 
 // -- Paleta de Colores --
 :root {
-  --background: #FAF3E9;
-  --text-charcoal: #36454F;
-  --pastel-pink: #F4C2C2;
-  --soft-white: #FBF8F9;
-  --soft-gray: #EAE3D9;
-  --primary: #F4C2C2;
-  --border: #F1EAE9;           // Un color de borde sutil que combina
-  --text-primary: #36454F;      // Nuestro gris carbón para textos principales
-  --text-secondary: #8E807A;
-  --background-sec: #FCF8F7;
-  --primary-light: #FFF5EE;
+  --background: #faf3e9;
+  --text-charcoal: #36454f;
+  --pastel-pink: #f4c2c2;
+  --soft-white: #fbf8f9;
+  --soft-gray: #eae3d9;
+  --primary: #f4c2c2;
+  --border: #f1eae9; // Un color de borde sutil que combina
+  --text-primary: #36454f; // Nuestro gris carbón para textos principales
+  --text-secondary: #8e807a;
+  --background-sec: #fcf8f7;
+  --primary-light: #fff5ee;
 }
 
 // -- Reseteo Básico y Estilos del Body --
@@ -28,7 +28,7 @@
 body {
   margin: 0;
   background-color: var(--background);
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   color: var(--text-charcoal);
 }
 
@@ -39,13 +39,13 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   margin: 0; // Quitamos márgenes por defecto para tener más control
 }
 
 // -- Añadir las fuentes de Google --
 // Es mejor importarlas aquí que en el index.html para mantener todo el CSS en un solo lugar.
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;700&display=swap");
 
 /* ==========================================================================
    Estilos para la Directiva Ripple (Material You)
@@ -78,5 +78,5 @@ h6 {
   width: 100%;
   max-width: 1440px; // El ancho máximo para nuestro contenido
   margin: 0 auto; // Centra el contenedor
-  padding: 0 2rem; // Espacio en los lados
+  padding: 0 0.5rem; // Espacio en los lados
 }

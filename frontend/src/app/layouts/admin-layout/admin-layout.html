@@ -1,23 +1,70 @@
-<div class="admin-container">
-  <!-- Barra de Navegación Lateral -->
+<!-- Contenido completo para: src/app/layouts/admin-layout.html -->
+
+<!-- El contenedor principal ahora tiene una clase dinámica -->
+<div class="admin-container" [class.sidebar-is-open]="isSidebarVisible()">
+  <!-- Barra de Navegación Lateral (Sidebar) -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <h1 class="sidebar-logo">Sofilu Admin</h1>
     </div>
     <nav class="sidebar-nav">
-      <a routerLink="/admin/dashboard" routerLinkActive="active">Dashboard</a>
-      <a routerLink="/admin/products" routerLinkActive="active">Productos</a>
-      <a routerLink="/admin/orders" routerLinkActive="active">Pedidos</a>
-      <a routerLink="/admin/customers" routerLinkActive="active">Clientes</a>
-      <a routerLink="/admin/coupons" routerLinkActive="active">Cupones</a>
-      <a routerLink="/admin/settings" routerLinkActive="active">Ajustes</a>
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Dashboard</a
+      >
+      <a
+        routerLink="/admin/products"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Productos</a
+      >
+      <a
+        routerLink="/admin/orders"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Pedidos</a
+      >
+      <a
+        routerLink="/admin/customers"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Clientes</a
+      >
+      <a
+        routerLink="/admin/coupons"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Cupones</a
+      >
+      <a
+        routerLink="/admin/settings"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        >Ajustes</a
+      >
       <a routerLink="/" routerLinkActive="active">Visual Clientes</a>
     </nav>
   </aside>
 
+  <!-- Overlay para el fondo en móvil (solo visible cuando el menú está abierto) -->
+  <div class="sidebar-overlay" (click)="closeSidebar()"></div>
+
   <!-- Área de Contenido Principal -->
   <main class="main-content">
-    <!-- El enrutador de Angular renderizará aquí las diferentes páginas del admin -->
-    <router-outlet></router-outlet>
+    <!-- Header para móvil con el botón de hamburguesa -->
+    <header class="mobile-header">
+      <button class="hamburger-button" (click)="toggleSidebar()">
+        <!-- Usamos el icono de 'menu' de Material Symbols -->
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <h1 class="mobile-logo">Sofilu Admin</h1>
+    </header>
+
+    <!-- El contenido de la página se renderiza aquí -->
+    <div class="page-content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
   </main>
 </div>

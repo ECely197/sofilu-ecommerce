@@ -1,4 +1,11 @@
-import { Component, Input, inject, ElementRef, HostListener, computed } from '@angular/core';
+import {
+  Component,
+  Input,
+  inject,
+  ElementRef,
+  HostListener,
+  computed,
+} from '@angular/core';
 import { Product } from '../../interfaces/product.interface';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -6,14 +13,12 @@ import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { AuthService } from '../../services/auth';
 
-
-
 @Component({
   selector: 'app-product-card',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './product-card.html',
-  styleUrl: './product-card.scss'
+  styleUrl: './product-card.scss',
 })
 export class ProductCard {
   @Input() product!: Product;
@@ -44,21 +49,29 @@ export class ProductCard {
     card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
   }
 
-
   isProductInWishlist = computed(() =>
     this.wishlistService.isInWishlist(this.product._id)
   );
 
-  addToCart(event: Event) {
+  addToCart(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-    this.cartService.addItem(this.product);
-    alert(`${this.product.name} añadido al carrito!`);
+
+    if (this.product) {
+      const defaultVariants: { [key: string]: string } = {};
+      this.product.variants.forEach((variant) => {
+        if (variant.options && variant.options.length > 0) {
+          defaultVariants[variant.name] = variant.options[0].name;
+        }
+      });
+
+      this.cartService.addItem(this.product, defaultVariants);
+    }
   }
 
   toggleWishlist(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.wishlistService.toggleProduct(this.product); 
+    this.wishlistService.toggleProduct(this.product);
   }
 }

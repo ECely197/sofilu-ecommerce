@@ -1,29 +1,61 @@
+<!-- Contenido completo para: src/app/pages/admin/customer-list/customer-list.html -->
+
 <header class="page-header">
   <h1>Clientes Registrados</h1>
 </header>
 
 <div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Nombre</th>
-        <th>Fecha de Registro</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let customer of customers">
-        <td class="product-name">{{ customer.email }}</td>
-        <td>{{ customer.displayName || 'No especificado' }}</td>
-        <td>{{ customer.creationTime | date:'medium' }}</td>
-        <td>
-          <div class="action-buttons">
-            <!-- En el futuro, este enlace nos llevará al detalle del cliente -->
-            <a class="action-button">Detalles</a>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Estado de Carga (Esqueleto) -->
+  @if (isLoading()) {
+  <div class="skeleton-list">
+    @for (item of [1, 2, 3, 4]; track item) {
+    <div class="skeleton-item">
+      <div class="skeleton-text-group">
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text short"></div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Lista de Clientes -->
+  @if (!isLoading() && customers().length > 0) {
+  <div class="customer-list" [@listAnimation]="customers().length">
+    <!-- Cabecera de la tabla (solo visible en desktop) -->
+    <div class="customer-item header">
+      <div class="cell">Email</div>
+      <div class="cell">Nombre</div>
+      <div class="cell">Fecha de Registro</div>
+      <div class="cell">Acciones</div>
+    </div>
+
+    <!-- Filas de clientes -->
+    @for (customer of customers(); track customer.uid) {
+    <div class="customer-item">
+      <div class="cell customer-email" data-label="Email">
+        {{ customer.email }}
+      </div>
+      <div class="cell" data-label="Nombre">
+        {{ customer.displayName || "No especificado" }}
+      </div>
+      <div class="cell" data-label="Fecha de Registro">
+        {{ customer.creationTime | date : "medium" }}
+      </div>
+      <div class="cell" data-label="Acciones">
+        <div class="action-buttons">
+          <a class="action-button details" appRipple>Detalles</a>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Estado Vacío -->
+  @if (!isLoading() && customers().length === 0) {
+  <div class="empty-state">
+    <p>Aún no tienes ningún cliente registrado.</p>
+  </div>
+  }
 </div>

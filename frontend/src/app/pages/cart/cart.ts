@@ -1,59 +1,40 @@
-import { Component, inject, effect, signal } from '@angular/core';
+// Contenido completo para: src/app/pages/cart/cart.ts
+
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { trigger, transition, style, animate } from '@angular/animations'; // Importaciones para animación
+
 import { CartService } from '../../services/cart';
-import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+import { RippleDirective } from '../../directives/ripple';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RippleDirective],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
   animations: [
-    trigger('itemAnimation', [
-      transition('* => *', [
-        query(':enter', [
-          style({ opacity: 0, height: 0, transform: 'translateX(-30px)' }),
-          stagger(100, [
-            animate('350ms ease-out', style({ opacity: 1, height: '*', transform: 'none' }))
-          ])
-        ], { optional: true }),
-        query(':leave', [
-          animate('300ms ease-in', style({ opacity: 0, height: 0, transform: 'translateX(30px)' }))
-        ], { optional: true })
-      ])
+    trigger('listAnimation', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('300ms ease-out', style({ opacity: 1 })),
+      ]),
     ]),
-    trigger('flash', [
-      transition('* => updated', [
-        style({
-          backgroundColor: 'var(--pastel-pink)',
-          color: 'white',
-          transform: 'scale(1.05)'
-        }),
-        animate('400ms ease-out')
-      ])
-    ])
   ],
-
 })
 export class Cart {
   public cartService = inject(CartService);
-  
-  // Creamos un signal para controlar el estado de la animación del total
-  totalAnimationState = signal<'default' | 'updated'>('default');
-  
-  constructor() {
-    // Usamos un 'effect' para reaccionar a los cambios del subtotal
-    effect(() => {
-      // Cada vez que el subtotal() cambie...
-      this.cartService.subTotal();
-      
-      // Disparamos la animación
-      this.totalAnimationState.set('updated');
 
-      // Y la volvemos a su estado original después de un momento
-      setTimeout(() => this.totalAnimationState.set('default'), 400);
-    }, { allowSignalWrites: true }); // Permitimos que el efecto modifique signals
+  /**
+   * Método público para permitir que la plantilla itere sobre las claves de un objeto.
+   * @param obj El objeto sobre el que se va a iterar.
+   * @returns Un array de strings con las claves del objeto.
+   */
+  public objectKeys(obj: object): string[] {
+    if (!obj) {
+      return [];
+    }
+    return Object.keys(obj);
   }
 }

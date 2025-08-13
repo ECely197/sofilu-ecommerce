@@ -1,43 +1,81 @@
+<!-- Contenido completo para: src/app/pages/admin/order-list/order-list.html -->
+
 <header class="page-header">
   <h1>Pedidos de Clientes</h1>
 </header>
 
 <div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Nº Pedido</th>
-        <th>Fecha</th>
-        <th>Cliente</th>
-        <th>Total</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let order of orders">
-        <td class="product-name">#{{ order._id.slice(-6) }}</td> <!-- Mostramos los últimos 6 dígitos del ID -->
-        <td>{{ order.createdAt | date:'medium' }}</td>
-        <td>{{ order.customerInfo.name }}</td>
-        <td>{{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }}</td>
-        <td>
-          <!-- En el futuro, el color cambiará según el estado -->
-          <span class="status-chip" [ngClass]="{
-        'procesando': order.status === 'Procesando',
-        'enviado': order.status === 'Enviado',
-        'entregado': order.status === 'Entregado',
-        'cancelado': order.status === 'Cancelado'
-      }">
-            {{ order.status }}
-          </span>
-        </td>
-        <td>
-          <div class="action-buttons">
-            <a [routerLink]="['/admin/orders', order._id]" class="action-button">Detalles</a>
-            <button (click)="deleteOrder(order._id)" class="action-button delete">Eliminar</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Estado de Carga (Esqueleto) -->
+  @if (isLoading()) {
+  <div class="skeleton-list">
+    @for (item of [1, 2, 3, 4]; track item) {
+    <div class="skeleton-item">
+      <div class="skeleton-text-group">
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text short"></div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Lista de Pedidos -->
+  @if (!isLoading() && orders().length > 0) {
+  <div class="order-list" [@listAnimation]="orders().length">
+    <!-- Cabecera de la tabla (solo visible en desktop) -->
+    <div class="order-item header">
+      <div class="cell">Nº Pedido</div>
+      <div class="cell">Fecha</div>
+      <div class="cell">Cliente</div>
+      <div class="cell">Total</div>
+      <div class="cell">Estado</div>
+      <div class="cell">Acciones</div>
+    </div>
+
+    <!-- Filas de pedidos -->
+    @for (order of orders(); track order._id) {
+    <div class="order-item">
+      <div class="cell font-semibold" data-label="Pedido">
+        #{{ order._id.slice(-6).toUpperCase() }}
+      </div>
+      <div class="cell" data-label="Fecha">
+        {{ order.createdAt | date : "short" }}
+      </div>
+      <div class="cell" data-label="Cliente">{{ order.customerInfo.name }}</div>
+      <div class="cell" data-label="Total">
+        {{ order.totalAmount | currency : "COP" : "symbol" : "1.0-0" }}
+      </div>
+      <div class="cell" data-label="Estado">
+        <span class="status-chip" [ngClass]="order.status.toLowerCase()">
+          {{ order.status }}
+        </span>
+      </div>
+      <div class="cell" data-label="Acciones">
+        <div class="action-buttons">
+          <a
+            [routerLink]="['/admin/orders', order._id]"
+            class="action-button details"
+            appRipple
+            >Detalles</a
+          >
+          <button
+            (click)="deleteOrder(order._id)"
+            class="action-button delete"
+            appRipple
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Estado Vacío -->
+  @if (!isLoading() && orders().length === 0) {
+  <div class="empty-state">
+    <p>Aún no has recibido ningún pedido.</p>
+  </div>
+  }
 </div>

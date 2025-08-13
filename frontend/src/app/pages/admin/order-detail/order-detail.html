@@ -1,62 +1,112 @@
-<div *ngIf="order" class="order-detail-container">
-    <header class="page-header">
-        <h1>Pedido #{{ order._id.slice(-6) }}</h1>
-        <div class="header-actions">
-            <button class="action-button">Imprimir Guía</button>
-            <button class="action-button primary">Contactar Cliente</button>
-        </div>
-    </header>
+@if (isLoading()) {
+<div class="loading-container">Cargando detalles del pedido...</div>
+}
 
-    <div class="details-grid">
-        <div class="main-content">
-            <div class="card">
-                <h2 class="card-title">Artículos del Pedido</h2>
-                <div *ngFor="let item of order.items" class="order-item">
-                    <!-- Accedemos a las propiedades a través de 'item.product' -->
-                    <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
-                    <div class="item-info">
-                        <p class="item-name">{{ item.product.name }}</p>
-                        <p class="item-sku">SKU: {{ item.product.sku || 'N/A' }}</p>
-                    </div>
-                    <p class="item-price-quantity">{{ item.quantity }} x {{ item.price | currency:'COP':'symbol':'1.0-0'
-                        }}</p>
-                    <p class="item-total">{{ (item.quantity * item.price) | currency:'COP':'symbol':'1.0-0' }}</p>
-                </div>
-                <div class="totals-summary">
-                    <!-- Aquí irían Subtotal, Envío, Impuestos... -->
-                    <div class="total-row">
-                        <strong>Total</strong>
-                        <strong>{{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }}</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <aside class="sidebar-content">
-            <div class="card">
-                <h2 class="card-title">Información del Cliente</h2>
-                <p><strong>{{ order.customerInfo.name }}</strong></p>
-                <p class="text-secondary">{{ order.customerInfo.email }}</p>
-            </div>
-            <div class="card">
-                <h2 class="card-title">Estado y Notas</h2>
-
-                <!-- Usamos ngSubmit para llamar a nuestro método updateStatus -->
-                <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
-                    <div class="form-field">
-                        <label for="status">Cambiar Estado del Pedido</label>
-                        <select id="status" formControlName="status" class="form-input">
-                            <option *ngFor="let status of orderStatuses" [value]="status">{{ status }}</option>
-                        </select>
-                    </div>
-
-                    <!-- En el futuro, aquí podría ir un campo para notas -->
-
-                    <button type="submit" class="submit-button" [disabled]="!statusForm || statusForm.invalid">
-                        Guardar Cambios
-                    </button>
-                </form>
-            </div>
-        </aside>
+<!-- Contenido del Pedido -->
+@if (order(); as currentOrder) {
+<div class="order-detail-container" @fadeInOut>
+  <header class="page-header">
+    <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
+    <div class="header-actions">
+      <!-- Botones usan nuestro Design System -->
+      <button class="btn-secondary" appRipple>Imprimir Guía</button>
+      <button class="btn-material" appRipple>Contactar Cliente</button>
     </div>
+  </header>
+
+  <div class="details-grid">
+    <!-- Columna Principal -->
+    <div class="main-content">
+      <div class="card">
+        <h2 class="card-title">
+          Artículos del Pedido ({{ currentOrder.items.length }})
+        </h2>
+        @for (item of currentOrder.items; track item.product._id) {
+        <div class="order-item">
+          <div class="item-image-wrapper">
+            @if(item.product?.images && item.product.images.length > 0) {
+            <img
+              [src]="item.product.images[0]"
+              [alt]="item.product.name"
+              class="item-image"
+            />
+            } @else {
+            <div class="item-image placeholder"></div>
+            }
+          </div>
+          <div class="item-info">
+            <p class="item-name">
+              {{ item.product?.name || "Producto no disponible" }}
+            </p>
+            <!-- ¡AQUÍ MOSTRAMOS LAS VARIANTES! -->
+            @if(item.selectedVariants) {
+            <div class="item-variants">
+              @for(variant of objectKeys(item.selectedVariants); track variant){
+              <span
+                >{{ variant }}:
+                <strong>{{ item.selectedVariants[variant] }}</strong></span
+              >
+              }
+            </div>
+            }
+          </div>
+          <p class="item-price-quantity">
+            {{ item.quantity }} x
+            {{ item.price | currency : "COP" : "symbol" : "1.0-0" }}
+          </p>
+          <p class="item-total">
+            {{
+              item.quantity * item.price | currency : "COP" : "symbol" : "1.0-0"
+            }}
+          </p>
+        </div>
+        }
+        <div class="totals-summary">
+          <div class="total-row">
+            <strong>Total</strong>
+            <strong>{{
+              currentOrder.totalAmount | currency : "COP" : "symbol" : "1.0-0"
+            }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Lateral -->
+    <aside class="sidebar-content">
+      <div class="card">
+        <h2 class="card-title">Información del Cliente</h2>
+        <p class="customer-name">{{ currentOrder.customerInfo.name }}</p>
+        <p class="customer-email">{{ currentOrder.customerInfo.email }}</p>
+      </div>
+      <div class="card">
+        <h2 class="card-title">Estado del Pedido</h2>
+        <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
+          <div class="form-field has-arrow">
+            <label for="status">Cambiar Estado</label>
+            <!-- ¡AÑADE el atributo as="select" AQUÍ! -->
+            <select
+              id="status"
+              formControlName="status"
+              class="form-input"
+              as="select"
+            >
+              @for(status of orderStatuses; track status){
+              <option [value]="status">{{ status }}</option>
+              }
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="btn-material"
+            [disabled]="statusForm.invalid || statusForm.pristine"
+            appRipple
+          >
+            Guardar Cambios
+          </button>
+        </form>
+      </div>
+    </aside>
+  </div>
 </div>
+}

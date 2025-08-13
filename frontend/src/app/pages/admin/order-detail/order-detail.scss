@@ -1,28 +1,23 @@
-// Estilos generales de la página
+@use "../../../../../buttons" as *; // El '*' hace que las clases estén disponibles
+@use "../_admin-shared" as *;
+
+// --- Estilos Generales ---
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: 1.5rem;
   margin-bottom: 2rem;
-  h1 { font-size: 2.25rem; }
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
 }
 
 .header-actions {
   display: flex;
   gap: 1rem;
-  .action-button {
-    padding: 0.5rem 1.5rem;
-    border-radius: 9999px;
-    font-weight: 700;
-    border: 1px solid var(--soft-gray);
-    background-color: white;
-    cursor: pointer;
-    &.primary {
-      background-color: var(--pastel-pink);
-      color: white;
-      border-color: var(--pastel-pink);
-    }
-  }
 }
 
 .details-grid {
@@ -30,7 +25,7 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
 }
 
@@ -38,92 +33,185 @@
   background-color: white;
   border-radius: 1rem;
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  &:not(:last-child) {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .card-title {
   font-size: 1.25rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--soft-gray);
 }
 
-.text-secondary {
+.customer-name {
+  font-weight: 600;
+}
+.customer-email {
   color: var(--text-secondary);
+  font-size: 0.875rem;
 }
-
-// Estilos para los ítems del pedido
+// --- Lista de Artículos ---
 .order-item {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto; // Imagen, Info, Total
+  grid-template-areas: "img info total" "img variants total";
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
+  padding: 1.25rem 0;
   border-bottom: 1px solid var(--soft-gray);
-  &:last-child {
+  &:first-of-type {
+    padding-top: 0;
+  }
+  &:last-of-type {
     border-bottom: none;
   }
+}
+
+.item-image-wrapper {
+  grid-area: img;
+}
+.item-info {
+  grid-area: info;
+}
+.item-variants {
+  grid-area: variants;
+}
+.item-price-quantity {
+  display: none;
+} // Oculto para un look más limpio
+.item-total {
+  grid-area: total;
+  text-align: right;
+  font-weight: 600;
 }
 
 .item-image {
   width: 64px;
   height: 64px;
   object-fit: cover;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
+  &.placeholder {
+    background-color: var(--soft-gray);
+  }
 }
 
 .item-name {
   font-weight: 600;
 }
-
-.item-sku {
-  font-size: 0.875rem;
+.item-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-}
-
-.item-price-quantity, .item-total {
-  text-align: right;
+  padding-top: 0.25rem;
 }
 
 .totals-summary {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid var(--soft-gray);
   .total-row {
     display: flex;
     justify-content: space-between;
     font-size: 1.25rem;
+    font-weight: 700;
   }
 }
 
-// ... (estilos existentes) ...
-
 .form-field {
-  margin-bottom: 1rem;
+  position: relative; // Necesario para el ícono de la flecha
+  margin-bottom: 1.5rem; // Más espacio
+
   label {
     display: block;
     font-size: 0.875rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  // Añadimos un ícono de flecha desplegable
+  &::after {
+    content: "expand_more"; // Nombre del ícono de Material Symbols
+    font-family: "Material Symbols Outlined";
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(25%); // Ajuste fino de la posición vertical
+    pointer-events: none; // Permite hacer clic a través del ícono
+    color: var(--text-secondary);
   }
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--soft-gray);
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   background-color: var(--soft-white);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  // Hacemos que el <select> parezca un input normal
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  transition: all 0.2s ease-in-out;
+
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  }
+
+  option {
+    font-family: "Manrope", sans-serif;
+    color: var(--text-charcoal);
+    background-color: white;
+  }
 }
 
-.submit-button {
+// --- ¡SECCIÓN DE BOTONES LIMPIA! ---
+.btn-material {
+  @extend .btn-material;
   width: 100%;
   margin-top: 1rem;
-  padding: 0.75rem;
-  border: none;
-  border-radius: 0.5rem;
-  background-color: var(--pastel-pink);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
+
+  &:disabled {
+    background-color: var(--soft-gray);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    &::before {
+      opacity: 0;
+    }
+  }
+}
+
+.btn-secondary {
+  @extend .btn-secondary;
+}
+
+// --- Media Query para Móvil ---
+@media (max-width: 767px) {
+  .order-item {
+    grid-template-columns: auto 1fr; // Imagen, Contenido
+    grid-template-areas:
+      "img info"
+      "img variants"
+      "img total";
+    row-gap: 0.5rem;
+  }
+  .item-total {
+    text-align: left;
+    padding-top: 0.5rem;
+  }
 }
