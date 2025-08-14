@@ -1,90 +1,133 @@
-// El :host es el contenedor principal que ocupa toda la pantalla.
-// Controla el fondo oscuro y la visibilidad general del flyout.
+// Contenido completo y corregido para: src/app/components/cart-flyout/cart-flyout.scss
+@use "../../../../buttons";
+
 :host {
   position: fixed;
-  inset: 0; // Abarca top, right, bottom, left = 0
-  z-index: 200; // Se asegura de que esté por encima de todo
-  
-  // Por defecto está oculto
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.flyout-container {
+  position: absolute;
+  inset: 0;
+}
+
+// --- Overlay ---
+.flyout-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(32, 34, 31, 0.4);
   opacity: 0;
-  visibility: hidden;
-  
-  // Transición suave para el efecto de aparición
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  transition: opacity 0.4s ease;
+}
 
-  // Cuando el componente tiene la clase 'visible', se muestra
-  &.visible {
+// --- Panel Flotante del Carrito (VERSIÓN FLOTANTE) ---
+.flyout-panel {
+  position: absolute;
+  top: 1rem; // Margen superior
+  right: 1rem; // Margen derecho
+  bottom: 1rem; // Margen inferior
+  width: 420px;
+  max-width: calc(100% - 2rem);
+  max-height: calc(65% - 2rem);
+  background-color: var(--background);
+  border-radius: 1.5rem; // Bordes redondeados
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // Clave para que el contenido no se salga de los bordes redondeados
+
+  // Animación
+  transform: translateX(110%);
+  opacity: 0.8;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+// --- ESTADO "ABIERTO" ---
+.flyout-container.is-open {
+  pointer-events: auto;
+  .flyout-overlay {
     opacity: 1;
-    visibility: visible;
-
-    // Y el panel interior se desliza a su posición
-    .flyout-panel {
-      transform: translateX(0);
-    }
+  }
+  .flyout-panel {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
-// Este es el fondo oscuro semitransparente
-.flyout-backdrop {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
-// Este es el panel blanco que se desliza desde la derecha
-.flyout-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  max-width: 420px;
-  background-color: var(--soft-white);
-  display: flex;
-  flex-direction: column;
-  box-shadow: -5px 0 25px rgba(0,0,0,0.1);
-  
-  // Estado inicial (fuera de la pantalla) y transición suave
-  transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-// --- Estilos para el contenido DENTRO del panel ---
-
+// Nuevo header estilo "píldora"
 .flyout-header {
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.header-title-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--soft-white); // Un color ligeramente diferente
+  border-radius: 9999px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--soft-gray);
+}
+
+.close-button {
+  background-color: var(--soft-gray);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--soft-gray);
-  flex-shrink: 0; // Evita que se encoja
+  justify-content: center;
+  transition: all 0.2s;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: #dcd5cd;
+  }
 }
 
 .flyout-title {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-size: 1.5rem;
 }
 
 .close-button {
-  background: none;
+  background-color: var(--soft-gray);
   border: none;
-  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   cursor: pointer;
-  color: var(--text-secondary);
-  padding: 0.5rem;
-  line-height: 1;
-}
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 
-.content-wrapper {
-  flex-grow: 1;
-  overflow-y: auto; // Permite scroll si hay muchos productos
+  &:hover {
+    transform: scale(1.1);
+    background-color: #dcd5cd;
+  }
 }
 
 .items-list {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
 }
 
 .cart-item {
@@ -92,127 +135,102 @@
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
   align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--soft-gray);
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .item-image {
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
+  border-radius: 0.75rem;
   object-fit: cover;
-  border-radius: 0.5rem;
 }
-
-.item-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
 .item-name {
-  font-weight: 700;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
 }
-
-.item-price {
-  font-size: 0.875rem;
+.item-variants {
+  font-size: 0.8rem;
   color: var(--text-secondary);
 }
 
-.quantity-selector {
-    max-width: 35%;
+.item-actions {
   display: flex;
   align-items: center;
   border: 1px solid var(--soft-gray);
   border-radius: 9999px;
-  margin-top: 0.5rem;
-
-  button {
-    background: none;
-    border: none;
-    padding: 0.25rem 0.75rem;
-    cursor: pointer;
-  }
-  span {
-    padding: 0 0.25rem;
-    min-width: 2ch;
-    text-align: center;
-  }
+  padding: 0.25rem;
 }
 
-.remove-button {
+.quantity-btn {
   background: none;
   border: none;
+  width: 28px;
+  height: 28px;
   cursor: pointer;
-  color: var(--text-secondary);
-  padding: 0.5rem;
-  &:hover {
-    color: #e53e3e;
-  }
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-.empty-cart-content {
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.quantity-value {
+  min-width: 2ch;
   text-align: center;
-  height: 100%;
-}
-
-.empty-cart-image {
-  width: 12rem;
-  height: 12rem;
-  margin-bottom: 1.5rem;
-}
-
-.empty-cart-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-charcoal);
-}
-
-.explore-button {
-  margin-top: 1.5rem;
-  background-color: var(--pastel-pink);
-  color: var(--text-primary);
-  font-weight: 700;
-  padding: 0.75rem 2rem;
-  border-radius: 9999px;
-  text-decoration: none;
-  &:hover {
-    opacity: 0.9;
-  }
+  font-weight: 500;
 }
 
 .flyout-footer {
   padding: 1.5rem;
   border-top: 1px solid var(--soft-gray);
-  background-color: var(--background);
+  background-color: white;
   flex-shrink: 0;
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .subtotal-row {
   display: flex;
   justify-content: space-between;
-  font-weight: 700;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
   font-size: 1.125rem;
 }
 
-.shipping-notice {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+.btn-material {
+  @extend .btn-material;
+  width: 100%;
+  text-decoration: none;
 }
 
-.checkout-button {
-  display: block;
-  width: 100%;
+// --- ESTADO VACÍO Y EL GATO ---
+.empty-state {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
   text-align: center;
-  background-color: var(--pastel-pink);
-  color: white;
-  padding: 0.875rem;
-  border-radius: 9999px;
-  text-decoration: none;
-  font-weight: 700;
+  background-color: #fff5ee; // Un fondo suave
+}
+
+.cat-container {
+  width: 100%;
+  max-width: 200px; // Un poco más grande
+  margin-bottom: 1.5rem;
+}
+
+.empty-state p {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-charcoal);
+  margin: 0;
+}
+
+.empty-state .subtitle {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
 }
