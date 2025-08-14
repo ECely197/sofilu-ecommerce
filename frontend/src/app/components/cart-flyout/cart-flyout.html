@@ -68,7 +68,7 @@
 
     } @else {
     <!-- ¡NUEVO! El estado del carrito vacío con TU Gato Interactivo -->
-    <div class="empty-state">
+    <div class="empty-state" (click)="requestOrientationPermission()">
       <div class="cat-container">
         <!-- TU SVG - MODIFICADO CON IDs Y UN GRUPO <g> PARA LAS PUPILAS -->
         <svg
