@@ -6,6 +6,8 @@ const Product = require("../models/Product");
 
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
+const { sendOrderConfirmationEmail } = require("../services/emailService");
+
 // --- OBTENER TODOS LOS PEDIDOS (PARA EL ADMIN) ---
 router.get("/", async (req, res) => {
   try {
@@ -60,17 +62,11 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // --- CREAR UN NUEVO PEDIDO ---
-// Protegido: solo usuarios logueados pueden crear pedidos
 router.post("/", [authMiddleware], async (req, res) => {
   try {
     const { customerInfo, items } = req.body;
     const userId = req.user.uid;
 
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ message: "userId no encontrado en el token." });
-    }
     if (!items || items.length === 0) {
       return res
         .status(400)
@@ -80,7 +76,6 @@ router.post("/", [authMiddleware], async (req, res) => {
     let totalAmount = 0;
     const processedItems = [];
 
-    // --- ¡LA CORRECCIÓN ESTÁ DENTRO DE ESTE BUCLE! ---
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -88,29 +83,32 @@ router.post("/", [authMiddleware], async (req, res) => {
           .status(404)
           .json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
-
-      // Sumamos al total (la lógica de precios puede ser más compleja si hay ofertas)
-      const itemPrice = product.isOnSale ? product.salePrice : product.price;
+      const itemPrice =
+        product.isOnSale && product.salePrice
+          ? product.salePrice
+          : product.price;
       totalAmount += itemPrice * item.quantity;
-
-      // Creamos el objeto para guardar, ahora incluyendo las variantes
       processedItems.push({
         product: product._id,
         quantity: item.quantity,
         price: itemPrice,
-        selectedVariants: item.selectedVariants, // ¡LA LÍNEA QUE FALTABA!
+        selectedVariants: item.selectedVariants,
       });
     }
 
     const newOrder = new Order({
-      userId: userId,
-      customerInfo: customerInfo,
-      items: processedItems, // Ahora este array contiene las variantes
-      totalAmount: totalAmount,
+      userId,
+      customerInfo,
+      items: processedItems,
+      totalAmount,
     });
 
     let savedOrder = await newOrder.save();
+
+    // Poblamos los datos del producto para que el correo tenga la información completa
     savedOrder = await savedOrder.populate("items.product");
+
+    // Ahora esta llamada funcionará porque la función está importada
     sendOrderConfirmationEmail(savedOrder);
 
     res.status(201).json(savedOrder);
