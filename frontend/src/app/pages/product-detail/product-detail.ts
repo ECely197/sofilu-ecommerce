@@ -183,12 +183,9 @@ export class ProductDetailComponent implements OnInit {
   addToCart(): void {
     const currentProduct = this.product();
     if (currentProduct) {
-      // ¡EL CAMBIO CLAVE!
-      // Ahora pasamos tanto el producto como el signal de las variantes seleccionadas.
+      // Pasamos tanto el producto como el signal de las variantes seleccionadas
       const variants = this.selectedVariants();
       this.cartService.addItem(currentProduct, variants);
-
-      // En el futuro, reemplazaremos esto con un "toast" más elegante.
       alert(`${currentProduct.name} ha sido añadido al carrito!`);
     }
   }

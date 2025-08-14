@@ -7,50 +7,91 @@
       </a>
     </div>
 
-    <form [formGroup]="checkoutForm" (ngSubmit)="handlePayment()" novalidate class="checkout-form" [@formAnimation]>
-
+    <form
+      [formGroup]="checkoutForm"
+      (ngSubmit)="handlePayment()"
+      novalidate
+      class="checkout-form"
+    >
       <div class="form-section" formGroupName="contactInfo">
         <h2 class="section-title">Información de Contacto</h2>
         <div class="material-field">
-          <input id="email" type="email" class="material-input" formControlName="email" placeholder=" ">
+          <input
+            id="email"
+            type="email"
+            class="material-input"
+            formControlName="email"
+            placeholder=" "
+          />
           <label for="email" class="material-label">Correo Electrónico</label>
-
         </div>
       </div>
 
       <div class="form-section" formGroupName="shippingAddress">
         <h2 class="section-title">Dirección de Envío</h2>
         <div class="material-field">
-          <input id="name" type="text" class="material-input" formControlName="name" placeholder=" ">
+          <input
+            id="name"
+            type="text"
+            class="material-input"
+            formControlName="name"
+            placeholder=" "
+          />
           <label for="name" class="material-label">Nombre y Apellido</label>
-
         </div>
         <div class="material-field">
-          <input id="address" type="text" class="material-input" formControlName="address" placeholder=" ">
+          <input
+            id="address"
+            type="text"
+            class="material-input"
+            formControlName="address"
+            placeholder=" "
+          />
           <label for="address" class="material-label">Dirección Completa</label>
-
         </div>
         <div class="form-grid">
           <div class="material-field">
-            <input id="city" type="text" class="material-input" formControlName="city" placeholder=" ">
+            <input
+              id="city"
+              type="text"
+              class="material-input"
+              formControlName="city"
+              placeholder=" "
+            />
             <label for="city" class="material-label">Ciudad</label>
-
           </div>
           <div class="material-field">
-            <input id="postalCode" type="text" class="material-input" formControlName="postalCode" placeholder=" ">
+            <input
+              id="postalCode"
+              type="text"
+              class="material-input"
+              formControlName="postalCode"
+              placeholder=" "
+            />
             <label for="postalCode" class="material-label">Código Postal</label>
-
           </div>
         </div>
         <div class="material-field">
-          <input id="phone" type="tel" class="material-input" formControlName="phone" placeholder=" ">
+          <input
+            id="phone"
+            type="tel"
+            class="material-input"
+            formControlName="phone"
+            placeholder=" "
+          />
           <label for="phone" class="material-label">Teléfono</label>
-
         </div>
       </div>
 
       <div class="form-actions">
-         <button type="submit" [disabled]="checkoutForm.invalid" class="pay-button" appRipple>Pagar Ahora</button>
+        <button
+          type="submit"
+          [disabled]="checkoutForm.invalid"
+          class="pay-button"
+          appRipple
+        >
+          Pagar Ahora
+        </button>
       </div>
     </form>
   </div>
@@ -61,41 +102,63 @@
       <h2 class="summary-title">Tu Pedido</h2>
 
       <div class="summary-items">
-        @for (item of cartService.cartItems(); track item.product._id) {
+        @for (item of cartService.cartItems(); track item.id) {
         <div class="summary-item">
-          <!-- SOLUCIÓN: Usamos un *ngIf para verificar que existan imágenes -->
-          <div *ngIf="item.product.images && item.product.images.length > 0; else noImagePlaceholder" class="item-image"
-            [style.backgroundImage]="'url(' + item.product.images[0] + ')'">
+          <div class="item-image-wrapper">
+            @if (item.product.images && item.product.images.length > 0) {
+            <div
+              class="item-image"
+              [style.backgroundImage]="'url(' + item.product.images[0] + ')'"
+            ></div>
+            } @else {
+            <div class="item-image placeholder-image"></div>
+            }
             <span class="item-quantity">{{ item.quantity }}</span>
           </div>
-          <!-- Plantilla de respaldo si no hay imagen -->
-          <ng-template #noImagePlaceholder>
-            <div class="item-image placeholder-image">
-              <span class="item-quantity">{{ item.quantity }}</span>
-            </div>
-          </ng-template>
 
-          <p class="item-name">{{ item.product.name }}</p>
-          <p class="item-price">{{ (item.product.price * item.quantity) | currency:'COP':'symbol':'1.0-0' }}</p>
+          <div class="item-info">
+            <p class="item-name">{{ item.product.name }}</p>
+            <div class="item-variants">
+              @for (variantKey of objectKeys(item.selectedVariants); track
+              variantKey) {
+              <span
+                >{{ variantKey }}:
+                <strong>{{ item.selectedVariants[variantKey] }}</strong></span
+              >
+              }
+            </div>
+          </div>
+
+          <p class="item-price">
+            {{
+              item.product.price * item.quantity
+                | currency : "COP" : "symbol" : "1.0-0"
+            }}
+          </p>
         </div>
         }
       </div>
 
-      <hr>
+      <hr />
 
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
-          <span>{{ cartService.subTotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+          <span>{{
+            cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
         </div>
         <div class="summary-row">
           <span>Envío</span>
           <span>$10,000</span>
         </div>
-        <hr>
+        <hr />
         <div class="summary-row total">
           <span>Total</span>
-          <span>{{ (cartService.subTotal() + 10000) | currency:'COP':'symbol':'1.0-0' }}</span>
+          <span>{{
+            cartService.subTotal() + 10000
+              | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
         </div>
       </div>
     </div>

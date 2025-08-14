@@ -32,9 +32,7 @@ export class Cart {
    * @returns Un array de strings con las claves del objeto.
    */
   public objectKeys(obj: object): string[] {
-    if (!obj) {
-      return [];
-    }
+    if (!obj) return [];
     return Object.keys(obj);
   }
 }

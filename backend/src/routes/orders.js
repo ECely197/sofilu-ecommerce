@@ -64,24 +64,13 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
 router.post("/", [authMiddleware], async (req, res) => {
   try {
     const { customerInfo, items } = req.body;
-
-    // --- Log de Depuración #2 ---
-    // Verificamos qué hay en req.user justo cuando llega a la ruta
-    console.log("--- Ruta POST /api/orders: Contenido de req.user ---");
-    console.log(req.user);
-
-    // Obtenemos el UID del usuario desde el token verificado por el middleware
     const userId = req.user.uid;
 
     if (!userId) {
       return res
         .status(400)
-        .json({
-          message:
-            "FATAL: userId no fue encontrado en el token después de la verificación del middleware.",
-        });
+        .json({ message: "userId no encontrado en el token." });
     }
-
     if (!items || items.length === 0) {
       return res
         .status(400)
@@ -91,6 +80,7 @@ router.post("/", [authMiddleware], async (req, res) => {
     let totalAmount = 0;
     const processedItems = [];
 
+    // --- ¡LA CORRECCIÓN ESTÁ DENTRO DE ESTE BUCLE! ---
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -98,22 +88,31 @@ router.post("/", [authMiddleware], async (req, res) => {
           .status(404)
           .json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
-      totalAmount += product.price * item.quantity;
+
+      // Sumamos al total (la lógica de precios puede ser más compleja si hay ofertas)
+      const itemPrice = product.isOnSale ? product.salePrice : product.price;
+      totalAmount += itemPrice * item.quantity;
+
+      // Creamos el objeto para guardar, ahora incluyendo las variantes
       processedItems.push({
         product: product._id,
         quantity: item.quantity,
-        price: product.price,
+        price: itemPrice,
+        selectedVariants: item.selectedVariants, // ¡LA LÍNEA QUE FALTABA!
       });
     }
 
     const newOrder = new Order({
       userId: userId,
       customerInfo: customerInfo,
-      items: processedItems,
+      items: processedItems, // Ahora este array contiene las variantes
       totalAmount: totalAmount,
     });
 
-    const savedOrder = await newOrder.save();
+    let savedOrder = await newOrder.save();
+    savedOrder = await savedOrder.populate("items.product");
+    sendOrderConfirmationEmail(savedOrder);
+
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("--- Ruta POST /api/orders: ERROR ---", error);

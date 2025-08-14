@@ -1,95 +1,105 @@
-// Importaciones necesarias
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
+  trigger,
+  transition,
+  style,
+  animate,
+  query,
+  stagger,
+} from '@angular/animations';
+
 import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
 import { RippleDirective } from '../../directives/ripple';
-import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 
-// ¡El decorador @Component es fundamental!
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective, RouterLink],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
   animations: [
     trigger('formAnimation', [
       transition(':enter', [
-        query('.auth-card > *', [
-          style({ opacity: 0, transform: 'translateY(30px)' }),
+        query('.form-section', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
           stagger('100ms', [
-            animate('500ms cubic-bezier(0.35, 0, 0.25, 1)', style({ opacity: 1, transform: 'none' }))
-          ])
-        ])
-      ])
-    ])
-  ]  
+            animate(
+              '500ms cubic-bezier(0.35, 0, 0.25, 1)',
+              style({ opacity: 1, transform: 'none' })
+            ),
+          ]),
+        ]),
+      ]),
+    ]),
+  ],
 })
-// ¡Nombre de clase corregido y OnInit implementado!
 export class checkout implements OnInit {
-  // Inyección de dependencias
   public cartService = inject(CartService);
   private router = inject(Router);
   private orderService = inject(OrderService);
 
-  // Declaración del formulario
   checkoutForm!: FormGroup;
 
   ngOnInit(): void {
-    // Inicializamos el formulario en ngOnInit
     this.checkoutForm = new FormGroup({
       contactInfo: new FormGroup({
-        email: new FormControl('', [Validators.required, Validators.email])
+        email: new FormControl('', [Validators.required, Validators.email]),
       }),
       shippingAddress: new FormGroup({
         name: new FormControl('', Validators.required),
         address: new FormControl('', Validators.required),
         city: new FormControl('', Validators.required),
-        postalCode: new FormControl(''), // Opcional por ahora
-        phone: new FormControl('', Validators.required)
-      })
+        postalCode: new FormControl(''),
+        phone: new FormControl('', Validators.required),
+      }),
     });
   }
 
   handlePayment(): void {
-    // Primero, verificamos si el carrito está vacío.
     if (this.cartService.totalItems() === 0) {
-      alert("Tu carrito está vacío. Añade productos antes de continuar.");
+      alert('Tu carrito está vacío. Añade productos antes de continuar.');
       this.router.navigate(['/products']);
-      return; // Detiene la ejecución si el carrito está vacío
+      return;
     }
-    
-    // Marcamos todos los campos como "tocados" para que se muestren los errores de validación.
-    this.checkoutForm.markAllAsTouched();
 
-    // Segundo, verificamos si el formulario es válido.
     if (this.checkoutForm.invalid) {
+      this.checkoutForm.markAllAsTouched();
       alert('Por favor, completa todos los campos requeridos.');
-      return; // Detiene la ejecución si el formulario no es válido
+      return;
     }
 
-    // Si todo es válido, procedemos a crear el pedido.
     const formValue = this.checkoutForm.getRawValue();
     const customerInfo = {
       name: formValue.shippingAddress.name,
       email: formValue.contactInfo.email,
-      // Aquí añadiríamos el resto de los datos de envío en el futuro
     };
 
     const cartItems = this.cartService.cartItems();
-    const processedItems = cartItems.map(item => ({
+
+    const processedItems = cartItems.map((item) => ({
       product: item.product._id,
       quantity: item.quantity,
-      price: item.product.price
+      price: item.product.price,
+      selectedVariants: item.selectedVariants, // Incluimos las variantes
     }));
 
     const orderData = {
       customerInfo,
-      items: processedItems
+      items: processedItems,
     };
+
+    // --- LOG DE DEPURACIÓN CLAVE ---
+    console.log('--- ENVIANDO DATOS DEL PEDIDO AL BACKEND ---');
+    console.log(JSON.stringify(orderData, null, 2));
 
     this.orderService.createOrder(orderData).subscribe({
       next: (savedOrder) => {
@@ -99,8 +109,18 @@ export class checkout implements OnInit {
       },
       error: (err) => {
         console.error('Error al crear el pedido:', err);
-        alert('Hubo un error al procesar tu pedido. Revisa la consola para más detalles.');
-      }
+        // Mostramos un mensaje más útil en caso de error
+        const errorMessage =
+          err.error?.message || 'Hubo un error al procesar tu pedido.';
+        alert(errorMessage + ' Revisa la consola para más detalles.');
+      },
     });
+  }
+
+  public objectKeys(obj: object): string[] {
+    if (!obj) {
+      return [];
+    }
+    return Object.keys(obj);
   }
 }

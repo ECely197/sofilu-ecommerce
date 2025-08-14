@@ -1,5 +1,4 @@
-// Contenido completo para: src/app/services/cart.ts
-
+// Contenido para: src/app/services/cart.ts
 import { Injectable, computed, signal } from '@angular/core';
 import { CartItem } from '../interfaces/cart-item.interface';
 import { Product } from '../interfaces/product.interface';
@@ -13,7 +12,6 @@ export class CartService {
   totalItems = computed(() =>
     this.cartItems().reduce((total, item) => total + item.quantity, 0)
   );
-
   subTotal = computed(() =>
     this.cartItems().reduce(
       (total, item) => total + item.product.price * item.quantity,
@@ -34,12 +32,11 @@ export class CartService {
     return `${productId}-${variantString}`;
   }
 
+  // MÉTODO ACTUALIZADO: Acepta el producto y las variantes seleccionadas
   addItem(product: Product, selectedVariants: { [key: string]: string }): void {
     const itemId = this.generateItemId(product._id, selectedVariants);
-
     this.cartItems.update((items) => {
       const existingItem = items.find((item) => item.id === itemId);
-
       if (existingItem) {
         return items.map((item) =>
           item.id === itemId
@@ -56,15 +53,16 @@ export class CartService {
         return [...items, newItem];
       }
     });
-
-    console.log('Carrito actualizado:', this.cartItems());
   }
 
+  // MÉTODO ACTUALIZADO: Usa el ID único del ítem
   removeItem(itemId: string): void {
     this.cartItems.update((items) =>
       items.filter((item) => item.id !== itemId)
     );
   }
+
+  // MÉTODO ACTUALIZADO: Usa el ID único del ítem
   updateQuantity(itemId: string, newQuantity: number): void {
     this.cartItems.update((items) => {
       if (newQuantity <= 0) {
