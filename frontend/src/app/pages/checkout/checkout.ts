@@ -20,6 +20,7 @@ import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
 import { RippleDirective } from '../../directives/ripple';
 import { Coupon } from '../../services/coupon';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-checkout',
@@ -48,10 +49,12 @@ export class checkout implements OnInit {
   private router = inject(Router);
   private orderService = inject(OrderService);
   private couponService = inject(Coupon);
+  private settingsService = inject(SettingsService);
 
   checkoutForm!: FormGroup;
 
   // --- SIGNALS PARA GESTIONAR EL ESTADO DEL CUPÓN Y TOTALES ---
+  shippingCost = signal<number>(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
   couponMessage = signal<string>('');
@@ -59,11 +62,16 @@ export class checkout implements OnInit {
 
   // El total final ahora es un signal calculado (computed)
   grandTotal = computed(() => {
-    const total = this.cartService.subTotal() + 10000 - this.discountAmount();
-    return Math.max(0, total); // Asegura que el total nunca sea negativo
+    const total =
+      this.cartService.subTotal() + this.shippingCost() - this.discountAmount();
+    return Math.max(0, total);
   });
 
   ngOnInit(): void {
+    this.settingsService.getShippingCost().subscribe((cost) => {
+      this.shippingCost.set(cost);
+    });
+
     this.checkoutForm = new FormGroup({
       contactInfo: new FormGroup({
         email: new FormControl('', [Validators.required, Validators.email]),

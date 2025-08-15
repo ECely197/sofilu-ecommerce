@@ -1,44 +1,73 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// ¡Importamos las herramientas para el formulario!
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { trigger, transition, style, animate } from '@angular/animations';
+
+import { SettingsService } from '../../../services/settings.service';
+import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  // ¡Añadimos ReactiveFormsModule!
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './settings.html',
-  // ¡Reutilizamos los estilos del formulario de productos para consistencia!
-  styleUrl: '../product-form/product-form.scss'
+  styleUrl: './settings.scss',
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(10px)' }),
+        animate(
+          '400ms ease-out',
+          style({ opacity: 1, transform: 'translateY(0)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class settings implements OnInit {
+  private fb = inject(FormBuilder);
+  private settingsService = inject(SettingsService);
 
-  // Creamos un FormGroup principal que contendrá otros grupos anidados.
-  settingsForm = new FormGroup({
-    // Grupo para la información de la tienda
-    storeInfo: new FormGroup({
-      name: new FormControl('Sofilu'),
-      email: new FormControl('contacto@sofilu.com')
-    }),
-    // Grupo para los ajustes de envío
-    shipping: new FormGroup({
-      enableFreeShipping: new FormControl(true),
-      freeShippingThreshold: new FormControl(200000) // 200.000 COP
-    })
-  });
+  settingsForm!: FormGroup;
+  isLoading = signal(true);
+  isSaving = signal(false);
 
   ngOnInit(): void {
-    // En un futuro, aquí cargaríamos los ajustes que ya están guardados en la base de datos
-    // y los pondríamos en el formulario con this.settingsForm.patchValue(...).
+    // Inicializamos el formulario
+    this.settingsForm = this.fb.group({
+      shippingCost: [null, [Validators.required, Validators.min(0)]],
+    });
+
+    // Obtenemos el costo de envío actual y rellenamos el formulario
+    this.settingsService.getShippingCost().subscribe((cost) => {
+      this.settingsForm.patchValue({ shippingCost: cost });
+      this.isLoading.set(false);
+    });
   }
 
   handleSubmit(): void {
-    if (this.settingsForm.valid) {
-      // Por ahora, solo mostraremos los datos en la consola.
-      // En el futuro, llamaríamos a un 'SettingsService' para guardarlos en el backend.
-      console.log('Ajustes guardados:', this.settingsForm.value);
-      alert('¡Ajustes guardados con éxito!');
-    }
+    if (this.settingsForm.invalid) return;
+
+    this.isSaving.set(true);
+    const newCost = this.settingsForm.value.shippingCost;
+
+    this.settingsService.updateShippingCost(newCost).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        alert('¡Ajustes guardados con éxito!');
+        // Mantenemos el formulario "sucio" como "limpio" para deshabilitar el botón
+        this.settingsForm.markAsPristine();
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        console.error('Error al guardar los ajustes:', err);
+        alert('No se pudieron guardar los ajustes.');
+      },
+    });
   }
 }

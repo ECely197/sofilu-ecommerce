@@ -15,6 +15,7 @@ const wishlistRoutes = require("./routes/wishlist");
 const orderRoutes = require("./routes/orders");
 const userRoutes = require("./routes/users");
 const couponRoutes = require("./routes/coupons");
+const settingsRoutes = require("./routes/settings");
 
 // ==========================================================================
 // 2. INICIALIZACIÓN
@@ -80,6 +81,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/coupons", couponRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // ==========================================================================
 // 6. ARRANQUE DEL SERVIDOR

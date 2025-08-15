@@ -1,42 +1,38 @@
+<!-- Contenido completo para: src/app/pages/admin/settings/settings.html -->
+
 <header class="page-header">
   <h1>Ajustes de la Tienda</h1>
 </header>
 
-<!-- Enlazamos el formulario principal -->
-<form [formGroup]="settingsForm" (ngSubmit)="handleSubmit()">
-  
-  <!-- Tarjeta de Información de la Tienda -->
-  <!-- 'formGroupName' conecta esta sección con el FormGroup anidado 'storeInfo' -->
-  <div class="card" formGroupName="storeInfo">
-    <h2 class="card-title">Información de la Tienda</h2>
-    <div class="form-field">
-      <label for="name">Nombre de la Tienda</label>
-      <input id="name" type="text" formControlName="name" class="form-input">
-    </div>
-    <div class="form-field">
-      <label for="email">Correo Electrónico de Contacto</label>
-      <input id="email" type="email" formControlName="email" class="form-input">
-    </div>
-  </div>
-
-  <!-- Tarjeta de Ajustes de Envío -->
-  <div class="card" style="margin-top: 1.5rem;" formGroupName="shipping">
+@if (!isLoading()) {
+<form [formGroup]="settingsForm" (ngSubmit)="handleSubmit()" @fadeIn>
+  <div class="card">
     <h2 class="card-title">Envíos</h2>
-    <div class="form-field" style="display: flex; align-items: center; gap: 0.5rem;">
-      <!-- Un 'checkbox' normal de HTML funciona perfectamente con formControlName -->
-      <input type="checkbox" id="enableFreeShipping" formControlName="enableFreeShipping">
-      <label for="enableFreeShipping">Habilitar envío gratuito por compras superiores a:</label>
-    </div>
     <div class="form-field">
-      <label for="freeShippingThreshold">Monto mínimo para envío gratuito</label>
-      <input id="freeShippingThreshold" type="number" formControlName="freeShippingThreshold" class="form-input">
+      <label for="shippingCost">Costo de envío global (COP)</label>
+      <p class="field-description">
+        Este será el costo de envío por defecto para todos los pedidos.
+      </p>
+      <input
+        id="shippingCost"
+        type="number"
+        formControlName="shippingCost"
+        class="form-input"
+      />
     </div>
   </div>
 
-  <!-- Acciones del Formulario -->
   <div class="form-actions">
-    <button type="submit" [disabled]="settingsForm.invalid" class="save-button">
-      Guardar Cambios
+    <button
+      type="submit"
+      class="btn-material"
+      [disabled]="settingsForm.invalid || settingsForm.pristine || isSaving()"
+      appRipple
+    >
+      {{ isSaving() ? "Guardando..." : "Guardar Cambios" }}
     </button>
   </div>
 </form>
+} @else {
+<p>Cargando ajustes...</p>
+}
