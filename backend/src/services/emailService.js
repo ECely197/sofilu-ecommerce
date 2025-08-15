@@ -1,4 +1,5 @@
-// Contenido para: backend/src/services/emailService.js
+// Contenido completo y final para: backend/src/services/emailService.js
+
 const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const path = require("path");
@@ -20,11 +21,16 @@ async function sendOrderConfirmationEmail(order) {
       "../views/order-confirmation-email.ejs"
     );
 
-    // Renderizamos el HTML, pasándole el objeto 'order' completo a la plantilla
-    const html = await ejs.renderFile(templatePath, { order });
+    // --- ¡LA SOLUCIÓN CLAVE ESTÁ AQUÍ! ---
+    // Convertimos el documento complejo de Mongoose a un objeto simple de JavaScript
+    // antes de pasarlo a la plantilla. Esto elimina todos los metadatos extra.
+    const orderObject = order.toObject();
+
+    // Ahora le pasamos el objeto "limpio" a la plantilla.
+    const html = await ejs.renderFile(templatePath, { order: orderObject });
 
     const mailOptions = {
-      from: "Sofilu Store <onboarding@resend.dev>", // Email por defecto de Resend
+      from: "Sofilu Store <onboarding@resend.dev>",
       to: order.customerInfo.email,
       subject: `¡Gracias por tu pedido, ${
         order.customerInfo.name
@@ -38,7 +44,7 @@ async function sendOrderConfirmationEmail(order) {
     );
   } catch (error) {
     console.error("--- ERROR AL ENVIAR CORREO DE CONFIRMACIÓN ---");
-    console.error(error); // Este error aparecerá en los logs de Render
+    console.error(error);
   }
 }
 
