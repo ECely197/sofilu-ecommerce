@@ -250,3 +250,47 @@
   // Ya no necesita position: relative
 }
 // ------------------------------
+
+// --- NUEVOS ESTILOS PARA LA SECCIÓN DE CUPÓN ---
+.coupon-section {
+  .form-field {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-input {
+    // Hereda los estilos de los otros inputs pero con ajustes
+    border: 1px solid var(--soft-gray);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    &:focus {
+      background-color: white;
+    }
+  }
+
+  .apply-button {
+    @extend .btn-secondary;
+    flex-shrink: 0; // Evita que el botón se encoja
+  }
+
+  .coupon-message {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #065f46; // Verde por defecto
+
+    &.error {
+      color: #991b1b; // Rojo si hay un error
+    }
+  }
+}
+
+// --- ACTUALIZACIÓN DE LA SECCIÓN DE TOTALES ---
+.summary-details {
+  // ...
+  .discount-row {
+    // Nueva clase para la fila del descuento
+    color: #065f46; // Verde
+  }
+}

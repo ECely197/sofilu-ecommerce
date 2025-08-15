@@ -141,6 +141,31 @@
 
       <hr />
 
+      <div class="coupon-section">
+        <div class="form-field">
+          <input
+            type="text"
+            placeholder="Código de descuento"
+            class="form-input"
+            #couponInput
+          />
+          <button
+            type="button"
+            class="apply-button"
+            (click)="applyCoupon(couponInput.value)"
+            appRipple
+          >
+            Aplicar
+          </button>
+        </div>
+        <!-- Mensajes de estado del cupón -->
+        @if(couponMessage()){
+        <p class="coupon-message" [class.error]="couponError()">
+          {{ couponMessage() }}
+        </p>
+        }
+      </div>
+
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
@@ -148,6 +173,17 @@
             cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
+
+        @if (discountAmount() > 0) {
+        <div class="summary-row discount-row">
+          <span>Descuento ({{ appliedCoupon()?.code }})</span>
+          <span
+            >-
+            {{ discountAmount() | currency : "COP" : "symbol" : "1.0-0" }}</span
+          >
+        </div>
+        }
+
         <div class="summary-row">
           <span>Envío</span>
           <span>$10,000</span>

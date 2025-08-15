@@ -1,42 +1,86 @@
+<!-- Contenido completo para: src/app/pages/admin/coupon-list/coupon-list.html -->
+
 <header class="page-header">
   <h1>Cupones de Descuento</h1>
-  <a routerLink="/admin/coupons/new" class="add-button">
-    <span>+</span>
-    Crear Nuevo Cupón
+  <a routerLink="/admin/coupons/new" class="add-button" appRipple>
+    <span class="material-symbols-outlined">add</span>
+    Crear Cupón
   </a>
 </header>
 
 <div class="table-container">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Tipo</th>
-        <th>Valor</th>
-        <th>Usos</th>
-        <th>Expiración</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let coupon of coupons">
-        <td class="product-name">{{ coupon.code }}</td>
-        <td>{{ coupon.discountType }}</td>
-        <td>
-          <!-- Mostramos % o $ según el tipo -->
-          {{ coupon.discountType === 'Porcentaje' ? (coupon.value + '%') : (coupon.value |
-          currency:'COP':'symbol':'1.0-0') }}
-        </td>
-        <td>{{ coupon.timesUsed }} / {{ coupon.usageLimit || '∞' }}</td>
-        <td>{{ coupon.expirationDate ? (coupon.expirationDate | date:'mediumDate') : 'Nunca' }}</td>
-        <td>
-          <div class="action-buttons">
-            <a [routerLink]="['/admin/coupons/edit', coupon._id]" class="action-button">Editar</a>
-            <!-- ¡Botón de eliminar conectado! -->
-            <button (click)="deleteCoupon(coupon._id)" class="action-button delete">Eliminar</button>
-          </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Estado de Carga -->
+  @if (isLoading()) {
+  <div class="skeleton-list">
+    @for (item of [1, 2, 3]; track item) {
+    <div class="skeleton-item"></div>
+    }
+  </div>
+  }
+
+  <!-- Lista de Cupones -->
+  @if (!isLoading() && coupons().length > 0) {
+  <div class="coupon-list" [@listAnimation]="coupons().length">
+    <div class="coupon-item header">
+      <div class="cell">Código</div>
+      <div class="cell">Tipo</div>
+      <div class="cell">Valor</div>
+      <div class="cell">Usos</div>
+      <div class="cell">Expiración</div>
+      <div class="cell">Acciones</div>
+    </div>
+
+    @for (coupon of coupons(); track coupon._id) {
+    <div class="coupon-item">
+      <div class="cell coupon-code" data-label="Código">{{ coupon.code }}</div>
+      <div class="cell" data-label="Tipo">{{ coupon.discountType }}</div>
+      <div class="cell" data-label="Valor">
+        {{
+          coupon.discountType === "Porcentaje"
+            ? coupon.value + "%"
+            : (coupon.value | currency : "COP" : "symbol" : "1.0-0")
+        }}
+      </div>
+      <div class="cell" data-label="Usos">
+        {{ coupon.timesUsed }} / {{ coupon.usageLimit || "∞" }}
+      </div>
+      <div class="cell" data-label="Expiración">
+        {{
+          coupon.expirationDate
+            ? (coupon.expirationDate | date : "mediumDate")
+            : "Nunca"
+        }}
+      </div>
+      <div class="cell" data-label="Acciones">
+        <div class="action-buttons">
+          <a
+            [routerLink]="['/admin/coupons/edit', coupon._id]"
+            class="action-button edit"
+            appRipple
+            >Editar</a
+          >
+          <button
+            (click)="deleteCoupon(coupon._id)"
+            class="action-button delete"
+            appRipple
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Estado Vacío -->
+  @if (!isLoading() && coupons().length === 0) {
+  <div class="empty-state">
+    <p>No has creado ningún cupón de descuento todavía.</p>
+    <a routerLink="/admin/coupons/new" class="add-button" appRipple>
+      <span class="material-symbols-outlined">add</span>
+      Crear tu primer cupón
+    </a>
+  </div>
+  }
 </div>

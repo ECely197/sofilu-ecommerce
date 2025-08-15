@@ -4,11 +4,11 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Coupon {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/coupons`; 
+  private apiUrl = `${environment.apiUrl}/coupons`;
 
   getCoupons(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
@@ -29,5 +29,10 @@ export class Coupon {
 
   deleteCoupon(couponId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${couponId}`);
+  }
+
+  validateCoupon(code: string): Observable<any> {
+    const url = `${this.apiUrl}/validate`;
+    return this.http.post<any>(url, { code });
   }
 }

@@ -68,4 +68,40 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
+// --- ¡NUEVA RUTA PARA VALIDAR UN CUPÓN! ---
+router.post("/validate", async (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ message: "Se requiere un código de cupón." });
+  }
+
+  try {
+    // 1. Buscamos el cupón en la BBDD (insensible a mayúsculas/minúsculas)
+    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+
+    // 2. Validamos que exista
+    if (!coupon) {
+      return res.status(404).json({ message: "El cupón no existe." });
+    }
+
+    // 3. Validamos la fecha de expiración
+    if (coupon.expirationDate && new Date() > new Date(coupon.expirationDate)) {
+      return res.status(400).json({ message: "Este cupón ha expirado." });
+    }
+
+    // 4. Validamos el límite de uso
+    if (coupon.usageLimit !== null && coupon.timesUsed >= coupon.usageLimit) {
+      return res
+        .status(400)
+        .json({ message: "Este cupón ha alcanzado su límite de usos." });
+    }
+
+    // Si todas las validaciones pasan, devolvemos el cupón
+    res.json(coupon);
+  } catch (error) {
+    res.status(500).json({ message: "Error al validar el cupón." });
+  }
+});
+
 module.exports = router;

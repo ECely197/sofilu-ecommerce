@@ -1,51 +1,76 @@
-import { Component, inject, OnInit } from '@angular/core';
+// Contenido completo para: src/app/pages/admin/coupon-form/coupon-form.ts
+
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-// CORREGIDO: Importamos el SERVICIO, no la interfaz.
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
+  trigger,
+  transition,
+  query,
+  stagger,
+  style,
+  animate,
+} from '@angular/animations';
+
 import { Coupon } from '../../../services/coupon';
+import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
   selector: 'app-coupon-form',
   standalone: true,
-  // CORREGIDO: Añadimos RouterLink para los enlaces del HTML
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RippleDirective],
   templateUrl: './coupon-form.html',
-  styleUrl: '../product-form/product-form.scss'
+  styleUrl: './coupon-form.scss', // Apuntamos a su propio archivo
+  animations: [
+    trigger('formAnimation', [
+      transition(':enter', [
+        query('.card', [
+          style({ opacity: 0, transform: 'translateY(20px)' }),
+          stagger('100ms', [
+            animate(
+              '500ms cubic-bezier(0.35, 0, 0.25, 1)',
+              style({ opacity: 1, transform: 'none' })
+            ),
+          ]),
+        ]),
+      ]),
+    ]),
+  ],
 })
-// CORREGIDO: Usamos el nombre de clase convencional
 export class couponForm implements OnInit {
   private router = inject(Router);
-  // CORREGIDO: Inyectamos el SERVICIO
   private couponService = inject(Coupon);
   private route = inject(ActivatedRoute);
 
-  couponForm = new FormGroup({
-    code: new FormControl('', Validators.required),
-    discountType: new FormControl('Porcentaje', Validators.required),
-    value: new FormControl(0, [Validators.required, Validators.min(0)]),
-    expirationDate: new FormControl(''),
-    usageLimit: new FormControl<number | null>(null) // Tipado más estricto
-  });
-
-  // CORREGIDO: Declaramos las propiedades que faltaban
-  couponId: string | null = null;
-  isEditMode = false;
+  couponForm!: FormGroup; // Se inicializa en ngOnInit
+  isEditMode = signal(false);
+  private couponId: string | null = null;
 
   ngOnInit(): void {
-    // Leemos el ID de la URL
-    this.couponId = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!this.couponId;
+    this.couponForm = new FormGroup({
+      code: new FormControl('', Validators.required),
+      discountType: new FormControl('Porcentaje', Validators.required),
+      value: new FormControl(null, [Validators.required, Validators.min(0)]),
+      expirationDate: new FormControl(''),
+      usageLimit: new FormControl<number | null>(null, [Validators.min(1)]),
+    });
 
-    if (this.isEditMode && this.couponId) {
-      this.couponService.getCouponById(this.couponId).subscribe(coupon => {
-        const formattedDate = coupon.expirationDate 
-          ? new Date(coupon.expirationDate).toISOString().split('T')[0] 
+    this.couponId = this.route.snapshot.paramMap.get('id');
+    if (this.couponId) {
+      this.isEditMode.set(true);
+      this.couponService.getCouponById(this.couponId).subscribe((coupon) => {
+        const formattedDate = coupon.expirationDate
+          ? new Date(coupon.expirationDate).toISOString().split('T')[0]
           : '';
-        
         this.couponForm.patchValue({
           ...coupon,
-          expirationDate: formattedDate
+          expirationDate: formattedDate,
         });
       });
     }
@@ -53,32 +78,35 @@ export class couponForm implements OnInit {
 
   handleSubmit(): void {
     if (this.couponForm.invalid) {
+      this.couponForm.markAllAsTouched();
       return;
     }
 
-    const formValue = this.couponForm.value;
+    const formValue = this.couponForm.getRawValue();
+    // Limpiamos valores nulos o vacíos antes de enviar
     const couponData = {
       ...formValue,
       expirationDate: formValue.expirationDate || null,
       usageLimit: formValue.usageLimit || null,
     };
 
-    if (this.isEditMode && this.couponId) {
-      this.couponService.updateCoupon(this.couponId, couponData).subscribe({
-        next: () => {
-          console.log('Cupón actualizado con éxito');
-          this.router.navigate(['/admin/coupons']);
-        },
-        error: (err) => console.error('Error al actualizar el cupón:', err)
-      });
-    } else {
-      this.couponService.createCoupon(couponData).subscribe({
-        next: () => {
-          console.log('Cupón creado con éxito');
-          this.router.navigate(['/admin/coupons']);
-        },
-        error: (err) => console.error('Error al crear el cupón:', err)
-      });
-    }
+    const operation = this.isEditMode()
+      ? this.couponService.updateCoupon(this.couponId!, couponData)
+      : this.couponService.createCoupon(couponData);
+
+    operation.subscribe({
+      next: () => {
+        const action = this.isEditMode() ? 'actualizado' : 'creado';
+        alert(`Cupón ${action} con éxito`);
+        this.router.navigate(['/admin/coupons']);
+      },
+      error: (err) => {
+        console.error(
+          `Error al ${this.isEditMode() ? 'actualizar' : 'crear'} el cupón:`,
+          err
+        );
+        alert('Ocurrió un error al guardar el cupón.');
+      },
+    });
   }
 }

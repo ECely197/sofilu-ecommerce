@@ -40,7 +40,15 @@ const orderSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true },
   },
-  items: [orderItemSchema], // El array de items ahora usará el nuevo sub-esquema
+  items: [orderItemSchema],
+  appliedCoupon: {
+    type: String,
+    default: null,
+  },
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
   totalAmount: {
     type: Number,
     required: true,

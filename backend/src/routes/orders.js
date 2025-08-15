@@ -1,11 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
-// ¡Importamos el modelo Product para poder usarlo!
 const Product = require("../models/Product");
-
+const Coupon = require("../models/Coupon");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
-
 const { sendOrderConfirmationEmail } = require("../services/emailService");
 
 // --- OBTENER TODOS LOS PEDIDOS (PARA EL ADMIN) ---
@@ -61,10 +59,11 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-// --- CREAR UN NUEVO PEDIDO ---
+// --- RUTA DE CREACIÓN DE PEDIDO (POST /) - VERSIÓN FINAL CON CUPONES ---
+
 router.post("/", [authMiddleware], async (req, res) => {
   try {
-    const { customerInfo, items } = req.body;
+    const { customerInfo, items, appliedCoupon, discountAmount } = req.body;
     const userId = req.user.uid;
 
     if (!items || items.length === 0) {
@@ -72,10 +71,12 @@ router.post("/", [authMiddleware], async (req, res) => {
         .status(400)
         .json({ message: "El carrito no puede estar vacío." });
     }
-
-    let totalAmount = 0;
-    const processedItems = [];
-
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ message: "userId no encontrado en el token." });
+    }
+    let subTotal = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -87,23 +88,29 @@ router.post("/", [authMiddleware], async (req, res) => {
         product.isOnSale && product.salePrice
           ? product.salePrice
           : product.price;
-      totalAmount += itemPrice * item.quantity;
-      processedItems.push({
-        product: product._id,
-        quantity: item.quantity,
-        price: itemPrice,
-        selectedVariants: item.selectedVariants,
-      });
+      subTotal += itemPrice * item.quantity;
     }
+
+    const shippingCost = 10000;
+    const finalTotal = subTotal + shippingCost - (discountAmount || 0);
 
     const newOrder = new Order({
       userId,
       customerInfo,
-      items: processedItems,
-      totalAmount,
+      items,
+      appliedCoupon,
+      discountAmount,
+      totalAmount: finalTotal,
     });
 
     let savedOrder = await newOrder.save();
+
+    if (appliedCoupon) {
+      await Coupon.updateOne(
+        { code: appliedCoupon },
+        { $inc: { timesUsed: 1 } }
+      );
+    }
 
     savedOrder = await savedOrder.populate("items.product");
 
@@ -112,7 +119,9 @@ router.post("/", [authMiddleware], async (req, res) => {
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("--- RUTA POST /api/orders: ERROR ---", error);
-    res.status(400).json({ message: "Error al crear el pedido" });
+    res
+      .status(400)
+      .json({ message: "Error al crear el pedido", details: error.message });
   }
 });
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -19,6 +19,7 @@ import {
 import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
 import { RippleDirective } from '../../directives/ripple';
+import { Coupon } from '../../services/coupon';
 
 @Component({
   selector: 'app-checkout',
@@ -46,8 +47,21 @@ export class checkout implements OnInit {
   public cartService = inject(CartService);
   private router = inject(Router);
   private orderService = inject(OrderService);
+  private couponService = inject(Coupon);
 
   checkoutForm!: FormGroup;
+
+  // --- SIGNALS PARA GESTIONAR EL ESTADO DEL CUPÓN Y TOTALES ---
+  appliedCoupon = signal<any | null>(null);
+  discountAmount = signal<number>(0);
+  couponMessage = signal<string>('');
+  couponError = signal<boolean>(false);
+
+  // El total final ahora es un signal calculado (computed)
+  grandTotal = computed(() => {
+    const total = this.cartService.subTotal() + 10000 - this.discountAmount();
+    return Math.max(0, total); // Asegura que el total nunca sea negativo
+  });
 
   ngOnInit(): void {
     this.checkoutForm = new FormGroup({
@@ -61,6 +75,36 @@ export class checkout implements OnInit {
         postalCode: new FormControl(''),
         phone: new FormControl('', Validators.required),
       }),
+    });
+  }
+
+  // --- ¡NUEVO MÉTODO PARA APLICAR EL CUPÓN! ---
+  applyCoupon(code: string): void {
+    if (!code.trim()) return;
+
+    this.couponService.validateCoupon(code).subscribe({
+      next: (coupon) => {
+        let discount = 0;
+        if (coupon.discountType === 'Porcentaje') {
+          discount = (this.cartService.subTotal() * coupon.value) / 100;
+        } else {
+          // Monto Fijo
+          discount = coupon.value;
+        }
+
+        this.discountAmount.set(discount);
+        this.appliedCoupon.set(coupon);
+        this.couponMessage.set(`¡Cupón "${coupon.code}" aplicado!`);
+        this.couponError.set(false);
+      },
+      error: (err) => {
+        this.discountAmount.set(0);
+        this.appliedCoupon.set(null);
+        this.couponMessage.set(
+          err.error.message || 'Error al aplicar el cupón.'
+        );
+        this.couponError.set(true);
+      },
     });
   }
 
@@ -95,6 +139,8 @@ export class checkout implements OnInit {
     const orderData = {
       customerInfo,
       items: processedItems,
+      appliedCoupon: this.appliedCoupon() ? this.appliedCoupon().code : null,
+      discountAmount: this.discountAmount(),
     };
 
     // --- LOG DE DEPURACIÓN CLAVE ---

@@ -1,0 +1,171 @@
+// Contenido para: src/app/pages/admin/coupon-list/coupon-list.scss
+@use "../../../../../buttons";
+
+// --- Cabecera y Contenedor (reutilizamos el patrón) ---
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
+}
+
+.add-button {
+  @extend .btn-material;
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+}
+
+.table-container {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+// --- Lista de Cupones (Tabla en Desktop) ---
+.coupon-list {
+  width: 100%;
+}
+
+.coupon-item {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--soft-gray);
+  transition: background-color 0.2s ease-in-out;
+
+  &:last-child {
+    border-bottom: none;
+  }
+  &:not(.header):hover {
+    background-color: var(--background-sec);
+  }
+}
+
+.coupon-item.header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding-bottom: 1rem;
+}
+
+.cell {
+  padding: 0 0.5rem;
+}
+
+.coupon-code {
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--soft-white);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  @extend .btn-secondary;
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  border: none;
+  &.edit {
+    background-color: var(--soft-gray);
+  }
+  &.delete {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+// --- MEDIA QUERY PARA MÓVIL (Transformación a tarjetas) ---
+@media (max-width: 991px) {
+  .coupon-item.header {
+    display: none;
+  }
+
+  .coupon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--soft-gray);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .cell {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 0;
+
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-right: 1rem;
+    }
+  }
+
+  .coupon-code {
+    font-size: 1.25rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--soft-gray);
+    width: 100%;
+    text-align: center;
+    &::before {
+      display: none;
+    }
+  }
+
+  .action-buttons {
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: flex-end;
+  }
+}
+
+// --- Esqueleto y Estado Vacío (reutilizamos el patrón) ---
+.skeleton-list {
+  .skeleton-item {
+    height: 50px;
+    background-color: var(--soft-gray);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  p {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+  }
+}
