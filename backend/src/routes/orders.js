@@ -105,15 +105,13 @@ router.post("/", [authMiddleware], async (req, res) => {
 
     let savedOrder = await newOrder.save();
 
-    // Poblamos los datos del producto para que el correo tenga la información completa
     savedOrder = await savedOrder.populate("items.product");
 
-    // Ahora esta llamada funcionará porque la función está importada
     sendOrderConfirmationEmail(savedOrder);
 
     res.status(201).json(savedOrder);
   } catch (error) {
-    console.error("--- Ruta POST /api/orders: ERROR ---", error);
+    console.error("--- RUTA POST /api/orders: ERROR ---", error);
     res.status(400).json({ message: "Error al crear el pedido" });
   }
 });
