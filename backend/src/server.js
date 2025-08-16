@@ -16,6 +16,7 @@ const orderRoutes = require("./routes/orders");
 const userRoutes = require("./routes/users");
 const couponRoutes = require("./routes/coupons");
 const settingsRoutes = require("./routes/settings");
+const categoryRoutes = require("./routes/categories");
 
 // ==========================================================================
 // 2. INICIALIZACIÓN
@@ -34,6 +35,7 @@ admin.initializeApp({
 // 3. MIDDLEWARES
 // ==========================================================================
 const allowedOrigins = [
+  "https://sofilu.shop",
   "https://sofilu-ecommerce.vercel.app",
   "http://localhost:4200",
 ];
@@ -42,7 +44,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error("No permitido por CORS"));
     }
   },
 };
@@ -82,6 +84,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // ==========================================================================
 // 6. ARRANQUE DEL SERVIDOR
