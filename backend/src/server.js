@@ -35,15 +35,19 @@ admin.initializeApp({
 // 3. MIDDLEWARES
 // ==========================================================================
 const allowedOrigins = [
-  "https://sofilu.shop",
-  "https://sofilu-ecommerce.vercel.app",
-  "http://localhost:4200",
+  "https://sofilu.shop", // Tu dominio principal
+  "https://www.sofilu.shop",
+  "https://sofilu-ecommerce.vercel.app", // ¡Añadimos la versión www!
+  "http://localhost:4200", // Para desarrollo local
 ];
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      // Para depurar, podemos ver exactamente qué origen está siendo rechazado
+      console.log(`CORS Error: El origen "${origin}" no está permitido.`);
       callback(new Error("No permitido por CORS"));
     }
   },
