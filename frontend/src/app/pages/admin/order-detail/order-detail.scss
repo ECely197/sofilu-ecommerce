@@ -121,6 +121,13 @@
     font-size: 1.25rem;
     font-weight: 700;
   }
+  &.discount {
+    color: #065f46; // Un color verde para indicar el ahorro
+    font-weight: 500;
+  }
+}
+.grand-total {
+  font-size: 1.5rem; // Hacemos el total final más grande
 }
 
 .form-field {

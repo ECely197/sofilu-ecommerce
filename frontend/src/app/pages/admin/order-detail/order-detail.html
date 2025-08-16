@@ -1,3 +1,5 @@
+<!-- Contenido completo y final para: src/app/pages/admin/order-detail/order-detail.html -->
+
 @if (isLoading()) {
 <div class="loading-container">Cargando detalles del pedido...</div>
 } @if (order(); as currentOrder) {
@@ -5,10 +7,15 @@
   <header class="page-header">
     <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
     <div class="header-actions">
-      <!-- ¡AQUÍ! Conectamos el evento (click) -->
-      <button class="btn-secondary" (click)="downloadInvoice()" appRipple>
-        Imprimir Guía
-      </button>
+      <!-- Enlace corregido para abrir la factura en una nueva pestaña -->
+      <a
+        [routerLink]="['/invoice', currentOrder._id]"
+        target="_blank"
+        class="btn-secondary"
+        appRipple
+      >
+        Ver Factura
+      </a>
       <button class="btn-material" appRipple>Contactar Cliente</button>
     </div>
   </header>
@@ -36,7 +43,7 @@
             <p class="item-name">
               {{ item.product?.name || "Producto no disponible" }}
             </p>
-            <!-- ¡AHORA SÍ FUNCIONARÁ! -->
+            <!-- ¡AQUÍ MOSTRAMOS LAS VARIANTES! -->
             <div class="item-variants">
               @for(variant of objectKeys(item.selectedVariants); track variant){
               <span
@@ -98,7 +105,7 @@
       </div>
     </div>
 
-    <!-- Columna Lateral -->
+    <!-- Columna Lateral (sin cambios) -->
     <aside class="sidebar-content">
       <div class="card">
         <h2 class="card-title">Información del Cliente</h2>
@@ -110,7 +117,6 @@
         <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
           <div class="form-field has-arrow">
             <label for="status">Cambiar Estado</label>
-            <!-- ¡AÑADE el atributo as="select" AQUÍ! -->
             <select
               id="status"
               formControlName="status"

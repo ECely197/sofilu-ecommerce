@@ -1,0 +1,106 @@
+<!-- Contenido final y 100% Angular para: src/app/pages/admin/invoice-view/invoice-view.html -->
+
+<div class="print-controls">
+  <button (click)="printPage()" class="print-button">
+    Imprimir o Guardar como PDF
+  </button>
+</div>
+
+@if(!isLoading() && order(); as currentOrder) {
+<div class="invoice-container">
+  <header class="invoice-header">
+    <!-- Aquí puedes poner tu SVG del logo si quieres -->
+    <h1>Sofilu</h1>
+    <p>Factura del Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</p>
+  </header>
+
+  <section class="customer-info">
+    <div class="info-box">
+      <strong>Facturado a:</strong>
+      <p>{{ currentOrder.customerInfo.name }}</p>
+      <p>{{ currentOrder.customerInfo.email }}</p>
+    </div>
+    <div class="info-box text-right">
+      <strong>Fecha del Pedido:</strong>
+      <p>{{ currentOrder.createdAt | date : "fullDate" }}</p>
+    </div>
+  </section>
+
+  <section class="items-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th class="text-center">Cant.</th>
+          <th class="text-right">Precio Unit.</th>
+          <th class="text-right">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(item of currentOrder.items; track item._id) {
+        <tr>
+          <td>
+            <p class="item-name">{{ item.product.name }}</p>
+            <p class="item-variants">
+              @for(variant of objectKeys(item.selectedVariants); track variant){
+              <span
+                >{{ variant }}:
+                <strong>{{ item.selectedVariants[variant] }}</strong></span
+              >
+              }
+            </p>
+          </td>
+          <td class="text-center">{{ item.quantity }}</td>
+          <td class="text-right">
+            {{ item.price | currency : "COP" : "symbol" : "1.0-0" }}
+          </td>
+          <td class="text-right">
+            <strong>{{
+              item.quantity * item.price | currency : "COP" : "symbol" : "1.0-0"
+            }}</strong>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <section class="totals">
+    <div class="total-row">
+      <span>Subtotal</span>
+      <span>{{
+        currentOrder.totalAmount - 10000 + (currentOrder.discountAmount || 0)
+          | currency : "COP" : "symbol" : "1.0-0"
+      }}</span>
+    </div>
+    @if(currentOrder.discountAmount > 0) {
+    <div class="total-row discount">
+      <span>Descuento ({{ currentOrder.appliedCoupon }})</span>
+      <span
+        >-
+        {{
+          currentOrder.discountAmount | currency : "COP" : "symbol" : "1.0-0"
+        }}</span
+      >
+    </div>
+    }
+    <div class="total-row">
+      <span>Envío</span>
+      <span>{{ 10000 | currency : "COP" : "symbol" : "1.0-0" }}</span>
+    </div>
+    <hr />
+    <div class="total-row grand-total">
+      <strong>Total Pagado</strong>
+      <strong>{{
+        currentOrder.totalAmount | currency : "COP" : "symbol" : "1.0-0"
+      }}</strong>
+    </div>
+  </section>
+
+  <footer class="invoice-footer">
+    <p>¡Gracias por tu compra!</p>
+  </footer>
+</div>
+} @else {
+<p class="loading-text">Cargando factura...</p>
+}

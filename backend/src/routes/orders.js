@@ -51,24 +51,23 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // --- GENERAR LA FACTURA EN PDF PARA UN PEDIDO ---
-router.get("/:id/invoice", [authMiddleware, adminOnly], async (req, res) => {
+router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("items.product");
     if (!order) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
-
-    const pdfBuffer = await createInvoicePdf(order);
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=factura-${order._id}.pdf`
+    // ¡AÑADIMOS UN LOG AQUÍ!
+    console.log(
+      `--- BACKEND: Enviando datos del pedido ${req.params.id} al frontend ---`
     );
-    res.send(pdfBuffer);
+    res.json(order);
   } catch (error) {
-    console.error("Error al generar la factura en PDF:", error);
-    res.status(500).json({ message: "Error al generar la factura" });
+    console.error(
+      `--- BACKEND: ERROR al obtener el pedido ${req.params.id} ---`,
+      error
+    );
+    res.status(500).json({ message: "Error al obtener el pedido" });
   }
 });
 

@@ -2,7 +2,7 @@
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormControl,
   FormGroup,
@@ -17,7 +17,7 @@ import { RippleDirective } from '../../../directives/ripple';
 @Component({
   selector: 'app-order-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective, RouterLink],
   templateUrl: './order-detail.html',
   styleUrl: './order-detail.scss',
   animations: [
@@ -102,35 +102,6 @@ export class OrderDetail implements OnInit {
           },
         });
     }
-  }
-
-  downloadInvoice(): void {
-    const currentOrder = this.order();
-    if (!currentOrder) return;
-
-    this.orderService.getOrderInvoice(currentOrder._id).subscribe({
-      next: (blob) => {
-        // Creamos una URL temporal para el archivo Blob
-        const url = window.URL.createObjectURL(blob);
-
-        // Creamos un enlace <a> temporal en memoria
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `factura-${currentOrder._id.slice(-6).toUpperCase()}.pdf`; // Nombre del archivo
-
-        // Hacemos clic en el enlace para iniciar la descarga
-        document.body.appendChild(a);
-        a.click();
-
-        // Limpiamos eliminando el enlace y revocando la URL
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      },
-      error: (err) => {
-        console.error('Error al descargar la factura:', err);
-        alert('No se pudo descargar la factura.');
-      },
-    });
   }
 
   public objectKeys(obj: object): string[] {
