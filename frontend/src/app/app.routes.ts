@@ -33,6 +33,8 @@ import { CouponList } from './pages/admin/coupon-list/coupon-list';
 import { couponForm } from './pages/admin/coupon-form/coupon-form';
 import { settings } from './pages/admin/settings/settings';
 import { InvoiceViewComponent } from './pages/admin/invoice-view/invoice-view';
+import { CategoryList } from './pages/admin/category-list/category-list';
+import { CategoryFormComponent } from './pages/admin/category-form/category-form';
 
 export const routes: Routes = [
   // --- Rutas del Cliente (Públicas y para usuarios) ---
@@ -92,6 +94,9 @@ export const routes: Routes = [
       { path: 'coupons/new', component: couponForm },
       { path: 'coupons/edit/:id', component: couponForm },
       { path: 'settings', component: settings },
+      { path: 'categories', component: CategoryList },
+      { path: 'categories/new', component: CategoryFormComponent },
+      { path: 'categories/edit/:id', component: CategoryFormComponent },
     ],
   },
 

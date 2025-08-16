@@ -1,0 +1,99 @@
+// Contenido completo para: src/app/pages/admin/category-form/category-form.scss
+@use "../../../../../buttons";
+@use "../_admin-shared.scss";
+
+// --- Estructura General (similar a otros formularios) ---
+.page-header {
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
+}
+
+.form-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.main-column,
+.sidebar-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-family: "Playfair Display", serif;
+}
+
+// --- Estilos Específicos para la Carga de Imagen ---
+.image-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-preview,
+.image-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  border: 2px dashed var(--soft-gray);
+}
+
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--soft-white);
+
+  .material-symbols-outlined {
+    font-size: 48px;
+    color: var(--soft-gray);
+  }
+}
+
+// Ocultamos el input de archivo real
+input[type="file"] {
+  display: none;
+}
+
+// Estilizamos el label para que parezca un botón
+.upload-button {
+  @extend .btn-secondary;
+  width: 100%;
+}
+
+// --- Acciones del Formulario ---
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-material {
+  @extend .btn-material;
+}
+.btn-secondary {
+  @extend .btn-secondary;
+}
