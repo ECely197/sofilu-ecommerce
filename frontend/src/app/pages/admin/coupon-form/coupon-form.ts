@@ -57,6 +57,7 @@ export class couponForm implements OnInit {
       code: new FormControl('', Validators.required),
       discountType: new FormControl('Porcentaje', Validators.required),
       value: new FormControl(null, [Validators.required, Validators.min(0)]),
+      appliesTo: new FormControl('Subtotal', Validators.required),
       expirationDate: new FormControl(''),
       usageLimit: new FormControl<number | null>(null, [Validators.min(1)]),
     });

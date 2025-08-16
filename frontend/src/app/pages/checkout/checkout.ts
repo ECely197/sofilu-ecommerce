@@ -92,13 +92,31 @@ export class checkout implements OnInit {
 
     this.couponService.validateCoupon(code).subscribe({
       next: (coupon) => {
+        const subtotal = this.cartService.subTotal();
+        const shipping = this.shippingCost();
         let discount = 0;
+
+        // Calculamos la base del descuento según la nueva regla
+        let discountableBase = 0;
+        if (coupon.appliesTo === 'Subtotal') {
+          discountableBase = subtotal;
+        } else if (coupon.appliesTo === 'Envío') {
+          discountableBase = shipping;
+        } else {
+          // 'Todo'
+          discountableBase = subtotal + shipping;
+        }
+
+        // Calculamos el valor del descuento
         if (coupon.discountType === 'Porcentaje') {
-          discount = (this.cartService.subTotal() * coupon.value) / 100;
+          discount = (discountableBase * coupon.value) / 100;
         } else {
           // Monto Fijo
           discount = coupon.value;
         }
+
+        // El descuento no puede ser mayor que la base sobre la que se aplica
+        discount = Math.min(discount, discountableBase);
 
         this.discountAmount.set(discount);
         this.appliedCoupon.set(coupon);

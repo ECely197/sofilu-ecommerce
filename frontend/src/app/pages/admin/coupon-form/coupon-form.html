@@ -75,6 +75,20 @@
           class="form-input"
         />
       </div>
+
+      <div class="form-field has-arrow">
+        <label for="appliesTo">Aplicar descuento a</label>
+        <select
+          id="appliesTo"
+          formControlName="appliesTo"
+          class="form-input"
+          as="select"
+        >
+          <option value="Subtotal">Subtotal de productos</option>
+          <option value="Envío">Costo de envío</option>
+          <option value="Todo">Toda la orden</option>
+        </select>
+      </div>
     </div>
   </div>
 
