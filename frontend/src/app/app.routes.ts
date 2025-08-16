@@ -46,8 +46,6 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'wishlist', component: WishlistComponent },
 
-  { path: 'invoice/:id', component: InvoiceViewComponent },
-
   // --- Rutas del Área de Cuenta (Protegidas) ---
   {
     path: 'account',
@@ -88,6 +86,7 @@ export const routes: Routes = [
       { path: 'products/edit/:id', component: ProductForm },
       { path: 'orders', component: OrderList },
       { path: 'orders/:id', component: OrderDetail },
+      { path: 'invoice/:id', component: InvoiceViewComponent },
       { path: 'customers', component: CustomerList },
       { path: 'coupons', component: CouponList },
       { path: 'coupons/new', component: couponForm },
