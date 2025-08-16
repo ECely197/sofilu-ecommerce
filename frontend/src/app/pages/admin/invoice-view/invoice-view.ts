@@ -1,4 +1,5 @@
-// Contenido para: invoice-view.component.ts
+// Contenido de depuración para: src/app/pages/admin/invoice-view/invoice-view.component.ts
+
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -18,32 +19,42 @@ export class InvoiceViewComponent implements OnInit {
   order = signal<any | null>(null);
   isLoading = signal(true);
 
+  // LOG 4: Verificamos si el componente se está creando
+  constructor() {
+    console.log(
+      '--- InvoiceViewComponent: El constructor ha sido llamado. El componente se está creando. ---'
+    );
+  }
+
   ngOnInit() {
     const orderId = this.route.snapshot.paramMap.get('id');
     console.log(
-      '--- INVOICE VIEW: ID de la orden obtenido de la URL:',
+      '--- InvoiceViewComponent: ngOnInit - ID de la orden obtenido de la URL:',
       orderId
-    ); // LOG 1
+    ); // LOG 5
 
     if (orderId) {
-      this.isLoading.set(true); // Nos aseguramos de que el estado de carga inicie
+      this.isLoading.set(true);
       this.orderService.getOrderById(orderId).subscribe({
         next: (data) => {
           console.log(
-            '--- INVOICE VIEW: Datos del pedido recibidos del backend:',
+            '--- InvoiceViewComponent: ngOnInit - Datos del pedido recibidos del backend:',
             data
-          ); // LOG 2
+          ); // LOG 6 (Éxito)
           this.order.set(data);
           this.isLoading.set(false);
         },
         error: (err) => {
-          console.error('--- INVOICE VIEW: ERROR al cargar el pedido:', err); // LOG 3 (Error)
+          console.error(
+            '--- InvoiceViewComponent: ngOnInit - ERROR al cargar el pedido:',
+            err
+          ); // LOG 7 (Fallo)
           this.isLoading.set(false);
         },
       });
     } else {
       console.error(
-        '--- INVOICE VIEW: No se encontró un ID de orden en la URL.'
+        '--- InvoiceViewComponent: ngOnInit - No se encontró un ID de orden en la URL.'
       );
       this.isLoading.set(false);
     }

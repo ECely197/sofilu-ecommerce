@@ -1,33 +1,39 @@
 import { Injectable, inject } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import {
+  CanActivate,
+  Router,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { AuthService } from '../services/auth';
 
 @Injectable({
-  providedIn: 'root' // Lo hacemos un servicio inyectable
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
+  constructor(private authService: AuthService, private router: Router) {}
 
-  // Ahora inyectamos las dependencias en el constructor, el contexto "seguro"
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
-
-  // El método 'canActivate' es el que el enrutador ejecutará
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
-    
+    console.log(
+      '--- AuthGuard: Se ha activado el guardia de la ruta /admin ---'
+    ); // LOG 1
     return this.authService.isAdmin$.pipe(
       take(1),
-      map(isAdmin => {
+      map((isAdmin) => {
         if (isAdmin) {
+          console.log(
+            '--- AuthGuard: Acceso PERMITIDO (el usuario es admin) ---'
+          ); // LOG 2 (Éxito)
           return true; // Puede pasar
         } else {
-          // Si no es admin, redirigimos y bloqueamos
+          console.log(
+            '--- AuthGuard: Acceso DENEGADO (el usuario no es admin o no está logueado) ---'
+          );
           this.router.navigate(['/']);
           return false;
         }
