@@ -5,18 +5,22 @@ const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 const { sendOrderConfirmationEmail } = require("../services/emailService");
+const { createInvoicePdf } = require("../services/pdfService");
 
-// --- OBTENER TODOS LOS PEDIDOS (PARA EL ADMIN) ---
-router.get("/", async (req, res) => {
+// --- OBTENER UN PEDIDO POR SU ID (Para el Admin) ---
+router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-    res.json(orders);
+    const order = await Order.findById(req.params.id).populate("items.product");
+
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+    res.json(order);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener los pedidos" });
+    res.status(500).json({ message: "Error al obtener el pedido" });
   }
 });
 
-// --- ¡LA RUTA QUE FALTABA! OBTENER PEDIDOS DE UN USUARIO ESPECÍFICO ---
 // GET /api/orders/user/:userId
 router.get("/user/:userId", [authMiddleware], async (req, res) => {
   console.log("BACKEND ORDERS: Petición recibida en /user/:userId"); // Log #6
@@ -171,6 +175,28 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
     res.json({ message: "Pedido eliminado con éxito" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar el pedido" });
+  }
+});
+
+router.get("/:id/invoice", [authMiddleware, adminOnly], async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate("items.product");
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
+
+    const pdfBuffer = await createInvoicePdf(order);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=factura-${order._id}.pdf`
+    );
+
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error al generar la factura en PDF:", error);
+    res.status(500).json({ message: "Error al generar la factura" });
   }
 });
 

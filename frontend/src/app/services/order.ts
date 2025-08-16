@@ -4,11 +4,11 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OrderService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/orders`; 
+  private apiUrl = `${environment.apiUrl}/orders`;
 
   getOrders(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
@@ -37,4 +37,8 @@ export class OrderService {
     return this.http.get<any[]>(`${this.apiUrl}/user/${userId}`);
   }
 
+  getOrderInvoice(orderId: string): Observable<Blob> {
+    const url = `${this.apiUrl}/${orderId}/invoice`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
 }

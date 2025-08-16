@@ -1,27 +1,25 @@
 @if (isLoading()) {
 <div class="loading-container">Cargando detalles del pedido...</div>
-}
-
-<!-- Contenido del Pedido -->
-@if (order(); as currentOrder) {
+} @if (order(); as currentOrder) {
 <div class="order-detail-container" @fadeInOut>
   <header class="page-header">
     <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
     <div class="header-actions">
-      <!-- Botones usan nuestro Design System -->
-      <button class="btn-secondary" appRipple>Imprimir Guía</button>
+      <!-- ¡AQUÍ! Conectamos el evento (click) -->
+      <button class="btn-secondary" (click)="downloadInvoice()" appRipple>
+        Imprimir Guía
+      </button>
       <button class="btn-material" appRipple>Contactar Cliente</button>
     </div>
   </header>
 
   <div class="details-grid">
-    <!-- Columna Principal -->
     <div class="main-content">
       <div class="card">
         <h2 class="card-title">
           Artículos del Pedido ({{ currentOrder.items.length }})
         </h2>
-        @for (item of currentOrder.items; track item.product._id) {
+        @for (item of currentOrder.items; track item._id) {
         <div class="order-item">
           <div class="item-image-wrapper">
             @if(item.product?.images && item.product.images.length > 0) {
@@ -38,8 +36,7 @@
             <p class="item-name">
               {{ item.product?.name || "Producto no disponible" }}
             </p>
-            <!-- ¡AQUÍ MOSTRAMOS LAS VARIANTES! -->
-            @if(item.selectedVariants) {
+            <!-- ¡AHORA SÍ FUNCIONARÁ! -->
             <div class="item-variants">
               @for(variant of objectKeys(item.selectedVariants); track variant){
               <span
@@ -48,7 +45,6 @@
               >
               }
             </div>
-            }
           </div>
           <p class="item-price-quantity">
             {{ item.quantity }} x
@@ -62,7 +58,37 @@
         </div>
         }
         <div class="totals-summary">
+          <!-- Mostramos el Subtotal -->
           <div class="total-row">
+            <span>Subtotal</span>
+            <span>{{
+              currentOrder.totalAmount -
+                10000 +
+                (currentOrder.discountAmount || 0)
+                | currency : "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+          <!-- Mostramos el Descuento si existe -->
+          @if(currentOrder.discountAmount > 0) {
+          <div class="total-row discount">
+            <span>Descuento ({{ currentOrder.appliedCoupon }})</span>
+            <span
+              >-
+              {{
+                currentOrder.discountAmount
+                  | currency : "COP" : "symbol" : "1.0-0"
+              }}</span
+            >
+          </div>
+          }
+          <!-- Mostramos el Envío -->
+          <div class="total-row">
+            <span>Envío</span>
+            <span>{{ 10000 | currency : "COP" : "symbol" : "1.0-0" }}</span>
+          </div>
+          <hr />
+          <!-- Mostramos el Total Final -->
+          <div class="total-row grand-total">
             <strong>Total</strong>
             <strong>{{
               currentOrder.totalAmount | currency : "COP" : "symbol" : "1.0-0"
