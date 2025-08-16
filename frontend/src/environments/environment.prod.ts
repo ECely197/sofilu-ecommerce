@@ -7,12 +7,12 @@ export const environment = {
 
   // Las credenciales de Firebase son las mismas.
   firebase: {
-    apiKey: "AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM",
-    authDomain: "sofilu-ecommerce.firebaseapp.com",
-    projectId: "sofilu-ecommerce",
-    storageBucket: "sofilu-ecommerce.firebasestorage.app",
-    messagingSenderId: "111482082352",
-    appId: "1:111482082352:web:641d8709858152a60149f5",
-    measurementId: "G-540KE76XXS"
-  }
+    apiKey: 'AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM',
+    authDomain: 'sofilu-ecommerce.firebaseapp.com',
+    projectId: 'sofilu-ecommerce',
+    storageBucket: 'sofilu-ecommerce.firebasestorage.app',
+    messagingSenderId: '111482082352',
+    appId: '1:111482082352:web:641d8709858152a60149f5',
+    measurementId: 'G-540KE76XXS',
+  },
 };

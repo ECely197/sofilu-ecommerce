@@ -7,50 +7,37 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 const { sendOrderConfirmationEmail } = require("../services/emailService");
 const { createInvoicePdf } = require("../services/pdfService");
 
-// --- OBTENER UN PEDIDO POR SU ID (Para el Admin) ---
-router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
+// --- OBTENER TODOS LOS PEDIDOS (PARA EL PANEL DE ADMIN) ---
+// Esta es la ruta que le faltaba el .populate()
+router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate("items.product");
-
-    if (!order) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
-    }
-    res.json(order);
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .populate("items.product"); // Popula los detalles del producto para la lista
+    res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el pedido" });
+    res.status(500).json({ message: "Error al obtener los pedidos" });
   }
 });
 
-// GET /api/orders/user/:userId
+// --- OBTENER PEDIDOS DE UN USUARIO ESPECÍFICO (PARA EL ÁREA "MI CUENTA") ---
 router.get("/user/:userId", [authMiddleware], async (req, res) => {
-  console.log("BACKEND ORDERS: Petición recibida en /user/:userId"); // Log #6
-  console.log(
-    "BACKEND ORDERS: Buscando pedidos para el userId:",
-    req.params.userId
-  ); // Log #7
-
   if (req.user.uid !== req.params.userId) {
-    console.log(
-      "BACKEND ORDERS: ¡Acceso denegado! UID del token no coincide con el de la URL."
-    ); // Log de Seguridad
     return res.status(403).json({ message: "No tienes permiso." });
   }
-
   try {
     const orders = await Order.find({ userId: req.params.userId })
       .sort({ createdAt: -1 })
       .populate("items.product");
-    console.log(`BACKEND ORDERS: Se encontraron ${orders.length} pedidos.`); // Log #8
     res.json(orders);
   } catch (error) {
-    console.error("BACKEND ORDERS: Error en la base de datos:", error); // Log de Error
     res
       .status(500)
       .json({ message: "Error al obtener los pedidos del usuario" });
   }
 });
 
-// --- OBTENER UN PEDIDO POR SU ID (Para el Admin) ---
+// --- OBTENER UN PEDIDO ÚNICO POR SU ID (PARA LA PÁGINA DE DETALLE) ---
 router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("items.product");
@@ -63,8 +50,29 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-// --- RUTA DE CREACIÓN DE PEDIDO (POST /) - VERSIÓN FINAL CON CUPONES ---
+// --- GENERAR LA FACTURA EN PDF PARA UN PEDIDO ---
+router.get("/:id/invoice", [authMiddleware, adminOnly], async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate("items.product");
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado" });
+    }
 
+    const pdfBuffer = await createInvoicePdf(order);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=factura-${order._id}.pdf`
+    );
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error al generar la factura en PDF:", error);
+    res.status(500).json({ message: "Error al generar la factura" });
+  }
+});
+
+// --- CREAR UN NUEVO PEDIDO ---
 router.post("/", [authMiddleware], async (req, res) => {
   try {
     const { customerInfo, items, appliedCoupon, discountAmount } = req.body;
@@ -75,11 +83,7 @@ router.post("/", [authMiddleware], async (req, res) => {
         .status(400)
         .json({ message: "El carrito no puede estar vacío." });
     }
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ message: "userId no encontrado en el token." });
-    }
+
     let subTotal = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -133,70 +137,41 @@ router.post("/", [authMiddleware], async (req, res) => {
 router.put("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const { status } = req.body;
-
     const allowedStatus = ["Procesando", "Enviado", "Entregado", "Cancelado"];
     if (!status || !allowedStatus.includes(status)) {
-      // Añadimos una validación extra
       return res
         .status(400)
         .json({ message: "Estado no válido proporcionado" });
     }
-
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
-      { status: status }, // Actualizamos solo el campo 'status'
+      { status: status },
       { new: true }
     );
-
     if (!updatedOrder) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
-
-    // ¡La respuesta debe enviarse!
     res.json(updatedOrder);
   } catch (error) {
-    console.error("Error al actualizar el estado:", error); // Log más detallado
+    console.error("Error al actualizar el estado:", error);
     res
       .status(500)
       .json({ message: "Error al actualizar el estado del pedido" });
   }
 });
 
+// --- ELIMINAR UN PEDIDO ---
 router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const deletedOrder = await Order.findByIdAndDelete(req.params.id);
-
     if (!deletedOrder) {
       return res
         .status(404)
         .json({ message: "Pedido no encontrado para eliminar" });
     }
-
     res.json({ message: "Pedido eliminado con éxito" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar el pedido" });
-  }
-});
-
-router.get("/:id/invoice", [authMiddleware, adminOnly], async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate("items.product");
-    if (!order) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
-    }
-
-    const pdfBuffer = await createInvoicePdf(order);
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=factura-${order._id}.pdf`
-    );
-
-    res.send(pdfBuffer);
-  } catch (error) {
-    console.error("Error al generar la factura en PDF:", error);
-    res.status(500).json({ message: "Error al generar la factura" });
   }
 });
 
