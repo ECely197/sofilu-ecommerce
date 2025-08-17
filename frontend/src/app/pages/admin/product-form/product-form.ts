@@ -10,10 +10,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
-import { finalize } from 'rxjs/operators';
 
 import { ProductServices } from '../../../services/product';
-import { StorageService } from '../../../services/storage';
+import { StorageService } from '../../../services/storage'; // Corregido de 'storage'
 import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
 
@@ -46,8 +45,8 @@ export class ProductForm implements OnInit {
       name: ['', Validators.required],
       description: ['', Validators.required],
       price: [null, [Validators.required, Validators.min(0.01)]],
-      category: [null, Validators.required], // Será un _id de categoría
-      images: this.fb.array([], [Validators.required, Validators.minLength(1)]),
+      category: [null, Validators.required],
+      images: this.fb.array([], [Validators.minLength(1)]), // Solo validamos que no esté vacío
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
@@ -65,14 +64,11 @@ export class ProductForm implements OnInit {
         .getProductById(this.productId)
         .subscribe((product) => {
           this.productForm.patchValue(product);
-
-          // Rellenamos los FormArrays
           this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
           );
           this.imagePreviews.set([...product.images]);
-
           this.variants.clear();
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
@@ -101,26 +97,16 @@ export class ProductForm implements OnInit {
         URL.createObjectURL(file)
       );
       this.imagePreviews.set(previewUrls);
-
-      // Limpiamos el FormArray de imágenes ya que se llenará después de la subida
+      // Truco: Para pasar la validación, llenamos el FormArray con valores temporales.
+      // Estos serán reemplazados por las URLs reales después de la subida.
       this.images.clear();
+      this.selectedFiles.forEach((file) =>
+        this.images.push(this.fb.control(file.name))
+      );
     }
   }
 
-  // --- NUEVOS MÉTODOS PARA IMÁGENES POR URL ---
-  newImageControl(url: string = ''): FormControl {
-    return this.fb.control(url, Validators.required);
-  }
-
-  addImageControl(): void {
-    this.images.push(this.newImageControl());
-  }
-
-  removeImageControl(index: number): void {
-    this.images.removeAt(index);
-  }
-
-  // --- MÉTODOS PARA VARIANTES (Ligeramente modificados para edición) ---
+  // --- MÉTODOS PARA VARIANTES ---
   newVariant(name: string = ''): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
@@ -133,11 +119,9 @@ export class ProductForm implements OnInit {
   removeVariant(variantIndex: number): void {
     this.variants.removeAt(variantIndex);
   }
-
   variantOptions(variantIndex: number): FormArray {
     return this.variants.at(variantIndex).get('options') as FormArray;
   }
-
   newOption(name: string = ''): FormGroup {
     return this.fb.group({ name: [name, Validators.required] });
   }
@@ -148,50 +132,78 @@ export class ProductForm implements OnInit {
     this.variantOptions(variantIndex).removeAt(optionIndex);
   }
 
-  // --- MÉTODO PRINCIPAL DE GUARDADO (SIMPLIFICADO) ---
+  // --- MÉTODO PRINCIPAL DE GUARDADO ---
   handleSubmit() {
+    console.log("--- FRONTEND TRACE [1/5]: Clic en 'Guardar'. ---");
+    console.log(
+      'Estado del formulario:',
+      this.productForm.valid ? 'Válido' : 'Inválido'
+    );
+    console.log(
+      'Valores crudos del formulario:',
+      this.productForm.getRawValue()
+    );
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
+      console.error(
+        '--- FRONTEND TRACE: El formulario es inválido. Deteniendo. ---'
+      );
       alert('Por favor, completa todos los campos requeridos.');
       return;
     }
 
     this.isUploading.set(true);
+    console.log(
+      `--- FRONTEND TRACE [2/5]: Hay ${this.selectedFiles.length} nuevos archivos para subir. ---`
+    );
 
-    // Si se seleccionaron nuevos archivos, los subimos. Si no, usamos las imágenes existentes.
     const uploadOperations =
       this.selectedFiles.length > 0
         ? this.selectedFiles.map((file) =>
             this.storageService.uploadImage(file)
           )
-        : of([...this.imagePreviews()]); // Usamos las URLs que ya teníamos
+        : of(this.images.value); // Si no hay archivos nuevos, usamos las URLs existentes
 
     forkJoin(uploadOperations).subscribe({
       next: (downloadURLs) => {
-        // Llenamos el FormArray 'images' con las URLs finales
+        console.log(
+          '--- FRONTEND TRACE [3/5]: Imágenes procesadas. URLs finales:',
+          downloadURLs
+        );
         this.images.clear();
         downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
-
         this.saveProductData();
       },
       error: (err) => {
         this.isUploading.set(false);
-        console.error('Error al subir una o más imágenes:', err);
+        console.error(
+          '--- FRONTEND TRACE: ERROR al subir una o más imágenes:',
+          err
+        );
         alert('No se pudieron subir las imágenes.');
       },
     });
   }
 
   private saveProductData(): void {
+    console.log('--- FRONTEND TRACE [4/5]: Entrando a saveProductData. ---');
     const productData = this.productForm.getRawValue();
+    console.log(
+      '--- FRONTEND TRACE [5/5]: Objeto final que se enviará al backend: ---'
+    );
+    console.log(JSON.stringify(productData, null, 2));
 
     const operation = this.isEditMode()
       ? this.productService.updateProduct(this.productId!, productData)
       : this.productService.createProduct(productData);
 
     operation.subscribe({
-      next: () => {
+      next: (response) => {
         this.isUploading.set(false);
+        console.log(
+          '--- FRONTEND TRACE: ¡ÉXITO! Respuesta del backend:',
+          response
+        );
         alert(
           `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`
         );
@@ -199,7 +211,10 @@ export class ProductForm implements OnInit {
       },
       error: (err) => {
         this.isUploading.set(false);
-        console.error('Error al guardar el producto:', err);
+        console.error(
+          '--- FRONTEND TRACE: ¡ERROR! El backend respondió con un error:',
+          err
+        );
         alert(err.error.message || 'No se pudo guardar el producto.');
       },
     });
