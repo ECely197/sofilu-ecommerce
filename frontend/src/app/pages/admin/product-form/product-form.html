@@ -1,9 +1,13 @@
 <!-- En: src/app/pages/admin/product-form/product-form.html -->
 <header class="page-header">
-  <h1>{{ isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto' }}</h1>
+  <h1>{{ isEditMode() ? "Editar Producto" : "Crear Nuevo Producto" }}</h1>
 </header>
 
-<form [formGroup]="productForm" (ngSubmit)="handleSubmit()" class="form-container">
+<form
+  [formGroup]="productForm"
+  (ngSubmit)="handleSubmit()"
+  class="form-container"
+>
   <!-- Columna Principal (Izquierda) -->
   <div class="main-column">
     <div class="card">
@@ -11,11 +15,21 @@
       <!-- ... (campos de nombre y descripción sin cambios) ... -->
       <div class="form-field">
         <label for="name">Nombre del producto</label>
-        <input id="name" type="text" formControlName="name" class="form-input">
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="form-input"
+        />
       </div>
       <div class="form-field">
         <label for="description">Descripción</label>
-        <textarea id="description" formControlName="description" rows="6" class="form-input"></textarea>
+        <textarea
+          id="description"
+          formControlName="description"
+          rows="6"
+          class="form-input"
+        ></textarea>
       </div>
     </div>
 
@@ -23,29 +37,66 @@
       <!-- ... (código de variantes sin cambios) ... -->
       <div class="card-header">
         <h2 class="card-title">Variantes</h2>
-        <button type="button" (click)="addVariant()" class="add-button-small" appRipple>+ Añadir Variante</button>
+        <button
+          type="button"
+          (click)="addVariant()"
+          class="add-button-small"
+          appRipple
+        >
+          + Añadir Variante
+        </button>
       </div>
-      
+
       @for (variant of variants.controls; track variant; let i = $index) {
-        <div class="variant-group" [formGroupName]="i">
-          <div class="variant-header">
-            <input type="text" formControlName="name" placeholder="Nombre de la variante (ej. Talla)" class="form-input">
-            <button type="button" (click)="removeVariant(i)" class="delete-button-small">✖</button>
-          </div>
-          
-          <div class="options-group" formArrayName="options">
-            <label class="options-label">Opciones</label>
-            <div class="options-list">
-              @for (option of variantOptions(i).controls; track option; let j = $index) {
-                <div class="option-item" [formGroupName]="j">
-                  <input type="text" formControlName="name" placeholder="Valor (ej. S)" class="form-input-small">
-                  <button type="button" (click)="removeVariantOption(i, j)" class="delete-button-tiny">✖</button>
-                </div>
-              }
-            </div>
-            <button type="button" (click)="addVariantOption(i)" class="add-button-tiny" appRipple>+ Añadir opción</button>
-          </div>
+      <div class="variant-group" [formGroupName]="i">
+        <div class="variant-header">
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Nombre de la variante (ej. Talla)"
+            class="form-input"
+          />
+          <button
+            type="button"
+            (click)="removeVariant(i)"
+            class="delete-button-small"
+          >
+            ✖
+          </button>
         </div>
+
+        <div class="options-group" formArrayName="options">
+          <label class="options-label">Opciones</label>
+          <div class="options-list">
+            @for (option of variantOptions(i).controls; track option; let j =
+            $index) {
+            <div class="option-item" [formGroupName]="j">
+              <input
+                type="text"
+                formControlName="name"
+                placeholder="Valor (ej. S)"
+                class="form-input-small"
+              />
+              <button
+                type="button"
+                (click)="removeVariantOption(i, j)"
+                class="delete-button-tiny"
+              >
+                ✖
+              </button>
+            </div>
+            }
+          </div>
+          <button
+            type="button"
+            (click)="addVariantOption(i)"
+            class="add-button-tiny"
+            appRipple
+          >
+            + Añadir opción
+          </button>
+        </div>
+      </div>
       }
     </div>
   </div>
@@ -53,38 +104,53 @@
   <!-- Columna Lateral (Derecha) -->
   <div class="sidebar-column">
     <!-- TARJETA DE IMÁGENES POR URL -->
-    <div class="card" formArrayName="images">
-      <h2 class="card-title">Imágenes del Producto (URLs)</h2>
-      <p class="card-subtitle">La primera URL será la imagen principal.</p>
-
-      @for (imageUrlControl of images.controls; track imageUrlControl; let i = $index) {
-        <div class="image-url-field">
-          <input type="url" [formControlName]="i" placeholder="https://ejemplo.com/imagen.jpg" class="form-input">
-          @if (images.controls.length > 1) {
-            <button type="button" (click)="removeImageControl(i)" class="delete-button-tiny">✖</button>
+    <div class="card">
+      <h2 class="card-title">Imágenes del Producto</h2>
+      <div class="image-upload-area">
+        <div class="image-preview-grid">
+          @for(preview of imagePreviews(); track preview) {
+          <img [src]="preview" alt="Vista previa" class="image-preview" />
           }
         </div>
-        <!-- Vista previa de la imagen -->
-        @if (imageUrlControl.value) {
-          <img [src]="imageUrlControl.value" alt="Vista previa" class="image-preview">
-        }
-      }
-      <button type="button" (click)="addImageControl()" class="add-button-tiny" appRipple>+ Añadir otra URL</button>
+        <label for="image-upload" class="upload-button" appRipple
+          >Seleccionar Imágenes</label
+        >
+        <input
+          id="image-upload"
+          type="file"
+          (change)="onFilesSelected($event)"
+          accept="image/*"
+          multiple
+        />
+        <small class="field-description"
+          >Puedes seleccionar varias imágenes a la vez.</small
+        >
+      </div>
     </div>
 
     <!-- ... (tarjetas de Organización y Precio sin cambios) ... -->
     <div class="card">
       <h2 class="card-title">Organización</h2>
-      <div class="form-field">
-        <label for="category">Categoría (ID)</label>
-        <input id="category" type="text" formControlName="category" class="form-input">
+      <div class="form-field has-arrow">
+        <label for="category">Categoría</label>
+        <select
+          id="category"
+          formControlName="category"
+          class="form-input"
+          as="select"
+        >
+          <option [ngValue]="null" disabled>Selecciona una categoría</option>
+          @for (cat of categories(); track cat._id) {
+          <option [value]="cat._id">{{ cat.name }}</option>
+          }
+        </select>
       </div>
       <div class="checkbox-field">
-        <input id="isFeatured" type="checkbox" formControlName="isFeatured">
-        <label for="isFeatured">Producto Destacado (Más Vendido)</label>
+        <input id="isFeatured" type="checkbox" formControlName="isFeatured" />
+        <label for="isFeatured">Producto Destacado</label>
       </div>
       <div class="checkbox-field">
-        <input id="isOnSale" type="checkbox" formControlName="isOnSale">
+        <input id="isOnSale" type="checkbox" formControlName="isOnSale" />
         <label for="isOnSale">Producto en Oferta</label>
       </div>
     </div>
@@ -93,22 +159,43 @@
       <h2 class="card-title">Precio</h2>
       <div class="form-field">
         <label for="price">Precio Base</label>
-        <input id="price" type="number" formControlName="price" class="form-input">
+        <input
+          id="price"
+          type="number"
+          formControlName="price"
+          class="form-input"
+        />
       </div>
       @if (productForm.get('isOnSale')?.value) {
-        <div class="form-field">
-          <label for="salePrice">Precio de Oferta</label>
-          <input id="salePrice" type="number" formControlName="salePrice" class="form-input">
-        </div>
+      <div class="form-field">
+        <label for="salePrice">Precio de Oferta</label>
+        <input
+          id="salePrice"
+          type="number"
+          formControlName="salePrice"
+          class="form-input"
+        />
+      </div>
       }
     </div>
   </div>
 
   <!-- Acciones del Formulario -->
   <div class="form-actions">
-    <a routerLink="/admin/products" class="cancel-button">Descartar</a>
-    <button type="submit" [disabled]="productForm.invalid" class="save-button" appRipple>
-      {{ isEditMode ? 'Guardar Cambios' : 'Guardar Producto' }}
+    <a routerLink="/admin/products" class="btn-secondary" appRipple>Cancelar</a>
+    <button
+      type="submit"
+      [disabled]="productForm.invalid || isUploading()"
+      class="btn-material"
+      appRipple
+    >
+      {{
+        isUploading()
+          ? "Subiendo imágenes..."
+          : isEditMode()
+          ? "Guardar Cambios"
+          : "Guardar Producto"
+      }}
     </button>
   </div>
 </form>

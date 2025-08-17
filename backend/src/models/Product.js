@@ -1,53 +1,58 @@
-
-
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const optionSchema = new Schema({
-  name: { type: String, required: true },
-}, { _id: false });
+const optionSchema = new Schema(
+  {
+    name: { type: String, required: true },
+  },
+  { _id: false }
+);
 
-
-const variantSchema = new Schema({
-  name: { type: String, required: true },
-  options: [optionSchema]
-}, { _id: false });
-
+const variantSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    options: [optionSchema],
+  },
+  { _id: false }
+);
 
 const productSchema = new Schema({
-  name: { 
-    type: String, 
-    required: true 
+  name: {
+    type: String,
+    required: true,
   },
-  description: { 
-    type: String, 
-    required: true 
+  description: {
+    type: String,
+    required: true,
   },
-  price: { 
-    type: Number, 
-    required: true 
+  price: {
+    type: Number,
+    required: true,
   },
-  category: { 
-    type: String 
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: "Category",
+    required: true,
   },
-  // --------------------------------
 
-  images: [{ 
-    type: String, 
-    required: true 
-  }],
-  isFeatured: { 
-    type: Boolean, 
-    default: false 
+  images: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
+  isFeatured: {
+    type: Boolean,
+    default: false,
   },
-  isOnSale: { 
-    type: Boolean, 
-    default: false 
+  isOnSale: {
+    type: Boolean,
+    default: false,
   },
-  salePrice: { 
-    type: Number 
+  salePrice: {
+    type: Number,
   },
-  variants: [variantSchema]
+  variants: [variantSchema],
 });
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model("Product", productSchema);

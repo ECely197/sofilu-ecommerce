@@ -1,4 +1,5 @@
 @use "../../../../../buttons";
+@use "../admin-shared";
 
 // Estructura General
 .page-header {
@@ -278,4 +279,41 @@ textarea.form-input {
       "sidebar"
       "actions";
   }
+}
+
+.image-upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.image-preview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid var(--soft-gray);
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.upload-button {
+  @extend .btn-secondary;
+  width: 100%;
+}
+
+.field-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
 }
