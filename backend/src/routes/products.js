@@ -1,22 +1,15 @@
+// Contenido completo y actualizado para: backend/src/routes/products.js
+
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const Category = require("../models/Category"); // <-- ¡NUEVA IMPORTACIÓN!
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
-
-/**
- * RUTAS DE PRODUCTOS
- * - Las rutas más específicas deben ir antes que las rutas con parámetros genéricos.
- * - Las rutas públicas están primero, luego las protegidas (admin).
- */
 
 // ===============================
 // RUTAS PÚBLICAS (para el cliente)
 // ===============================
 
-/**
- * GET /api/products/section/featured
- * Obtener productos destacados (máximo 4).
- */
 router.get("/section/featured", async (req, res) => {
   try {
     const featuredProducts = await Product.find({ isFeatured: true }).limit(4);
@@ -26,10 +19,6 @@ router.get("/section/featured", async (req, res) => {
   }
 });
 
-/**
- * GET /api/products/section/sale
- * Obtener productos en oferta.
- */
 router.get("/section/sale", async (req, res) => {
   try {
     const saleProducts = await Product.find({ isOnSale: true });
@@ -39,10 +28,41 @@ router.get("/section/sale", async (req, res) => {
   }
 });
 
+// --- ¡NUEVA RUTA PARA OBTENER PRODUCTOS POR CATEGORÍA! ---
 /**
- * GET /api/products
- * Obtener todos los productos.
+ * GET /api/products/category/:slug
+ * Obtiene todos los productos que pertenecen a una categoría específica,
+ * identificada por su slug.
  */
+router.get("/category/:slug", async (req, res) => {
+  try {
+    // 1. Buscamos la categoría en la base de datos usando el slug de la URL.
+    const category = await Category.findOne({ slug: req.params.slug });
+
+    // 2. Si la categoría no existe, devolvemos un array vacío para no romper el frontend.
+    if (!category) {
+      console.log(
+        `No se encontró la categoría con el slug: ${req.params.slug}`
+      );
+      return res.json([]);
+    }
+
+    // 3. Si la categoría existe, usamos su _id para buscar todos los productos
+    //    que tengan ese _id en su campo 'category'.
+    const products = await Product.find({ category: category._id });
+
+    console.log(
+      `Se encontraron ${products.length} productos para la categoría "${category.name}"`
+    );
+    res.json(products);
+  } catch (error) {
+    console.error("Error al obtener productos por categoría:", error);
+    res
+      .status(500)
+      .json({ message: "Error al obtener los productos por categoría" });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const products = await Product.find();
@@ -52,14 +72,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-/**
- * GET /api/products/:id
- * Obtener un solo producto por ID.
- * (Esta ruta debe ir después de las rutas específicas para evitar conflictos)
- */
+// IMPORTANTE: La ruta genérica /:id debe ir DESPUÉS de las rutas más específicas.
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    // Populamos la categoría para obtener su nombre, etc.
+    const product = await Product.findById(req.params.id).populate("category");
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado" });
     }
@@ -73,59 +90,20 @@ router.get("/:id", async (req, res) => {
 // RUTAS PROTEGIDAS (solo administradores)
 // ===================================
 
-/**
- * POST /api/products
- * Crear un nuevo producto.
- * Protegida por authMiddleware y adminOnly.
- */
-// --- RUTA DE CREACIÓN CON RASTREO DETALLADO ---
 router.post("/", [authMiddleware, adminOnly], async (req, res) => {
-  // --- LOG DE RASTREO #1 ---
-  console.log(
-    "--- BACKEND TRACE: ¡Hemos pasado los middlewares! Entrando a la lógica de la ruta POST /api/products ---"
-  );
-
   try {
-    // --- LOG DE RASTREO #2 ---
-    console.log(
-      "--- BACKEND TRACE: Dentro del bloque TRY. El cuerpo de la petición (req.body) es: ---"
-    );
-    console.log(JSON.stringify(req.body, null, 2));
-
     const newProduct = new Product(req.body);
-
-    // --- LOG DE RASTREO #3 ---
-    console.log(
-      "--- BACKEND TRACE: Objeto de Mongoose construido. Intentando guardar... ---"
-    );
-
     const savedProduct = await newProduct.save();
-
-    // --- LOG DE RASTREO #4 (ÉXITO) ---
-    console.log(
-      "--- BACKEND TRACE: ¡Producto guardado con éxito en la base de datos! ---"
-    );
     res.status(201).json(savedProduct);
   } catch (error) {
-    // --- LOG DE RASTREO #5 (ERROR) ---
-    console.error(
-      "--- BACKEND TRACE: ¡ERROR! La operación .save() ha fallado. Error de Mongoose: ---"
-    );
-    console.error(error); // Mostramos el error completo y detallado
-
+    console.error("Error al crear el producto:", error);
     res.status(400).json({
       message: "Error de validación al crear el producto.",
       error: error.message,
-      details: error, // Enviamos el error completo para depurar en el frontend si es necesario
     });
   }
 });
 
-/**
- * PUT /api/products/:id
- * Actualizar un producto existente por ID.
- * Protegida por authMiddleware y adminOnly.
- */
 router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
@@ -144,11 +122,6 @@ router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-/**
- * DELETE /api/products/:id
- * Eliminar un producto por ID.
- * Protegida por authMiddleware y adminOnly.
- */
 router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);
