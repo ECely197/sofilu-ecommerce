@@ -3,8 +3,8 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-// --- ¡NUEVO SUB-ESQUEMA PARA LAS OPCIONES! ---
-// Cada opción ahora es un objeto con su propio nombre, modificador de precio y stock.
+// --- SUB-ESQUEMA PARA LAS OPCIONES (CORREGIDO) ---
+// Cada opción es un objeto con su propio nombre, modificador de precio y stock.
 const optionSchema = new Schema(
   {
     name: {
@@ -14,33 +14,35 @@ const optionSchema = new Schema(
     priceModifier: {
       type: Number,
       required: true,
-      default: 0, // Por defecto, una opción no cambia el precio. Si es +10000, el producto costará 10000 más.
+      default: 0,
     },
     stock: {
       type: Number,
       required: true,
-      default: 0, // Por defecto, las nuevas opciones no tienen stock.
+      default: 0,
     },
   },
   { _id: false }
 );
 
+// --- SUB-ESQUEMA PARA LAS VARIANTES ---
 const variantSchema = new Schema(
   {
     name: { type: String, required: true },
-    options: [optionSchema], // El array de opciones ahora usará el nuevo sub-esquema
+    options: [optionSchema], // ¡AHORA USA EL optionSchema CORRECTO!
   },
   { _id: false }
 );
 
+// --- ESQUEMA PRINCIPAL DEL PRODUCTO ---
 const productSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
-
-    // Este es ahora el PRECIO BASE. El precio final será base + priceModifier de la variante.
-    price: { type: Number, required: true },
-
+    price: {
+      type: Number,
+      default: 0,
+    },
     category: {
       type: Schema.Types.ObjectId,
       ref: "Category",
@@ -49,7 +51,7 @@ const productSchema = new Schema(
     images: [{ type: String, required: true }],
     isFeatured: { type: Boolean, default: false },
     isOnSale: { type: Boolean, default: false },
-    salePrice: { type: Number }, // Este se aplicará sobre el precio final (base + modificador)
+    salePrice: { type: Number },
     variants: [variantSchema],
   },
   {

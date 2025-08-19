@@ -6,7 +6,7 @@ import {
   HostListener,
   computed,
 } from '@angular/core';
-import { Product } from '../../interfaces/product.interface';
+import { Product, Option, Variant } from '../../interfaces/product.interface';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart';
@@ -73,5 +73,20 @@ export class ProductCard {
     event.preventDefault();
     event.stopPropagation();
     this.wishlistService.toggleProduct(this.product);
+  }
+
+  get displayPrice(): number {
+    if (!this.product) return 0;
+    if (this.product.variants && this.product.variants.length > 0) {
+      // Buscamos el precio más bajo entre todas las opciones de todas las variantes
+      const minOptionPrice = this.product.variants
+        .flatMap((v) => v.options) // Aplana todas las opciones en un solo array
+        .reduce(
+          (min, opt) => Math.min(min, this.product.price + opt.priceModifier),
+          Infinity
+        );
+      return minOptionPrice === Infinity ? this.product.price : minOptionPrice;
+    }
+    return this.product.price;
   }
 }

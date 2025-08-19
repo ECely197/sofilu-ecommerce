@@ -126,6 +126,17 @@
     color: white;
     border-color: var(--pastel-pink);
   }
+
+  &.unavailable {
+    text-decoration: line-through;
+    color: var(--soft-gray);
+    border-color: var(--soft-gray);
+    cursor: not-allowed;
+
+    &:hover {
+      border-color: var(--soft-gray); // Evita el cambio de color en hover
+    }
+  }
 }
 
 // --- Botones de Acción ---

@@ -1,18 +1,30 @@
-export interface Variant {
+// Contenido completo y final para: src/app/interfaces/product.interface.ts
+
+// Importamos la interfaz Category para poder usarla como tipo
+import { Category } from '../services/category.service';
+
+export interface Option {
   name: string;
-  options: { name: string }[];
+  priceModifier: number;
+  stock: number;
 }
 
+export interface Variant {
+  name: string;
+  options: Option[];
+}
 
 export interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
-  category: string; // En el futuro será un objeto Category
-  images: string[]; // <-- ¡CAMBIADO! Ahora es un array de strings
-  variants: Variant[];
-  isFeatured?: boolean; // Hacemos opcionales los campos nuevos
-  isOnSale?: boolean;
+
+  category: string | Category;
+
+  images: string[];
+  isFeatured: boolean;
+  isOnSale: boolean;
   salePrice?: number;
+  variants: Variant[];
 }

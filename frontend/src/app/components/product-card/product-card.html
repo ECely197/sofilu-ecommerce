@@ -1,26 +1,25 @@
-<!-- En: src/app/components/product-card/product-card.html -->
+<!-- Contenido completo y seguro para: src/app/components/product-card/product-card.html -->
 
-<a [routerLink]="['/product', product._id]" class="card-link">
-  <!-- El .card es el contenedor principal que ya tienes -->
-  <div *ngIf="product" class="card">
-    <!-- El contenedor de la imagen -->
-    <div class="image-container">
-      @if (product.images && product.images.length > 0) {
-      <img [src]="product.images[0]" [alt]="product.name" />
-      } @else {
-      <div class="image-placeholder"></div>
-      }
-    </div>
+@if (product) {
+<div class="card-container">
+  <div class="card">
+    <a [routerLink]="['/product', product._id]" class="card-link">
+      <div class="image-container">
+        @if (product.images && product.images.length > 0) {
+        <img [src]="product.images[0]" [alt]="product.name" />
+        } @else {
+        <div class="image-placeholder"></div>
+        }
+      </div>
+      <div class="card-content">
+        <h3 class="product-name">{{ product.name }}</h3>
+        <p class="price">
+          {{ product.variants.length > 0 ? "Desde " : ""
+          }}{{ displayPrice | currency : "COP" : "symbol" : "1.0-0" }}
+        </p>
+      </div>
+    </a>
 
-    <!-- Contenido de la tarjeta -->
-    <div class="card-content">
-      <h3>{{ product.name }}</h3>
-      <p class="price">
-        {{ product.price | currency : "COP" : "symbol" : "1.0-0" }}
-      </p>
-    </div>
-
-    <!-- ¡NUEVO! AÑADIMOS LAS BURBUJAS DE ACCIÓN AQUÍ -->
     @if (authService.currentUser$ | async) {
     <div class="action-bubbles">
       <button
@@ -38,4 +37,5 @@
     </div>
     }
   </div>
-</a>
+</div>
+}

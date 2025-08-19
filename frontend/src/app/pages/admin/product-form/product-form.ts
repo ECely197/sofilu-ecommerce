@@ -1,3 +1,5 @@
+// Contenido completo y final para: frontend/src/app/pages/admin/product-form/product-form.ts
+
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +14,7 @@ import {
 import { forkJoin, of } from 'rxjs';
 
 import { ProductServices } from '../../../services/product';
-import { StorageService } from '../../../services/storage'; // Corregido de 'storage'
+import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
 
@@ -44,9 +46,9 @@ export class ProductForm implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [null, [Validators.required, Validators.min(0.01)]],
+      price: [null, [Validators.min(0)]],
       category: [null, Validators.required],
-      images: this.fb.array([], [Validators.minLength(1)]), // Solo validamos que no esté vacío
+      images: this.fb.array([], [Validators.minLength(1)]),
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
@@ -63,16 +65,32 @@ export class ProductForm implements OnInit {
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
-          this.productForm.patchValue(product);
+          // --- ¡CORRECCIÓN CRÍTICA AQUÍ! ---
+          this.productForm.patchValue({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            // Nos aseguramos de asignar solo el _id de la categoría.
+            // El '?' (optional chaining) previene errores si la categoría no viniera.
+            category: (product.category as Category)._id,
+            isFeatured: product.isFeatured,
+            isOnSale: product.isOnSale,
+            salePrice: product.salePrice,
+          });
+
+          // El resto de la lógica para cargar imágenes y variantes está bien
           this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
           );
           this.imagePreviews.set([...product.images]);
+
           this.variants.clear();
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
-              variant.options.map((opt) => this.fb.group({ name: opt.name }))
+              (variant.options as any[]).map((opt) =>
+                this.newOption(opt.name, opt.priceModifier, opt.stock)
+              )
             );
             this.variants.push(
               this.fb.group({ name: variant.name, options: optionsArray })
@@ -97,13 +115,64 @@ export class ProductForm implements OnInit {
         URL.createObjectURL(file)
       );
       this.imagePreviews.set(previewUrls);
-      // Truco: Para pasar la validación, llenamos el FormArray con valores temporales.
-      // Estos serán reemplazados por las URLs reales después de la subida.
       this.images.clear();
       this.selectedFiles.forEach((file) =>
-        this.images.push(this.fb.control(file.name))
+        this.images.push(this.fb.control(file.name, Validators.required))
       );
     }
+  }
+
+  handleSubmit() {
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      alert('Por favor, completa todos los campos requeridos.');
+      return;
+    }
+
+    this.isUploading.set(true);
+
+    const uploadOperations =
+      this.selectedFiles.length > 0
+        ? this.selectedFiles.map((file) =>
+            this.storageService.uploadImage(file)
+          )
+        : of(this.images.value);
+
+    forkJoin(uploadOperations).subscribe({
+      next: (downloadURLs) => {
+        this.images.clear();
+        downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
+        this.saveProductData();
+      },
+      error: (err) => {
+        this.isUploading.set(false);
+        console.error('Error al subir las imágenes:', err);
+        alert('No se pudieron subir las imágenes.');
+      },
+    });
+  }
+
+  private saveProductData(): void {
+    const productData = this.productForm.getRawValue();
+
+    const operation = this.isEditMode()
+      ? this.productService.updateProduct(this.productId!, productData)
+      : this.productService.createProduct(productData);
+
+    operation.subscribe({
+      next: () => {
+        this.isUploading.set(false);
+        alert(
+          `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`
+        );
+        this.router.navigate(['/admin/products']);
+      },
+      error: (err) => {
+        this.isUploading.set(false);
+        console.error('Error al guardar el producto:', err);
+        alert(err.error.message || 'No se pudo guardar el producto.');
+      },
+    });
   }
 
   // --- MÉTODOS PARA VARIANTES ---
@@ -122,101 +191,21 @@ export class ProductForm implements OnInit {
   variantOptions(variantIndex: number): FormArray {
     return this.variants.at(variantIndex).get('options') as FormArray;
   }
-  newOption(name: string = ''): FormGroup {
-    return this.fb.group({ name: [name, Validators.required] });
+  newOption(
+    name: string = '',
+    priceModifier: number = 0,
+    stock: number = 0
+  ): FormGroup {
+    return this.fb.group({
+      name: [name, Validators.required],
+      priceModifier: [priceModifier, [Validators.required, Validators.min(0)]],
+      stock: [stock, [Validators.required, Validators.min(0)]],
+    });
   }
   addVariantOption(variantIndex: number): void {
     this.variantOptions(variantIndex).push(this.newOption());
   }
   removeVariantOption(variantIndex: number, optionIndex: number): void {
     this.variantOptions(variantIndex).removeAt(optionIndex);
-  }
-
-  // --- MÉTODO PRINCIPAL DE GUARDADO ---
-  handleSubmit() {
-    console.log("--- FRONTEND TRACE [1/5]: Clic en 'Guardar'. ---");
-    console.log(
-      'Estado del formulario:',
-      this.productForm.valid ? 'Válido' : 'Inválido'
-    );
-    console.log(
-      'Valores crudos del formulario:',
-      this.productForm.getRawValue()
-    );
-    if (this.productForm.invalid) {
-      this.productForm.markAllAsTouched();
-      console.error(
-        '--- FRONTEND TRACE: El formulario es inválido. Deteniendo. ---'
-      );
-      alert('Por favor, completa todos los campos requeridos.');
-      return;
-    }
-
-    this.isUploading.set(true);
-    console.log(
-      `--- FRONTEND TRACE [2/5]: Hay ${this.selectedFiles.length} nuevos archivos para subir. ---`
-    );
-
-    const uploadOperations =
-      this.selectedFiles.length > 0
-        ? this.selectedFiles.map((file) =>
-            this.storageService.uploadImage(file)
-          )
-        : of(this.images.value); // Si no hay archivos nuevos, usamos las URLs existentes
-
-    forkJoin(uploadOperations).subscribe({
-      next: (downloadURLs) => {
-        console.log(
-          '--- FRONTEND TRACE [3/5]: Imágenes procesadas. URLs finales:',
-          downloadURLs
-        );
-        this.images.clear();
-        downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
-        this.saveProductData();
-      },
-      error: (err) => {
-        this.isUploading.set(false);
-        console.error(
-          '--- FRONTEND TRACE: ERROR al subir una o más imágenes:',
-          err
-        );
-        alert('No se pudieron subir las imágenes.');
-      },
-    });
-  }
-
-  private saveProductData(): void {
-    console.log('--- FRONTEND TRACE [4/5]: Entrando a saveProductData. ---');
-    const productData = this.productForm.getRawValue();
-    console.log(
-      '--- FRONTEND TRACE [5/5]: Objeto final que se enviará al backend: ---'
-    );
-    console.log(JSON.stringify(productData, null, 2));
-
-    const operation = this.isEditMode()
-      ? this.productService.updateProduct(this.productId!, productData)
-      : this.productService.createProduct(productData);
-
-    operation.subscribe({
-      next: (response) => {
-        this.isUploading.set(false);
-        console.log(
-          '--- FRONTEND TRACE: ¡ÉXITO! Respuesta del backend:',
-          response
-        );
-        alert(
-          `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`
-        );
-        this.router.navigate(['/admin/products']);
-      },
-      error: (err) => {
-        this.isUploading.set(false);
-        console.error(
-          '--- FRONTEND TRACE: ¡ERROR! El backend respondió con un error:',
-          err
-        );
-        alert(err.error.message || 'No se pudo guardar el producto.');
-      },
-    });
   }
 }

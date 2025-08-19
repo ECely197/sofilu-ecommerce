@@ -6,20 +6,24 @@
   <div class="image-gallery">
     <!-- Imagen Principal (reacciona a la selección) -->
     @if (product()!.images.length > 0) {
-      <div class="main-image" [style.backgroundImage]="'url(' + selectedImage() + ')'"></div>
+    <div
+      class="main-image"
+      [style.backgroundImage]="'url(' + selectedImage() + ')'"
+    ></div>
     } @else {
-      <div class="main-image placeholder-image"></div>
+    <div class="main-image placeholder-image"></div>
     }
 
     <!-- Miniaturas (se muestran si hay más de una imagen) -->
     @if (product()!.images.length > 1) {
     <div class="thumbnail-grid">
       @for (image of product()!.images; track image) {
-      <div class="thumbnail" 
-           [style.backgroundImage]="'url(' + image + ')'" 
-           (click)="selectedImage.set(image)"
-           [class.active]="selectedImage() === image">
-      </div>
+      <div
+        class="thumbnail"
+        [style.backgroundImage]="'url(' + image + ')'"
+        (click)="selectedImage.set(image)"
+        [class.active]="selectedImage() === image"
+      ></div>
       }
     </div>
     }
@@ -30,7 +34,9 @@
   <!-- ========================================== -->
   <div class="product-info">
     <h1 class="product-title">{{ product()!.name }}</h1>
-    <p class="product-price">{{ product()!.price | currency:'COP':'symbol':'1.0-0' }}</p>
+    <p class="product-price">
+      {{ finalPrice() | currency : "COP" : "symbol" : "1.0-0" }}
+    </p>
 
     <!-- SECCIÓN DE VARIANTES -->
     @for (variant of product()!.variants; track variant.name) {
@@ -38,9 +44,13 @@
       <p class="variant-name">{{ variant.name }}</p>
       <div class="variant-options">
         @for (option of variant.options; track option.name) {
-        <button class="variant-button" 
-                [class.active]="isSelected(variant.name, option.name)"
-                (click)="selectOption(variant.name, option.name)">
+        <button
+          class="variant-button"
+          [class.active]="isSelected(variant.name, option.name)"
+          [class.unavailable]="!isOptionAvailable(option)"
+          [disabled]="!isOptionAvailable(option)"
+          (click)="selectOption(variant.name, option.name)"
+        >
           {{ option.name }}
         </button>
         }
@@ -50,13 +60,20 @@
 
     <!-- ACCIONES PRINCIPALES -->
     <div class="actions">
-      <button class="btn-material" appRipple (click)="addToCart()">Añadir al carrito</button>
+      <button
+        class="btn-material"
+        [disabled]="!isInStock()"
+        (click)="addToCart()"
+        appRipple
+      >
+        {{ isInStock() ? "Añadir al carrito" : "Agotado" }}
+      </button>
       <button class="btn-secondary" appRipple (click)="toggleWishlist()">
         <!-- Usamos un icono de Material Symbols para el corazón -->
         <span class="material-symbols-outlined">
-          {{ isProductInWishlist() ? 'favorite' : 'favorite_border' }}
+          {{ isProductInWishlist() ? "favorite" : "favorite_border" }}
         </span>
-        {{ isProductInWishlist() ? 'En tu lista' : 'Añadir a la lista' }}
+        {{ isProductInWishlist() ? "En tu lista" : "Añadir a la lista" }}
       </button>
     </div>
   </div>
@@ -67,8 +84,20 @@
 <!-- ======================================= -->
 <div class="product-tabs-container" data-aos="fade-up">
   <div class="tab-header">
-    <button class="tab-link" [class.active]="activeTab() === 'description'" (click)="activeTab.set('description')">Descripción</button>
-    <button class="tab-link" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">Opiniones ({{ reviews().length }})</button>
+    <button
+      class="tab-link"
+      [class.active]="activeTab() === 'description'"
+      (click)="activeTab.set('description')"
+    >
+      Descripción
+    </button>
+    <button
+      class="tab-link"
+      [class.active]="activeTab() === 'reviews'"
+      (click)="activeTab.set('reviews')"
+    >
+      Opiniones ({{ reviews().length }})
+    </button>
   </div>
 
   <div class="tab-content">
@@ -85,7 +114,9 @@
           <h3 class="reviews-summary-title">Opiniones de nuestros clientes</h3>
         </div>
         @if(canWriteReview()){
-        <button class="btn-secondary" (click)="scrollToReviewForm()">Escribir una reseña</button>
+        <button class="btn-secondary" (click)="scrollToReviewForm()">
+          Escribir una reseña
+        </button>
         }
       </div>
 
@@ -94,13 +125,14 @@
         <div class="review-card">
           <div class="review-header">
             <span class="review-author">{{ review.author }}</span>
-            <span class="review-date">{{ review.createdAt | date:'longDate' }}</span>
+            <span class="review-date">{{
+              review.createdAt | date : "longDate"
+            }}</span>
           </div>
           <div class="review-rating">
             @for (star of [].constructor(review.rating); track $index) {
             <span class="star filled">★</span>
-            }
-            @for (star of [].constructor(5 - review.rating); track $index) {
+            } @for (star of [].constructor(5 - review.rating); track $index) {
             <span class="star">★</span>
             }
           </div>
@@ -108,7 +140,10 @@
           <p class="review-comment">{{ review.comment }}</p>
         </div>
         } @empty {
-        <p class="empty-reviews-message">Este producto aún no tiene reseñas. ¡Sé el primero en compartir tu opinión!</p>
+        <p class="empty-reviews-message">
+          Este producto aún no tiene reseñas. ¡Sé el primero en compartir tu
+          opinión!
+        </p>
         }
       </div>
 
@@ -119,7 +154,9 @@
           <div class="form-field">
             <label for="rating">Calificación</label>
             <select id="rating" formControlName="rating" class="form-input">
-              <option [ngValue]="null" disabled>Selecciona una calificación</option>
+              <option [ngValue]="null" disabled>
+                Selecciona una calificación
+              </option>
               <option [value]="5">5 Estrellas - Excelente</option>
               <option [value]="4">4 Estrellas - Bueno</option>
               <option [value]="3">3 Estrellas - Regular</option>
@@ -129,14 +166,31 @@
           </div>
           <div class="form-field">
             <label for="title">Título de tu reseña</label>
-            <input id="title" type="text" formControlName="title" placeholder="Ej: ¡Me encantó!" class="form-input">
+            <input
+              id="title"
+              type="text"
+              formControlName="title"
+              placeholder="Ej: ¡Me encantó!"
+              class="form-input"
+            />
           </div>
           <div class="form-field">
             <label for="comment">Tu reseña</label>
-            <textarea id="comment" formControlName="comment" placeholder="Cuéntanos más sobre tu experiencia..."
-              rows="4" class="form-input"></textarea>
+            <textarea
+              id="comment"
+              formControlName="comment"
+              placeholder="Cuéntanos más sobre tu experiencia..."
+              rows="4"
+              class="form-input"
+            ></textarea>
           </div>
-          <button type="submit" [disabled]="reviewForm.invalid" class="btn-material">Enviar mi reseña</button>
+          <button
+            type="submit"
+            [disabled]="reviewForm.invalid"
+            class="btn-material"
+          >
+            Enviar mi reseña
+          </button>
         </form>
       </div>
       }

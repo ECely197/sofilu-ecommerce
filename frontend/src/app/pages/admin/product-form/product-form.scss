@@ -317,3 +317,35 @@ input[type="file"] {
   color: var(--text-secondary);
   text-align: center;
 }
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  // Clases de utilidad para el ancho de los inputs
+  .flex-1 {
+    flex: 1;
+  }
+  .flex-2 {
+    flex: 2;
+  }
+  .flex-3 {
+    flex: 3;
+  }
+
+  // Estilos para la cabecera
+  &.header {
+    margin-bottom: 0.5rem;
+    label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+  }
+}
+
+.form-input-small {
+  // Aseguramos que los inputs no tengan un ancho fijo para que flexbox funcione
+  width: auto;
+}

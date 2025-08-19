@@ -68,19 +68,40 @@
         <div class="options-group" formArrayName="options">
           <label class="options-label">Opciones</label>
           <div class="options-list">
+            <!-- Cabecera de la tabla de opciones -->
+            <div class="option-item header">
+              <label class="flex-3">Valor (ej. S, M, L)</label>
+              <label class="flex-2">Modificador de Precio (+)</label>
+              <label class="flex-2">Stock</label>
+              <div class="flex-1"></div>
+            </div>
+
+            <!-- Iteramos sobre las opciones -->
             @for (option of variantOptions(i).controls; track option; let j =
             $index) {
             <div class="option-item" [formGroupName]="j">
               <input
                 type="text"
                 formControlName="name"
-                placeholder="Valor (ej. S)"
-                class="form-input-small"
+                placeholder="Valor"
+                class="form-input-small flex-3"
+              />
+              <input
+                type="number"
+                formControlName="priceModifier"
+                placeholder="+ COP"
+                class="form-input-small flex-2"
+              />
+              <input
+                type="number"
+                formControlName="stock"
+                placeholder="Cantidad"
+                class="form-input-small flex-2"
               />
               <button
                 type="button"
                 (click)="removeVariantOption(i, j)"
-                class="delete-button-tiny"
+                class="delete-button-tiny flex-1"
               >
                 ✖
               </button>

@@ -19,7 +19,7 @@ import {
 
 // Importaciones de Servicios y Tipos
 import { ProductServices, Review } from '../../services/product';
-import { Product } from '../../interfaces/product.interface';
+import { Product, Option, Variant } from '../../interfaces/product.interface';
 import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { OrderService } from '../../services/order';
@@ -56,6 +56,48 @@ export class ProductDetailComponent implements OnInit {
   // Lógica para Pestañas (Tabs)
   activeTab = signal<'description' | 'reviews'>('description');
 
+  finalPrice = computed(() => {
+    const p = this.product();
+    if (!p) return 0;
+
+    let modifier = 0;
+    const selection = this.selectedVariants();
+
+    p.variants.forEach((variant) => {
+      const selectedOptionName = selection[variant.name];
+      const selectedOption = variant.options.find(
+        (opt) => opt.name === selectedOptionName
+      );
+      if (selectedOption) {
+        modifier += selectedOption.priceModifier;
+      }
+    });
+
+    return p.price + modifier;
+  });
+
+  // Encuentra la combinación de opciones seleccionada actualmente
+  currentSelectionData = computed(() => {
+    const p = this.product();
+    const selection = this.selectedVariants();
+    if (!p || p.variants.length === 0) return null;
+
+    // Lógica para encontrar la opción final (simplificada para una sola variante por ahora)
+    // Se puede expandir para combinaciones más complejas si es necesario
+    const firstVariant = p.variants[0];
+    const selectedOptionName = selection[firstVariant.name];
+    return (
+      firstVariant.options.find((opt) => opt.name === selectedOptionName) ||
+      null
+    );
+  });
+
+  // Verifica si la selección actual tiene stock
+  isInStock = computed(() => {
+    const selection = this.currentSelectionData();
+    return selection ? selection.stock > 0 : false;
+  });
+
   // Lógica para el formulario de Reseñas
   private userOrders = signal<any[]>([]);
   canWriteReview = computed(() => {
@@ -87,9 +129,8 @@ export class ProductDetailComponent implements OnInit {
         .getProductById(productId)
         .subscribe((foundProduct) => {
           this.product.set(foundProduct);
-          if (foundProduct.images.length > 0) {
+          if (foundProduct.images.length > 0)
             this.selectedImage.set(foundProduct.images[0]);
-          }
           this.initializeVariants(foundProduct);
         });
 
@@ -99,27 +140,69 @@ export class ProductDetailComponent implements OnInit {
   }
 
   // --- MÉTODOS PARA VARIANTES (CORREGIDOS Y ROBUSTOS) ---
+
   initializeVariants(p: Product): void {
     const initialSelection: { [key: string]: string } = {};
+    if (!p.variants || p.variants.length === 0) {
+      this.selectedVariants.set(initialSelection);
+      return;
+    }
+
+    // 1. Aplanamos todas las opciones en un solo array, guardando el nombre de su variante
+    const allOptions = p.variants.flatMap((variant) =>
+      variant.options.map((option) => ({
+        ...option,
+        variantName: variant.name,
+      }))
+    );
+
+    // 2. Si no hay opciones, no hacemos nada
+    if (allOptions.length === 0) {
+      this.selectedVariants.set(initialSelection);
+      return;
+    }
+
+    // 3. Encontramos la opción más barata de todas
+    const cheapestOption = allOptions.reduce((lowest, current) =>
+      p.price + current.priceModifier < p.price + lowest.priceModifier
+        ? current
+        : lowest
+    );
+
+    // 4. Construimos la selección inicial basándonos en la opción más barata,
+    //    y rellenamos las demás variantes con su primera opción por defecto.
     p.variants.forEach((variant) => {
-      if (variant.options.length > 0) {
+      if (variant.name === cheapestOption.variantName) {
+        initialSelection[variant.name] = cheapestOption.name;
+      } else if (variant.options.length > 0) {
         initialSelection[variant.name] = variant.options[0].name;
       }
     });
+
     this.selectedVariants.set(initialSelection);
   }
 
   selectOption(variantName: string, optionName: string): void {
-    this.selectedVariants.update((currentSelection) => {
-      const newSelection = { ...currentSelection };
-      newSelection[variantName] = optionName;
-      return newSelection;
-    });
+    this.selectedVariants.update((current) => ({
+      ...current,
+      [variantName]: optionName,
+    }));
+  }
+
+  isOptionAvailable(option: Option): boolean {
+    return option.stock > 0;
   }
 
   isSelected(variantName: string, optionName: string): boolean {
-    // Verifica que la variante exista en la selección y que coincida con la opción
     return this.selectedVariants()[variantName] === optionName;
+  }
+
+  addToCart(): void {
+    const p = this.product();
+    if (p && this.isInStock()) {
+      this.cartService.addItem(p, this.selectedVariants());
+      alert(`${p.name} ha sido añadido al carrito!`);
+    }
   }
 
   // --- OTROS MÉTODOS ---
@@ -177,16 +260,6 @@ export class ProductDetailComponent implements OnInit {
           ]);
           this.reviewForm.reset({ author: 'Cliente Anónimo' });
         });
-    }
-  }
-
-  addToCart(): void {
-    const currentProduct = this.product();
-    if (currentProduct) {
-      // Pasamos tanto el producto como el signal de las variantes seleccionadas
-      const variants = this.selectedVariants();
-      this.cartService.addItem(currentProduct, variants);
-      alert(`${currentProduct.name} ha sido añadido al carrito!`);
     }
   }
 
