@@ -1,33 +1,22 @@
+<!-- Contenido completo para: src/app/components/home/categories-section/categories-section.component.html -->
+
 <section class="categories-section">
-    <h2 class="section-title">Explora Nuestras Categorías</h2>
-    <div class="categories-grid">
-      <!-- Categoría 1 -->
-      <a routerLink="/sabanas" class="category-card">
-        <div class="category-image"
-          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBS-Afw6_OStc2GqJ4MMWApPLDQDgyvFZTmcp1oT4zNGqvvwB7zz5osSkiTDZ_7W2qRayzM3XwRhqxYe6uzIia6brQTiqLNgk37aW5mNy-e9ZZdwDkRMYn6FgGuljzmkeGzEwgSbnnuF-Pc0XzXfZK-bHq4tAw8YGEHOY6jOmrwf73YLnKYKdf0eWB4TQ9dI22vPLuAOP5bjU5Qgdw1z_Ari3D5slikIQbjvJPiTbKa75MH3VUdyQuJgFfNXwS2zGvUm6UOO65ytv8');">
-        </div>
-        <h3 class="category-title">Sábanas de Algodón</h3>
-      </a>
-      <!-- Categoría 2 -->
-      <a routerLink="/pijamas" class="category-card">
-        <div class="category-image"
-          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCj44aiNtBvo4LRsv386aFX0CXo_A7S1fsNfdDfzzV3hEevkpWHwIIx2EDvQH0fzBiSmWbBhoNnw3z_eXgImNHJw7K-oCNybXKVRGn4fymnwe7MbNhUR2YH0PNb0XBQ1TQaaxqIRnbCD0tm5wWIin2zgjK4DamemsQ2t821pPi8GLk3tdTBpI-yMzXz3TAZpQg2IzIBdGGbPJw0C98bq4W7AxkfS5V9FUGbgFh0j5JkQgHr0y_nUQ1FFKYeyoZqNtsWVFCg8V1qcww');">
-        </div>
-        <h3 class="category-title">Pijamas de Seda</h3>
-      </a>
-      <!-- Categoría 3 -->
-      <a routerLink="/toallas" class="category-card">
-        <div class="category-image"
-          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBiUyDmNR2Guix7bv0iJjP4r6QugGbex2Tn7pJP1mX5DX8cZK5sN3oFE0WZbKkFvoG_ypq5ZXOFLvvAc2mkbiTRqeO1L6ZA3xthBuBjdpCDCS7GeLrm4oDvNjm5jDNoFF_TIjDYMzmasN3aIJPsP0QpE-V2bj7vFtVSs41J8uyJMeVsV2y1vzzrURIQTMnKkWr_G9NhlGokttPMWJbVijivGx-9DxNJWjMia3YZnfLy46T4JZd5zxk7WgUwFYVCY5O7WBN2v6US1fo');">
-        </div>
-        <h3 class="category-title">Toallas de Lujo</h3>
-      </a>
-      <!-- Categoría 4 -->
-      <a routerLink="/batas" class="category-card">
-        <div class="category-image"
-          style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCRyrRY3WLjK_4lVIZ6uBny16Zc4xHxdBjWO-CXEJrWphWFV3aJCWu5LCAifkkjuZG50aC56FPUw6I6LJdu98q9wwsvtvXhL4gYWc1ODLCvgCB2oA--333_DC0epRGDZO5B5l6kVMBJ-hi3XIEPFyqTvJxMZXnAozOBCQHNt7727eT7hls90Jb9TgVou3QU2I-uCZhV8ndNPOmjyrwzbqbZp9CHryIDIaUXTxi_spsFw34qoDhzSU04WXsPV8qT-fWEIKwLw5yxwks');">
-        </div>
-        <h3 class="category-title">Batas de Baño</h3>
-      </a>
-    </div>
-  </section>
+  <h2 class="section-title">Explora Nuestras Categorías</h2>
+  <div class="categories-grid">
+    <!-- Iteramos sobre las categorías obtenidas del servicio -->
+    @for (category of categories(); track category._id) {
+
+    <!-- Cada categoría es un enlace que apunta a /category/[slug] -->
+    <a [routerLink]="['/category', category.slug]" class="category-card">
+      <div
+        class="card-image"
+        [style.backgroundImage]="'url(' + category.imageUrl + ')'"
+      ></div>
+      <div class="card-overlay">
+        <h3 class="card-title">{{ category.name }}</h3>
+      </div>
+    </a>
+
+    }
+  </div>
+</section>

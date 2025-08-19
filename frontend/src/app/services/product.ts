@@ -15,15 +15,14 @@ export interface Review {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProductServices {
-
   private http = inject(HttpClient);
 
   private apiUrl = `${environment.apiUrl}/products`;
 
-  constructor() { }
+  constructor() {}
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
@@ -33,23 +32,31 @@ export class ProductServices {
     const url = `${this.apiUrl}/${id}`;
 
     return this.http.get<Product>(url);
-  };
+  }
 
   getReviewsForProduct(productId: string): Observable<Review[]> {
     // La URL apunta a nuestra nueva API de reseñas
-    return this.http.get<Review[]>(`http://localhost:3000/api/reviews/${productId}`);
+    return this.http.get<Review[]>(
+      `http://localhost:3000/api/reviews/${productId}`
+    );
   }
 
   addReview(productId: string, reviewData: any): Observable<Review> {
     // Hacemos una petición POST a la API para crear la nueva reseña
-    return this.http.post<Review>(`http://localhost:3000/api/reviews/${productId}`, reviewData);
+    return this.http.post<Review>(
+      `http://localhost:3000/api/reviews/${productId}`,
+      reviewData
+    );
   }
 
   createProduct(productData: Partial<Product>): Observable<Product> {
     return this.http.post<Product>(this.apiUrl, productData);
   }
 
-  updateProduct(productId: string, productData: Partial<Product>): Observable<Product> {
+  updateProduct(
+    productId: string,
+    productData: Partial<Product>
+  ): Observable<Product> {
     // Forma segura: Une la URL base y el ID.
     return this.http.put<Product>(`${this.apiUrl}/${productId}`, productData);
   }
@@ -60,12 +67,21 @@ export class ProductServices {
   }
 
   getFeaturedProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${environment.apiUrl}/products/section/featured`);
+    return this.http.get<Product[]>(
+      `${environment.apiUrl}/products/section/featured`
+    );
   }
 
   // --- MÉTODO NUEVO ---
   getSaleProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${environment.apiUrl}/products/section/sale`);
+    return this.http.get<Product[]>(
+      `${environment.apiUrl}/products/section/sale`
+    );
   }
 
+  getProductsByCategory(slug: string): Observable<Product[]> {
+    // Llamamos a la nueva ruta que creamos en el backend
+    const url = `${this.apiUrl}/category/${slug}`;
+    return this.http.get<Product[]>(url);
+  }
 }

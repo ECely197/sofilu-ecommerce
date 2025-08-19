@@ -17,6 +17,7 @@ import { OrderConfirmation } from './pages/order-confirmation/order-confirmation
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
 import { WishlistComponent } from './pages/wishlist/wishlist';
+import { CategoryView } from './pages/category-view/category-view';
 import { Account } from './pages/account/account/account';
 import { MyOrdersComponent } from './pages/account/my-orders/my-orders';
 import { MyAddressesComponent } from './pages/account/my-addresses/my-addresses';
@@ -40,6 +41,7 @@ export const routes: Routes = [
   // --- Rutas del Cliente (Públicas y para usuarios) ---
   { path: '', component: Home },
   { path: 'products', component: ProductList },
+  { path: 'category/:slug', component: CategoryView },
   { path: 'product/:id', component: ProductDetailComponent },
   { path: 'cart', component: Cart },
   { path: 'checkout', component: checkout },
