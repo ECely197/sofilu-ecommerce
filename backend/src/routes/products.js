@@ -106,22 +106,44 @@ router.post("/", [authMiddleware, adminOnly], async (req, res) => {
 
 router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
+    // --- LOG DE DEPURACIÓN DETALLADO ---
+    console.log(
+      `--- BACKEND TRACE: Petición PUT recibida para el producto ID: ${req.params.id} ---`
+    );
+    console.log("--- BACKEND TRACE: Datos recibidos en req.body: ---");
+    console.log(JSON.stringify(req.body, null, 2));
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      { new: true, runValidators: true } // runValidators asegura que se cumplan las reglas del modelo
     );
+
     if (!updatedProduct) {
+      console.error(
+        `--- BACKEND TRACE: ERROR - Producto con ID ${req.params.id} no encontrado para actualizar.`
+      );
       return res
         .status(404)
         .json({ message: "Producto no encontrado para actualizar" });
     }
+
+    console.log(
+      "--- BACKEND TRACE: Producto actualizado con éxito en la BBDD. ---"
+    );
     res.json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: "Error al actualizar el producto" });
+    // --- LOG DE ERROR DETALLADO ---
+    console.error(
+      "--- BACKEND TRACE: ¡ERROR! La operación .findByIdAndUpdate() ha fallado. ---"
+    );
+    console.error(error); // Mostramos el error completo de Mongoose
+    res.status(400).json({
+      message: "Error al actualizar el producto.",
+      details: error.message,
+    });
   }
 });
-
 router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);

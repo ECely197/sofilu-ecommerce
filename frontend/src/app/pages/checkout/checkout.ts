@@ -155,12 +155,35 @@ export class checkout implements OnInit {
 
     const cartItems = this.cartService.cartItems();
 
-    const processedItems = cartItems.map((item) => ({
-      product: item.product._id,
-      quantity: item.quantity,
-      price: item.product.price,
-      selectedVariants: item.selectedVariants, // Incluimos las variantes
-    }));
+    // --- ¡LÓGICA DE PRECIOS CORREGIDA AQUÍ! ---
+    const processedItems = cartItems.map((item) => {
+      // 1. Empezamos con el precio base del producto.
+      let finalItemPrice = item.product.price;
+
+      // 2. Sumamos los modificadores de las variantes seleccionadas.
+      if (item.selectedVariants && item.product.variants) {
+        for (const variantName in item.selectedVariants) {
+          const selectedOptionName = item.selectedVariants[variantName];
+          const variant = item.product.variants.find(
+            (v) => v.name === variantName
+          );
+          const option = variant?.options.find(
+            (o) => o.name === selectedOptionName
+          );
+          if (option && option.priceModifier) {
+            finalItemPrice += option.priceModifier;
+          }
+        }
+      }
+
+      // 3. Devolvemos el objeto completo con el precio final calculado.
+      return {
+        product: item.product._id,
+        quantity: item.quantity,
+        price: finalItemPrice, // ¡Enviamos el precio correcto!
+        selectedVariants: item.selectedVariants,
+      };
+    });
 
     const orderData = {
       customerInfo,
@@ -169,8 +192,7 @@ export class checkout implements OnInit {
       discountAmount: this.discountAmount(),
     };
 
-    // --- LOG DE DEPURACIÓN CLAVE ---
-    console.log('--- ENVIANDO DATOS DEL PEDIDO AL BACKEND ---');
+    console.log('--- ENVIANDO DATOS DEL PEDIDO AL BACKEND (CORREGIDO) ---');
     console.log(JSON.stringify(orderData, null, 2));
 
     this.orderService.createOrder(orderData).subscribe({
@@ -181,7 +203,6 @@ export class checkout implements OnInit {
       },
       error: (err) => {
         console.error('Error al crear el pedido:', err);
-        // Mostramos un mensaje más útil en caso de error
         const errorMessage =
           err.error?.message || 'Hubo un error al procesar tu pedido.';
         alert(errorMessage + ' Revisa la consola para más detalles.');

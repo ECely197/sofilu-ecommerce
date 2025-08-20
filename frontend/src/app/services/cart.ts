@@ -12,12 +12,31 @@ export class CartService {
   totalItems = computed(() =>
     this.cartItems().reduce((total, item) => total + item.quantity, 0)
   );
-  subTotal = computed(() =>
-    this.cartItems().reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    )
-  );
+  subTotal = computed(() => {
+    return this.cartItems().reduce((total, item) => {
+      // 1. Empezamos con el precio base del producto.
+      let itemPrice = item.product.price;
+
+      // 2. Sumamos los modificadores de las variantes seleccionadas.
+      if (item.selectedVariants && item.product.variants) {
+        for (const variantName in item.selectedVariants) {
+          const selectedOptionName = item.selectedVariants[variantName];
+          const variant = item.product.variants.find(
+            (v) => v.name === variantName
+          );
+          const option = variant?.options.find(
+            (o) => o.name === selectedOptionName
+          );
+          if (option && option.priceModifier) {
+            itemPrice += option.priceModifier;
+          }
+        }
+      }
+
+      // 3. Multiplicamos el precio final del ítem por su cantidad y lo sumamos al total.
+      return total + itemPrice * item.quantity;
+    }, 0);
+  });
 
   constructor() {}
 
