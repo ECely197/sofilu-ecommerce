@@ -9,8 +9,8 @@ admin.initializeApp({
 
 // --- ¡NUEVO! Un array con todos los UIDs que quieres que sean administradores ---
 const adminUids = [
-  "Ej0l6cGCFfemBs6lpS0CuhoemjF2",
   "OSZCduKuCTMmHL44eE2kuPm4Eph1",
+  "Ej0l6cGCFfemBs6lpS0CuhoemjF2",
   // Puedes añadir más UIDs aquí en el futuro:
   // "otro-uid-aqui",
   // "y-otro-mas-aqui",
