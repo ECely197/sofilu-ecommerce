@@ -11,6 +11,7 @@ admin.initializeApp({
 const adminUids = [
   "OSZCduKuCTMmHL44eE2kuPm4Eph1",
   "Ej0l6cGCFfemBs6lpS0CuhoemjF2",
+  "PY6WwAn1MoMMO1ddA9sfjhv5buG3",
   // Puedes añadir más UIDs aquí en el futuro:
   // "otro-uid-aqui",
   // "y-otro-mas-aqui",
