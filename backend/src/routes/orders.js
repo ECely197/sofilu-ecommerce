@@ -83,6 +83,7 @@ router.post("/", [authMiddleware], async (req, res) => {
         .json({ message: "El carrito no puede estar vacío." });
     }
 
+    // --- 1. Verificación de Stock y Cálculo de Total (Paso de seguridad) ---
     let subTotal = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -91,6 +92,22 @@ router.post("/", [authMiddleware], async (req, res) => {
           .status(404)
           .json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
+
+      // Encontrar la variante y opción específica para verificar el stock
+      if (item.selectedVariants) {
+        for (const variantName in item.selectedVariants) {
+          const variant = product.variants.find((v) => v.name === variantName);
+          const option = variant?.options.find(
+            (o) => o.name === item.selectedVariants[variantName]
+          );
+          if (!option || option.stock < item.quantity) {
+            return res.status(400).json({
+              message: `Stock insuficiente para ${product.name} - ${option.name}.`,
+            });
+          }
+        }
+      }
+
       const itemPrice =
         product.isOnSale && product.salePrice
           ? product.salePrice
@@ -101,6 +118,7 @@ router.post("/", [authMiddleware], async (req, res) => {
     const shippingCost = 10000;
     const finalTotal = subTotal + shippingCost - (discountAmount || 0);
 
+    // --- 2. Crear y Guardar el Pedido ---
     const newOrder = new Order({
       userId,
       customerInfo,
@@ -109,20 +127,52 @@ router.post("/", [authMiddleware], async (req, res) => {
       discountAmount,
       totalAmount: finalTotal,
     });
-
     let savedOrder = await newOrder.save();
 
+    // --- 3. ¡ACTUALIZAR EL INVENTARIO! ---
+    // Usamos Promise.all para ejecutar todas las actualizaciones de stock en paralelo
+    await Promise.all(
+      items.map(async (item) => {
+        const updateQuery = {};
+        // Construimos una consulta para encontrar la opción exacta dentro del array de variantes
+        // ej: 'variants.0.options.0.stock'
+        for (const variantName in item.selectedVariants) {
+          const product = await Product.findById(item.product);
+          const variantIndex = product.variants.findIndex(
+            (v) => v.name === variantName
+          );
+          if (variantIndex > -1) {
+            const optionIndex = product.variants[
+              variantIndex
+            ].options.findIndex(
+              (o) => o.name === item.selectedVariants[variantName]
+            );
+            if (optionIndex > -1) {
+              // La clave para la actualización es dinámica
+              const stockPath = `variants.${variantIndex}.options.${optionIndex}.stock`;
+              // Usamos $inc con un número negativo para restar
+              updateQuery[stockPath] = -item.quantity;
+            }
+          }
+        }
+
+        if (Object.keys(updateQuery).length > 0) {
+          await Product.updateOne({ _id: item.product }, { $inc: updateQuery });
+        }
+      })
+    );
+
+    // --- 4. Actualizar Cupón y Enviar Correo ---
     if (appliedCoupon) {
       await Coupon.updateOne(
         { code: appliedCoupon },
         { $inc: { timesUsed: 1 } }
       );
     }
-
     savedOrder = await savedOrder.populate("items.product");
-
     sendOrderConfirmationEmail(savedOrder);
 
+    // --- 5. Enviar Respuesta ---
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("--- RUTA POST /api/orders: ERROR ---", error);
