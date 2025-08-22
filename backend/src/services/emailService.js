@@ -31,16 +31,18 @@ async function sendOrderConfirmationEmail(order) {
 
     const mailOptions = {
       from: "Sofilu Store <onboarding@resend.dev>",
-      to: order.customerInfo.email,
-      subject: `¡Gracias por tu pedido, ${
-        order.customerInfo.name
-      }! Pedido #${order._id.toString().slice(-6).toUpperCase()}`,
+      to: order.customerInfo.email, // Se envía al cliente
+      bcc: "edwincely6@gmail.com", // ¡Se envía una copia oculta al administrador!
+      subject: `Nuevo Pedido #${order._id
+        .toString()
+        .slice(-6)
+        .toUpperCase()} - Sofilu`,
       html: html,
     };
 
     const info = await transporter.sendMail(mailOptions);
     console.log(
-      `--- CORREO DE CONFIRMACIÓN ENVIADO (vía Resend): ${info.messageId} ---`
+      `--- CORREO DE CONFIRMACIÓN ENVIADO a ${order.customerInfo.email} y al admin ---`
     );
   } catch (error) {
     console.error("--- ERROR AL ENVIAR CORREO DE CONFIRMACIÓN ---");

@@ -126,8 +126,8 @@
 
 .summary-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
+  grid-template-columns: auto 1fr;
+  align-items: start; // Alineamos al inicio por si el texto ocupa varias líneas
   gap: 1rem;
 }
 
@@ -161,6 +161,13 @@
   border: 2px solid var(--background);
 }
 
+.item-details-and-price {
+  display: flex;
+  justify-content: space-between; // ¡La clave! Empuja el precio a la derecha
+  gap: 1rem;
+  width: 100%;
+}
+
 .item-info {
   display: flex;
   flex-direction: column;
@@ -181,6 +188,7 @@
 .item-price {
   font-weight: 600;
   text-align: right;
+  white-space: nowrap; // Evita que el precio se parta en dos líneas
 }
 
 .summary-details {

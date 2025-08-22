@@ -23,8 +23,6 @@
 
         <div class="item-info">
           <h3 class="item-name">{{ item.product.name }}</h3>
-
-          <!-- ¡NUEVO! Mostramos las variantes seleccionadas -->
           <div class="item-variants">
             @for (variantKey of objectKeys(item.selectedVariants); track
             variantKey) {
@@ -34,15 +32,14 @@
             >
             }
           </div>
-
+          <!-- Mostramos el precio unitario (opcional, pero buena UX) -->
           <p class="item-price">
-            {{ item.product.price | currency : "COP" : "symbol" : "1.0-0" }}
+            {{ finalItemPrice(item) | currency : "COP" : "symbol" : "1.0-0" }}
           </p>
         </div>
 
         <div class="item-actions">
           <div class="quantity-selector">
-            <!-- ¡ACTUALIZADO! Los botones ahora usan el item.id único -->
             <button
               (click)="cartService.updateQuantity(item.id, item.quantity - 1)"
               appRipple
@@ -66,9 +63,11 @@
           </button>
         </div>
 
+        <!-- ¡CORRECCIÓN CLAVE AQUÍ! -->
+        <!-- Calculamos el total de la línea (precio final del ítem * cantidad) -->
         <p class="item-total">
           {{
-            item.product.price * item.quantity
+            finalItemPrice(item) * item.quantity
               | currency : "COP" : "symbol" : "1.0-0"
           }}
         </p>

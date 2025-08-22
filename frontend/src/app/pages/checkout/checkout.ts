@@ -1,3 +1,5 @@
+// Contenido completo y corregido para: src/app/pages/checkout/checkout.ts
+
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -18,9 +20,10 @@ import {
 
 import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
-import { RippleDirective } from '../../directives/ripple';
 import { Coupon } from '../../services/coupon';
 import { SettingsService } from '../../services/settings.service';
+import { RippleDirective } from '../../directives/ripple';
+import { CartItem } from '../../interfaces/cart-item.interface'; // ¡IMPORTACIÓN CLAVE!
 
 @Component({
   selector: 'app-checkout',
@@ -53,14 +56,12 @@ export class checkout implements OnInit {
 
   checkoutForm!: FormGroup;
 
-  // --- SIGNALS PARA GESTIONAR EL ESTADO DEL CUPÓN Y TOTALES ---
   shippingCost = signal<number>(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
   couponMessage = signal<string>('');
   couponError = signal<boolean>(false);
 
-  // El total final ahora es un signal calculado (computed)
   grandTotal = computed(() => {
     const total =
       this.cartService.subTotal() + this.shippingCost() - this.discountAmount();
@@ -86,38 +87,27 @@ export class checkout implements OnInit {
     });
   }
 
-  // --- ¡NUEVO MÉTODO PARA APLICAR EL CUPÓN! ---
   applyCoupon(code: string): void {
     if (!code.trim()) return;
-
     this.couponService.validateCoupon(code).subscribe({
       next: (coupon) => {
         const subtotal = this.cartService.subTotal();
         const shipping = this.shippingCost();
         let discount = 0;
-
-        // Calculamos la base del descuento según la nueva regla
         let discountableBase = 0;
         if (coupon.appliesTo === 'Subtotal') {
           discountableBase = subtotal;
         } else if (coupon.appliesTo === 'Envío') {
           discountableBase = shipping;
         } else {
-          // 'Todo'
           discountableBase = subtotal + shipping;
         }
-
-        // Calculamos el valor del descuento
         if (coupon.discountType === 'Porcentaje') {
           discount = (discountableBase * coupon.value) / 100;
         } else {
-          // Monto Fijo
           discount = coupon.value;
         }
-
-        // El descuento no puede ser mayor que la base sobre la que se aplica
         discount = Math.min(discount, discountableBase);
-
         this.discountAmount.set(discount);
         this.appliedCoupon.set(coupon);
         this.couponMessage.set(`¡Cupón "${coupon.code}" aplicado!`);
@@ -135,85 +125,65 @@ export class checkout implements OnInit {
   }
 
   handlePayment(): void {
-    if (this.cartService.totalItems() === 0) {
-      alert('Tu carrito está vacío. Añade productos antes de continuar.');
-      this.router.navigate(['/products']);
-      return;
-    }
-
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
-      alert('Por favor, completa todos los campos requeridos.');
       return;
     }
-
     const formValue = this.checkoutForm.getRawValue();
     const customerInfo = {
       name: formValue.shippingAddress.name,
       email: formValue.contactInfo.email,
     };
-
     const cartItems = this.cartService.cartItems();
-
-    // --- ¡LÓGICA DE PRECIOS CORREGIDA AQUÍ! ---
     const processedItems = cartItems.map((item) => {
-      // 1. Empezamos con el precio base del producto.
-      let finalItemPrice = item.product.price;
-
-      // 2. Sumamos los modificadores de las variantes seleccionadas.
-      if (item.selectedVariants && item.product.variants) {
-        for (const variantName in item.selectedVariants) {
-          const selectedOptionName = item.selectedVariants[variantName];
-          const variant = item.product.variants.find(
-            (v) => v.name === variantName
-          );
-          const option = variant?.options.find(
-            (o) => o.name === selectedOptionName
-          );
-          if (option && option.priceModifier) {
-            finalItemPrice += option.priceModifier;
-          }
-        }
-      }
-
-      // 3. Devolvemos el objeto completo con el precio final calculado.
       return {
         product: item.product._id,
         quantity: item.quantity,
-        price: finalItemPrice, // ¡Enviamos el precio correcto!
+        price: this.finalItemPrice(item),
         selectedVariants: item.selectedVariants,
       };
     });
-
     const orderData = {
       customerInfo,
       items: processedItems,
       appliedCoupon: this.appliedCoupon() ? this.appliedCoupon().code : null,
       discountAmount: this.discountAmount(),
     };
-
-    console.log('--- ENVIANDO DATOS DEL PEDIDO AL BACKEND (CORREGIDO) ---');
-    console.log(JSON.stringify(orderData, null, 2));
-
     this.orderService.createOrder(orderData).subscribe({
       next: (savedOrder) => {
-        console.log('¡Pedido creado con éxito!', savedOrder);
         this.cartService.clearCart();
         this.router.navigate(['/order-confirmation', savedOrder._id]);
       },
       error: (err) => {
         console.error('Error al crear el pedido:', err);
-        const errorMessage =
-          err.error?.message || 'Hubo un error al procesar tu pedido.';
-        alert(errorMessage + ' Revisa la consola para más detalles.');
+        alert(err.error.message || 'Hubo un error al procesar tu pedido.');
       },
     });
   }
 
-  public objectKeys(obj: object): string[] {
-    if (!obj) {
-      return [];
+  // --- MÉTODO CORREGIDO ---
+  // Reemplazamos 'item: any' por 'item: CartItem'
+  public finalItemPrice(item: CartItem): number {
+    let price = item.product.price;
+    if (item.selectedVariants && item.product.variants) {
+      for (const variantName in item.selectedVariants) {
+        const selectedOptionName = item.selectedVariants[variantName];
+        const variant = item.product.variants.find(
+          (v) => v.name === variantName
+        );
+        const option = variant?.options.find(
+          (o) => o.name === selectedOptionName
+        );
+        if (option && option.priceModifier) {
+          price += option.priceModifier;
+        }
+      }
     }
+    return price;
+  }
+
+  public objectKeys(obj: object): string[] {
+    if (!obj) return [];
     return Object.keys(obj);
   }
 }

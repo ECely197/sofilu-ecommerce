@@ -7,6 +7,44 @@
     <style>
       body {
         font-family: "Manrope", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #faf3e9;
+        color: #1a100e;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background-color: white;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .content {
+        padding: 32px;
+      }
+      h1 {
+        font-family: "Playfair Display", serif;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 0;
+        border-bottom: 1px solid #eae3d9;
+        text-align: left;
+        vertical-align: top;
+      }
+      .total-row {
+        font-weight: bold;
+        font-size: 1.2em;
+      }
+      .text-right {
+        text-align: right;
+      }
+      .text-center {
+        text-align: center;
       }
     </style>
   </head>
@@ -18,287 +56,172 @@
       font-family: 'Manrope', Arial, sans-serif;
     "
   >
-    <table
-      width="100%"
-      border="0"
-      cellspacing="0"
-      cellpadding="0"
-      style="background-color: #faf3e9"
-    >
+    <table width="100%" border="0" cellspacing="0" cellpadding="20">
       <tr>
         <td align="center">
-          <table
-            width="600"
-            border="0"
-            cellspacing="0"
-            cellpadding="0"
-            style="max-width: 600px; width: 100%"
-          >
-            <!-- HEADER CON LOGO -->
-            <tr>
-              <td align="center" style="padding: 24px 0">
-                <h1
-                  style="
-                    font-family: 'Playfair Display', serif;
-                    font-size: 24px;
-                    color: #1a100e;
-                    margin: 0;
-                  "
-                >
-                  Sofilu
-                </h1>
-              </td>
-            </tr>
-            <!-- CUERPO PRINCIPAL -->
-            <tr>
-              <td
-                align="center"
+          <div class="container">
+            <!-- HEADER -->
+            <div style="padding: 24px 0; text-align: center">
+              <h1
                 style="
-                  background-color: #ffffff;
-                  border-radius: 16px;
-                  padding: 32px;
+                  font-family: 'Playfair Display', serif;
+                  font-size: 24px;
+                  color: #1a100e;
+                  margin: 0;
                 "
               >
-                <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                  <!-- MENSAJE DE BIENVENIDA -->
+                Sofilu
+              </h1>
+            </div>
+            <!-- CUERPO -->
+            <div class="content">
+              <h1
+                style="
+                  font-family: 'Playfair Display', serif;
+                  font-size: 28px;
+                  color: #1a100e;
+                  text-align: center;
+                  margin: 0 0 16px 0;
+                "
+              >
+                ¡Gracias por tu pedido, <%= order.customerInfo.name %>!
+              </h1>
+              <p
+                style="
+                  color: #945b51;
+                  text-align: center;
+                  margin: 0 0 32px 0;
+                  line-height: 1.5;
+                "
+              >
+                Hemos recibido tu pedido y lo estamos procesando. Recibirás una
+                notificación cuando esté en camino.
+              </p>
+
+              <!-- TABLA DE PRODUCTOS -->
+              <table>
+                <thead>
                   <tr>
-                    <td align="center">
-                      <h1
+                    <th colspan="2">Producto</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-right">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% order.items.forEach(item => { %>
+                  <tr>
+                    <td style="width: 80px">
+                      <!--
+                                        ¡CORRECCIÓN CLAVE!
+                                        Verificamos si el array de imágenes existe y no está vacío.
+                                      -->
+                      <% if (item.product && item.product.images &&
+                      item.product.images.length > 0) { %>
+                      <img
+                        src="<%= item.product.images[0] %>"
+                        alt="<%= item.product.name %>"
+                        width="64"
+                        height="64"
+                        style="border-radius: 8px; object-fit: cover"
+                      />
+                      <% } else { %>
+                      <!-- Si no hay imagen, mostramos un placeholder. -->
+                      <div
                         style="
-                          font-family: 'Playfair Display', serif;
-                          font-size: 28px;
-                          color: #1a100e;
-                          margin: 0 0 16px 0;
+                          width: 64px;
+                          height: 64px;
+                          background-color: #eae3d9;
+                          border-radius: 8px;
                         "
-                      >
-                        ¡Gracias por tu pedido, <%= order.customerInfo.name %>!
-                      </h1>
+                      ></div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <p style="margin: 0; font-weight: 600; color: #1a100e">
+                        <%= item.product.name %>
+                      </p>
                       <p
                         style="
+                          margin: 4px 0 0 0;
+                          font-size: 12px;
                           color: #945b51;
-                          margin: 0 0 32px 0;
-                          line-height: 1.5;
                         "
                       >
-                        Hemos recibido tu pedido y lo estamos procesando.
-                        Recibirás una notificación cuando tus productos estén en
-                        camino.
+                        <% for (const [key, value] of
+                        Object.entries(item.selectedVariants || {})) { %>
+                        <span><%= key %>: <strong><%= value %></strong></span
+                        ><br />
+                        <% } %>
                       </p>
                     </td>
-                  </tr>
-                  <!-- TABLA DE PRODUCTOS -->
-                  <tr>
-                    <td>
-                      <table
-                        width="100%"
-                        border="0"
-                        cellspacing="0"
-                        cellpadding="0"
-                        style="
-                          border: 1px solid #e6d4d1;
-                          border-radius: 12px;
-                          overflow: hidden;
-                        "
-                      >
-                        <thead>
-                          <tr style="background-color: #f8ead8">
-                            <th
-                              colspan="2"
-                              style="
-                                padding: 16px;
-                                text-align: left;
-                                font-weight: 500;
-                                color: #945b51;
-                                font-size: 14px;
-                              "
-                            >
-                              Producto
-                            </th>
-                            <th
-                              style="
-                                padding: 16px;
-                                text-align: center;
-                                font-weight: 500;
-                                color: #945b51;
-                                font-size: 14px;
-                              "
-                            >
-                              Cantidad
-                            </th>
-                            <th
-                              style="
-                                padding: 16px;
-                                text-align: right;
-                                font-weight: 500;
-                                color: #945b51;
-                                font-size: 14px;
-                              "
-                            >
-                              Precio
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <% order.items.forEach(item => { %>
-                          <tr style="border-top: 1px solid #e6d4d1">
-                            <td style="padding: 16px; width: 80px">
-                              <img
-                                src="<%= item.product.images[0] %>"
-                                alt="<%= item.product.name %>"
-                                width="64"
-                                height="64"
-                                style="border-radius: 8px; object-fit: cover"
-                              />
-                            </td>
-                            <td style="padding: 16px">
-                              <p
-                                style="
-                                  margin: 0;
-                                  font-weight: 600;
-                                  color: #1a100e;
-                                "
-                              >
-                                <%= item.product.name %>
-                              </p>
-                              <!-- Lógica para mostrar variantes -->
-                              <p
-                                style="
-                                  margin: 4px 0 0 0;
-                                  font-size: 12px;
-                                  color: #945b51;
-                                "
-                              >
-                                <% for (const [key, value] of
-                                Object.entries(item.selectedVariants || {})) {
-                                %>
-                                <span
-                                  ><%= key %>:
-                                  <strong><%= value %></strong></span
-                                >
-                                <% } %>
-                              </p>
-                            </td>
-                            <td
-                              style="
-                                padding: 16px;
-                                text-align: center;
-                                color: #945b51;
-                              "
-                            >
-                              <%= item.quantity %>
-                            </td>
-                            <td
-                              style="
-                                padding: 16px;
-                                text-align: right;
-                                color: #945b51;
-                              "
-                            >
-                              $<%= item.price.toLocaleString('es-CO') %>
-                            </td>
-                          </tr>
-                          <% }) %>
-                        </tbody>
-                      </table>
-                      <!-- TABLA DE TOTALES -->
-                      <table
-                        width="100%"
-                        border="0"
-                        cellspacing="0"
-                        cellpadding="0"
-                        style="
-                          background-color: #f8ead8;
-                          padding: 16px;
-                          border-top: 1px solid #e6d4d1;
-                        "
-                      >
-                        <tr>
-                          <td style="padding-bottom: 8px; color: #945b51">
-                            Subtotal
-                          </td>
-                          <td
-                            style="
-                              padding-bottom: 8px;
-                              text-align: right;
-                              color: #1a100e;
-                            "
-                          >
-                            $<%= (order.totalAmount -
-                            10000).toLocaleString('es-CO') %>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style="padding-bottom: 16px; color: #945b51">
-                            Envío
-                          </td>
-                          <td
-                            style="
-                              padding-bottom: 16px;
-                              text-align: right;
-                              color: #1a100e;
-                            "
-                          >
-                            $10,000
-                          </td>
-                        </tr>
-                        <tr style="border-top: 1px solid #e6d4d1">
-                          <td
-                            style="
-                              padding-top: 16px;
-                              font-weight: bold;
-                              font-size: 16px;
-                              color: #945b51;
-                            "
-                          >
-                            Total
-                          </td>
-                          <td
-                            style="
-                              padding-top: 16px;
-                              text-align: right;
-                              font-weight: bold;
-                              font-size: 16px;
-                              color: #1a100e;
-                            "
-                          >
-                            $<%= order.totalAmount.toLocaleString('es-CO') %>
-                          </td>
-                        </tr>
-                      </table>
+                    <td class="text-center" style="color: #945b51">
+                      <%= item.quantity %>
+                    </td>
+                    <td class="text-right" style="color: #1a100e">
+                      $<%= item.price.toLocaleString('es-CO') %>
                     </td>
                   </tr>
-                  <!-- BOTÓN DE ACCIÓN (OPCIONAL) -->
+                  <% }) %>
+                </tbody>
+              </table>
+
+              <!-- TABLA DE TOTALES -->
+              <% let subtotal = 0; order.items.forEach(item => { subtotal +=
+              item.price * item.quantity; }); const shipping = 10000; %>
+              <table style="margin-top: 24px">
+                <tbody>
                   <tr>
-                    <td align="center" style="padding-top: 40px">
-                      <a
-                        href="https://sofilu-ecommerce.vercel.app/account/orders"
-                        target="_blank"
-                        style="
-                          display: inline-block;
-                          background-color: #f4c2c2;
-                          color: #1a100e;
-                          font-weight: bold;
-                          padding: 12px 32px;
-                          border-radius: 8px;
-                          text-decoration: none;
-                        "
-                      >
-                        Ver mi pedido
-                      </a>
+                    <td style="color: #945b51">Subtotal</td>
+                    <td class="text-right" style="color: #1a100e">
+                      $<%= subtotal.toLocaleString('es-CO') %>
                     </td>
                   </tr>
-                </table>
-              </td>
-            </tr>
-            <!-- FOOTER -->
-            <tr>
-              <td align="center" style="padding: 32px 16px">
-                <p style="font-size: 12px; color: #945b51; margin: 0">
-                  Sofilu Inc., Calle Falsa 123, Bogotá, Colombia
-                </p>
-              </td>
-            </tr>
-          </table>
+                  <% if (order.discountAmount > 0) { %>
+                  <tr>
+                    <td style="color: #059669">
+                      Descuento (<%= order.appliedCoupon %>)
+                    </td>
+                    <td class="text-right" style="color: #059669">
+                      - $<%= order.discountAmount.toLocaleString('es-CO') %>
+                    </td>
+                  </tr>
+                  <% } %>
+                  <tr>
+                    <td style="border-bottom: none; color: #945b51">Envío</td>
+                    <td
+                      class="text-right"
+                      style="border-bottom: none; color: #1a100e"
+                    >
+                      $<%= shipping.toLocaleString('es-CO') %>
+                    </td>
+                  </tr>
+                  <tr style="border-top: 2px solid #1a100e">
+                    <td
+                      style="
+                        padding-top: 16px;
+                        font-weight: bold;
+                        font-size: 16px;
+                        color: #1a100e;
+                      "
+                    >
+                      Total
+                    </td>
+                    <td
+                      class="text-right"
+                      style="
+                        padding-top: 16px;
+                        font-weight: bold;
+                        font-size: 16px;
+                        color: #1a100e;
+                      "
+                    >
+                      $<%= order.totalAmount.toLocaleString('es-CO') %>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </td>
       </tr>
     </table>

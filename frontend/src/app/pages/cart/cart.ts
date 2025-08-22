@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations'; // Importaciones para animación
 
 import { CartService } from '../../services/cart';
+import { CartItem } from '../../interfaces/cart-item.interface';
 import { RippleDirective } from '../../directives/ripple';
 
 @Component({
@@ -26,13 +27,28 @@ import { RippleDirective } from '../../directives/ripple';
 export class Cart {
   public cartService = inject(CartService);
 
-  /**
-   * Método público para permitir que la plantilla itere sobre las claves de un objeto.
-   * @param obj El objeto sobre el que se va a iterar.
-   * @returns Un array de strings con las claves del objeto.
-   */
   public objectKeys(obj: object): string[] {
-    if (!obj) return [];
+    if (!obj) {
+      return [];
+    }
     return Object.keys(obj);
+  }
+  public finalItemPrice(item: CartItem): number {
+    let price = item.product.price;
+    if (item.selectedVariants && item.product.variants) {
+      for (const variantName in item.selectedVariants) {
+        const selectedOptionName = item.selectedVariants[variantName];
+        const variant = item.product.variants.find(
+          (v) => v.name === variantName
+        );
+        const option = variant?.options.find(
+          (o) => o.name === selectedOptionName
+        );
+        if (option && option.priceModifier) {
+          price += option.priceModifier;
+        }
+      }
+    }
+    return price;
   }
 }

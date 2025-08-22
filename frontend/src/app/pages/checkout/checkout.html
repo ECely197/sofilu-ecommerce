@@ -105,66 +105,48 @@
         @for (item of cartService.cartItems(); track item.id) {
         <div class="summary-item">
           <div class="item-image-wrapper">
+            <!--
+                ¡CORRECCIÓN CLAVE!
+                Usamos @if para verificar que el array de imágenes exista Y que no esté vacío
+                antes de intentar acceder a la primera imagen.
+              -->
             @if (item.product.images && item.product.images.length > 0) {
             <div
               class="item-image"
               [style.backgroundImage]="'url(' + item.product.images[0] + ')'"
             ></div>
             } @else {
+            <!-- Si no hay imágenes, mostramos un placeholder para no romper el layout. -->
             <div class="item-image placeholder-image"></div>
             }
             <span class="item-quantity">{{ item.quantity }}</span>
           </div>
 
-          <div class="item-info">
-            <p class="item-name">{{ item.product.name }}</p>
-            <div class="item-variants">
-              @for (variantKey of objectKeys(item.selectedVariants); track
-              variantKey) {
-              <span
-                >{{ variantKey }}:
-                <strong>{{ item.selectedVariants[variantKey] }}</strong></span
-              >
-              }
+          <div class="item-details-and-price">
+            <div class="item-info">
+              <p class="item-name">{{ item.product.name }}</p>
+              <div class="item-variants">
+                @for (variantKey of objectKeys(item.selectedVariants); track
+                variantKey) {
+                <span
+                  >{{ variantKey }}:
+                  <strong>{{ item.selectedVariants[variantKey] }}</strong></span
+                >
+                }
+              </div>
             </div>
+            <p class="item-price">
+              {{
+                item.quantity * finalItemPrice(item)
+                  | currency : "COP" : "symbol" : "1.0-0"
+              }}
+            </p>
           </div>
-
-          <p class="item-price">
-            {{
-              item.product.price * item.quantity
-                | currency : "COP" : "symbol" : "1.0-0"
-            }}
-          </p>
         </div>
         }
       </div>
 
       <hr />
-
-      <div class="coupon-section">
-        <div class="form-field">
-          <input
-            type="text"
-            placeholder="Código de descuento"
-            class="form-input"
-            #couponInput
-          />
-          <button
-            type="button"
-            class="apply-button"
-            (click)="applyCoupon(couponInput.value)"
-            appRipple
-          >
-            Aplicar
-          </button>
-        </div>
-        <!-- Mensajes de estado del cupón -->
-        @if(couponMessage()){
-        <p class="coupon-message" [class.error]="couponError()">
-          {{ couponMessage() }}
-        </p>
-        }
-      </div>
 
       <div class="summary-details">
         <div class="summary-row">
@@ -173,7 +155,6 @@
             cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
-
         @if (discountAmount() > 0) {
         <div class="summary-row discount-row">
           <span>Descuento ({{ appliedCoupon()?.code }})</span>
@@ -183,7 +164,6 @@
           >
         </div>
         }
-
         <div class="summary-row">
           <span>Envío</span>
           <span>{{
