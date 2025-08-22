@@ -5,7 +5,6 @@ const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 const { sendOrderConfirmationEmail } = require("../services/emailService");
-const { createInvoicePdf } = require("../services/pdfService");
 
 // --- OBTENER TODOS LOS PEDIDOS (PARA EL PANEL DE ADMIN) ---
 // Esta es la ruta que le faltaba el .populate()
@@ -46,27 +45,6 @@ router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
     }
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el pedido" });
-  }
-});
-
-// --- GENERAR LA FACTURA EN PDF PARA UN PEDIDO ---
-router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate("items.product");
-    if (!order) {
-      return res.status(404).json({ message: "Pedido no encontrado" });
-    }
-    // ¡AÑADIMOS UN LOG AQUÍ!
-    console.log(
-      `--- BACKEND: Enviando datos del pedido ${req.params.id} al frontend ---`
-    );
-    res.json(order);
-  } catch (error) {
-    console.error(
-      `--- BACKEND: ERROR al obtener el pedido ${req.params.id} ---`,
-      error
-    );
     res.status(500).json({ message: "Error al obtener el pedido" });
   }
 });
