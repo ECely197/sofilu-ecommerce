@@ -39,7 +39,7 @@ const allowedOrigins = [
   "https://www.sofilu.shop",
   "https://sofilu-ecommerce.vercel.app", // ¡Añadimos la versión www!
   "http://localhost:4200", // Para desarrollo local
-  "https://sofilu-ecommerce-e5y5no4ua-ecely28s-projects.vercel.app",
+  "https://sofilu-ecommerce-kuw79hb3s-ecely28s-projects.vercel.app",
 ];
 
 const corsOptions = {

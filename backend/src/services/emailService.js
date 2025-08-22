@@ -21,18 +21,14 @@ async function sendOrderConfirmationEmail(order) {
       "../views/order-confirmation-email.ejs"
     );
 
-    // --- ¡LA SOLUCIÓN CLAVE ESTÁ AQUÍ! ---
-    // Convertimos el documento complejo de Mongoose a un objeto simple de JavaScript
-    // antes de pasarlo a la plantilla. Esto elimina todos los metadatos extra.
     const orderObject = order.toObject();
 
-    // Ahora le pasamos el objeto "limpio" a la plantilla.
     const html = await ejs.renderFile(templatePath, { order: orderObject });
 
     const mailOptions = {
       from: "Sofilu Store <onboarding@resend.dev>",
-      to: order.customerInfo.email, // Se envía al cliente
-      bcc: "edwincely6@gmail.com", // ¡Se envía una copia oculta al administrador!
+      to: order.customerInfo.email,
+      bcc: "edwincely6@gmail.com",
       subject: `Nuevo Pedido #${order._id
         .toString()
         .slice(-6)
