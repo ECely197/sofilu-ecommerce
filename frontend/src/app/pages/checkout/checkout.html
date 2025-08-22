@@ -148,6 +148,31 @@
 
       <hr />
 
+      <div class="coupon-section">
+        <div class="form-field">
+          <input
+            type="text"
+            placeholder="Código de descuento"
+            class="form-input"
+            #couponInput
+          />
+          <button
+            type="button"
+            class="apply-button"
+            (click)="applyCoupon(couponInput.value)"
+            appRipple
+          >
+            Aplicar
+          </button>
+        </div>
+        @if(couponMessage()){
+        <p class="coupon-message" [class.error]="couponError()">
+          {{ couponMessage() }}
+        </p>
+        }
+      </div>
+      <hr />
+
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
