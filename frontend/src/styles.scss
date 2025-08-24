@@ -28,7 +28,7 @@
 body {
   margin: 0;
   background-color: var(--background);
-  font-family: "Manrope", sans-serif;
+  font-family: "Baloo 2", "Baloo 2";
   color: var(--text-charcoal);
 }
 
@@ -38,9 +38,12 @@ h2,
 h3,
 h4,
 h5,
-h6 {
-  font-family: "Playfair Display", serif;
-  margin: 0; // Quitamos márgenes por defecto para tener más control
+h6,
+a,
+li {
+  font-family: "Baloo 2", "Baloo 2";
+  margin: 0;
+  font-weight: 700; // Aseguramos que los títulos sean en negrita
 }
 
 // -- Añadir las fuentes de Google --

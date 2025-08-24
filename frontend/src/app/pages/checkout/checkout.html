@@ -9,15 +9,12 @@
       </a>
     </div>
 
-    <!-- Contenedor para el "Payment Brick" de Mercado Pago -->
-    @if (!isLoadingBrick() && cartService.totalItems() > 0) {
-    <div id="paymentBrick_container"></div>
-    }
+    <!-- El contenedor del brick ahora depende del signal 'isLoading' -->
+    <div id="paymentBrick_container" [hidden]="isLoading()"></div>
 
-    <!-- Mensajes de Carga o Carrito Vacío -->
-    @if (isLoadingBrick()) {
+    @if (isLoading()) {
     <p class="loading-text">Cargando pasarela de pagos...</p>
-    } @if (!isLoadingBrick() && cartService.totalItems() === 0) {
+    } @if (!isLoading() && cartService.totalItems() === 0) {
     <div class="empty-cart-message">
       <p>Tu carrito está vacío.</p>
       <p>Añade productos para poder continuar con el pago.</p>

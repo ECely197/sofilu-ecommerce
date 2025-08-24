@@ -1,116 +1,186 @@
 <header class="sofilu-header">
-  <div class="header-content">
-    <div class="header-left">
-      <a class="logo-link" routerLink="/">
-        <svg
-          class="logo-svg"
-          fill="currentColor"
-          viewBox="0 0 48 48"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
-          ></path>
-        </svg>
-        <span class="logo-text">Sofilu</span>
-      </a>
-      <nav class="main-nav">
-        <a class="pill-button" routerLink="/sabanas" routerLinkActive="active"
-          >Sábanas</a
-        >
-        <a class="pill-button" routerLink="/products" routerLinkActive="active"
-          >Pijamas</a
-        >
-        <a class="pill-button" routerLink="/toallas" routerLinkActive="active"
-          >Toallas</a
-        >
-        <a class="pill-button" routerLink="/batas" routerLinkActive="active"
-          >Batas</a
-        >
-      </nav>
-    </div>
+  <div class="header-pill left">
+    <nav #navContainer class="desktop-nav">
+      <div #navPill class="nav-pill"></div>
 
+      <a
+        #navLink
+        class="nav-link"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <span class="nav-link-text-wrapper">
+          <span class="nav-link-text-inner">
+            <span class="nav-link-text">Inicio</span>
+            <span class="nav-link-text">Inicio</span>
+          </span>
+        </span>
+      </a>
+      <a
+        #navLink
+        class="nav-link"
+        routerLink="/category/sabanas"
+        routerLinkActive="active"
+      >
+        <span class="nav-link-text-wrapper">
+          <span class="nav-link-text-inner">
+            <span class="nav-link-text">Sábanas</span>
+            <span class="nav-link-text">Sábanas</span>
+          </span>
+        </span>
+      </a>
+      <a
+        #navLink
+        class="nav-link"
+        routerLink="/category/pijamas"
+        routerLinkActive="active"
+      >
+        <span class="nav-link-text-wrapper">
+          <span class="nav-link-text-inner">
+            <span class="nav-link-text">Pijamas</span>
+            <span class="nav-link-text">Pijamas</span>
+          </span>
+        </span>
+      </a>
+      <a
+        #navLink
+        class="nav-link"
+        routerLink="/category/toallas"
+        routerLinkActive="active"
+      >
+        <span class="nav-link-text-wrapper">
+          <span class="nav-link-text-inner">
+            <span class="nav-link-text">Toallas</span>
+            <span class="nav-link-text">Toallas</span>
+          </span>
+        </span>
+      </a>
+      <a
+        #navLink
+        class="nav-link"
+        routerLink="/category/batas"
+        routerLinkActive="active"
+      >
+        <span class="nav-link-text-wrapper">
+          <span class="nav-link-text-inner">
+            <span class="nav-link-text">Batas</span>
+            <span class="nav-link-text">Batas</span>
+          </span>
+        </span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="logo-wrapper">
+    <a routerLink="/" class="logo-link" (click)="closeAllMenus()">
+      <img
+        src="/sofilu-logo-text.svg"
+        alt="Logo de Sofilu"
+        class="logo-image"
+      />
+    </a>
+  </div>
+
+  <div class="header-pill right">
     <div class="header-right">
-      <a routerLink="/wishlist" class="icon-button">
-        <svg
-          class="icon-svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-          />
-        </svg>
+      <a
+        routerLink="/wishlist"
+        class="icon-button"
+        aria-label="Lista de deseos"
+      >
+        <span class="material-symbols-outlined">favorite_border</span>
       </a>
-
       <button
         (click)="uiStateService.openCartFlyout()"
-        class="icon-button cart-button"
+        class="icon-button"
+        aria-label="Abrir carrito"
       >
-        <svg
-          class="icon-svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.658-.463 1.243-1.117 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.116 1.007Z"
-          />
-        </svg>
-        <span *ngIf="cartService.totalItems() > 0" class="cart-badge">{{
-          cartService.totalItems()
-        }}</span>
+        <span class="material-symbols-outlined">shopping_bag</span>
+        @if (cartService.totalItems() > 0) {
+        <span class="cart-badge">{{ cartService.totalItems() }}</span>
+        }
       </button>
-
-      <!-- Lógica Condicional para el Perfil de Usuario -->
-
-      <!-- 1. Nos suscribimos UNA SOLA VEZ y guardamos el resultado en 'user' -->
-      <div *ngIf="currentUser$ | async as user; else showLogin">
-        <!-- 2. A partir de aquí, TypeScript SABE que 'user' no es nulo. -->
-        <div class="user-profile">
-          <button (click)="toggleProfileMenu()" class="profile-button">
-            <!-- 3. Ahora podemos acceder a 'user.email' de forma segura. -->
-            <!-- Usamos un segundo *ngIf solo para el caso de que el email en sí sea nulo (Firebase lo permite) -->
-            <span *ngIf="user.email">{{
-              user.email.charAt(0).toUpperCase()
-            }}</span>
-          </button>
-
-          <div *ngIf="isProfileMenuOpen" class="profile-menu" @flyInOut>
-            <div class="menu-header">
-              <p *ngIf="user.email" class="user-email">{{ user.email }}</p>
-            </div>
-            <div class="menu-links">
-              <a routerLink="/account" (click)="toggleProfileMenu()"
-                >Mi Cuenta</a
-              >
-              <a
-                *ngIf="isAdmin$ | async"
-                routerLink="/admin"
-                (click)="toggleProfileMenu()"
-                >Panel de Admin</a
-              >
-            </div>
-            <div class="menu-footer">
-              <button (click)="logout()" class="logout-button">
-                Cerrar Sesión
-              </button>
-            </div>
+      @if (currentUser$ | async; as user) {
+      <div class="profile-container">
+        <button
+          (click)="toggleProfileMenu($event)"
+          class="profile-button"
+          aria-label="Abrir menú de perfil"
+        >
+          @if(user.email) {
+          <span>{{ user.email.charAt(0).toUpperCase() }}</span>
+          }
+        </button>
+        @if (isProfileMenuOpen()) {
+        <div class="profile-menu" @flyInOut>
+          <div class="menu-header">
+            @if(user.email) {
+            <p class="user-email">{{ user.email }}</p>
+            }
+          </div>
+          <div class="menu-links">
+            <a routerLink="/account" (click)="toggleProfileMenu()">Mi Cuenta</a>
+            @if(isAdmin$ | async) {
+            <a routerLink="/admin" (click)="toggleProfileMenu()"
+              >Panel de Admin</a
+            >
+            }
+          </div>
+          <div class="menu-footer">
+            <button (click)="logout()" class="logout-button">
+              Cerrar Sesión
+            </button>
           </div>
         </div>
+        }
       </div>
-
-      <!-- Esta es la plantilla que se muestra si currentUser$ emite 'null' -->
-      <ng-template #showLogin>
-        <a routerLink="/login" class="pill-button">Iniciar Sesión</a>
-      </ng-template>
+      } @else {
+      <a routerLink="/login" class="login-button">Iniciar Sesión</a>
+      }
     </div>
   </div>
+
+  <!-- Controles para Móvil -->
+  <button
+    class="hamburger-button"
+    (click)="toggleMobileMenu()"
+    aria-label="Abrir menú de navegación"
+  >
+    <span class="material-symbols-outlined">{{
+      isMobileMenuOpen() ? "close" : "menu"
+    }}</span>
+  </button>
+
+  <nav class="mobile-nav" [class.is-open]="isMobileMenuOpen()">
+    <a
+      class="mobile-nav-link"
+      routerLink="/category/sabanas"
+      (click)="toggleMobileMenu()"
+      >Sábanas</a
+    >
+    <a
+      class="mobile-nav-link"
+      routerLink="/category/pijamas"
+      (click)="toggleMobileMenu()"
+      >Pijamas</a
+    >
+    <a
+      class="mobile-nav-link"
+      routerLink="/category/toallas"
+      (click)="toggleMobileMenu()"
+      >Toallas</a
+    >
+    <a
+      class="mobile-nav-link"
+      routerLink="/category/batas"
+      (click)="toggleMobileMenu()"
+      >Batas</a
+    >
+  </nav>
+  <div
+    class="mobile-overlay"
+    [class.is-open]="isMobileMenuOpen()"
+    (click)="toggleMobileMenu()"
+  ></div>
 </header>

@@ -20,8 +20,9 @@
 app-header {
   // Hacemos que el header sea fijo en la parte superior
   position: fixed;
-  top: 0;
+  top: 0; // Lo pegamos arriba
   left: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 100; // ¡Le damos un z-index alto!
+  transform: translateZ(0);
 }
