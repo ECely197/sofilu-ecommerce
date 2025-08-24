@@ -16,6 +16,7 @@ const orderRoutes = require("./routes/orders");
 const userRoutes = require("./routes/users");
 const couponRoutes = require("./routes/coupons");
 const settingsRoutes = require("./routes/settings");
+const paymentRoutes = require("./routes/payments");
 const categoryRoutes = require("./routes/categories");
 
 // ==========================================================================
@@ -89,6 +90,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/categories", categoryRoutes);
 
 // ==========================================================================

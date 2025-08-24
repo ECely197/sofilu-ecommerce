@@ -1,66 +1,49 @@
-// Contenido completo y corregido para: src/app/pages/checkout/checkout.ts
+// Contenido completo y 100% corregido para: src/app/pages/checkout/checkout.ts
 
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  AfterViewInit,
+  signal,
+  computed,
+} from '@angular/core'; // ¡Importamos AfterViewInit!
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import {
-  trigger,
-  transition,
-  style,
-  animate,
-  query,
-  stagger,
-} from '@angular/animations';
+import { firstValueFrom } from 'rxjs'; // Necesario para 'toPromise'
 
 import { CartService } from '../../services/cart';
 import { OrderService } from '../../services/order';
+import { PaymentService } from '../../services/payment.service';
 import { Coupon } from '../../services/coupon';
 import { SettingsService } from '../../services/settings.service';
+import { environment } from '../../../environments/environment.prod';
 import { RippleDirective } from '../../directives/ripple';
-import { CartItem } from '../../interfaces/cart-item.interface'; // ¡IMPORTACIÓN CLAVE!
+import { CartItem } from '../../interfaces/cart-item.interface';
+
+declare var MercadoPago: any;
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective, RouterLink],
+  imports: [CommonModule, RouterLink, RippleDirective],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
-  animations: [
-    trigger('formAnimation', [
-      transition(':enter', [
-        query('.form-section', [
-          style({ opacity: 0, transform: 'translateY(20px)' }),
-          stagger('100ms', [
-            animate(
-              '500ms cubic-bezier(0.35, 0, 0.25, 1)',
-              style({ opacity: 1, transform: 'none' })
-            ),
-          ]),
-        ]),
-      ]),
-    ]),
-  ],
 })
-export class checkout implements OnInit {
+export class checkout implements OnInit, AfterViewInit {
   public cartService = inject(CartService);
   private router = inject(Router);
-  private orderService = inject(OrderService);
+  private paymentService = inject(PaymentService);
   private couponService = inject(Coupon);
   private settingsService = inject(SettingsService);
+  private orderService = inject(OrderService);
 
-  checkoutForm!: FormGroup;
-
-  shippingCost = signal<number>(0);
+  shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
   couponMessage = signal<string>('');
   couponError = signal<boolean>(false);
+  isLoadingBrick = signal(true);
 
   grandTotal = computed(() => {
     const total =
@@ -72,21 +55,93 @@ export class checkout implements OnInit {
     this.settingsService.getShippingCost().subscribe((cost) => {
       this.shippingCost.set(cost);
     });
+  }
 
-    this.checkoutForm = new FormGroup({
-      contactInfo: new FormGroup({
-        email: new FormControl('', [Validators.required, Validators.email]),
-      }),
-      shippingAddress: new FormGroup({
-        name: new FormControl('', Validators.required),
-        address: new FormControl('', Validators.required),
-        city: new FormControl('', Validators.required),
-        postalCode: new FormControl(''),
-        phone: new FormControl('', Validators.required),
-      }),
+  ngAfterViewInit(): void {
+    if (this.cartService.totalItems() === 0) {
+      this.isLoadingBrick.set(false);
+      return;
+    }
+    this.startPaymentProcess();
+  }
+
+  async startPaymentProcess() {
+    this.isLoadingBrick.set(true);
+    try {
+      const preference = await firstValueFrom(
+        this.paymentService.createPreference(
+          this.cartService.cartItems(),
+          this.grandTotal()
+        )
+      );
+
+      if (preference && preference.id) {
+        this.renderPaymentBrick(preference.id);
+      } else {
+        throw new Error('No se recibió un ID de preferencia del backend.');
+      }
+    } catch (error) {
+      console.error('Error al iniciar el proceso de pago:', error);
+      alert(
+        'No se pudo cargar la pasarela de pagos. Por favor, refresca la página e intenta de nuevo.'
+      );
+      this.isLoadingBrick.set(false);
+    }
+  }
+
+  async renderPaymentBrick(preferenceId: string) {
+    // ¡CORRECCIÓN DE ERRATA!
+    const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error(
+        'Error: La Public Key de Mercado Pago no está configurada en el environment.'
+      );
+      return;
+    }
+
+    const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
+    const bricksBuilder = mp.bricks();
+
+    const container = document.getElementById('paymentBrick_container');
+    if (container) container.innerHTML = '';
+
+    await bricksBuilder.create('payment', 'paymentBrick_container', {
+      initialization: {
+        amount: this.grandTotal(),
+        preferenceId: preferenceId,
+      },
+      customization: {
+        visual: { style: { theme: 'default' } },
+        paymentMethods: { maxInstallments: 1 },
+      },
+      callbacks: {
+        onReady: () => {
+          this.isLoadingBrick.set(false);
+          console.log('Payment Brick está listo.');
+        },
+        // ¡TIPADO EXPLÍCITO AÑADIDO!
+        onSubmit: async ({
+          selectedPaymentMethod,
+          formData,
+        }: {
+          selectedPaymentMethod: any;
+          formData: any;
+        }) => {
+          // El SDK se encarga del resto
+        },
+        // ¡TIPADO EXPLÍCITO AÑADIDO!
+        onError: (error: any) => {
+          this.isLoadingBrick.set(false);
+          console.error('Error en el Payment Brick:', error);
+          alert(
+            'Ocurrió un error al procesar tu pago. Por favor, revisa los datos e intenta de nuevo.'
+          );
+        },
+      },
     });
   }
 
+  // (Métodos applyCoupon, finalItemPrice, y objectKeys sin cambios)
   applyCoupon(code: string): void {
     if (!code.trim()) return;
     this.couponService.validateCoupon(code).subscribe({
@@ -124,45 +179,6 @@ export class checkout implements OnInit {
     });
   }
 
-  handlePayment(): void {
-    if (this.checkoutForm.invalid) {
-      this.checkoutForm.markAllAsTouched();
-      return;
-    }
-    const formValue = this.checkoutForm.getRawValue();
-    const customerInfo = {
-      name: formValue.shippingAddress.name,
-      email: formValue.contactInfo.email,
-    };
-    const cartItems = this.cartService.cartItems();
-    const processedItems = cartItems.map((item) => {
-      return {
-        product: item.product._id,
-        quantity: item.quantity,
-        price: this.finalItemPrice(item),
-        selectedVariants: item.selectedVariants,
-      };
-    });
-    const orderData = {
-      customerInfo,
-      items: processedItems,
-      appliedCoupon: this.appliedCoupon() ? this.appliedCoupon().code : null,
-      discountAmount: this.discountAmount(),
-    };
-    this.orderService.createOrder(orderData).subscribe({
-      next: (savedOrder) => {
-        this.cartService.clearCart();
-        this.router.navigate(['/order-confirmation', savedOrder._id]);
-      },
-      error: (err) => {
-        console.error('Error al crear el pedido:', err);
-        alert(err.error.message || 'Hubo un error al procesar tu pedido.');
-      },
-    });
-  }
-
-  // --- MÉTODO CORREGIDO ---
-  // Reemplazamos 'item: any' por 'item: CartItem'
   public finalItemPrice(item: CartItem): number {
     let price = item.product.price;
     if (item.selectedVariants && item.product.variants) {

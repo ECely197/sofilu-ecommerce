@@ -1,127 +1,49 @@
+<!-- Contenido completo y corregido para: src/app/pages/checkout/checkout.html -->
+
 <div class="checkout-layout">
-  <!-- Columna de Formularios a la Izquierda -->
-  <div class="form-column" [@formAnimation]>
+  <!-- Columna Izquierda: Información y Pasarela de Pago -->
+  <div class="form-column">
     <div class="logo-header">
       <a routerLink="/" class="logo-link">
         <span class="logo-text">Sofilu</span>
       </a>
     </div>
 
-    <form
-      [formGroup]="checkoutForm"
-      (ngSubmit)="handlePayment()"
-      novalidate
-      class="checkout-form"
-    >
-      <div class="form-section" formGroupName="contactInfo">
-        <h2 class="section-title">Información de Contacto</h2>
-        <div class="material-field">
-          <input
-            id="email"
-            type="email"
-            class="material-input"
-            formControlName="email"
-            placeholder=" "
-          />
-          <label for="email" class="material-label">Correo Electrónico</label>
-        </div>
-      </div>
+    <!-- Contenedor para el "Payment Brick" de Mercado Pago -->
+    @if (!isLoadingBrick() && cartService.totalItems() > 0) {
+    <div id="paymentBrick_container"></div>
+    }
 
-      <div class="form-section" formGroupName="shippingAddress">
-        <h2 class="section-title">Dirección de Envío</h2>
-        <div class="material-field">
-          <input
-            id="name"
-            type="text"
-            class="material-input"
-            formControlName="name"
-            placeholder=" "
-          />
-          <label for="name" class="material-label">Nombre y Apellido</label>
-        </div>
-        <div class="material-field">
-          <input
-            id="address"
-            type="text"
-            class="material-input"
-            formControlName="address"
-            placeholder=" "
-          />
-          <label for="address" class="material-label">Dirección Completa</label>
-        </div>
-        <div class="form-grid">
-          <div class="material-field">
-            <input
-              id="city"
-              type="text"
-              class="material-input"
-              formControlName="city"
-              placeholder=" "
-            />
-            <label for="city" class="material-label">Ciudad</label>
-          </div>
-          <div class="material-field">
-            <input
-              id="postalCode"
-              type="text"
-              class="material-input"
-              formControlName="postalCode"
-              placeholder=" "
-            />
-            <label for="postalCode" class="material-label">Código Postal</label>
-          </div>
-        </div>
-        <div class="material-field">
-          <input
-            id="phone"
-            type="tel"
-            class="material-input"
-            formControlName="phone"
-            placeholder=" "
-          />
-          <label for="phone" class="material-label">Teléfono</label>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button
-          type="submit"
-          [disabled]="checkoutForm.invalid"
-          class="pay-button"
-          appRipple
-        >
-          Pagar Ahora
-        </button>
-      </div>
-    </form>
+    <!-- Mensajes de Carga o Carrito Vacío -->
+    @if (isLoadingBrick()) {
+    <p class="loading-text">Cargando pasarela de pagos...</p>
+    } @if (!isLoadingBrick() && cartService.totalItems() === 0) {
+    <div class="empty-cart-message">
+      <p>Tu carrito está vacío.</p>
+      <p>Añade productos para poder continuar con el pago.</p>
+      <a routerLink="/" class="btn-material" appRipple>Volver al Inicio</a>
+    </div>
+    }
   </div>
 
-  <!-- Columna de Resumen del Pedido a la Derecha -->
+  <!-- Columna Derecha: Resumen del Pedido -->
   <aside class="summary-column">
     <div class="summary-card">
       <h2 class="summary-title">Tu Pedido</h2>
-
       <div class="summary-items">
         @for (item of cartService.cartItems(); track item.id) {
         <div class="summary-item">
           <div class="item-image-wrapper">
-            <!--
-                ¡CORRECCIÓN CLAVE!
-                Usamos @if para verificar que el array de imágenes exista Y que no esté vacío
-                antes de intentar acceder a la primera imagen.
-              -->
             @if (item.product.images && item.product.images.length > 0) {
             <div
               class="item-image"
               [style.backgroundImage]="'url(' + item.product.images[0] + ')'"
             ></div>
             } @else {
-            <!-- Si no hay imágenes, mostramos un placeholder para no romper el layout. -->
             <div class="item-image placeholder-image"></div>
             }
             <span class="item-quantity">{{ item.quantity }}</span>
           </div>
-
           <div class="item-details-and-price">
             <div class="item-info">
               <p class="item-name">{{ item.product.name }}</p>
@@ -145,9 +67,7 @@
         </div>
         }
       </div>
-
       <hr />
-
       <div class="coupon-section">
         <div class="form-field">
           <input
@@ -171,8 +91,6 @@
         </p>
         }
       </div>
-      <hr />
-
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
