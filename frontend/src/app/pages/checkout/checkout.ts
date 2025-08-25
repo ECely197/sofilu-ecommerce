@@ -126,6 +126,27 @@ export class checkout implements OnInit {
     }
   }
 
+  async startPaymentProcess() {
+    this.isLoading.set(true);
+    try {
+      const preference = await firstValueFrom(
+        this.paymentService.createPreference(
+          this.cartService.cartItems(),
+          this.grandTotal()
+        )
+      );
+      if (preference && preference.id) {
+        this.preferenceId.set(preference.id);
+      } else {
+        throw new Error('No se recibió un ID de preferencia del backend.');
+      }
+    } catch (error) {
+      console.error('Error al iniciar el proceso de pago:', error);
+      alert('No se pudo iniciar la pasarela de pagos.');
+      this.isLoading.set(false);
+    }
+  }
+
   async renderPaymentBrick(preferenceId: string) {
     const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
@@ -165,7 +186,6 @@ export class checkout implements OnInit {
     });
   }
 
-  // --- MÉTODO buildOrderData COMPLETO ---
   private buildOrderData(): any | null {
     let currentUser: any = null;
     this.authService.currentUser$

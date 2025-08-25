@@ -36,6 +36,35 @@ router.get("/:uid/addresses", [authMiddleware], async (req, res) => {
     res.status(500).json({ message: "Error al obtener las direcciones" });
   }
 });
+
+router.post("/addresses", [authMiddleware], async (req, res) => {
+  try {
+    // Buscamos al usuario usando el UID del token verificado
+    let user = await User.findOne({ uid: req.user.uid });
+
+    // Si el usuario no existe en nuestra DB de MongoDB, lo creamos
+    if (!user) {
+      user = new User({
+        uid: req.user.uid,
+        email: req.user.email,
+        displayName: req.user.name || "", // Firebase a veces usa 'name' en el token
+        addresses: [],
+      });
+    }
+
+    // Añadimos la nueva dirección al array
+    user.addresses.push(req.body);
+    const savedUser = await user.save();
+
+    res.status(201).json(savedUser.addresses);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al añadir la dirección",
+      details: error.message,
+    });
+  }
+});
+
 // --- AÑADIR UNA NUEVA DIRECCIÓN ---
 router.put("/:uid/addresses/:addressId", [authMiddleware], async (req, res) => {
   if (req.user.uid !== req.params.uid)
