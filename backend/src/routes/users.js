@@ -22,21 +22,23 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-// --- OBTENER TODAS LAS DIRECCIONES DE UN USUARIO ---
-router.get("/:uid/addresses", [authMiddleware], async (req, res) => {
-  if (req.user.uid !== req.params.uid)
-    return res.status(403).json({ message: "No autorizado" });
+// --- OBTENER TODAS LAS DIRECCIONES DE UN USUARIO (LOGUEADO) ---
+// El usuario solo puede pedir sus propias direcciones
+router.get("/addresses", [authMiddleware], async (req, res) => {
   try {
-    const user = await User.findOne({ uid: req.params.uid }).select(
-      "addresses"
-    );
-    if (!user) return res.json([]);
+    const user = await User.findOne({ uid: req.user.uid }).select("addresses");
+    if (!user) {
+      // Si el usuario existe en Firebase pero no en nuestra DB de usuarios, devolvemos un array vacío
+      return res.json([]);
+    }
     res.json(user.addresses);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener las direcciones" });
   }
 });
 
+// --- AÑADIR UNA NUEVA DIRECCIÓN ---
+// El usuario solo puede añadir direcciones a su propio perfil
 router.post("/addresses", [authMiddleware], async (req, res) => {
   try {
     // Buscamos al usuario usando el UID del token verificado
@@ -58,10 +60,12 @@ router.post("/addresses", [authMiddleware], async (req, res) => {
 
     res.status(201).json(savedUser.addresses);
   } catch (error) {
-    res.status(500).json({
-      message: "Error al añadir la dirección",
-      details: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        message: "Error al añadir la dirección",
+        details: error.message,
+      });
   }
 });
 

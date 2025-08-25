@@ -3,6 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
+export interface Address {
+  _id: string;
+  fullName: string;
+  phone: string;
+  streetAddress: string;
+  addressDetails?: string;
+  department: string;
+  city: string;
+  postalCode: string;
+  isPreferred: boolean;
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -16,40 +27,37 @@ export class Customer {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  getAddresses(uid: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${uid}/addresses`);
+  // --- MÉTODOS DE DIRECCIONES ---
+  // Las rutas de direcciones ahora se construyen a partir de la URL base
+
+  getAddresses(): Observable<Address[]> {
+    return this.http.get<Address[]>(`${this.apiUrl}/addresses`);
   }
 
-  addAddress(uid: string, addressData: any): Observable<any[]> {
-    return this.http.post<any[]>(
-      `${this.apiUrl}/${uid}/addresses`,
-      addressData
-    );
+  addAddress(
+    addressData: Omit<Address, '_id' | 'isPreferred'>
+  ): Observable<Address[]> {
+    return this.http.post<Address[]>(`${this.apiUrl}/addresses`, addressData);
   }
 
-  // ¡NUEVO!
   updateAddress(
-    uid: string,
     addressId: string,
-    addressData: any
-  ): Observable<any[]> {
-    return this.http.put<any[]>(
-      `${this.apiUrl}/${uid}/addresses/${addressId}`,
+    addressData: Partial<Address>
+  ): Observable<Address[]> {
+    return this.http.put<Address[]>(
+      `${this.apiUrl}/addresses/${addressId}`,
       addressData
     );
   }
 
-  // ¡NUEVO!
-  setPreferredAddress(uid: string, addressId: string): Observable<any[]> {
-    return this.http.patch<any[]>(
-      `${this.apiUrl}/${uid}/addresses/${addressId}/set-preferred`,
+  setPreferredAddress(addressId: string): Observable<Address[]> {
+    return this.http.patch<Address[]>(
+      `${this.apiUrl}/addresses/${addressId}/set-preferred`,
       {}
     );
   }
 
-  deleteAddress(uid: string, addressId: string): Observable<any[]> {
-    return this.http.delete<any[]>(
-      `${this.apiUrl}/${uid}/addresses/${addressId}`
-    );
+  deleteAddress(addressId: string): Observable<Address[]> {
+    return this.http.delete<Address[]>(`${this.apiUrl}/addresses/${addressId}`);
   }
 }

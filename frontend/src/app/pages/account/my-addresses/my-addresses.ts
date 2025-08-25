@@ -47,18 +47,11 @@ export class MyAddressesComponent implements OnInit {
 
   loadAddresses() {
     this.isLoading.set(true);
-    this.authService.currentUser$
-      .pipe(
-        take(1),
-        switchMap((user) => {
-          if (!user) throw new Error('Usuario no autenticado');
-          return this.customerService.getAddresses(user.uid);
-        })
-      )
-      .subscribe((data) => {
-        this.addresses.set(data);
-        this.isLoading.set(false);
-      });
+    // La lógica aquí no cambia, pero la llamada al servicio sí
+    this.customerService.getAddresses().subscribe((data) => {
+      this.addresses.set(data);
+      this.isLoading.set(false);
+    });
   }
 
   showAddForm() {
@@ -80,21 +73,18 @@ export class MyAddressesComponent implements OnInit {
   handleSubmit() {
     if (this.addressForm.invalid) return;
 
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (!user) return;
+    const operation$ = this.editingAddressId()
+      ? // La llamada a 'updateAddress' ahora solo necesita el ID y los datos
+        this.customerService.updateAddress(
+          this.editingAddressId()!,
+          this.addressForm.value
+        )
+      : // La llamada a 'addAddress' ahora solo necesita los datos
+        this.customerService.addAddress(this.addressForm.value);
 
-      const operation$ = this.editingAddressId()
-        ? this.customerService.updateAddress(
-            user.uid,
-            this.editingAddressId()!,
-            this.addressForm.value
-          )
-        : this.customerService.addAddress(user.uid, this.addressForm.value);
-
-      operation$.subscribe((updatedAddresses) => {
-        this.addresses.set(updatedAddresses);
-        this.hideForm();
-      });
+    operation$.subscribe((updatedAddresses) => {
+      this.addresses.set(updatedAddresses);
+      this.hideForm();
     });
   }
 
@@ -102,24 +92,20 @@ export class MyAddressesComponent implements OnInit {
     if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?'))
       return;
 
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (!user) return;
-      this.customerService
-        .deleteAddress(user.uid, addressId)
-        .subscribe((updatedAddresses) => {
-          this.addresses.set(updatedAddresses);
-        });
-    });
+    // La llamada ahora solo necesita el ID de la dirección
+    this.customerService
+      .deleteAddress(addressId)
+      .subscribe((updatedAddresses) => {
+        this.addresses.set(updatedAddresses);
+      });
   }
 
   setPreferred(addressId: string) {
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (!user) return;
-      this.customerService
-        .setPreferredAddress(user.uid, addressId)
-        .subscribe((updatedAddresses) => {
-          this.addresses.set(updatedAddresses);
-        });
-    });
+    // La llamada ahora solo necesita el ID de la dirección
+    this.customerService
+      .setPreferredAddress(addressId)
+      .subscribe((updatedAddresses) => {
+        this.addresses.set(updatedAddresses);
+      });
   }
 }

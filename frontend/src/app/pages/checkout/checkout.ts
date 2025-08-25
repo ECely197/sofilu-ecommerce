@@ -82,17 +82,12 @@ export class checkout implements OnInit {
 
   loadAddresses(): void {
     this.isLoading.set(true);
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (user) {
-        this.customerService.getAddresses(user.uid).subscribe((data) => {
-          this.addresses.set(data);
-          const preferred = data.find((addr) => addr.isPreferred);
-          this.selectedAddress.set(
-            preferred || (data.length > 0 ? data[0] : null)
-          );
-          this.isLoading.set(false);
-        });
-      }
+    // La llamada al servicio getAddresses() ya no necesita el UID
+    this.customerService.getAddresses().subscribe((data) => {
+      this.addresses.set(data);
+      const preferred = data.find((addr) => addr.isPreferred);
+      this.selectedAddress.set(preferred || (data.length > 0 ? data[0] : null));
+      this.isLoading.set(false);
     });
   }
 
