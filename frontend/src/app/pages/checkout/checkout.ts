@@ -31,7 +31,6 @@ declare var MercadoPago: any;
   styleUrl: './checkout.scss',
 })
 export class checkout implements OnInit {
-  // --- Inyección de Dependencias ---
   public cartService = inject(CartService);
   private router = inject(Router);
   private paymentService = inject(PaymentService);
@@ -41,12 +40,10 @@ export class checkout implements OnInit {
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
 
-  // --- Signals para el Estado ---
   currentStep = signal<'shipping' | 'payment'>('shipping');
   addresses = signal<any[]>([]);
   selectedAddress = signal<any | null>(null);
   isLoading = signal(true);
-
   private preferenceId = signal<string | null>(null);
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
@@ -60,14 +57,7 @@ export class checkout implements OnInit {
     return Math.max(0, total);
   });
 
-  constructor() {
-    effect(() => {
-      const prefId = this.preferenceId();
-      if (prefId && this.currentStep() === 'payment') {
-        setTimeout(() => this.renderPaymentBrick(prefId), 0);
-      }
-    });
-  }
+  constructor() {}
 
   ngOnInit(): void {
     if (this.cartService.totalItems() === 0) {
@@ -82,12 +72,20 @@ export class checkout implements OnInit {
 
   loadAddresses(): void {
     this.isLoading.set(true);
-    // La llamada al servicio getAddresses() ya no necesita el UID
-    this.customerService.getAddresses().subscribe((data) => {
-      this.addresses.set(data);
-      const preferred = data.find((addr) => addr.isPreferred);
-      this.selectedAddress.set(preferred || (data.length > 0 ? data[0] : null));
-      this.isLoading.set(false);
+    this.customerService.getAddresses().subscribe({
+      next: (data) => {
+        this.addresses.set(data);
+        const preferred = data.find((addr) => addr.isPreferred);
+        this.selectedAddress.set(
+          preferred || (data.length > 0 ? data[0] : null)
+        );
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar direcciones:', err);
+        this.isLoading.set(false);
+        // Opcional: mostrar un mensaje de error al usuario.
+      },
     });
   }
 
@@ -95,13 +93,15 @@ export class checkout implements OnInit {
     this.selectedAddress.set(address);
   }
 
+  // --- ¡MÉTODO proceedToPayment CORREGIDO! ---
   async proceedToPayment(): Promise<void> {
     if (!this.selectedAddress()) {
-      alert('Por favor, selecciona o añade una dirección de envío.');
+      alert('Por favor, selecciona una dirección de envío.');
       return;
     }
+
     this.isLoading.set(true);
-    this.currentStep.set('payment');
+
     try {
       const preference = await firstValueFrom(
         this.paymentService.createPreference(
@@ -109,45 +109,38 @@ export class checkout implements OnInit {
           this.grandTotal()
         )
       );
+
       if (preference && preference.id) {
-        this.preferenceId.set(preference.id);
+        // 1. Cambiamos el paso
+        this.currentStep.set('payment');
+        // 2. Esperamos un instante para que Angular procese el [hidden]
+        setTimeout(() => {
+          // 3. Ahora que el div está visible, renderizamos el brick
+          this.renderPaymentBrick(preference.id);
+        }, 0);
       } else {
         throw new Error('No se recibió ID de preferencia del backend.');
       }
     } catch (error) {
-      console.error('Error al iniciar el proceso de pago:', error);
-      this.currentStep.set('shipping');
-      this.isLoading.set(false);
-    }
-  }
-
-  async startPaymentProcess() {
-    this.isLoading.set(true);
-    try {
-      const preference = await firstValueFrom(
-        this.paymentService.createPreference(
-          this.cartService.cartItems(),
-          this.grandTotal()
-        )
-      );
-      if (preference && preference.id) {
-        this.preferenceId.set(preference.id);
-      } else {
-        throw new Error('No se recibió un ID de preferencia del backend.');
-      }
-    } catch (error) {
-      console.error('Error al iniciar el proceso de pago:', error);
-      alert('No se pudo iniciar la pasarela de pagos.');
-      this.isLoading.set(false);
+      console.error('Error al crear la preferencia de pago:', error);
+      this.isLoading.set(false); // Nos aseguramos de quitar el loader en caso de error
     }
   }
 
   async renderPaymentBrick(preferenceId: string) {
+    const container = document.getElementById('paymentBrick_container');
+    if (!container) {
+      console.error(
+        'Error crítico: El contenedor del Brick de pago no fue encontrado en el DOM.'
+      );
+      this.isLoading.set(false);
+      return;
+    }
+    container.innerHTML = '';
+
     const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
     const bricksBuilder = mp.bricks();
-    const container = document.getElementById('paymentBrick_container');
-    if (container) container.innerHTML = '';
 
     await bricksBuilder.create('payment', 'paymentBrick_container', {
       initialization: {
@@ -164,18 +157,21 @@ export class checkout implements OnInit {
         },
       },
       callbacks: {
-        onReady: () => this.isLoading.set(false),
+        onReady: () => {
+          // Solo cuando el brick está listo, quitamos el estado de carga
+          this.isLoading.set(false);
+        },
         onSubmit: async () => {
           const orderData = this.buildOrderData();
           if (!orderData) {
-            console.error('No se pudieron construir los datos del pedido.');
-            alert('Ocurrió un error, por favor intenta de nuevo.');
             return;
           }
           localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
         },
         onError: (error: any) => {
           console.error('Error en Payment Brick:', error);
+          this.isLoading.set(false); // Quitamos la carga si el brick da error
+          this.currentStep.set('shipping'); // Devolvemos al usuario al paso anterior
         },
       },
     });

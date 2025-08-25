@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
+import { AuthService } from './auth';
 
 export interface Address {
   _id: string;
@@ -19,6 +20,7 @@ export interface Address {
 })
 export class Customer {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private apiUrl = `${environment.apiUrl}/users`;
 
   constructor() {}

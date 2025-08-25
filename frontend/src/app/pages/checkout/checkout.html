@@ -1,5 +1,5 @@
 <div class="checkout-layout">
-  <!-- Columna Izquierda con los Pasos -->
+  <!-- Columna Izquierda -->
   <div class="form-column">
     <header class="logo-header">
       <a routerLink="/" class="logo-link">
@@ -9,12 +9,15 @@
 
     @if (isLoading()) {
     <p class="loading-text">Cargando...</p>
-    } @else {
-    <!-- PASO 1: SELECCIÓN DE DIRECCIÓN -->
-    @if (currentStep() === 'shipping') {
-    <div class="step-container">
-      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
+    }
 
+    <!-- PASO 1: DIRECCIÓN -->
+    <!-- Usamos [hidden] para ocultar/mostrar sin eliminar del DOM -->
+    <div
+      class="step-container"
+      [hidden]="currentStep() !== 'shipping' || isLoading()"
+    >
+      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
       @if (addresses().length > 0) {
       <div class="addresses-list">
         @for (address of addresses(); track address._id) {
@@ -39,13 +42,11 @@
       } @else {
       <p class="no-address-message">No tienes direcciones guardadas.</p>
       }
-
       <div class="address-actions">
         <a routerLink="/account/addresses" class="add-address-link"
           >Administrar mis direcciones</a
         >
       </div>
-
       <button
         class="btn-material"
         (click)="proceedToPayment()"
@@ -54,17 +55,18 @@
         Continuar al Pago
       </button>
     </div>
-    }
 
     <!-- PASO 2: PAGO -->
-    @if (currentStep() === 'payment') {
-    <div class="step-container">
+    <!-- ¡CAMBIO CLAVE! Este div ahora SIEMPRE está en el DOM, pero puede estar oculto. -->
+    <div
+      class="step-container"
+      [hidden]="currentStep() !== 'payment' || isLoading()"
+    >
       <h2 class="step-title">Elige cómo pagar</h2>
+      <!-- El ID está en el contenedor que siempre existe -->
       <div id="paymentBrick_container"></div>
     </div>
-    } }
   </div>
-
   <!-- Columna Derecha: Resumen del Pedido -->
   <aside class="summary-column">
     <div class="summary-card">
