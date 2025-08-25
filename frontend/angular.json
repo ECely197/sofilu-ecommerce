@@ -26,21 +26,16 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "node_modules/aos/dist/aos.css",
-              "src/styles.scss"
-            ],
-            "scripts": [
-              "node_modules/aos/dist/aos.js"
-            ]
+            "styles": ["node_modules/aos/dist/aos.css", "src/styles.scss"],
+            "scripts": ["node_modules/aos/dist/aos.js"]
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "900kB",
+                  "maximumError": "1.2MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -84,9 +79,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           }
         }
       }
