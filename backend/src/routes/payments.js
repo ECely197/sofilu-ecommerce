@@ -38,6 +38,7 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
         success: `${process.env.FRONTEND_URL}/order-confirmation`,
         failure: `${process.env.FRONTEND_URL}/cart`,
         pending: `${process.env.FRONTEND_URL}/cart`,
+        success: `${process.env.FRONTEND_URL}/order-confirmation?status=approved`,
       },
       auto_return: "approved",
       statement_descriptor: "SOFILU SHOP",

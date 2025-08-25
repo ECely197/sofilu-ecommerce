@@ -128,24 +128,21 @@ export class checkout implements OnInit {
   }
 
   async renderPaymentBrick(preferenceId: string) {
-    const container = document.getElementById('paymentBrick_container');
-    if (!container) {
-      console.error(
-        'Error crítico: El contenedor del Brick de pago no fue encontrado en el DOM.'
-      );
-      this.isLoading.set(false);
-      return;
-    }
-    container.innerHTML = '';
-
     const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
+    // 1. Creamos la instancia de Mercado Pago
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
     const bricksBuilder = mp.bricks();
+
+    const container = document.getElementById('paymentBrick_container');
+    if (container) container.innerHTML = '';
 
     await bricksBuilder.create('payment', 'paymentBrick_container', {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
+        // --- ¡AÑADE ESTA LÍNEA! ---
+        // Pasamos la instancia 'mp' que acabamos de crear.
+        mercadoPago: mp,
       },
       customization: {
         paymentMethods: {
