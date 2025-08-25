@@ -1,0 +1,44 @@
+// Contenido para: frontend/src/_forms.scss
+
+.material-field {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.material-input {
+  width: 100%;
+  padding: 1rem 0.5rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid var(--soft-gray); // Un borde más sutil
+  background-color: transparent;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-bottom: 2px solid var(--pastel-pink);
+  }
+
+  &:focus + .material-label,
+  &:not(:placeholder-shown) + .material-label {
+    transform: translateY(-1.25rem) scale(0.8);
+    color: var(--pastel-pink);
+  }
+}
+
+.material-label {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.5rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+  transition: all 0.2s ease-in-out;
+  transform-origin: left top;
+}
+
+.error-text {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
+}

@@ -1,90 +1,182 @@
-@use '../../../../../buttons';
+// Contenido completo y final para: src/app/pages/account/my-addresses/my-addresses.component.scss
+@use "../../../../../buttons";
+@use "../../../pages/admin/admin-shared";
+@use "../../../../forms";
 
-.account-section {
-  // ...
+.addresses-container {
+  max-width: 900px;
+  margin: auto;
 }
-.section-header {
+
+.page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-}
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.875rem;
-}
-.add-button {
-  @extend .btn-material; // Heredamos el estilo
-  padding: 0.625rem 1.25rem;
-  font-size: 0.875rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.75rem;
+    font-family: "Playfair Display", serif;
+    margin: 0;
+  }
 }
 
-.card-style {
+// --- ESTILOS DEL FORMULARIO MODAL (LA PARTE QUE FALTABA) ---
+
+.form-overlay {
+  position: fixed;
+  inset: 0; // Abarca toda la pantalla
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  // Animación de aparición
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.form-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95); // Empieza ligeramente más pequeño
+  width: 90%;
+  max-width: 500px;
   background-color: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  // Animación de aparición
+  animation: fadeInScaleUp 0.3s ease-out forwards;
 
-.address-form {
-  .form-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+  h3 {
+    font-family: "Playfair Display", serif;
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 0 0 2rem 0;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
   }
   .form-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    @media (min-width: 640px) {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  .full-width {
-    grid-column: 1 / -1;
-  }
-  .form-field {
-    label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
-  }
-  .form-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--soft-gray);
-    border-radius: 0.5rem;
-  }
-  .submit-button {
-    @extend .btn-material;
-    margin-top: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
   }
 }
 
-.address-list {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScaleUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+// --- FIN DE LOS ESTILOS DEL MODAL ---
+
+.addresses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
 .address-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  p { margin: 0.25rem 0; color: var(--text-secondary); }
-  strong { color: var(--text-charcoal); }
-}
-.card-actions {
-  margin-top: 1rem;
-  border-top: 1px solid var(--soft-gray);
-  padding-top: 1rem;
-  display: flex;
-  gap: 1rem;
-}
-.action-link {
-  background: none;
-  border: none;
-  color: var(--pastel-pink);
-  font-weight: 600;
-  cursor: pointer;
-  &.delete:hover {
-    color: #e53e3e;
+  border: 1px solid var(--soft-gray);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  background-color: white;
+
+  &.preferred {
+    border-color: var(--pastel-pink);
+    border-width: 2px;
+    box-shadow: 0 0 15px rgba(244, 194, 194, 0.5);
   }
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+  }
+  p {
+    margin: 0.25rem 0;
+    color: var(--text-secondary);
+  }
+}
+
+.preferred-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--pastel-pink);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.card-actions {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--soft-gray);
+  display: flex;
+  gap: 0.75rem;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.5rem;
+
+    &:first-of-type {
+      margin-left: -0.5rem;
+    }
+    &:hover {
+      color: var(--pastel-pink);
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  border: 2px dashed var(--soft-gray);
+  border-radius: 1rem;
+
+  p {
+    color: var(--text-secondary);
+  }
+}
+
+// Botones
+.btn-material {
+  @extend .btn-material;
+}
+.btn-secondary {
+  @extend .btn-secondary;
 }

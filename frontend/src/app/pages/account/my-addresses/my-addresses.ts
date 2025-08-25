@@ -1,10 +1,16 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+// Contenido completo y final para: src/app/pages/account/my-addresses/my-addresses.component.ts
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { AuthService } from '../../../services/auth';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { switchMap, take } from 'rxjs/operators';
+
 import { Customer } from '../../../services/customer';
-import { take, filter } from 'rxjs/operators';
-import { User } from '@angular/fire/auth';
+import { AuthService } from '../../../services/auth';
 import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
@@ -12,106 +18,108 @@ import { RippleDirective } from '../../../directives/ripple';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './my-addresses.html',
-  styleUrl: './my-addresses.scss'
+  styleUrl: './my-addresses.scss',
 })
 export class MyAddressesComponent implements OnInit {
-  private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
   private customerService = inject(Customer);
-  private cdr = inject(ChangeDetectorRef);
-  addresses: any[] = [];
-  isLoading = true;
-  showForm = false;
-  addressForm: FormGroup;
-  currentUser: User | null = null;
+  private authService = inject(AuthService);
 
-  constructor() {
-    this.addressForm = new FormGroup({
-      fullName: new FormControl('', Validators.required),
-      phone: new FormControl('', Validators.required),
-      streetAddress: new FormControl('', Validators.required),
-      addressDetails: new FormControl(''),
-      department: new FormControl('', Validators.required),
-      city: new FormControl('', Validators.required),
-      postalCode: new FormControl('', Validators.required),
+  addresses = signal<any[]>([]);
+  isLoading = signal(true);
+  isFormVisible = signal(false);
+  editingAddressId = signal<string | null>(null);
+
+  addressForm!: FormGroup;
+
+  ngOnInit() {
+    this.addressForm = this.fb.group({
+      fullName: ['', Validators.required],
+      phone: ['', Validators.required],
+      department: ['', Validators.required],
+      city: ['', Validators.required],
+      streetAddress: ['', Validators.required],
+      addressDetails: [''],
+      postalCode: ['', Validators.required],
     });
+    this.loadAddresses();
   }
 
-  ngOnInit(): void {
-    console.log('MY-ADDRESSES: ngOnInit disparado. Esperando usuario...'); // Log #1
-    this.authService.currentUser$.pipe(
-      filter(user => user !== undefined),
-      take(1)
-    ).subscribe(user => {
-      this.currentUser = user;
-      if (user) {
-        console.log('MY-ADDRESSES: Usuario encontrado. UID:', user.uid); // Log #2
-        this.loadAddresses(user.uid);
-        this.cdr.detectChanges();
-      } else {
-        console.log('MY-ADDRESSES: No se encontró usuario.'); // Log #2.1
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  loadAddresses(uid: string): void {
-    this.isLoading = true;
-    this.customerService.getAddresses(uid).subscribe({
-      next: (data) => {
-        console.log('MY-ADDRESSES: Direcciones recibidas de la API:', data); // Log #4
-        this.addresses = data;
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('MY-ADDRESSES: ERROR al obtener direcciones', err); // Log de Error Frontend
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-   submitAddress(): void {
-    console.log('ADDRESS FORM: Botón "Guardar Dirección" presionado.'); // Log #A
-
-    if (this.addressForm.invalid) {
-      console.error('ADDRESS FORM: El formulario es inválido. No se enviará.', this.addressForm.errors); // Log de Error
-      return;
-    }
-    if (!this.currentUser) {
-      console.error('ADDRESS FORM: No hay un usuario actual para asignar la dirección.'); // Log de Error
-      return;
-    }
-    
-    const addressData = this.addressForm.getRawValue();
-    console.log('ADDRESS FORM: Datos del formulario a enviar:', addressData); // Log #B
-
-    this.customerService.addAddress(this.currentUser.uid, addressData)
-      .subscribe({
-        next: (updatedAddresses) => {
-          console.log('ADDRESS FORM: Dirección guardada con éxito. API devolvió:', updatedAddresses); // Log #D
-          this.addresses = updatedAddresses;
-          this.showForm = false;
-          this.addressForm.reset();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('ADDRESS FORM: ERROR al guardar la dirección', err); // Log de Error Frontend
-          this.cdr.detectChanges();
-        }
+  loadAddresses() {
+    this.isLoading.set(true);
+    this.authService.currentUser$
+      .pipe(
+        take(1),
+        switchMap((user) => {
+          if (!user) throw new Error('Usuario no autenticado');
+          return this.customerService.getAddresses(user.uid);
+        })
+      )
+      .subscribe((data) => {
+        this.addresses.set(data);
+        this.isLoading.set(false);
       });
   }
-  
-  deleteAddress(addressId: string): void {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?') || !this.currentUser) return;
 
-    this.customerService.deleteAddress(this.currentUser.uid, addressId)
-      .subscribe(updatedAddresses => {
-        this.addresses = updatedAddresses;
-        this.cdr.detectChanges();
+  showAddForm() {
+    this.editingAddressId.set(null);
+    this.addressForm.reset();
+    this.isFormVisible.set(true);
+  }
+
+  showEditForm(address: any) {
+    this.editingAddressId.set(address._id);
+    this.addressForm.patchValue(address);
+    this.isFormVisible.set(true);
+  }
+
+  hideForm() {
+    this.isFormVisible.set(false);
+  }
+
+  handleSubmit() {
+    if (this.addressForm.invalid) return;
+
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (!user) return;
+
+      const operation$ = this.editingAddressId()
+        ? this.customerService.updateAddress(
+            user.uid,
+            this.editingAddressId()!,
+            this.addressForm.value
+          )
+        : this.customerService.addAddress(user.uid, this.addressForm.value);
+
+      operation$.subscribe((updatedAddresses) => {
+        this.addresses.set(updatedAddresses);
+        this.hideForm();
       });
+    });
+  }
+
+  deleteAddress(addressId: string) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?'))
+      return;
+
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (!user) return;
+      this.customerService
+        .deleteAddress(user.uid, addressId)
+        .subscribe((updatedAddresses) => {
+          this.addresses.set(updatedAddresses);
+        });
+    });
+  }
+
+  setPreferred(addressId: string) {
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (!user) return;
+      this.customerService
+        .setPreferredAddress(user.uid, addressId)
+        .subscribe((updatedAddresses) => {
+          this.addresses.set(updatedAddresses);
+        });
+    });
   }
 }
-
-

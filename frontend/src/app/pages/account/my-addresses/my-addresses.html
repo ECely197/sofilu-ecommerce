@@ -1,68 +1,156 @@
-<section class="account-section">
-  <div class="section-header">
-    <h2 class="section-title">Mis Direcciones</h2>
-    <button (click)="showForm = !showForm" class="add-button" appRipple>
-      {{ showForm ? 'Cancelar' : '+ Añadir Dirección' }}
+<div class="addresses-container">
+  <header class="page-header">
+    <h2>Mis Direcciones</h2>
+    <!-- El botón ahora se deshabilita si el formulario ya está visible -->
+    <button
+      (click)="showAddForm()"
+      class="btn-material"
+      [disabled]="isFormVisible()"
+      appRipple
+    >
+      <span class="material-symbols-outlined">add</span>
+      Añadir Dirección
     </button>
-  </div>
+  </header>
 
-  <!-- Formulario para añadir/editar dirección -->
-  <form *ngIf="showForm" [formGroup]="addressForm" (ngSubmit)="submitAddress()" class="address-form card-style">
-    <h3 class="form-title">Añadir una nueva dirección</h3>
-    
-    <div class="form-grid">
-      <div class="form-field full-width">
-        <label for="fullName">Nombre completo (nombre y apellido)</label>
-        <input id="fullName" type="text" formControlName="fullName" class="form-input">
+  <!-- FORMULARIO MODAL -->
+  @if (isFormVisible()) {
+  <div class="form-overlay" (click)="hideForm()"></div>
+  <div class="form-panel">
+    <h3>{{ editingAddressId() ? "Editar Dirección" : "Nueva Dirección" }}</h3>
+    <form [formGroup]="addressForm" (ngSubmit)="handleSubmit()">
+      <!-- CAMPOS DEL FORMULARIO -->
+      <div class="form-grid">
+        <div class="material-field">
+          <input
+            id="fullName"
+            type="text"
+            formControlName="fullName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="fullName" class="material-label">Nombre Completo</label>
+          @if(addressForm.get('fullName')?.touched &&
+          addressForm.get('fullName')?.hasError('required')) {
+          <p class="error-text">El nombre es requerido.</p>
+          }
+        </div>
+        <div class="material-field">
+          <input
+            id="phone"
+            type="tel"
+            formControlName="phone"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="phone" class="material-label">Teléfono</label>
+        </div>
       </div>
-      <div class="form-field full-width">
-        <label for="phone">Número de teléfono</label>
-        <input id="phone" type="tel" formControlName="phone" class="form-input">
+      <div class="material-field">
+        <input
+          id="streetAddress"
+          type="text"
+          formControlName="streetAddress"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="streetAddress" class="material-label"
+          >Dirección (Calle, Número, Barrio)</label
+        >
       </div>
-      <div class="form-field full-width">
-        <label for="streetAddress">Calle/Número/Apartamento</label>
-        <input id="streetAddress" type="text" formControlName="streetAddress" class="form-input">
+      <div class="material-field">
+        <input
+          id="addressDetails"
+          type="text"
+          formControlName="addressDetails"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="addressDetails" class="material-label"
+          >Detalles Adicionales (Apto, Torre, etc.)</label
+        >
       </div>
-      <div class="form-field full-width">
-        <label for="addressDetails">Detalles adicionales (opcional)</label>
-        <input id="addressDetails" type="text" formControlName="addressDetails" class="form-input" placeholder="Ej: Golpear al lado de la reja roja">
+      <div class="form-grid">
+        <div class="material-field">
+          <input
+            id="department"
+            type="text"
+            formControlName="department"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="department" class="material-label">Departamento</label>
+        </div>
+        <div class="material-field">
+          <input
+            id="city"
+            type="text"
+            formControlName="city"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="city" class="material-label">Ciudad</label>
+        </div>
       </div>
-      <div class="form-field">
-        <label for="department">Departamento</label>
-        <input id="department" type="text" formControlName="department" class="form-input">
+      <div class="material-field">
+        <input
+          id="postalCode"
+          type="text"
+          formControlName="postalCode"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="postalCode" class="material-label">Código Postal</label>
       </div>
-      <div class="form-field">
-        <label for="city">Ciudad/Municipio</label>
-        <input id="city" type="text" formControlName="city" class="form-input">
-      </div>
-      <div class="form-field full-width">
-        <label for="postalCode">Código postal</label>
-        <input id="postalCode" type="text" formControlName="postalCode" class="form-input">
-      </div>
-    </div>
-    
-    <button type="submit" [disabled]="addressForm.invalid" class="submit-button" appRipple>
-      Guardar Dirección
-    </button>
-  </form>
 
-  <!-- Lista de direcciones guardadas -->
-  <div *ngIf="!showForm" class="address-list">
-    <div *ngFor="let addr of addresses" class="address-card card-style">
-      <div>
-        <strong>{{ addr.fullName }}</strong>
-        <p>{{ addr.streetAddress }}</p>
-        <p>{{ addr.addressDetails }}</p>
-        <p>{{ addr.city }}, {{ addr.department }}, {{ addr.postalCode }}</p>
-        <p>Teléfono: {{ addr.phone }}</p>
+      <!-- ACCIONES DEL FORMULARIO -->
+      <div class="form-actions">
+        <button type="button" (click)="hideForm()" class="btn-secondary">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="addressForm.invalid"
+          class="btn-material"
+        >
+          Guardar Dirección
+        </button>
       </div>
-      <div class="card-actions">
-        <button class="action-link">Editar</button>
-        <button (click)="deleteAddress(addr._id)" class="action-link delete">Eliminar</button>
-      </div>
-    </div>
-    <div *ngIf="addresses.length === 0">
-      <p>No tienes ninguna dirección guardada.</p>
-    </div>
+    </form>
   </div>
-</section>
+  }
+
+  <!-- VISTA PRINCIPAL (CARGA O LISTA DE DIRECCIONES) -->
+  <div class="content-area">
+    @if (isLoading()) {
+    <p>Cargando direcciones...</p>
+    } @else if (addresses().length > 0) {
+    <div class="addresses-grid">
+      @for (address of addresses(); track address._id) {
+      <div class="address-card" [class.preferred]="address.isPreferred">
+        @if(address.isPreferred) {
+        <div class="preferred-badge">Preferida</div>
+        }
+        <h4>{{ address.fullName }}</h4>
+        <p>{{ address.streetAddress }}, {{ address.addressDetails }}</p>
+        <p>{{ address.city }}, {{ address.department }}</p>
+        <p>{{ address.phone }}</p>
+        <div class="card-actions">
+          <button (click)="showEditForm(address)">Editar</button>
+          <button (click)="deleteAddress(address._id)">Eliminar</button>
+          @if(!address.isPreferred) {
+          <button (click)="setPreferred(address._id)">
+            Marcar como preferida
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="empty-state">
+      <p>Aún no has guardado ninguna dirección.</p>
+    </div>
+    }
+  </div>
+</div>

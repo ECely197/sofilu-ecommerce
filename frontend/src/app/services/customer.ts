@@ -4,32 +4,52 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Customer {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/users`;
 
-  constructor() { }
+  constructor() {}
 
   getCustomers(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  // --- MÉTODOS NUEVOS PARA DIRECCIONES ---
   getAddresses(uid: string): Observable<any[]> {
-    const url = `${this.apiUrl}/${uid}/addresses`;
-    console.log('CUSTOMER SERVICE: Haciendo petición GET a:', url); // Log #3
-    return this.http.get<any[]>(url);
+    return this.http.get<any[]>(`${this.apiUrl}/${uid}/addresses`);
   }
 
   addAddress(uid: string, addressData: any): Observable<any[]> {
-    const url = `${this.apiUrl}/${uid}/addresses`;
-    console.log('CUSTOMER SERVICE: Haciendo petición POST a:', url, 'con los datos:', addressData); // Log #C
-    return this.http.post<any[]>(url, addressData);
+    return this.http.post<any[]>(
+      `${this.apiUrl}/${uid}/addresses`,
+      addressData
+    );
+  }
+
+  // ¡NUEVO!
+  updateAddress(
+    uid: string,
+    addressId: string,
+    addressData: any
+  ): Observable<any[]> {
+    return this.http.put<any[]>(
+      `${this.apiUrl}/${uid}/addresses/${addressId}`,
+      addressData
+    );
+  }
+
+  // ¡NUEVO!
+  setPreferredAddress(uid: string, addressId: string): Observable<any[]> {
+    return this.http.patch<any[]>(
+      `${this.apiUrl}/${uid}/addresses/${addressId}/set-preferred`,
+      {}
+    );
   }
 
   deleteAddress(uid: string, addressId: string): Observable<any[]> {
-    return this.http.delete<any[]>(`${this.apiUrl}/${uid}/addresses/${addressId}`);
+    return this.http.delete<any[]>(
+      `${this.apiUrl}/${uid}/addresses/${addressId}`
+    );
   }
 }
