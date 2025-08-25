@@ -302,3 +302,34 @@
     color: #065f46; // Verde
   }
 }
+
+.step-container {
+  h2 {
+    font-family: "Playfair Display", serif;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.addresses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.address-card {
+  border: 2px solid var(--soft-gray);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  &.selected {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 15px rgba(244, 194, 194, 0.5);
+  }
+  &:hover {
+    border-color: var(--text-charcoal);
+  }
+}

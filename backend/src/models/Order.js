@@ -18,11 +18,6 @@ const orderItemSchema = new Schema({
     type: Number,
     required: true,
   },
-
-  // --- ¡LA LÍNEA QUE FALTABA! ---
-  // Este campo guardará las variantes seleccionadas por el cliente.
-  // Usamos el tipo 'Map' de Mongoose, que es perfecto para almacenar
-  // un objeto de clave-valor como { "Talla": "M", "Color": "Azul" }.
   selectedVariants: {
     type: Map,
     of: String,
@@ -39,6 +34,10 @@ const orderSchema = new Schema({
   customerInfo: {
     name: { type: String, required: true },
     email: { type: String, required: true },
+  },
+  shippingAddress: {
+    type: Object,
+    required: true,
   },
   items: [orderItemSchema],
   appliedCoupon: {

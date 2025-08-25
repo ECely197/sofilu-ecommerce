@@ -1,32 +1,74 @@
-<!-- Contenido completo y corregido para: src/app/pages/checkout/checkout.html -->
-
 <div class="checkout-layout">
-  <!-- Columna Izquierda: Información y Pasarela de Pago -->
+  <!-- Columna Izquierda con los Pasos -->
   <div class="form-column">
-    <div class="logo-header">
+    <header class="logo-header">
       <a routerLink="/" class="logo-link">
         <span class="logo-text">Sofilu</span>
       </a>
-    </div>
-
-    <!-- El contenedor del brick ahora depende del signal 'isLoading' -->
-    <div id="paymentBrick_container" [hidden]="isLoading()"></div>
+    </header>
 
     @if (isLoading()) {
-    <p class="loading-text">Cargando pasarela de pagos...</p>
-    } @if (!isLoading() && cartService.totalItems() === 0) {
-    <div class="empty-cart-message">
-      <p>Tu carrito está vacío.</p>
-      <p>Añade productos para poder continuar con el pago.</p>
-      <a routerLink="/" class="btn-material" appRipple>Volver al Inicio</a>
+    <p class="loading-text">Cargando...</p>
+    } @else {
+    <!-- PASO 1: SELECCIÓN DE DIRECCIÓN -->
+    @if (currentStep() === 'shipping') {
+    <div class="step-container">
+      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
+
+      @if (addresses().length > 0) {
+      <div class="addresses-list">
+        @for (address of addresses(); track address._id) {
+        <div
+          class="address-card"
+          [class.selected]="selectedAddress()?._id === address._id"
+          (click)="selectAddress(address)"
+        >
+          <div class="radio-selector"></div>
+          <div class="address-details">
+            <p class="address-street">{{ address.streetAddress }}</p>
+            <p class="address-city">
+              {{ address.city }}, {{ address.department }}
+            </p>
+            <p class="address-name">
+              {{ address.fullName }} - {{ address.phone }}
+            </p>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="no-address-message">No tienes direcciones guardadas.</p>
+      }
+
+      <div class="address-actions">
+        <a routerLink="/account/addresses" class="add-address-link"
+          >Administrar mis direcciones</a
+        >
+      </div>
+
+      <button
+        class="btn-material"
+        (click)="proceedToPayment()"
+        [disabled]="!selectedAddress()"
+      >
+        Continuar al Pago
+      </button>
     </div>
     }
+
+    <!-- PASO 2: PAGO -->
+    @if (currentStep() === 'payment') {
+    <div class="step-container">
+      <h2 class="step-title">Elige cómo pagar</h2>
+      <div id="paymentBrick_container"></div>
+    </div>
+    } }
   </div>
 
   <!-- Columna Derecha: Resumen del Pedido -->
   <aside class="summary-column">
     <div class="summary-card">
-      <h2 class="summary-title">Tu Pedido</h2>
+      <h2 class="summary-title">Resumen de tu Pedido</h2>
       <div class="summary-items">
         @for (item of cartService.cartItems(); track item.id) {
         <div class="summary-item">
@@ -64,6 +106,7 @@
         </div>
         }
       </div>
+      <hr />
       <hr />
       <div class="coupon-section">
         <div class="form-field">
