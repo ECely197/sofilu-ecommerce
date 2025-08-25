@@ -1,14 +1,15 @@
 <!-- Usamos la nueva variable para decidir si mostrar el header y el footer -->
- <div class="app-container">
-<app-header *ngIf="showGlobalHeaderAndFooter()"></app-header>
+<div class="app-container">
+  <app-header *ngIf="showGlobalHeaderAndFooter()"></app-header>
 
-<main class="main-content">
-  <div class="page-container">
-  <router-outlet></router-outlet>
-  </div>
-</main>
+  <main class="main-content">
+    <div class="page-container">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
 
-<app-footer *ngIf="showGlobalHeaderAndFooter()"></app-footer>
+  <app-footer *ngIf="showGlobalHeaderAndFooter()"></app-footer>
 
-<app-cart-flyout></app-cart-flyout>
+  <app-cart-flyout></app-cart-flyout>
+  <app-bottom-nav-bar *ngIf="showGlobalHeaderAndFooter()"></app-bottom-nav-bar>
 </div>

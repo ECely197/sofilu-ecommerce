@@ -1,0 +1,64 @@
+<!-- Contenido completo y corregido para: src/app/components/bottom-nav-bar/bottom-nav-bar.component.html -->
+
+<nav class="bottom-nav-bar" [class.is-visible]="isNavBarVisible()">
+  <div class="nav-content">
+    <div
+      class="nav-pill"
+      [style.left]="pillStyle().left"
+      [style.width]="pillStyle().width"
+      [style.opacity]="pillStyle().opacity"
+    ></div>
+
+    <!-- ¡NUEVO! Grupo de la izquierda -->
+    <div class="nav-group">
+      <a
+        #navItem
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item"
+      >
+        <span class="material-symbols-outlined">home</span>
+        <span class="label">Inicio</span>
+      </a>
+      <a
+        #navItem
+        routerLink="/wishlist"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="material-symbols-outlined">favorite</span>
+        <span class="label">Deseos</span>
+      </a>
+    </div>
+
+    <button (click)="uiStateService.openCartFlyout()" class="fab">
+      <span class="material-symbols-outlined">shopping_bag</span>
+      @if(cartService.totalItems() > 0){
+      <span class="cart-badge">{{ cartService.totalItems() }}</span>
+      }
+    </button>
+
+    <!-- ¡NUEVO! Grupo de la derecha -->
+    <div class="nav-group">
+      <a
+        #navItem
+        routerLink="/products"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="material-symbols-outlined">store</span>
+        <span class="label">Tienda</span>
+      </a>
+      <a
+        #navItem
+        routerLink="/account"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="material-symbols-outlined">person</span>
+        <span class="label">Cuenta</span>
+      </a>
+    </div>
+  </div>
+</nav>
