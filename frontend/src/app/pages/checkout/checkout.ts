@@ -113,9 +113,18 @@ export class checkout implements OnInit {
 
   async renderPaymentBrick(preferenceId: string) {
     const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
+    if (!publicKey) {
+      console.error('Error: La Public Key de MP no está configurada.');
+      this.isLoading.set(false);
+      return;
+    }
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
+    const bricksBuilder = mp.bricks();
 
-    await mp.bricks().create('payment', 'paymentBrick_container', {
+    const container = document.getElementById('paymentBrick_container');
+    if (container) container.innerHTML = '';
+
+    await bricksBuilder.create('payment', 'paymentBrick_container', {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
@@ -140,7 +149,7 @@ export class checkout implements OnInit {
           }
         },
         onError: (error: any) => {
-          console.error('Error en Payment Brick:', error);
+          console.error('Error en el Payment Brick:', error);
           this.isLoading.set(false);
           this.currentStep.set('shipping');
         },
