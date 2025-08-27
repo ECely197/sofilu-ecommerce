@@ -1,15 +1,9 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal,
-  computed,
-  effect,
-} from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom, take } from 'rxjs';
 
+// Tus servicios e interfaces
 import { CartService } from '../../services/cart';
 import { PaymentService } from '../../services/payment.service';
 import { Customer } from '../../services/customer';
@@ -31,6 +25,7 @@ declare var MercadoPago: any;
   styleUrl: './checkout.scss',
 })
 export class checkout implements OnInit {
+  // --- Inyección de Servicios ---
   public cartService = inject(CartService);
   private router = inject(Router);
   private paymentService = inject(PaymentService);
@@ -40,11 +35,11 @@ export class checkout implements OnInit {
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
 
+  // --- Signals para el Estado ---
   currentStep = signal<'shipping' | 'payment'>('shipping');
   addresses = signal<any[]>([]);
   selectedAddress = signal<any | null>(null);
   isLoading = signal(true);
-  private preferenceId = signal<string | null>(null);
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
@@ -72,20 +67,20 @@ export class checkout implements OnInit {
 
   loadAddresses(): void {
     this.isLoading.set(true);
-    this.customerService.getAddresses().subscribe({
-      next: (data) => {
-        this.addresses.set(data);
-        const preferred = data.find((addr) => addr.isPreferred);
-        this.selectedAddress.set(
-          preferred || (data.length > 0 ? data[0] : null)
-        );
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error al cargar direcciones:', err);
-        this.isLoading.set(false);
-        // Opcional: mostrar un mensaje de error al usuario.
-      },
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.customerService.getAddresses().subscribe({
+          next: (data) => {
+            this.addresses.set(data);
+            const preferred = data.find((addr) => addr.isPreferred);
+            this.selectedAddress.set(
+              preferred || (data.length > 0 ? data[0] : null)
+            );
+            this.isLoading.set(false);
+          },
+          error: () => this.isLoading.set(false),
+        });
+      }
     });
   }
 
@@ -93,15 +88,12 @@ export class checkout implements OnInit {
     this.selectedAddress.set(address);
   }
 
-  // --- ¡MÉTODO proceedToPayment CORREGIDO! ---
   async proceedToPayment(): Promise<void> {
     if (!this.selectedAddress()) {
       alert('Por favor, selecciona una dirección de envío.');
       return;
     }
-
     this.isLoading.set(true);
-
     try {
       const preference = await firstValueFrom(
         this.paymentService.createPreference(
@@ -109,40 +101,24 @@ export class checkout implements OnInit {
           this.grandTotal()
         )
       );
-
       if (preference && preference.id) {
-        // 1. Cambiamos el paso
         this.currentStep.set('payment');
-        // 2. Esperamos un instante para que Angular procese el [hidden]
-        setTimeout(() => {
-          // 3. Ahora que el div está visible, renderizamos el brick
-          this.renderPaymentBrick(preference.id);
-        }, 0);
-      } else {
-        throw new Error('No se recibió ID de preferencia del backend.');
+        setTimeout(() => this.renderPaymentBrick(preference.id), 0);
       }
     } catch (error) {
-      console.error('Error al crear la preferencia de pago:', error);
-      this.isLoading.set(false); // Nos aseguramos de quitar el loader en caso de error
+      console.error('Error al crear la preferencia:', error);
+      this.isLoading.set(false);
     }
   }
 
   async renderPaymentBrick(preferenceId: string) {
     const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
-    // 1. Creamos la instancia de Mercado Pago
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
-    const bricksBuilder = mp.bricks();
 
-    const container = document.getElementById('paymentBrick_container');
-    if (container) container.innerHTML = '';
-
-    await bricksBuilder.create('payment', 'paymentBrick_container', {
+    await mp.bricks().create('payment', 'paymentBrick_container', {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
-        // --- ¡AÑADE ESTA LÍNEA! ---
-        // Pasamos la instancia 'mp' que acabamos de crear.
-        mercadoPago: mp,
       },
       customization: {
         paymentMethods: {
@@ -155,20 +131,18 @@ export class checkout implements OnInit {
       },
       callbacks: {
         onReady: () => {
-          // Solo cuando el brick está listo, quitamos el estado de carga
           this.isLoading.set(false);
         },
         onSubmit: async () => {
           const orderData = this.buildOrderData();
-          if (!orderData) {
-            return;
+          if (orderData) {
+            localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
           }
-          localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
         },
         onError: (error: any) => {
           console.error('Error en Payment Brick:', error);
-          this.isLoading.set(false); // Quitamos la carga si el brick da error
-          this.currentStep.set('shipping'); // Devolvemos al usuario al paso anterior
+          this.isLoading.set(false);
+          this.currentStep.set('shipping');
         },
       },
     });
