@@ -47,7 +47,6 @@ export class MyAddressesComponent implements OnInit {
 
   loadAddresses() {
     this.isLoading.set(true);
-    // La lógica aquí no cambia, pero la llamada al servicio sí
     this.customerService.getAddresses().subscribe((data) => {
       this.addresses.set(data);
       this.isLoading.set(false);
@@ -72,15 +71,12 @@ export class MyAddressesComponent implements OnInit {
 
   handleSubmit() {
     if (this.addressForm.invalid) return;
-
     const operation$ = this.editingAddressId()
-      ? // La llamada a 'updateAddress' ahora solo necesita el ID y los datos
-        this.customerService.updateAddress(
+      ? this.customerService.updateAddress(
           this.editingAddressId()!,
           this.addressForm.value
         )
-      : // La llamada a 'addAddress' ahora solo necesita los datos
-        this.customerService.addAddress(this.addressForm.value);
+      : this.customerService.addAddress(this.addressForm.value);
 
     operation$.subscribe((updatedAddresses) => {
       this.addresses.set(updatedAddresses);
@@ -89,10 +85,7 @@ export class MyAddressesComponent implements OnInit {
   }
 
   deleteAddress(addressId: string) {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?'))
-      return;
-
-    // La llamada ahora solo necesita el ID de la dirección
+    if (!confirm('¿Estás seguro?')) return;
     this.customerService
       .deleteAddress(addressId)
       .subscribe((updatedAddresses) => {
@@ -101,7 +94,6 @@ export class MyAddressesComponent implements OnInit {
   }
 
   setPreferred(addressId: string) {
-    // La llamada ahora solo necesita el ID de la dirección
     this.customerService
       .setPreferredAddress(addressId)
       .subscribe((updatedAddresses) => {

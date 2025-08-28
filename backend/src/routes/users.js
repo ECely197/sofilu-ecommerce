@@ -22,72 +22,53 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-// --- OBTENER TODAS LAS DIRECCIONES DE UN USUARIO (LOGUEADO) ---
-// El usuario solo puede pedir sus propias direcciones
+// --- RUTAS DE DIRECCIONES UNIFICADAS ---
+// El UID ahora se obtiene siempre del token (req.user.uid)
+
 router.get("/addresses", [authMiddleware], async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid }).select("addresses");
-    if (!user) {
-      // Si el usuario existe en Firebase pero no en nuestra DB de usuarios, devolvemos un array vacío
-      return res.json([]);
-    }
+    if (!user) return res.json([]);
     res.json(user.addresses);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las direcciones" });
+    res.status(500).json({ message: "Error al obtener direcciones" });
   }
 });
 
-// --- AÑADIR UNA NUEVA DIRECCIÓN ---
-// El usuario solo puede añadir direcciones a su propio perfil
 router.post("/addresses", [authMiddleware], async (req, res) => {
   try {
-    // Buscamos al usuario usando el UID del token verificado
     let user = await User.findOne({ uid: req.user.uid });
-
-    // Si el usuario no existe en nuestra DB de MongoDB, lo creamos
     if (!user) {
       user = new User({
         uid: req.user.uid,
         email: req.user.email,
-        displayName: req.user.name || "", // Firebase a veces usa 'name' en el token
         addresses: [],
       });
     }
-
-    // Añadimos la nueva dirección al array
     user.addresses.push(req.body);
     const savedUser = await user.save();
-
     res.status(201).json(savedUser.addresses);
   } catch (error) {
-    res.status(500).json({
-      message: "Error al añadir la dirección",
-      details: error.message,
-    });
+    res.status(500).json({ message: "Error al añadir dirección" });
   }
 });
 
-// --- EDITAR UNA DIRECCIÓN ESPECÍFICA ---
-// PUT /api/users/addresses/:addressId
 router.put("/addresses/:addressId", [authMiddleware], async (req, res) => {
   try {
     const user = await User.findOne({ uid: req.user.uid });
     if (!user)
       return res.status(404).json({ message: "Usuario no encontrado" });
-
     const address = user.addresses.id(req.params.addressId);
     if (!address)
       return res.status(404).json({ message: "Dirección no encontrada" });
-
     address.set(req.body);
     await user.save();
     res.json(user.addresses);
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la dirección" });
+    res.status(500).json({ message: "Error al actualizar dirección" });
   }
 });
-// --- ESTABLECER UNA DIRECCIÓN COMO PREFERIDA ---
-// PATCH /api/users/addresses/:addressId/set-preferred
+
 router.patch(
   "/addresses/:addressId/set-preferred",
   [authMiddleware],
@@ -96,26 +77,19 @@ router.patch(
       const user = await User.findOne({ uid: req.user.uid });
       if (!user)
         return res.status(404).json({ message: "Usuario no encontrado" });
-
       user.addresses.forEach((addr) => (addr.isPreferred = false));
-
       const preferredAddress = user.addresses.id(req.params.addressId);
       if (!preferredAddress)
         return res.status(404).json({ message: "Dirección no encontrada" });
       preferredAddress.isPreferred = true;
-
       await user.save();
       res.json(user.addresses);
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error al establecer la dirección preferida" });
+      res.status(500).json({ message: "Error al establecer preferida" });
     }
   }
 );
 
-// --- ELIMINAR UNA DIRECCIÓN ESPECÍFICA ---
-// DELETE /api/users/addresses/:addressId
 router.delete("/addresses/:addressId", [authMiddleware], async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
@@ -127,7 +101,7 @@ router.delete("/addresses/:addressId", [authMiddleware], async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     res.json(user.addresses);
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la dirección" });
+    res.status(500).json({ message: "Error al eliminar dirección" });
   }
 });
 

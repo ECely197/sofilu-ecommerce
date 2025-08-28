@@ -67,20 +67,17 @@ export class checkout implements OnInit {
 
   loadAddresses(): void {
     this.isLoading.set(true);
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      if (user) {
-        this.customerService.getAddresses().subscribe({
-          next: (data) => {
-            this.addresses.set(data);
-            const preferred = data.find((addr) => addr.isPreferred);
-            this.selectedAddress.set(
-              preferred || (data.length > 0 ? data[0] : null)
-            );
-            this.isLoading.set(false);
-          },
-          error: () => this.isLoading.set(false),
-        });
-      }
+    // ¡Ahora esta llamada es correcta!
+    this.customerService.getAddresses().subscribe({
+      next: (data) => {
+        this.addresses.set(data);
+        const preferred = data.find((addr) => addr.isPreferred);
+        this.selectedAddress.set(
+          preferred || (data.length > 0 ? data[0] : null)
+        );
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
     });
   }
 
@@ -93,20 +90,45 @@ export class checkout implements OnInit {
       alert('Por favor, selecciona una dirección de envío.');
       return;
     }
+
+    console.log("--- CHECKOUT.TS [1/4]: Clic en 'Continuar al Pago'. ---");
     this.isLoading.set(true);
+
     try {
+      console.log(
+        '--- CHECKOUT.TS [2/4]: Llamando a paymentService.createPreference con el total:',
+        this.grandTotal()
+      );
+
       const preference = await firstValueFrom(
         this.paymentService.createPreference(
           this.cartService.cartItems(),
           this.grandTotal()
         )
       );
+
+      console.log(
+        '--- CHECKOUT.TS [3/4]: Preferencia recibida del backend. ID:',
+        preference?.id
+      );
+
       if (preference && preference.id) {
         this.currentStep.set('payment');
-        setTimeout(() => this.renderPaymentBrick(preference.id), 0);
+        setTimeout(() => {
+          console.log(
+            '--- CHECKOUT.TS [4/4]: Renderizando el Payment Brick. ---'
+          );
+          this.renderPaymentBrick(preference.id);
+        }, 0);
+      } else {
+        throw new Error('No se recibió ID de preferencia del backend.');
       }
     } catch (error) {
-      console.error('Error al crear la preferencia:', error);
+      console.error(
+        '--- CHECKOUT.TS: ERROR al crear la preferencia de pago:',
+        error
+      );
+      alert('Error al conectar con la pasarela de pagos. Revisa la consola.');
       this.isLoading.set(false);
     }
   }

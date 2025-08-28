@@ -17,7 +17,24 @@ const preferenceClient = new Preference(client);
 // Ruta para crear una "preferencia de pago"
 router.post("/create_preference", [authMiddleware], async (req, res) => {
   try {
+    console.log(
+      "--- PAYMENTS.JS [1/3]: Petición recibida en /create_preference. ---"
+    );
     const { items, grandTotal } = req.body;
+
+    // Log para verificar los datos recibidos
+    console.log("--- PAYMENTS.JS: Total recibido:", grandTotal);
+    console.log(
+      "--- PAYMENTS.JS: Items recibidos:",
+      JSON.stringify(items, null, 2)
+    );
+
+    if (!items || !grandTotal) {
+      console.error(
+        "--- PAYMENTS.JS: ERROR - Faltan 'items' o 'grandTotal' en el body."
+      );
+      return res.status(400).json({ error: "Datos incompletos." });
+    }
 
     const preferenceItems = items.map((item) => ({
       title: item.product.name,
@@ -26,7 +43,10 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
         item.product.images && item.product.images.length > 0
           ? item.product.images[0]
           : undefined,
-      category_id: item.product.category,
+      category_id:
+        typeof item.product.category === "string"
+          ? item.product.category
+          : item.product.category?._id,
       quantity: item.quantity,
       unit_price: item.price,
       currency_id: "COP",
@@ -45,20 +65,20 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
     };
 
     console.log(
-      "--- Creando preferencia de pago con los siguientes datos: ---"
+      "--- PAYMENTS.JS [2/3]: Objeto de preferencia construido. Enviando a Mercado Pago... ---"
     );
-    console.log(JSON.stringify(preference, null, 2));
-
-    // 3. ¡NUEVA FORMA DE CREAR LA PREFERENCIA!
-    // Usamos la instancia 'preferenceClient' que creamos al principio.
     const response = await preferenceClient.create({ body: preference });
 
-    console.log("--- Preferencia creada con éxito. ID:", response.id, "---");
-
-    // 4. Devolvemos el ID de la preferencia al frontend.
+    console.log(
+      "--- PAYMENTS.JS [3/3]: Preferencia creada con éxito. Devolviendo ID al frontend:",
+      response.id
+    );
     res.json({ id: response.id });
   } catch (error) {
-    console.error("Error al crear la preferencia de Mercado Pago:", error);
+    console.error(
+      "--- PAYMENTS.JS: ERROR al crear la preferencia de Mercado Pago:",
+      error
+    );
     res.status(500).json({ error: "No se pudo generar el enlace de pago." });
   }
 });

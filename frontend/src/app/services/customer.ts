@@ -29,19 +29,15 @@ export class Customer {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  // --- MÉTODOS DE DIRECCIONES ---
-  // Las rutas de direcciones ahora se construyen a partir de la URL base
-
+  // --- MÉTODOS DE DIRECCIONES SIMPLIFICADOS ---
   getAddresses(): Observable<Address[]> {
     return this.http.get<Address[]>(`${this.apiUrl}/addresses`);
   }
-
   addAddress(
     addressData: Omit<Address, '_id' | 'isPreferred'>
   ): Observable<Address[]> {
     return this.http.post<Address[]>(`${this.apiUrl}/addresses`, addressData);
   }
-
   updateAddress(
     addressId: string,
     addressData: Partial<Address>
@@ -51,14 +47,12 @@ export class Customer {
       addressData
     );
   }
-
   setPreferredAddress(addressId: string): Observable<Address[]> {
     return this.http.patch<Address[]>(
       `${this.apiUrl}/addresses/${addressId}/set-preferred`,
       {}
     );
   }
-
   deleteAddress(addressId: string): Observable<Address[]> {
     return this.http.delete<Address[]>(`${this.apiUrl}/addresses/${addressId}`);
   }
