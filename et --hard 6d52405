@@ -1,0 +1,96 @@
+[33ma2881aa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m visual addresses
+[33mcf02962[m mm
+[33m2cb205a[m commit de customer.ts
+[33m6d52405[m product-form.ts
+[33m25abed3[m errors product.js
+[33m6f62f6e[m payment
+[33m5911985[m feat(checkout.ts): payment procces
+[33maa46658[m feat(payment.js): payment proccess
+[33m8bd24cb[m feat(checkoute): mercadopago
+[33mbd00c75[m put addres delete address batch address
+[33mcd59e12[m getaddresses
+[33mf7ab6bb[m feat(users.js): addresses
+[33me8f431c[m feat(Order.js): addresses selection checkout
+[33ma62af59[m feat(bottom-nav-bar): nav bar bottom mobile
+[33mab1a786[m budgets angular
+[33mc627b32[m feat(account): Implementar gestión completa de direcciones de usuario
+[33mebc2067[m feat(header): Refactory header design
+[33mcd21d9c[m feat(paument.js): update payment routes
+[33mc854854[m feat(payment): Integrar pasarela de pagos de Mercado Pago
+[33m0624b55[m .icon update
+[33mb4f26eb[m emailService.js
+[33m75b04da[m .icon
+[33mb1befa7[m feat(orders.js): update orders.js generatepdf
+[33m544744b[m feat(orders.js): update stock products
+[33m2436d1b[m feat(index.html): change .icon
+[33ma01bd44[m feat(cart - checkout - email.confirmation): send email confirmation to admin
+[33m79d0287[m add new admin
+[33mc1a37f3[m verify admin new
+[33m6761d72[m setadmin.js
+[33m02707ec[m verify admin
+[33m02de6c4[m feat(setAdmin): add admin
+[33m1685919[m feat(product-form): variantes price base price
+[33m6583239[m feat(models/Product.js): variants price stock
+[33ma8f1819[m feat(backend-products.js): search category
+[33md6b3217[m feat(product-form): upload images products product form)
+[33mce54326[m feat(product-form): upload more images
+[33m9d63302[m feat(category)
+[33m8342e52[m config cors sofilu
+[33ma4999c3[m feat: Configurar CORS para el dominio de producción
+[33mfefee11[m console log for bill
+[33m4c5dbb4[m invoicde admin routes
+[33ma5c0836[m generated bill
+[33mec003ff[m dockerfile
+[33mecd3621[m pdfservice
+[33m2044aaa[m feat(order list)
+[33md1a7abd[m feat(order-details): download pdf bill
+[33m9ab7590[m feat(coupon): apply coupon to subtotal, total or shipping
+[33m8ede977[m feat(shippingcost): create shippingcost for panel admin
+[33mca858d9[m feat(coupon): applied coupon order
+[33m32e27e3[m email service
+[33m99b9a4d[m feat: emails style
+[33m2838ea3[m fea: Send email confirmation
+[33mc35b5a8[m create orders with variantes 1.2
+[33m86560a0[m create orders with variantes 1.1
+[33mcf1f67d[m feat: crete order with variants
+[33m6a87f12[m feat: animacion movil
+[33mb3591d9[m feat: Mejorar cart-flyout con UI flotante y gato interactivo
+[33m7ec3558[m feat: Integrar variantes de producto y hacer panel de admin adaptable
+[33m8a8a7e8[m Fix: Aumenta límite de body y depura ruta de creación de productos
+[33m58c61c0[m feat(home): implement featured-products | hoy-to-buy | sale-section
+[33ma8ae5e9[m commit de direcciones
+[33medbc85d[m save errors
+[33m3ff066a[m add info
+[33mfebf7cb[m add addresses
+[33m8256f90[m feat(account): implement user order history page
+[33m4ce8ba3[m backend orders.js
+[33m58c5aa0[m Buttons.scss
+[33m88a240b[m fix(api): add missing get orders by user endpoint
+[33m4f3ab86[m feat(auth): implement Google Sign-In functionality
+[33m7a38926[m save
+[33ma9709d4[m fix: remove zoneless configuration to restore change detection
+[33m4662834[m va
+[33m118a481[m chore: final cleanup and configuration for Vercel deployment
+[33mdd0046e[m vercel..
+[33m6bde33b[m vercel.
+[33m50a3450[m build: simplify output path for Vercel
+[33m62ca7bd[m build: add production build files for manual deployment
+[33m8eb7ffb[m refactor(frontend): remove SSR and create clean project structure
+[33mda56bd2[m vercel.2
+[33mf4dc55a[m vercel
+[33m6af5a31[m render
+[33me39aeed[m feat(admin): complete CRUD functionality for orders
+[33m2f8e29c[m header
+[33m166ac24[m feat(admin): complete CRUD functionality for coupons
+[33md9ebf0a[m feat(auth): implement auth guard to protect admin routes
+[33m11837aa[m secret
+[33m8685d8d[m .json.json
+[33m1d9e52d[m feat(admin): implement settings page module
+[33md8e32b4[m gitignore
+[33me344e52[m chore: ensure serviceAccountKey is ignored2
+[33m7d2f112[m chore: ensure serviceAccountKey is ignored
+[33maf6df7e[m feat(admin): implement coupon management module
+[33mbd80690[m feat(admin): implement customer list page
+[33m6c73887[m frontend animations
+[33m91f54ca[m add backend
+[33md69c3d1[m fix(git): remove frontend submodule and track files directly
