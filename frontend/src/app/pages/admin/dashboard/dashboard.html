@@ -3,9 +3,13 @@
   <h1>Dashboard</h1>
 </header>
 
-@if(isLoading()){
+<!-- Primer bloque: Maneja el estado de carga -->
+@if (isLoading()) {
 <p>Cargando estadísticas...</p>
-} @else if(summary(); as stats) {
+} @else {
+<!-- Segundo bloque: Se muestra cuando la carga ha terminado -->
+<!-- ¡CORRECCIÓN CLAVE! Anidamos otro @if y usamos el alias aquí -->
+@if (summary(); as stats) {
 <div class="dashboard-grid" @fadeInUp>
   <!-- Tarjetas de Estadísticas -->
   <div class="stat-card">
@@ -66,4 +70,7 @@
     </div>
   </div>
 </div>
-}
+} @else {
+<!-- Se muestra si la carga terminó pero no hay datos de resumen -->
+<p>No se pudieron cargar las estadísticas.</p>
+} }
