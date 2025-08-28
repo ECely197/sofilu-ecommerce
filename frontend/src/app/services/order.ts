@@ -41,4 +41,7 @@ export class OrderService {
     const url = `${this.apiUrl}/${orderId}/invoice`;
     return this.http.get(url, { responseType: 'blob' });
   }
+  getDashboardSummary(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/summary/stats`);
+  }
 }

@@ -20,7 +20,7 @@ export interface Product {
   description: string;
   price: number;
 
-  category: string | Category;
+  category: Category;
 
   images: string[];
   isFeatured: boolean;

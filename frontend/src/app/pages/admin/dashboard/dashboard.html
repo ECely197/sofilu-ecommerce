@@ -1,1 +1,69 @@
-<p>dashboard works!</p>
+<!-- En: frontend/src/app/pages/admin/dashboard/dashboard.html -->
+<header class="page-header">
+  <h1>Dashboard</h1>
+</header>
+
+@if(isLoading()){
+<p>Cargando estadísticas...</p>
+} @else if(summary(); as stats) {
+<div class="dashboard-grid" @fadeInUp>
+  <!-- Tarjetas de Estadísticas -->
+  <div class="stat-card">
+    <div class="card-icon revenue">
+      <span class="material-symbols-outlined">payments</span>
+    </div>
+    <div class="card-content">
+      <p class="stat-title">Ingresos Totales</p>
+      <p class="stat-value">
+        {{ stats.totalRevenue | currency : "COP" : "symbol" : "1.0-0" }}
+      </p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="card-icon orders">
+      <span class="material-symbols-outlined">shopping_bag</span>
+    </div>
+    <div class="card-content">
+      <p class="stat-title">Pedidos Totales</p>
+      <p class="stat-value">{{ stats.totalOrders }}</p>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="card-icon products">
+      <span class="material-symbols-outlined">inventory_2</span>
+    </div>
+    <div class="card-content">
+      <p class="stat-title">Productos Totales</p>
+      <p class="stat-value">{{ stats.totalProducts }}</p>
+    </div>
+  </div>
+
+  <!-- Tarjeta de Pedidos Recientes -->
+  <div class="card recent-orders">
+    <h2 class="card-title">Pedidos Recientes</h2>
+    <div class="order-list">
+      @for(order of stats.latestOrders; track order._id){
+      <div class="order-item">
+        <div class="order-info">
+          <p class="customer-name">{{ order.customerInfo.name }}</p>
+          <p class="order-id">#{{ order._id.slice(-6).toUpperCase() }}</p>
+        </div>
+        <div class="order-details">
+          <span class="order-total">{{
+            order.totalAmount | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
+          <a
+            [routerLink]="['/admin/orders', order._id]"
+            class="details-link"
+            appRipple
+            >Ver</a
+          >
+        </div>
+      </div>
+      } @empty {
+      <p>No hay pedidos recientes.</p>
+      }
+    </div>
+  </div>
+</div>
+}

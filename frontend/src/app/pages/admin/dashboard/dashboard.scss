@@ -1,0 +1,104 @@
+// En: frontend/src/app/pages/admin/dashboard/dashboard.scss
+@use "../../../../../buttons";
+@use "../_admin-shared.scss";
+
+.page-header h1 {
+  font-size: 2.25rem;
+  font-family: "Playfair Display", serif;
+  margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .material-symbols-outlined {
+    font-size: 28px;
+    color: white;
+  }
+
+  &.revenue {
+    background: linear-gradient(45deg, #22c55e, #16a34a);
+  }
+  &.orders {
+    background: linear-gradient(45deg, #3b82f6, #2563eb);
+  }
+  &.products {
+    background: linear-gradient(45deg, #a855f7, #9333ea);
+  }
+}
+
+.stat-title {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.recent-orders {
+  grid-column: 1 / -1; // Ocupa todo el ancho
+
+  .order-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--soft-gray);
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .customer-name {
+    font-weight: 600;
+  }
+  .order-id {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .order-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .order-total {
+    font-weight: 700;
+  }
+  .details-link {
+    @extend .btn-secondary;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}

@@ -46,9 +46,9 @@ export class ProductForm implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [null, [Validators.min(0)]],
+      price: [0, [Validators.required, Validators.min(0)]], // Es buena práctica inicializar en 0
       category: [null, Validators.required],
-      images: this.fb.array([], [Validators.minLength(1)]),
+      images: this.fb.array([], [Validators.required, Validators.minLength(1)]),
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
@@ -65,16 +65,20 @@ export class ProductForm implements OnInit {
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
+          // --- ¡CORRECCIÓN CRÍTICA AQUÍ! ---
           this.productForm.patchValue({
             name: product.name,
             description: product.description,
             price: product.price,
-            category: (product.category as Category)?._id || product.category,
+            // Al parchear el formulario, nos aseguramos de asignar solo el _id de la categoría.
+            // El '?' (optional chaining) previene errores si la categoría no viniera populada.
+            category: (product.category as Category)?._id,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
             salePrice: product.salePrice,
           });
 
+          // El resto de la lógica para cargar imágenes y variantes está bien
           this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
@@ -127,24 +131,17 @@ export class ProductForm implements OnInit {
 
     this.isUploading.set(true);
 
-    // --- LÓGICA DE SUBIDA DE IMÁGENES CORREGIDA ---
-    const uploadOperations$ =
+    const uploadOperations =
       this.selectedFiles.length > 0
-        ? forkJoin(
-            this.selectedFiles.map((file) =>
-              this.storageService.uploadImage(file)
-            )
+        ? this.selectedFiles.map((file) =>
+            this.storageService.uploadImage(file)
           )
-        : of(this.images.value); // Si no hay archivos nuevos, usamos las URLs existentes en el formulario
+        : of(this.images.value);
 
-    forkJoin(uploadOperations$).subscribe({
-      // --- ¡CAMBIO AQUÍ! Añadimos el tipo (string | unknown)[] ---
-      next: (downloadURLs: (string | unknown)[]) => {
+    forkJoin(uploadOperations).subscribe({
+      next: (downloadURLs) => {
         this.images.clear();
-        // Le decimos a TypeScript que 'url' es de tipo string
-        downloadURLs.forEach((url: any) =>
-          this.images.push(this.fb.control(url))
-        );
+        downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
         this.saveProductData();
       },
       error: (err) => {
@@ -156,11 +153,38 @@ export class ProductForm implements OnInit {
   }
 
   private saveProductData(): void {
-    const productData = this.productForm.getRawValue();
+    const formValue = this.productForm.getRawValue();
+
+    // 1. Creamos el objeto base del payload
+    const productPayload = {
+      name: formValue.name,
+      description: formValue.description,
+      price: formValue.price,
+      category: formValue.category, // Ya es solo el ID gracias al cambio en ngOnInit
+      images: formValue.images,
+      isFeatured: formValue.isFeatured,
+      isOnSale: formValue.isOnSale,
+      salePrice: formValue.isOnSale ? formValue.salePrice : null, // Si no está en oferta, el precio de oferta es nulo
+
+      // 2. "Limpiamos" las variantes para quitar campos extra que añade Angular (como _id)
+      variants: formValue.variants.map((variant: any) => ({
+        name: variant.name,
+        options: variant.options.map((option: any) => ({
+          name: option.name,
+          priceModifier: option.priceModifier,
+          stock: option.stock,
+        })),
+      })),
+    };
+
+    console.log(
+      '--- FRONTEND TRACE: Payload limpio que se envía al backend ---'
+    );
+    console.log(JSON.stringify(productPayload, null, 2));
 
     const operation = this.isEditMode()
-      ? this.productService.updateProduct(this.productId!, productData)
-      : this.productService.createProduct(productData);
+      ? this.productService.updateProduct(this.productId!, productPayload)
+      : this.productService.createProduct(productPayload);
 
     operation.subscribe({
       next: () => {
@@ -173,7 +197,12 @@ export class ProductForm implements OnInit {
       error: (err) => {
         this.isUploading.set(false);
         console.error('Error al guardar el producto:', err);
-        alert(err.error.message || 'No se pudo guardar el producto.');
+        // Ahora, gracias al cambio en el backend, el mensaje de error será más útil
+        alert(
+          err.error.details ||
+            err.error.message ||
+            'No se pudo guardar el producto.'
+        );
       },
     });
   }

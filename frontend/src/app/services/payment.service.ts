@@ -15,16 +15,17 @@ export class PaymentService {
     items: CartItem[],
     total: number
   ): Observable<{ id: string }> {
-    // Mapeamos los items al formato que nuestro backend espera
     const mappedItems = items.map((item) => ({
       product: {
         name: item.product.name,
         images: item.product.images,
-        category: item.product.category,
+        category: (item.product.category as any)._id || item.product.category, // Aseguramos enviar solo el ID
       },
       selectedVariants: item.selectedVariants,
       quantity: item.quantity,
-      price: this.calculateFinalItemPrice(item), // Calculamos el precio final por item
+      // ¡LA CORRECCIÓN ESTÁ AQUÍ!
+      // Usamos el nombre de campo correcto ('unit_price') y la función de cálculo.
+      unit_price: this.calculateFinalItemPrice(item),
     }));
 
     return this.http.post<{ id: string }>(`${this.apiUrl}/create_preference`, {

@@ -138,8 +138,18 @@ router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
       "--- BACKEND TRACE: ¡ERROR! La operación .findByIdAndUpdate() ha fallado. ---"
     );
     console.error(error); // Mostramos el error completo de Mongoose
-    res.status(400).json({
-      message: "Error al actualizar el producto.",
+
+    // ¡MEJORA! Verificamos si es un error de validación de Mongoose
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "Error de validación. Revisa los datos enviados.",
+        details: error.message, // El mensaje de Mongoose es muy descriptivo
+      });
+    }
+
+    // Si es otro tipo de error, mantenemos la respuesta genérica
+    res.status(500).json({
+      message: "Error interno del servidor al actualizar el producto.",
       details: error.message,
     });
   }

@@ -202,4 +202,34 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
+// --- ¡NUEVA RUTA PARA ESTADÍSTICAS DEL DASHBOARD! ---
+router.get("/summary/stats", [authMiddleware, adminOnly], async (req, res) => {
+  try {
+    // Usamos Promise.all para ejecutar todas las consultas en paralelo
+    const [totalRevenue, totalOrders, totalProducts, latestOrders] =
+      await Promise.all([
+        // Suma el totalAmount de todos los pedidos
+        Order.aggregate([
+          { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+        ]),
+        // Cuenta el número total de documentos en la colección de pedidos
+        Order.countDocuments(),
+        // Cuenta el número total de productos
+        Product.countDocuments(),
+        // Obtiene los 5 pedidos más recientes, populando los productos
+        Order.find().sort({ createdAt: -1 }).limit(5).populate("items.product"),
+      ]);
+
+    res.json({
+      totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
+      totalOrders,
+      totalProducts,
+      latestOrders,
+    });
+  } catch (error) {
+    console.error("Error al obtener las estadísticas del dashboard:", error);
+    res.status(500).json({ message: "Error al obtener las estadísticas" });
+  }
+});
+
 module.exports = router;

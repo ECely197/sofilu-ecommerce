@@ -37,14 +37,14 @@ export class ProductServices {
   getReviewsForProduct(productId: string): Observable<Review[]> {
     // La URL apunta a nuestra nueva API de reseñas
     return this.http.get<Review[]>(
-      `http://localhost:3000/api/reviews/${productId}`
+      `${environment.apiUrl}/reviews/${productId}`
     );
   }
 
   addReview(productId: string, reviewData: any): Observable<Review> {
     // Hacemos una petición POST a la API para crear la nueva reseña
     return this.http.post<Review>(
-      `http://localhost:3000/api/reviews/${productId}`,
+      `${environment.apiUrl}/reviews/${productId}`,
       reviewData
     );
   }

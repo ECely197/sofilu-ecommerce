@@ -33,15 +33,8 @@ router.get("/:slug", async (req, res) => {
 // --- CREAR UNA NUEVA CATEGORÍA (Solo Admin) ---
 router.post("/", [authMiddleware, adminOnly], async (req, res) => {
   const { name, imageUrl } = req.body;
-
-  // Creamos el 'slug' a partir del nombre
-  const slug = name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
-
-  const newCategory = new Category({ name, slug, imageUrl });
-
+  // Ya no generamos el slug aquí
+  const newCategory = new Category({ name, imageUrl });
   try {
     const savedCategory = await newCategory.save();
     res.status(201).json(savedCategory);
@@ -61,28 +54,23 @@ router.post("/", [authMiddleware, adminOnly], async (req, res) => {
 // --- ACTUALIZAR UNA CATEGORÍA (Solo Admin) ---
 router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
   const { name, imageUrl } = req.body;
-  const slug = name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
-
+  // Ya no generamos el slug aquí
   try {
+    // Al actualizar el 'name', el hook pre-save del modelo se encargará del slug
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
-      { name, slug, imageUrl },
-      { new: true } // Devuelve el documento actualizado
+      { name, imageUrl },
+      { new: true }
     );
     if (!updatedCategory) {
       return res.status(404).json({ message: "Categoría no encontrada" });
     }
     res.json(updatedCategory);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar la categoría",
-        error: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar la categoría",
+      error: error.message,
+    });
   }
 });
 
