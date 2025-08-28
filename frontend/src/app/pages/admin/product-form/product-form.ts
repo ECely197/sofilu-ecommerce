@@ -65,20 +65,16 @@ export class ProductForm implements OnInit {
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
-          // --- ¡CORRECCIÓN CRÍTICA AQUÍ! ---
           this.productForm.patchValue({
             name: product.name,
             description: product.description,
             price: product.price,
-            // Nos aseguramos de asignar solo el _id de la categoría.
-            // El '?' (optional chaining) previene errores si la categoría no viniera.
-            category: (product.category as Category)._id,
+            category: (product.category as Category)?._id || product.category,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
             salePrice: product.salePrice,
           });
 
-          // El resto de la lógica para cargar imágenes y variantes está bien
           this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
@@ -131,17 +127,24 @@ export class ProductForm implements OnInit {
 
     this.isUploading.set(true);
 
-    const uploadOperations =
+    // --- LÓGICA DE SUBIDA DE IMÁGENES CORREGIDA ---
+    const uploadOperations$ =
       this.selectedFiles.length > 0
-        ? this.selectedFiles.map((file) =>
-            this.storageService.uploadImage(file)
+        ? forkJoin(
+            this.selectedFiles.map((file) =>
+              this.storageService.uploadImage(file)
+            )
           )
-        : of(this.images.value);
+        : of(this.images.value); // Si no hay archivos nuevos, usamos las URLs existentes en el formulario
 
-    forkJoin(uploadOperations).subscribe({
-      next: (downloadURLs) => {
+    forkJoin(uploadOperations$).subscribe({
+      // --- ¡CAMBIO AQUÍ! Añadimos el tipo (string | unknown)[] ---
+      next: (downloadURLs: (string | unknown)[]) => {
         this.images.clear();
-        downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
+        // Le decimos a TypeScript que 'url' es de tipo string
+        downloadURLs.forEach((url: any) =>
+          this.images.push(this.fb.control(url))
+        );
         this.saveProductData();
       },
       error: (err) => {
