@@ -14,6 +14,7 @@ import { Coupon } from '../../services/coupon';
 import { environment } from '../../../environments/environment';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
+import { ToastService } from '../../services/toast.service';
 
 declare var MercadoPago: any;
 
@@ -34,6 +35,7 @@ export class checkout implements OnInit {
   private settingsService = inject(SettingsService);
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
+  private toastService = inject(ToastService);
 
   // --- Signals para el Estado ---
   currentStep = signal<'shipping' | 'payment'>('shipping');
@@ -88,7 +90,7 @@ export class checkout implements OnInit {
   async proceedToPayment(): Promise<void> {
     // 1. Validación inicial (sin cambios)
     if (!this.selectedAddress()) {
-      alert('Por favor, selecciona una dirección de envío.');
+      this.toastService.show('Por favor, selecciona una dirección de envío.');
       return;
     }
 
@@ -167,7 +169,9 @@ export class checkout implements OnInit {
         '--- CHECKOUT.TS: ERROR al crear la preferencia de pago:',
         error
       );
-      alert('Error al conectar con la pasarela de pagos. Revisa la consola.');
+      this.toastService.show(
+        'Error al conectar con la pasarela de pagos. Revisa la consola.'
+      );
       this.isLoading.set(false);
     }
   }
@@ -237,7 +241,7 @@ export class checkout implements OnInit {
         },
         onError: (error: any) => {
           console.error('Error en el Payment Brick:', error);
-          alert('Ocurrió un error con la pasarela de pago.');
+          this.toastService.show('Ocurrió un error con la pasarela de pago.');
           this.isLoading.set(false);
           this.currentStep.set('shipping');
         },

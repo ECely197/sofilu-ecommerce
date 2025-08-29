@@ -20,6 +20,7 @@ import {
 
 import { Coupon } from '../../../services/coupon';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-coupon-form',
@@ -47,6 +48,7 @@ export class couponForm implements OnInit {
   private router = inject(Router);
   private couponService = inject(Coupon);
   private route = inject(ActivatedRoute);
+  private toastService = inject(ToastService);
 
   couponForm!: FormGroup; // Se inicializa en ngOnInit
   isEditMode = signal(false);
@@ -98,7 +100,7 @@ export class couponForm implements OnInit {
     operation.subscribe({
       next: () => {
         const action = this.isEditMode() ? 'actualizado' : 'creado';
-        alert(`Cupón ${action} con éxito`);
+        this.toastService.show(`Cupón ${action} con éxito`);
         this.router.navigate(['/admin/coupons']);
       },
       error: (err) => {
@@ -106,7 +108,7 @@ export class couponForm implements OnInit {
           `Error al ${this.isEditMode() ? 'actualizar' : 'crear'} el cupón:`,
           err
         );
-        alert('Ocurrió un error al guardar el cupón.');
+        this.toastService.show('Ocurrió un error al guardar el cupón.');
       },
     });
   }

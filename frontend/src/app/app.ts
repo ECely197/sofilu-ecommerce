@@ -11,6 +11,7 @@ import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
 import { CartFlyout } from './components/cart-flyout/cart-flyout';
 import { BottomNavBarComponent } from './components/bottom-nav-bar.component/bottom-nav-bar.component';
+import { ToastContainerComponent } from './components/toast/toast';
 
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
@@ -26,6 +27,7 @@ import { AosOptions } from 'aos';
     Footer,
     CartFlyout,
     BottomNavBarComponent,
+    ToastContainerComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

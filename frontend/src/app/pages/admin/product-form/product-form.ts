@@ -17,6 +17,7 @@ import { ProductServices } from '../../../services/product';
 import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-product-form',
@@ -32,6 +33,7 @@ export class ProductForm implements OnInit {
   private productService = inject(ProductServices);
   private storageService = inject(StorageService);
   private categoryService = inject(CategoryService);
+  private toastService = inject(ToastService);
 
   productForm!: FormGroup;
   isEditMode = signal(false);
@@ -127,11 +129,15 @@ export class ProductForm implements OnInit {
 
     // Validaciones primarias (sin cambios)
     if (this.images.length === 0 && this.selectedFiles.length === 0) {
-      alert('Por favor, añade al menos una imagen para el producto.');
+      this.toastService.show(
+        'Por favor, añade al menos una imagen para el producto.'
+      );
       return;
     }
     if (this.productForm.invalid) {
-      alert('Por favor, completa todos los campos requeridos correctamente.');
+      this.toastService.show(
+        'Por favor, completa todos los campos requeridos correctamente.'
+      );
       return;
     }
 
@@ -162,7 +168,7 @@ export class ProductForm implements OnInit {
         error: (err) => {
           this.isUploading.set(false);
           console.error('Error al subir las imágenes:', err);
-          alert('No se pudieron subir las imágenes.');
+          this.toastService.show('No se pudieron subir las imágenes.');
         },
       });
     }
@@ -210,7 +216,7 @@ export class ProductForm implements OnInit {
     operation.subscribe({
       next: () => {
         this.isUploading.set(false);
-        alert(
+        this.toastService.show(
           `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`
         );
         this.router.navigate(['/admin/products']);
@@ -218,7 +224,7 @@ export class ProductForm implements OnInit {
       error: (err) => {
         this.isUploading.set(false);
         console.error('Error al guardar el producto:', err);
-        alert(
+        this.toastService.show(
           err.error.details ||
             err.error.message ||
             'No se pudo guardar el producto.'

@@ -1,0 +1,23 @@
+<!-- En: frontend/src/app/components/toast/toast.html -->
+
+<div class="toast-wrapper">
+  <!-- Iteramos sobre las notificaciones activas del servicio -->
+  @for (toast of toastService.toasts(); track toast.id) {
+  <div class="toast-item" [ngClass]="'toast-' + toast.type" @toastAnimation>
+    <!-- Icono condicional -->
+    <div class="toast-icon">
+      @if(toast.type === 'success') {
+      <span class="material-symbols-outlined">check_circle</span>
+      } @else {
+      <span class="material-symbols-outlined">error</span>
+      }
+    </div>
+    <!-- Mensaje -->
+    <p class="toast-message">{{ toast.message }}</p>
+    <!-- Botón de cerrar -->
+    <button (click)="toastService.remove(toast.id)" class="toast-close-btn">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  }
+</div>

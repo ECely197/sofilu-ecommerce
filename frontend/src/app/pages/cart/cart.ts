@@ -8,6 +8,7 @@ import { trigger, transition, style, animate } from '@angular/animations'; // Im
 import { CartService } from '../../services/cart';
 import { CartItem } from '../../interfaces/cart-item.interface';
 import { RippleDirective } from '../../directives/ripple';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-cart',
@@ -26,6 +27,7 @@ import { RippleDirective } from '../../directives/ripple';
 })
 export class Cart {
   public cartService = inject(CartService);
+  private toastService = inject(ToastService);
 
   public objectKeys(obj: object): string[] {
     if (!obj) {

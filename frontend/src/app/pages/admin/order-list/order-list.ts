@@ -14,6 +14,7 @@ import {
 
 import { OrderService } from '../../../services/order';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 // En el futuro, crearemos una interfaz robusta para Order
 // import { Order } from '../../../interfaces/order.interface';
 
@@ -45,6 +46,7 @@ import { RippleDirective } from '../../../directives/ripple';
 })
 export class OrderList implements OnInit {
   private orderService = inject(OrderService);
+  private toastService = inject(ToastService);
 
   orders = signal<any[]>([]); // Usamos 'any' por ahora, pero lo ideal sería una interfaz 'Order'
   isLoading = signal<boolean>(true);
@@ -79,7 +81,7 @@ export class OrderList implements OnInit {
             currentOrders.filter((order) => order._id !== orderId)
           );
         },
-        error: (err) => alert('Error al eliminar el pedido.'),
+        error: (err) => this.toastService.show('Error al eliminar el pedido.'),
       });
     }
   }

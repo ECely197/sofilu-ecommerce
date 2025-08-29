@@ -13,6 +13,7 @@ import {
 import { CategoryService } from '../../../services/category.service';
 import { StorageService } from '../../../services/storage';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-category-form',
@@ -27,6 +28,7 @@ export class CategoryFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private categoryService = inject(CategoryService);
   private storageService = inject(StorageService);
+  private toastService = inject(ToastService);
 
   categoryForm!: FormGroup; // Se inicializa en ngOnInit
   isEditMode = signal(false);
@@ -81,7 +83,9 @@ export class CategoryFormComponent implements OnInit {
       console.error(
         "--- VALIDACIÓN FALLIDA: No se ha seleccionado una imagen en modo 'Crear'. ---"
       );
-      alert('Por favor, selecciona una imagen para la categoría.');
+      this.toastService.show(
+        'Por favor, selecciona una imagen para la categoría.'
+      );
       return;
     }
 
@@ -118,14 +122,16 @@ export class CategoryFormComponent implements OnInit {
 
     operation.subscribe({
       next: () => {
-        alert(
+        this.toastService.show(
           `Categoría ${this.isEditMode() ? 'actualizada' : 'creada'} con éxito`
         );
         this.router.navigate(['/admin/categories']);
       },
       error: (err) => {
         console.error('Error al guardar la categoría:', err);
-        alert(err.error.message || 'No se pudo guardar la categoría.');
+        this.toastService.show(
+          err.error.message || 'No se pudo guardar la categoría.'
+        );
       },
     });
   }

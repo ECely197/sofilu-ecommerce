@@ -1,0 +1,62 @@
+// En: frontend/src/app/components/toast/toast.scss
+
+:host {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  pointer-events: none; // Permite hacer clic "a través" del contenedor
+}
+
+.toast-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 380px;
+  pointer-events: auto; // Los toasts individuales sí son clickeables
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.toast-icon .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.toast-message {
+  flex-grow: 1;
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// --- Estilos por Tipo ---
+.toast-success {
+  background-color: #f0fdf4; // Verde muy claro
+  color: #14532d; // Verde oscuro
+}
+.toast-error {
+  background-color: #fef2f2; // Rojo muy claro
+  color: #991b1b; // Rojo oscuro
+}

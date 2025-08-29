@@ -13,6 +13,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 import { OrderService } from '../../../services/order';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -41,6 +42,7 @@ import { RippleDirective } from '../../../directives/ripple';
 export class OrderDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
+  private toastService = inject(ToastService);
 
   order = signal<any | null>(null);
   isLoading = signal<boolean>(true);
@@ -94,11 +96,13 @@ export class OrderDetail implements OnInit {
           next: (updatedOrder) => {
             this.order.set(updatedOrder);
             this.statusForm.patchValue({ status: updatedOrder.status });
-            alert('¡Estado del pedido actualizado con éxito!');
+            this.toastService.show('¡Estado del pedido actualizado con éxito!');
           },
           error: (err) => {
             console.error('Error al actualizar el estado:', err);
-            alert('No se pudo actualizar el estado del pedido.');
+            this.toastService.show(
+              'No se pudo actualizar el estado del pedido.'
+            );
           },
         });
     }

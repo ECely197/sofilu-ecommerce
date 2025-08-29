@@ -24,6 +24,7 @@ import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
+import { ToastService } from '../../services/toast.service';
 
 // Directivas
 import { RippleDirective } from '../../directives/ripple';
@@ -44,6 +45,7 @@ export class ProductDetailComponent implements OnInit {
   public wishlistService = inject(WishlistService);
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
+  private toastService = inject(ToastService);
 
   // --- SIGNALS PARA EL ESTADO ---
   product = signal<Product | null>(null);
@@ -201,7 +203,7 @@ export class ProductDetailComponent implements OnInit {
     const p = this.product();
     if (p && this.isInStock()) {
       this.cartService.addItem(p, this.selectedVariants());
-      alert(`${p.name} ha sido añadido al carrito!`);
+      this.toastService.show(`${p.name} ha sido añadido al carrito!`);
     }
   }
 

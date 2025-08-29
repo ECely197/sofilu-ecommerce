@@ -10,6 +10,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 import { SettingsService } from '../../../services/settings.service';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-settings',
@@ -32,6 +33,7 @@ import { RippleDirective } from '../../../directives/ripple';
 export class settings implements OnInit {
   private fb = inject(FormBuilder);
   private settingsService = inject(SettingsService);
+  private toastService = inject(ToastService);
 
   settingsForm!: FormGroup;
   isLoading = signal(true);
@@ -59,14 +61,14 @@ export class settings implements OnInit {
     this.settingsService.updateShippingCost(newCost).subscribe({
       next: () => {
         this.isSaving.set(false);
-        alert('¡Ajustes guardados con éxito!');
+        this.toastService.show('¡Ajustes guardados con éxito!');
         // Mantenemos el formulario "sucio" como "limpio" para deshabilitar el botón
         this.settingsForm.markAsPristine();
       },
       error: (err) => {
         this.isSaving.set(false);
         console.error('Error al guardar los ajustes:', err);
-        alert('No se pudieron guardar los ajustes.');
+        this.toastService.show('No se pudieron guardar los ajustes.');
       },
     });
   }
