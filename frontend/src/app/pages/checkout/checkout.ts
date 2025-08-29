@@ -157,10 +157,10 @@ export class checkout implements OnInit {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
-        // Añadimos la información del pagador.
-        // Esto resuelve la advertencia de los "Bricks" y pre-rellena el email.
         payer: {
           email: currentUserEmail,
+          // --- ¡AÑADIR ESTA LÍNEA! ---
+          entityType: 'individual',
         },
       },
       customization: {

@@ -47,6 +47,15 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
 
     const preference = {
       items: preferenceItems,
+
+      // --- ¡AÑADIR ESTA SECCIÓN COMPLETA! ---
+      payer: {
+        // Asumimos que todos los compradores son personas naturales por ahora.
+        // Esto es un requisito para algunos flujos de pago en Colombia.
+        entity_type: "individual",
+      },
+      // ------------------------------------
+
       back_urls: {
         success: `${process.env.FRONTEND_URL}/order-confirmation?status=approved`,
         failure: `${process.env.FRONTEND_URL}/cart`,
