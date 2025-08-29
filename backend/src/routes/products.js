@@ -115,8 +115,8 @@ router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true, runValidators: true } // runValidators asegura que se cumplan las reglas del modelo
+      { $set: req.body }, // <--- ¡LA CORRECCIÓN CLAVE ESTÁ AQUÍ!
+      { new: true, runValidators: true, context: "query" } // Añadimos context: 'query' para asegurar que los validadores se ejecuten bien con $set
     );
 
     if (!updatedProduct) {

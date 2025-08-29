@@ -1,4 +1,4 @@
-// Contenido completo y final para: frontend/src/app/pages/admin/product-form/product-form.ts
+// Contenido completo y corregido para: frontend/src/app/pages/admin/product-form/product-form.ts
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -46,9 +46,9 @@ export class ProductForm implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [0, [Validators.required, Validators.min(0)]], // Es buena práctica inicializar en 0
+      price: [0, [Validators.required, Validators.min(0)]],
       category: [null, Validators.required],
-      images: this.fb.array([], [Validators.required, Validators.minLength(1)]),
+      images: this.fb.array([]), // Sin validadores aquí
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
@@ -65,20 +65,21 @@ export class ProductForm implements OnInit {
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
-          // --- ¡CORRECCIÓN CRÍTICA AQUÍ! ---
+          const categoryId =
+            typeof product.category === 'string'
+              ? product.category
+              : (product.category as Category)?._id;
+
           this.productForm.patchValue({
             name: product.name,
             description: product.description,
             price: product.price,
-            // Al parchear el formulario, nos aseguramos de asignar solo el _id de la categoría.
-            // El '?' (optional chaining) previene errores si la categoría no viniera populada.
-            category: (product.category as Category)?._id,
+            category: categoryId,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
             salePrice: product.salePrice,
           });
 
-          // El resto de la lógica para cargar imágenes y variantes está bien
           this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
@@ -107,6 +108,7 @@ export class ProductForm implements OnInit {
     return this.productForm.get('images') as FormArray;
   }
 
+  // --- FUNCIÓN onFilesSelected CORREGIDA ---
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -115,58 +117,77 @@ export class ProductForm implements OnInit {
         URL.createObjectURL(file)
       );
       this.imagePreviews.set(previewUrls);
-      this.images.clear();
-      this.selectedFiles.forEach((file) =>
-        this.images.push(this.fb.control(file.name, Validators.required))
-      );
     }
   }
 
+  // --- FUNCIÓN handleSubmit CON CORRECCIÓN DE TIPADO ---
   handleSubmit() {
+    console.log('--- handleSubmit INICIADO ---');
+    this.productForm.markAllAsTouched();
+
+    // Validaciones primarias (sin cambios)
+    if (this.images.length === 0 && this.selectedFiles.length === 0) {
+      alert('Por favor, añade al menos una imagen para el producto.');
+      return;
+    }
     if (this.productForm.invalid) {
-      this.productForm.markAllAsTouched();
-      alert('Por favor, completa todos los campos requeridos.');
+      alert('Por favor, completa todos los campos requeridos correctamente.');
       return;
     }
 
+    console.log('--- FORMULARIO VÁLIDO ---');
     this.isUploading.set(true);
 
-    const uploadOperations =
-      this.selectedFiles.length > 0
-        ? this.selectedFiles.map((file) =>
-            this.storageService.uploadImage(file)
-          )
-        : of(this.images.value);
+    // --- ¡LÓGICA SIMPLIFICADA Y CORREGIDA! ---
 
-    forkJoin(uploadOperations).subscribe({
-      next: (downloadURLs) => {
-        this.images.clear();
-        downloadURLs.forEach((url) => this.images.push(this.fb.control(url)));
-        this.saveProductData();
-      },
-      error: (err) => {
-        this.isUploading.set(false);
-        console.error('Error al subir las imágenes:', err);
-        alert('No se pudieron subir las imágenes.');
-      },
-    });
+    // CASO 1: Hay nuevos archivos para subir
+    if (this.selectedFiles.length > 0) {
+      console.log('--- Detectados nuevos archivos. Subiendo imágenes... ---');
+      const uploadOperations$ = forkJoin(
+        this.selectedFiles.map((file) => this.storageService.uploadImage(file))
+      );
+
+      uploadOperations$.subscribe({
+        next: (newImageUrls) => {
+          // Al subir nuevas imágenes, reemplazamos TODAS las anteriores.
+          this.images.clear();
+          newImageUrls.forEach((url: string) =>
+            this.images.push(this.fb.control(url))
+          );
+          console.log(
+            '--- Imágenes subidas. Guardando datos del producto... ---'
+          );
+          this.saveProductData(); // Guardamos con las nuevas URLs
+        },
+        error: (err) => {
+          this.isUploading.set(false);
+          console.error('Error al subir las imágenes:', err);
+          alert('No se pudieron subir las imágenes.');
+        },
+      });
+    }
+    // CASO 2: No hay archivos nuevos, solo guardar los cambios de texto/precio/etc.
+    else {
+      console.log(
+        '--- No hay nuevos archivos. Guardando datos del producto directamente... ---'
+      );
+      // Las URLs existentes ya están en el FormArray 'images' desde ngOnInit.
+      this.saveProductData();
+    }
   }
 
   private saveProductData(): void {
     const formValue = this.productForm.getRawValue();
 
-    // 1. Creamos el objeto base del payload
     const productPayload = {
       name: formValue.name,
       description: formValue.description,
       price: formValue.price,
-      category: formValue.category, // Ya es solo el ID gracias al cambio en ngOnInit
+      category: formValue.category,
       images: formValue.images,
       isFeatured: formValue.isFeatured,
       isOnSale: formValue.isOnSale,
-      salePrice: formValue.isOnSale ? formValue.salePrice : null, // Si no está en oferta, el precio de oferta es nulo
-
-      // 2. "Limpiamos" las variantes para quitar campos extra que añade Angular (como _id)
+      salePrice: formValue.isOnSale ? formValue.salePrice : null,
       variants: formValue.variants.map((variant: any) => ({
         name: variant.name,
         options: variant.options.map((option: any) => ({
@@ -178,9 +199,9 @@ export class ProductForm implements OnInit {
     };
 
     console.log(
-      '--- FRONTEND TRACE: Payload limpio que se envía al backend ---'
+      '--- FRONTEND TRACE: Payload limpio que se envía al backend ---',
+      productPayload
     );
-    console.log(JSON.stringify(productPayload, null, 2));
 
     const operation = this.isEditMode()
       ? this.productService.updateProduct(this.productId!, productPayload)
@@ -197,7 +218,6 @@ export class ProductForm implements OnInit {
       error: (err) => {
         this.isUploading.set(false);
         console.error('Error al guardar el producto:', err);
-        // Ahora, gracias al cambio en el backend, el mensaje de error será más útil
         alert(
           err.error.details ||
             err.error.message ||
@@ -207,7 +227,7 @@ export class ProductForm implements OnInit {
     });
   }
 
-  // --- MÉTODOS PARA VARIANTES ---
+  // --- MÉTODOS PARA VARIANTES (sin cambios) ---
   newVariant(name: string = ''): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
