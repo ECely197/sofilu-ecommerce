@@ -146,10 +146,22 @@ export class checkout implements OnInit {
     const container = document.getElementById('paymentBrick_container');
     if (container) container.innerHTML = '';
 
+    // --- OBTENEMOS EL EMAIL DEL USUARIO LOGUEADO ---
+    let currentUserEmail: string | undefined;
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      currentUserEmail = user?.email || undefined;
+    });
+
+    // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
     await bricksBuilder.create('payment', 'paymentBrick_container', {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
+        // Añadimos la información del pagador.
+        // Esto resuelve la advertencia de los "Bricks" y pre-rellena el email.
+        payer: {
+          email: currentUserEmail,
+        },
       },
       customization: {
         paymentMethods: {
@@ -163,12 +175,18 @@ export class checkout implements OnInit {
       callbacks: {
         onReady: () => {
           this.isLoading.set(false);
+          console.log('--- Payment Brick está listo. ---');
         },
         onSubmit: async () => {
+          // Esta parte ya estaba bien, guardamos los datos antes del envío
+          console.log(
+            '--- onSubmit del Brick disparado. Guardando orden pendiente... ---'
+          );
           const orderData = this.buildOrderData();
           if (orderData) {
             localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
           }
+          // No necesitamos retornar una promesa aquí a menos que hagamos una validación asíncrona
         },
         onError: (error: any) => {
           console.error('Error en el Payment Brick:', error);
