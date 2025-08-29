@@ -5,6 +5,12 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CartItem } from '../interfaces/cart-item.interface';
 
+interface PayerInfo {
+  name: string;
+  surname: string;
+  email: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private http = inject(HttpClient);
@@ -13,22 +19,22 @@ export class PaymentService {
   // Este método toma los items del carrito y el total, y pide una preferencia de pago al backend
   createPreference(
     items: CartItem[],
-    total: number
+    total: number,
+    payerInfo: PayerInfo // <-- Añadimos este nuevo parámetro
   ): Observable<{ id: string }> {
-    // --- ¡PAYLOAD SIMPLIFICADO! ---
-    // Ahora enviamos un array de items más simple, solo con lo que el backend necesita.
     const mappedItems = items.map((item) => ({
       name: item.product.name,
-      description: Object.values(item.selectedVariants).join(' / '), // Creamos una descripción de las variantes
+      description: Object.values(item.selectedVariants).join(' / '),
       picture_url: item.product.images[0] || undefined,
       category_id: (item.product.category as any)._id || item.product.category,
       quantity: item.quantity,
-      unit_price: this.calculateFinalItemPrice(item), // Esto ya estaba bien
+      unit_price: this.calculateFinalItemPrice(item),
     }));
 
+    // ¡MODIFICAMOS EL PAYLOAD A ENVIAR!
     return this.http.post<{ id: string }>(`${this.apiUrl}/create_preference`, {
-      items: mappedItems, // Enviamos el nuevo payload
-      grandTotal: total,
+      items: mappedItems,
+      payerInfo: payerInfo, // <-- Enviamos la información del pagador
     });
   }
 

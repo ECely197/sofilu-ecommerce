@@ -17,24 +17,15 @@ const preferenceClient = new Preference(client);
 // Ruta para crear una "preferencia de pago"
 router.post("/create_preference", [authMiddleware], async (req, res) => {
   try {
-    console.log(
-      "--- PAYMENTS.JS [1/3]: Petición recibida en /create_preference. ---"
-    );
-    // Ahora solo recibimos 'items' y 'grandTotal' (aunque grandTotal no se usa para la preferencia)
-    const { items } = req.body;
+    // ¡RECIBIMOS payerInfo!
+    const { items, payerInfo } = req.body;
 
-    // Log para verificar los datos recibidos
-    console.log(
-      "--- PAYMENTS.JS: Items recibidos del frontend:",
-      JSON.stringify(items, null, 2)
-    );
-
-    if (!items || items.length === 0) {
-      return res.status(400).json({ error: "Datos de items incompletos." });
+    if (!items || !payerInfo) {
+      return res
+        .status(400)
+        .json({ error: "Faltan datos de items o del pagador." });
     }
 
-    // --- ¡LÓGICA SIMPLIFICADA! ---
-    // Mapeamos directamente los items, añadiendo solo la moneda.
     const preferenceItems = items.map((item) => ({
       title: item.name,
       description: item.description,
@@ -42,20 +33,19 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
       category_id: item.category_id,
       quantity: item.quantity,
       unit_price: item.unit_price,
-      currency_id: "COP", // Añadimos la moneda aquí
+      currency_id: "COP",
     }));
 
     const preference = {
       items: preferenceItems,
-
-      // --- ¡AÑADIR ESTA SECCIÓN COMPLETA! ---
+      // --- ¡CONSTRUIMOS EL OBJETO PAYER COMPLETO! ---
       payer: {
-        // Asumimos que todos los compradores son personas naturales por ahora.
-        // Esto es un requisito para algunos flujos de pago en Colombia.
+        name: payerInfo.name,
+        surname: payerInfo.surname,
+        email: payerInfo.email,
         entity_type: "individual",
       },
-      // ------------------------------------
-
+      // ---------------------------------------------
       back_urls: {
         success: `${process.env.FRONTEND_URL}/order-confirmation?status=approved`,
         failure: `${process.env.FRONTEND_URL}/cart`,
@@ -65,22 +55,12 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
       statement_descriptor: "SOFILU SHOP",
     };
 
-    console.log(
-      "--- PAYMENTS.JS [2/3]: Objeto de preferencia construido. Enviando a Mercado Pago... ---"
-    );
     const response = await preferenceClient.create({ body: preference });
-
-    console.log(
-      "--- PAYMENTS.JS [3/3]: Preferencia creada. Devolviendo ID:",
-      response.id
-    );
     res.json({ id: response.id });
   } catch (error) {
-    // --- Log de error más detallado ---
     console.error(
       "--- PAYMENTS.JS: ERROR al crear la preferencia de Mercado Pago ---"
     );
-    // El SDK de Mercado Pago a menudo incluye detalles en error.cause o error.response
     console.error(
       "Detalles del error:",
       error.cause || error.response?.data || error.message

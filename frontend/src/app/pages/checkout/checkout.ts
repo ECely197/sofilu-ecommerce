@@ -86,6 +86,7 @@ export class checkout implements OnInit {
   }
 
   async proceedToPayment(): Promise<void> {
+    // 1. Validación inicial (sin cambios)
     if (!this.selectedAddress()) {
       alert('Por favor, selecciona una dirección de envío.');
       return;
@@ -95,6 +96,42 @@ export class checkout implements OnInit {
     this.isLoading.set(true);
 
     try {
+      // 2. Recopilación de los datos del pagador
+      console.log(
+        '--- CHECKOUT.TS: Recopilando información del pagador... ---'
+      );
+
+      const fullName: string = this.selectedAddress().fullName || '';
+      const fullNameParts = fullName.split(' ').filter((part) => part); // Divide y elimina espacios extra
+      const name = fullNameParts.shift() || ''; // El primer elemento es el nombre
+      const surname = fullNameParts.join(' ') || name; // El resto es el apellido (o el nombre si no hay apellido)
+
+      let currentUserEmail: string | null | undefined;
+      // Usamos await aquí para asegurarnos de tener el email antes de continuar
+      const user = await firstValueFrom(
+        this.authService.currentUser$.pipe(take(1))
+      );
+      currentUserEmail = user?.email || null;
+
+      // Verificación de que tenemos toda la información necesaria
+      if (!currentUserEmail) {
+        throw new Error(
+          'No se pudo obtener el email del usuario para el pago.'
+        );
+      }
+
+      const payerInfo = {
+        name: name,
+        surname: surname,
+        email: currentUserEmail,
+      };
+
+      console.log(
+        '--- CHECKOUT.TS: Información del pagador recopilada:',
+        payerInfo
+      );
+
+      // 3. Llamada al servicio con todos los datos
       console.log(
         '--- CHECKOUT.TS [2/4]: Llamando a paymentService.createPreference con el total:',
         this.grandTotal()
@@ -103,7 +140,8 @@ export class checkout implements OnInit {
       const preference = await firstValueFrom(
         this.paymentService.createPreference(
           this.cartService.cartItems(),
-          this.grandTotal()
+          this.grandTotal(),
+          payerInfo // Pasamos el objeto completo
         )
       );
 
@@ -112,6 +150,7 @@ export class checkout implements OnInit {
         preference?.id
       );
 
+      // 4. Renderizado del Brick (sin cambios en esta parte)
       if (preference && preference.id) {
         this.currentStep.set('payment');
         setTimeout(() => {
