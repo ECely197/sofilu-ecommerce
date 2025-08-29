@@ -179,35 +179,42 @@ export class checkout implements OnInit {
       this.isLoading.set(false);
       return;
     }
+    // Inicializamos la instancia de MercadoPago. Esto es correcto.
     const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
     const bricksBuilder = mp.bricks();
 
     const container = document.getElementById('paymentBrick_container');
-    if (container) container.innerHTML = '';
+    if (container) {
+      container.innerHTML = '';
+    }
 
-    // --- OBTENEMOS EL EMAIL DEL USUARIO LOGUEADO ---
-    let currentUserEmail: string | undefined;
-    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
-      currentUserEmail = user?.email || undefined;
-    });
+    const user = await firstValueFrom(
+      this.authService.currentUser$.pipe(take(1))
+    );
+    const currentUserEmail = user?.email;
 
-    // --- ¡CORRECCIÓN CLAVE AQUÍ! ---
+    if (!currentUserEmail) {
+      console.error('No se pudo obtener el email del usuario para el pago.');
+      this.isLoading.set(false);
+      return;
+    }
+
     await bricksBuilder.create('payment', 'paymentBrick_container', {
       initialization: {
         amount: this.grandTotal(),
         preferenceId: preferenceId,
         payer: {
           email: currentUserEmail,
-          // --- ¡AÑADIR ESTA LÍNEA! ---
-          entityType: 'individual',
         },
       },
+      // --- ¡CORRECCIÓN FINAL AQUÍ! ---
       customization: {
         paymentMethods: {
+          // Restauramos la lista completa de métodos de pago que queremos aceptar
           creditCard: 'all',
           debitCard: 'all',
-          ticket: 'all',
-          bankTransfer: 'all',
+          ticket: 'all', // Para Efecty, etc.
+          bankTransfer: 'all', // Para PSE
           maxInstallments: 1,
         },
       },
@@ -216,19 +223,21 @@ export class checkout implements OnInit {
           this.isLoading.set(false);
           console.log('--- Payment Brick está listo. ---');
         },
-        onSubmit: async () => {
-          // Esta parte ya estaba bien, guardamos los datos antes del envío
+        onSubmit: () => {
           console.log(
-            '--- onSubmit del Brick disparado. Guardando orden pendiente... aqui se queda ---'
+            '--- onSubmit del Brick disparado. Guardando orden pendiente... ---'
           );
           const orderData = this.buildOrderData();
           if (orderData) {
             localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
           }
-          // No necesitamos retornar una promesa aquí a menos que hagamos una validación asíncrona
+          return new Promise<void>((resolve) => {
+            resolve();
+          });
         },
         onError: (error: any) => {
           console.error('Error en el Payment Brick:', error);
+          alert('Ocurrió un error con la pasarela de pago.');
           this.isLoading.set(false);
           this.currentStep.set('shipping');
         },

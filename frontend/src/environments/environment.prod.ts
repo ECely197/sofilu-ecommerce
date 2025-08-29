@@ -5,7 +5,7 @@ export const environment = {
   apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
   //apiUrl: 'http://localhost:3000/api',
 
-  MERCADOPAGO_PUBLIC_KEY: 'APP_USR-21db569d-3edc-4d6e-a296-1d426bf7431f',
+  MERCADOPAGO_PUBLIC_KEY: 'TEST-dcf59d29-991c-41d4-90d6-7df1bb054670',
 
   // Las credenciales de Firebase son las mismas.
   firebase: {
