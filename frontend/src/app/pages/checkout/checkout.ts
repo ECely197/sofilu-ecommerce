@@ -180,7 +180,7 @@ export class checkout implements OnInit {
         onSubmit: async () => {
           // Esta parte ya estaba bien, guardamos los datos antes del envío
           console.log(
-            '--- onSubmit del Brick disparado. Guardando orden pendiente... ---'
+            '--- onSubmit del Brick disparado. Guardando orden pendiente... aqui se queda ---'
           );
           const orderData = this.buildOrderData();
           if (orderData) {
