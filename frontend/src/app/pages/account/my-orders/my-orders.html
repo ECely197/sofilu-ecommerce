@@ -5,26 +5,89 @@
     Cargando tus pedidos...
   </div>
 
-  <div *ngIf="!isLoadingOrders && orders.length > 0" class="orders-list">
-    <div *ngFor="let order of orders" class="order-card">
-      <p class="order-meta">{{ order.createdAt | date:'longDate' }} • TOTAL: {{ order.totalAmount | currency:'COP':'symbol':'1.0-0' }} • PEDIDO #{{ order._id.slice(-6) }}</p>
-      <div class="order-items">
-        <div *ngFor="let item of order.items" class="order-item">
-          <img [src]="item.product.imageUrl" [alt]="item.product.name" class="item-image">
-          <div>
-            <h3 class="item-name">{{ item.product.name }}</h3>
-            <p class="item-quantity">{{ item.quantity }} artículo(s)</p>
+  <div class="orders-list">
+    @for (order of orders; track order._id) {
+    <div
+      class="order-card"
+      [class.is-expanded]="expandedOrderId() === order._id"
+    >
+      <!-- CABECERA DEL PEDIDO (Clickable) -->
+      <div class="order-card-header" (click)="toggleOrderDetails(order._id)">
+        <div class="header-info">
+          <p class="order-id">
+            Pedido #{{ order._id.slice(-6).toUpperCase() }}
+          </p>
+          <p class="order-date">{{ order.createdAt | date : "longDate" }}</p>
+        </div>
+        <div class="header-summary">
+          <span class="order-total">{{
+            order.totalAmount | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
+          <span class="status-chip" [ngClass]="order.status.toLowerCase()">{{
+            order.status
+          }}</span>
+          <span class="material-symbols-outlined expand-icon">expand_more</span>
+        </div>
+      </div>
+
+      <!-- CONTENIDO EXPANDIBLE (Animado) -->
+      <div
+        class="order-card-content"
+        [@expandCollapse]="
+          expandedOrderId() === order._id ? 'expanded' : 'collapsed'
+        "
+      >
+        <div class="content-inner">
+          <p class="content-title">Artículos en este pedido:</p>
+          <div class="order-items">
+            @for (item of order.items; track item._id) {
+            <div class="order-item">
+              @if (item.product?.images?.length > 0) {
+              <img
+                [src]="item.product.images[0]"
+                [alt]="item.product.name"
+                class="item-image"
+              />
+              } @else {
+              <div class="item-image placeholder"></div>
+              }
+              <div class="item-details">
+                <p class="item-name">
+                  {{ item.product?.name || "Producto no disponible" }} (x{{
+                    item.quantity
+                  }})
+                </p>
+                <div class="item-variants">
+                  @for (variantKey of objectKeys(item.selectedVariants); track
+                  variantKey) {
+                  <span
+                    >{{ variantKey }}:
+                    <strong>{{
+                      item.selectedVariants[variantKey]
+                    }}</strong></span
+                  >
+                  }
+                </div>
+              </div>
+              <p class="item-price">
+                {{
+                  item.price * item.quantity
+                    | currency : "COP" : "symbol" : "1.0-0"
+                }}
+              </p>
+            </div>
+            }
           </div>
         </div>
       </div>
-      <button (click)="viewOrderDetails(order._id)" class="details-button" appRipple>
-        Ver Detalles del Pedido
-      </button>
     </div>
+    }
   </div>
-  
+
   <div *ngIf="!isLoadingOrders && orders.length === 0" class="empty-state">
     <h3>Aún no has realizado ningún pedido.</h3>
-    <a routerLink="/products" class="explore-button" appRipple>Empezar a comprar</a>
+    <a routerLink="/products" class="explore-button" appRipple
+      >Empezar a comprar</a
+    >
   </div>
 </section>

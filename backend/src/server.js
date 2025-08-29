@@ -11,7 +11,7 @@ require("dotenv").config();
 // Importación de TODAS las Rutas
 const productRoutes = require("./routes/products");
 const wishlistRoutes = require("./routes/wishlist");
-// const reviewRoutes = require("./routes/reviews"); // Los quitamos al revertir
+const reviewRoutes = require("./routes/reviews"); // Los quitamos al revertir
 const orderRoutes = require("./routes/orders");
 const userRoutes = require("./routes/users");
 const couponRoutes = require("./routes/coupons");
@@ -86,7 +86,7 @@ mongoose
 // ==========================================================================
 app.use("/api/products", productRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-// app.use("/api/reviews", reviewRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/coupons", couponRoutes);

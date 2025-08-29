@@ -3,7 +3,11 @@
 @if (product) {
 <div class="card-container">
   <div class="card">
-    <a [routerLink]="['/product', product._id]" class="card-link">
+    <a
+      [routerLink]="['/product', product._id]"
+      class="product-card"
+      data-aos="fade-up"
+    >
       <div class="image-container">
         @if (product.images && product.images.length > 0) {
         <img [src]="product.images[0]" [alt]="product.name" />

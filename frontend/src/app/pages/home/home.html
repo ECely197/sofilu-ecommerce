@@ -1,34 +1,38 @@
+<!-- En: frontend/src/app/pages/home/home.html -->
 <div class="home-page-wrapper">
-
   <!-- Sección Hero -->
   <section class="hero-section">
-    <!-- Aplicamos la animación de "fade-up" a cada elemento con un pequeño retraso -->
-    <h1 class="hero-title" data-aos="fade-up">Tu universo de confort te espera</h1>
+    <h1 class="hero-title" data-aos="fade-up">
+      Tu universo de confort te espera
+    </h1>
     <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="100">
-      Descubre nuestra colección de sábanas, pijamas y más, diseñados para envolverte en suavidad y estilo.
+      Descubre nuestra colección de sábanas, pijamas y más...
     </p>
-    <a routerLink="/products" class="btn-material" appRipple data-aos="fade-up" data-aos-delay="200">
+    <a
+      routerLink="/products"
+      class="btn-material"
+      appRipple
+      data-aos="fade-up"
+      data-aos-delay="200"
+    >
       Explorar Colección
     </a>
   </section>
 
-  <!-- Cada componente de sección se envuelve en un 'div' con su propia animación de scroll -->
-  <div data-aos="fade-up">
+  <!-- Cada sección ahora puede tener su propia animación -->
+  <div data-aos="fade-up" data-aos-offset="100">
     <app-categories-section></app-categories-section>
   </div>
-  
-  <div data-aos="fade-up">
+
+  <div data-aos="fade-up" data-aos-offset="100">
     <app-featured-products></app-featured-products>
   </div>
 
-  <div data-aos="fade-up">
+  <div data-aos="fade-up" data-aos-offset="100">
     <app-how-to-buy></app-how-to-buy>
   </div>
-  
-  
-  <div data-aos="fade-up">
+
+  <div data-aos="fade-up" data-aos-offset="100">
     <app-sale-section></app-sale-section>
   </div>
-  
-
 </div>

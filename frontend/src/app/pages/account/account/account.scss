@@ -76,3 +76,20 @@
 .account-content {
   min-height: 50vh; // Para que tenga algo de altura
 }
+
+.nav-separator {
+  height: 1px;
+  background-color: var(--soft-gray);
+  margin: 0.5rem 1rem; // Un poco de espacio vertical y horizontal
+}
+
+.admin-link {
+  // Un color de fondo sutil para que destaque
+  background-color: var(--soft-white);
+  color: #a855f7; // Un color morado para distinguirlo
+
+  &:hover {
+    background-color: #f3e8ff; // Un morado más claro en hover
+    color: #9333ea;
+  }
+}

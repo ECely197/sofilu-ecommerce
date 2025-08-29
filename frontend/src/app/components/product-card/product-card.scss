@@ -4,6 +4,11 @@
   position: relative;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
 .image-container {
   // Esto asegura que las burbujas no se salgan de la imagen
   position: relative;
