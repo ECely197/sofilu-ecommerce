@@ -20,36 +20,29 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
     console.log(
       "--- PAYMENTS.JS [1/3]: Petición recibida en /create_preference. ---"
     );
-    const { items, grandTotal } = req.body;
+    // Ahora solo recibimos 'items' y 'grandTotal' (aunque grandTotal no se usa para la preferencia)
+    const { items } = req.body;
 
     // Log para verificar los datos recibidos
-    console.log("--- PAYMENTS.JS: Total recibido:", grandTotal);
     console.log(
-      "--- PAYMENTS.JS: Items recibidos:",
+      "--- PAYMENTS.JS: Items recibidos del frontend:",
       JSON.stringify(items, null, 2)
     );
 
-    if (!items || !grandTotal) {
-      console.error(
-        "--- PAYMENTS.JS: ERROR - Faltan 'items' o 'grandTotal' en el body."
-      );
-      return res.status(400).json({ error: "Datos incompletos." });
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: "Datos de items incompletos." });
     }
 
+    // --- ¡LÓGICA SIMPLIFICADA! ---
+    // Mapeamos directamente los items, añadiendo solo la moneda.
     const preferenceItems = items.map((item) => ({
-      title: item.product.name,
-      description: Object.values(item.selectedVariants).join(" / "),
-      picture_url:
-        item.product.images && item.product.images.length > 0
-          ? item.product.images[0]
-          : undefined,
-      category_id:
-        typeof item.product.category === "string"
-          ? item.product.category
-          : item.product.category?._id,
+      title: item.name,
+      description: item.description,
+      picture_url: item.picture_url,
+      category_id: item.category_id,
       quantity: item.quantity,
-      unit_price: item.price,
-      currency_id: "COP",
+      unit_price: item.unit_price,
+      currency_id: "COP", // Añadimos la moneda aquí
     }));
 
     const preference = {
@@ -69,14 +62,19 @@ router.post("/create_preference", [authMiddleware], async (req, res) => {
     const response = await preferenceClient.create({ body: preference });
 
     console.log(
-      "--- PAYMENTS.JS [3/3]: Preferencia creada con éxito. Devolviendo ID al frontend:",
+      "--- PAYMENTS.JS [3/3]: Preferencia creada. Devolviendo ID:",
       response.id
     );
     res.json({ id: response.id });
   } catch (error) {
+    // --- Log de error más detallado ---
     console.error(
-      "--- PAYMENTS.JS: ERROR al crear la preferencia de Mercado Pago:",
-      error
+      "--- PAYMENTS.JS: ERROR al crear la preferencia de Mercado Pago ---"
+    );
+    // El SDK de Mercado Pago a menudo incluye detalles en error.cause o error.response
+    console.error(
+      "Detalles del error:",
+      error.cause || error.response?.data || error.message
     );
     res.status(500).json({ error: "No se pudo generar el enlace de pago." });
   }

@@ -15,21 +15,19 @@ export class PaymentService {
     items: CartItem[],
     total: number
   ): Observable<{ id: string }> {
+    // --- ¡PAYLOAD SIMPLIFICADO! ---
+    // Ahora enviamos un array de items más simple, solo con lo que el backend necesita.
     const mappedItems = items.map((item) => ({
-      product: {
-        name: item.product.name,
-        images: item.product.images,
-        category: (item.product.category as any)._id || item.product.category, // Aseguramos enviar solo el ID
-      },
-      selectedVariants: item.selectedVariants,
+      name: item.product.name,
+      description: Object.values(item.selectedVariants).join(' / '), // Creamos una descripción de las variantes
+      picture_url: item.product.images[0] || undefined,
+      category_id: (item.product.category as any)._id || item.product.category,
       quantity: item.quantity,
-      // ¡LA CORRECCIÓN ESTÁ AQUÍ!
-      // Usamos el nombre de campo correcto ('unit_price') y la función de cálculo.
-      unit_price: this.calculateFinalItemPrice(item),
+      unit_price: this.calculateFinalItemPrice(item), // Esto ya estaba bien
     }));
 
     return this.http.post<{ id: string }>(`${this.apiUrl}/create_preference`, {
-      items: mappedItems,
+      items: mappedItems, // Enviamos el nuevo payload
       grandTotal: total,
     });
   }
