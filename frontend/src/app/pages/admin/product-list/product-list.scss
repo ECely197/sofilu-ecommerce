@@ -227,4 +227,10 @@
     font-size: 1.125rem;
     margin-bottom: 1.5rem;
   }
+  .skeleton-item {
+    .skeleton-img,
+    .skeleton-text {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; // Animación más lenta
+    }
+  }
 }

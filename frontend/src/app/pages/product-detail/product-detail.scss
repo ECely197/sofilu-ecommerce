@@ -141,16 +141,15 @@
 
 // --- Botones de Acción ---
 .actions {
-  display: flex;
-  flex-direction: column;
+  display: flex; // Cambiamos a flex para alinear los elementos en una fila
+  flex-direction: row; // Aseguramos que sea una fila
   gap: 1rem;
-  margin-top: auto; // Empuja los botones hacia abajo
+  margin-top: auto;
   padding-top: 2rem;
-  .btn-secondary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+
+  // Hacemos que el botón principal ocupe el espacio restante
+  .btn-material {
+    flex-grow: 1;
   }
 }
 
@@ -340,4 +339,46 @@ textarea.form-input {
   direction: ltr;
   -webkit-font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
+}
+
+.actions .btn-material {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  // Estilo para el estado "Añadido"
+  &.was-added {
+    background-color: #16a34a; // Un verde de éxito
+    color: white;
+    cursor: default;
+  }
+}
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border: 1px solid var(--soft-gray);
+  border-radius: 9999px; // Píldora
+  flex-shrink: 0; // Evita que se encoja
+  height: 56px; // Misma altura aproximada que los botones
+
+  .quantity-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--text-charcoal);
+    padding: 0 1rem;
+    line-height: 1;
+  }
+
+  .quantity-value {
+    font-weight: 700;
+    font-size: 1.125rem;
+    min-width: 2ch; // Ancho mínimo para 2 caracteres (evita saltos de 9 a 10)
+    text-align: center;
+    padding: 0 0.5rem;
+  }
 }

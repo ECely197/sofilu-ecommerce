@@ -52,21 +52,29 @@ export class CartService {
   }
 
   // MÉTODO ACTUALIZADO: Acepta el producto y las variantes seleccionadas
-  addItem(product: Product, selectedVariants: { [key: string]: string }): void {
+  addItem(
+    product: Product,
+    selectedVariants: { [key: string]: string },
+    quantityToAdd: number
+  ): void {
     const itemId = this.generateItemId(product._id, selectedVariants);
+
     this.cartItems.update((items) => {
       const existingItem = items.find((item) => item.id === itemId);
+
       if (existingItem) {
+        // Si el item ya existe, incrementamos su cantidad por la cantidad que se añade.
         return items.map((item) =>
           item.id === itemId
-            ? { ...item, quantity: item.quantity + 1 }
-            : { ...item }
+            ? { ...item, quantity: item.quantity + quantityToAdd }
+            : item
         );
       } else {
+        // Si es un item nuevo, lo añadimos con la cantidad especificada.
         const newItem: CartItem = {
           id: itemId,
           product,
-          quantity: 1,
+          quantity: quantityToAdd, // <-- Usamos la cantidad del parámetro.
           selectedVariants,
         };
         return [...items, newItem];

@@ -10,7 +10,13 @@
     >
       <div class="image-container">
         @if (product.images && product.images.length > 0) {
-        <img [src]="product.images[0]" [alt]="product.name" />
+        <img
+          [src]="product.images[0]"
+          [alt]="product.name"
+          class="product-image"
+          loading="lazy"
+          decoding="async"
+        />
         } @else {
         <div class="image-placeholder"></div>
         }

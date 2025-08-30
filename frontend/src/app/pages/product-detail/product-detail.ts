@@ -1,4 +1,4 @@
-// Contenido completo para: src/app/pages/product-detail/product-detail.ts
+// Contenido Completo, Corregido y Final para: frontend/src/app/pages/product-detail/product-detail.ts
 
 import {
   Component,
@@ -6,34 +6,42 @@ import {
   inject,
   signal,
   computed,
-  effect,
+  Pipe,
+  PipeTransform,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-// Importaciones de Servicios y Tipos
+// Servicios, Tipos y Directivas
 import { ProductServices, Review } from '../../services/product';
-import { Product, Option, Variant } from '../../interfaces/product.interface';
+import { Product, Option } from '../../interfaces/product.interface';
 import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
+import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
 
-// Directivas
-import { RippleDirective } from '../../directives/ripple';
+// Pipe para renderizar HTML de forma segura
+@Pipe({ name: 'safeHtml', standalone: true })
+export class SafeHtmlPipe implements PipeTransform {
+  constructor(private sanitizer: DomSanitizer) {}
+  transform(value: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(value);
+  }
+}
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  // ¡Asegúrate de que todos los módulos y directivas estén importados!
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective, SafeHtmlPipe],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -42,66 +50,82 @@ export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private productService = inject(ProductServices);
   private cartService = inject(CartService);
+  private toastService = inject(ToastService);
   public wishlistService = inject(WishlistService);
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
-  private toastService = inject(ToastService);
 
   // --- SIGNALS PARA EL ESTADO ---
   product = signal<Product | null>(null);
   selectedImage = signal<string>('');
   reviews = signal<Review[]>([]);
-
-  // Lógica para Variantes (Estado de la selección)
   selectedVariants = signal<{ [key: string]: string }>({});
-
-  // Lógica para Pestañas (Tabs)
   activeTab = signal<'description' | 'reviews'>('description');
+  private userOrders = signal<any[]>([]);
+  justAddedToCart = signal(false);
+  quantity = signal(1);
 
+  increaseQuantity(): void {
+    this.quantity.update((q) => q + 1);
+  }
+
+  decreaseQuantity(): void {
+    this.quantity.update((q) => Math.max(1, q - 1));
+  }
+
+  // --- COMPUTED PROPERTIES (Lógica derivada del estado) ---
+
+  // Calcula el precio final sumando los modificadores de las variantes seleccionadas.
   finalPrice = computed(() => {
     const p = this.product();
     if (!p) return 0;
 
-    let modifier = 0;
-    const selection = this.selectedVariants();
-
-    p.variants.forEach((variant) => {
-      const selectedOptionName = selection[variant.name];
-      const selectedOption = variant.options.find(
-        (opt) => opt.name === selectedOptionName
-      );
-      if (selectedOption) {
-        modifier += selectedOption.priceModifier;
+    const basePrice = p.price || 0;
+    const modifier = p.variants.reduce((total, variant) => {
+      const selectedOptionName = this.selectedVariants()[variant.name];
+      if (selectedOptionName) {
+        const option = variant.options.find(
+          (opt) => opt.name === selectedOptionName
+        );
+        return total + (option?.priceModifier || 0);
       }
-    });
+      return total;
+    }, 0);
 
-    return p.price + modifier;
+    return basePrice + modifier;
   });
 
-  // Encuentra la combinación de opciones seleccionada actualmente
-  currentSelectionData = computed(() => {
+  // Verifica si se ha seleccionado una opción para CADA una de las variantes del producto.
+  allVariantsSelected = computed(() => {
     const p = this.product();
-    const selection = this.selectedVariants();
-    if (!p || p.variants.length === 0) return null;
-
-    // Lógica para encontrar la opción final (simplificada para una sola variante por ahora)
-    // Se puede expandir para combinaciones más complejas si es necesario
-    const firstVariant = p.variants[0];
-    const selectedOptionName = selection[firstVariant.name];
-    return (
-      firstVariant.options.find((opt) => opt.name === selectedOptionName) ||
-      null
+    if (!p || p.variants.length === 0) return true; // Si no hay variantes, es verdadero.
+    return p.variants.every(
+      (variant) => !!this.selectedVariants()[variant.name]
     );
   });
 
-  // Verifica si la selección actual tiene stock
+  // Verifica si la combinación de variantes seleccionada tiene stock.
   isInStock = computed(() => {
-    const selection = this.currentSelectionData();
-    return selection ? selection.stock > 0 : false;
+    const p = this.product();
+    if (!p) return false;
+    if (!this.allVariantsSelected()) return false; // Si no se ha seleccionado todo, no hay stock.
+    if (p.variants.length === 0) return true; // Si no hay variantes, asumimos stock.
+
+    // Comprueba el stock de cada opción seleccionada. Si alguna es 0, el producto no está en stock.
+    return p.variants.every((variant) => {
+      const selectedOptionName = this.selectedVariants()[variant.name];
+      const option = variant.options.find(
+        (opt) => opt.name === selectedOptionName
+      );
+      return (option?.stock || 0) > 0;
+    });
   });
 
-  // Lógica para el formulario de Reseñas
-  private userOrders = signal<any[]>([]);
+  isProductInWishlist = computed(() => {
+    const p = this.product();
+    return p ? this.wishlistService.isInWishlist(p._id) : false;
+  });
+
   canWriteReview = computed(() => {
     const p = this.product();
     if (!p || this.userOrders().length === 0) return false;
@@ -117,71 +141,34 @@ export class ProductDetailComponent implements OnInit {
     comment: new FormControl('', Validators.required),
   });
 
-  // --- COMPUTED PROPERTIES ---
-  isProductInWishlist = computed(() => {
-    const p = this.product();
-    return p ? this.wishlistService.isInWishlist(p._id) : false;
-  });
-
   // --- CICLO DE VIDA ---
   ngOnInit() {
     const productId = this.route.snapshot.paramMap.get('id');
     if (productId) {
-      this.productService
-        .getProductById(productId)
-        .subscribe((foundProduct) => {
+      this.productService.getProductById(productId).subscribe({
+        next: (foundProduct) => {
           this.product.set(foundProduct);
-          if (foundProduct.images.length > 0)
+          // Aseguramos que 'selectedImage' se inicialice solo si hay imágenes
+          if (foundProduct.images && foundProduct.images.length > 0) {
             this.selectedImage.set(foundProduct.images[0]);
+          }
           this.initializeVariants(foundProduct);
-        });
-
+        },
+        error: (err) => {
+          console.error('Error al cargar el producto:', err);
+          this.product.set(null); // En caso de error, aseguramos que el producto sea nulo
+        },
+      });
       this.fetchReviews(productId);
       this.fetchUserOrders();
     }
   }
 
-  // --- MÉTODOS PARA VARIANTES (CORREGIDOS Y ROBUSTOS) ---
+  // --- MÉTODOS ---
 
   initializeVariants(p: Product): void {
-    const initialSelection: { [key: string]: string } = {};
-    if (!p.variants || p.variants.length === 0) {
-      this.selectedVariants.set(initialSelection);
-      return;
-    }
-
-    // 1. Aplanamos todas las opciones en un solo array, guardando el nombre de su variante
-    const allOptions = p.variants.flatMap((variant) =>
-      variant.options.map((option) => ({
-        ...option,
-        variantName: variant.name,
-      }))
-    );
-
-    // 2. Si no hay opciones, no hacemos nada
-    if (allOptions.length === 0) {
-      this.selectedVariants.set(initialSelection);
-      return;
-    }
-
-    // 3. Encontramos la opción más barata de todas
-    const cheapestOption = allOptions.reduce((lowest, current) =>
-      p.price + current.priceModifier < p.price + lowest.priceModifier
-        ? current
-        : lowest
-    );
-
-    // 4. Construimos la selección inicial basándonos en la opción más barata,
-    //    y rellenamos las demás variantes con su primera opción por defecto.
-    p.variants.forEach((variant) => {
-      if (variant.name === cheapestOption.variantName) {
-        initialSelection[variant.name] = cheapestOption.name;
-      } else if (variant.options.length > 0) {
-        initialSelection[variant.name] = variant.options[0].name;
-      }
-    });
-
-    this.selectedVariants.set(initialSelection);
+    // Reiniciamos las variantes a un objeto vacío para forzar al usuario a seleccionar
+    this.selectedVariants.set({});
   }
 
   selectOption(variantName: string, optionName: string): void {
@@ -201,13 +188,28 @@ export class ProductDetailComponent implements OnInit {
 
   addToCart(): void {
     const p = this.product();
-    if (p && this.isInStock()) {
-      this.cartService.addItem(p, this.selectedVariants());
-      this.toastService.show(`${p.name} ha sido añadido al carrito!`);
+    if (p && this.allVariantsSelected() && this.isInStock()) {
+      // Pasamos la cantidad actual del signal a nuestro servicio
+      this.cartService.addItem(p, this.selectedVariants(), this.quantity());
+
+      this.toastService.show(
+        `${p.name} (x${this.quantity()}) ha sido añadido al carrito!`,
+        'success'
+      );
+
+      this.justAddedToCart.set(true);
+      setTimeout(() => {
+        this.justAddedToCart.set(false);
+        this.quantity.set(1); // Reseteamos la cantidad a 1 después de añadir
+      }, 2000);
+    } else {
+      this.toastService.show(
+        'Por favor, selecciona una opción disponible.',
+        'error'
+      );
     }
   }
 
-  // --- OTROS MÉTODOS ---
   fetchReviews(productId: string): void {
     this.productService
       .getReviewsForProduct(productId)
@@ -217,29 +219,21 @@ export class ProductDetailComponent implements OnInit {
   }
 
   fetchUserOrders(): void {
-    // Usamos el observable currentUser$ para reaccionar a login/logout
     this.authService.currentUser$.subscribe((user) => {
       if (user) {
         this.orderService.getOrdersForUser(user.uid).subscribe((orders) => {
           this.userOrders.set(orders);
         });
       } else {
-        // Si el usuario cierra sesión, limpiamos sus pedidos
         this.userOrders.set([]);
       }
     });
   }
 
-  // --- MÉTODO CORREGIDO PARA EL SCROLL ---
   scrollToReviewForm(): void {
-    // Usamos un selector de CSS estándar que es más fiable en este caso
     const element = document.querySelector('.review-form-container');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      console.error(
-        'No se pudo encontrar el elemento del formulario de reseña.'
-      );
     }
   }
 
@@ -261,6 +255,7 @@ export class ProductDetailComponent implements OnInit {
             ...currentReviews,
           ]);
           this.reviewForm.reset({ author: 'Cliente Anónimo' });
+          this.toastService.show('¡Gracias por tu reseña!', 'success');
         });
     }
   }

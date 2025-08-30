@@ -1,6 +1,56 @@
-// Contenido para: frontend/src/app/pages/admin/_admin-shared.scss
+// En: frontend/src/app/pages/admin/_admin-shared.scss
 
-// --- Estilos de Formulario Compartidos ---
+// --- Estilos de Layout para Formularios de Admin ---
+.page-header {
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Playfair Display", serif;
+  }
+}
+
+.form-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 1024px) {
+    // Layout de 2 columnas para pantallas grandes
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.main-column,
+.sidebar-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-actions {
+  grid-column: 1 / -1; // Ocupa todo el ancho en el grid
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+// --- Estilos de Tarjetas (Cards) ---
+.card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-family: "Playfair Display", serif;
+}
+
+// --- Estilos de Campos de Formulario ---
 .form-field {
   position: relative;
   margin-bottom: 1.5rem;
@@ -13,7 +63,7 @@
     color: var(--text-secondary);
   }
 
-  // Icono para desplegables
+  // Icono de flecha para <select>
   &.has-arrow::after {
     content: "expand_more";
     font-family: "Material Symbols Outlined";
@@ -41,18 +91,9 @@
     border-color: var(--pastel-pink);
     box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
   }
+}
 
-  // Estilos específicos para <select>
-  &[as="select"] {
-    cursor: pointer;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-
-    option {
-      font-family: "Manrope", sans-serif;
-      color: var(--text-charcoal);
-      background-color: white;
-    }
-  }
+textarea.form-input {
+  resize: vertical;
+  min-height: 120px;
 }

@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { AuthService } from '../../services/auth';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-product-card',
@@ -27,6 +28,7 @@ export class ProductCard {
   public authService = inject(AuthService);
   private cartService = inject(CartService);
   private wishlistService = inject(WishlistService);
+  private toastService = inject(ToastService);
 
   // --- LÓGICA NUEVA PARA LA INCLINACIÓN ---
   @HostListener('mousemove', ['$event'])
@@ -53,19 +55,23 @@ export class ProductCard {
     this.wishlistService.isInWishlist(this.product._id)
   );
 
-  addToCart(event: Event): void {
+  addToCart(event: Event) {
     event.preventDefault();
     event.stopPropagation();
 
     if (this.product) {
       const defaultVariants: { [key: string]: string } = {};
       this.product.variants.forEach((variant) => {
-        if (variant.options && variant.options.length > 0) {
+        if (variant.options.length > 0) {
           defaultVariants[variant.name] = variant.options[0].name;
         }
       });
-
-      this.cartService.addItem(this.product, defaultVariants);
+      // ¡CORRECCIÓN! Añadimos la cantidad '1' como tercer argumento.
+      this.cartService.addItem(this.product, defaultVariants, 1);
+      this.toastService.show(
+        `${this.product.name} añadido al carrito`,
+        'success'
+      );
     }
   }
 
