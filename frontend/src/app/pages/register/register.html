@@ -1,55 +1,104 @@
 <div class="auth-container">
   <div class="auth-card" [@formAnimation]>
     <h2 class="auth-title">Crea tu Cuenta en Sofilu</h2>
-    <!-- Conectamos el formulario con [formGroup] y el envío con (ngSubmit) -->
+
     <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()">
+      <!-- CAMPO DE CORREO ELECTRÓNICO -->
       <div class="material-field">
-        <input id="email" type="email" formControlName="email" class="material-input" placeholder=" ">
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="material-input"
+          placeholder=" "
+        />
         <label for="email" class="material-label">Correo Electrónico</label>
-        <!-- Mensajes de error -->
-        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')">
-          <p class="error-text">El correo es requerido.</p>
+
+        <!-- Mensajes de Error para el Correo -->
+        @if (registerForm.get('email')?.touched &&
+        registerForm.get('email')?.invalid) {
+        <div class="error-text">
+          @if (registerForm.get('email')?.hasError('required')) {
+          <span>El correo es requerido.</span>
+          } @if (registerForm.get('email')?.hasError('email')) {
+          <span>Introduce un correo electrónico válido.</span>
+          }
         </div>
-        <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')">
-          <p class="error-text">Introduce un correo válido.</p>
-        </div>
-      </div>
-      <div class="material-field">
-        <input id="password" type="password" formControlName="password" class="material-input" placeholder=" ">
-        <label for="password" class="material-label">Contraseña</label>
-        <!-- Mensajes de error -->
-        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')">
-          <p class="error-text">La contraseña es requerida.</p>
-        </div>
-        <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minLength')">
-          <p class="error-text">La contraseña debe tener al menos 6 caracteres.</p>
-        </div>
-      </div>
-      <button type="submit" [disabled]="registerForm.invalid" class="auth-button">Crear Cuenta</button>
-      <div class="separator">
-        <span>O</span>
+        }
       </div>
 
-      <!-- ¡NUEVO BOTÓN DE GOOGLE! -->
-      <button type="button" (click)="handleGoogleLogin()" class="google-button" appRipple>
-        <!-- SVG del logo de Google -->
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- CAMPO DE CONTRASEÑA -->
+      <div class="material-field">
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="password" class="material-label">Contraseña</label>
+
+        <!-- Mensajes de Error para la Contraseña -->
+        @if (registerForm.get('password')?.touched &&
+        registerForm.get('password')?.invalid) {
+        <div class="error-text">
+          @if (registerForm.get('password')?.hasError('required')) {
+          <span>La contraseña es requerida.</span>
+          } @if (registerForm.get('password')?.hasError('minlength')) {
+          <span>La contraseña debe tener al menos 6 caracteres.</span>
+          }
+        </div>
+        }
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <button
+        type="submit"
+        [disabled]="registerForm.invalid"
+        class="auth-button"
+        appRipple
+      >
+        Crear Cuenta
+      </button>
+
+      <div class="separator"><span>O</span></div>
+
+      <button
+        type="button"
+        (click)="handleGoogleLogin()"
+        class="google-button"
+        appRipple
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <path
             d="M19.8398 10.2242C19.8398 9.53181 19.778 8.85227 19.6648 8.18181H10.2045V11.9545H15.6523C15.4227 13.1165 14.7705 14.1449 13.8295 14.8097V17.3807H17.025C18.8432 15.7017 19.8398 13.1818 19.8398 10.2242Z"
-            fill="#4285F4" />
+            fill="#4285F4"
+          />
           <path
             d="M10.2045 20.0001C12.9114 20.0001 15.1875 19.1137 16.8295 17.3807L13.8295 14.8097C12.9295 15.3949 11.7023 15.7614 10.2045 15.7614C7.38182 15.7614 4.98182 13.8864 4.14773 11.233L0.8125 13.8978C2.51136 17.4375 6.08182 20.0001 10.2045 20.0001Z"
-            fill="#34A853" />
+            fill="#34A853"
+          />
           <path
             d="M4.14773 11.233C3.96364 10.6903 3.85227 10.1051 3.85227 9.5C3.85227 8.89488 3.96364 8.30966 4.14773 7.76704V5.10227L0.8125 2.4375C-0.281818 4.60511 -0.8125 7.02556 -0.8125 9.5C-0.8125 11.9744 -0.281818 14.3949 0.8125 16.5625L4.14773 13.8978V11.233Z"
-            fill="#FBBC05" />
+            fill="#FBBC05"
+          />
           <path
             d="M10.2045 3.23864C11.6045 3.23864 12.9818 3.75284 14.0727 4.79829L17.0909 1.83807C15.1875 0.0880682 12.9114 -0.00000190735 10.2045 -0.00000190735C6.08182 -0.00000190735 2.51136 2.5625 0.8125 6.10227L4.14773 8.76704C4.98182 6.11363 7.38182 4.23864 10.2045 4.23864V3.23864Z"
-            fill="#EA4335" />
+            fill="#EA4335"
+          />
         </svg>
         <span>Continuar con Google</span>
       </button>
     </form>
-    <p class="auth-link">¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a></p>
+
+    <p class="auth-link">
+      ¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a>
+    </p>
   </div>
 </div>
