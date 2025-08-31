@@ -14,6 +14,7 @@ import {
 
 import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-category-list',
@@ -43,6 +44,7 @@ import { RippleDirective } from '../../../directives/ripple';
 })
 export class CategoryList implements OnInit {
   private categoryService = inject(CategoryService);
+  private toastService = inject(ToastService);
 
   categories = signal<Category[]>([]);
   isLoading = signal<boolean>(true);
@@ -79,7 +81,7 @@ export class CategoryList implements OnInit {
         },
         error: (err) => {
           console.error('Error al eliminar la categoría:', err);
-          alert('No se pudo eliminar la categoría.');
+          this.toastService.show('No se pudo eliminar la categoría.');
         },
       });
     }

@@ -1,55 +1,58 @@
 :host {
-  // Aseguramos que el componente pueda aplicar transformaciones 3D
   perspective: 1000px;
+  // ¡CLAVE! Hacemos que el host sea un contenedor flex para que la tarjeta crezca.
+  display: flex;
 }
 
 .card-container {
-  // Contenedor que permite que la sombra no se corte en el hover
+  display: flex; // Asegura que el contenedor interno también sea flex
+  width: 100%;
 }
 
 .card {
-  position: relative; // Contexto para las burbujas
+  position: relative;
   background-color: white;
-  border-radius: 1rem; // Bordes más suaves
+  border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  // Transición suave para el efecto de elevación y rotación
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
     box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  width: 100%; // La tarjeta debe ocupar todo el espacio de su contenedor host
+
+  // --- ¡NUEVA LÓGICA FLEXBOX! ---
+  display: flex;
+  flex-direction: column; // Apila la imagen y el contenido verticalmente
 
   &:hover {
-    // Efecto de elevación sutil al pasar el ratón por encima
     transform: translateY(-8px);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
 
-    // Cuando el ratón pasa por la tarjeta, las burbujas aparecen
     .action-bubbles {
       transform: translateX(0);
       opacity: 1;
     }
-
-    // Y la imagen hace un ligero zoom
     .product-image {
       transform: scale(1.05);
     }
   }
 }
 
-// Enlace que envuelve toda la tarjeta
 a.product-card {
   text-decoration: none;
   color: inherit;
-  display: block;
+  display: flex; // Hacemos que el enlace también sea un contenedor flex
+  flex-direction: column;
+  flex-grow: 1; // Permite que el enlace crezca para llenar la tarjeta
 }
 
 .image-container {
   position: relative;
-  overflow: hidden; // Esconde el overflow del zoom de la imagen
+  overflow: hidden;
 }
 
 .product-image {
   width: 100%;
-  aspect-ratio: 1 / 1; // Mantiene la imagen cuadrada
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -63,14 +66,21 @@ a.product-card {
 
 .card-content {
   padding: 1rem;
+  // --- ¡NUEVA LÓGICA FLEXBOX! ---
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; // ¡Esta es la propiedad mágica!
 }
 
 .product-name {
   font-weight: 700;
-  margin-bottom: 0.25rem;
-  // Limita el nombre a 2 líneas para evitar tarjetas muy largas
+  margin-bottom: 0.5rem; // Un poco más de espacio
+  // ¡CLAVE! Esta propiedad le dice al nombre que puede crecer y ocupar el espacio disponible.
+  flex-grow: 1;
+
+  // Mantenemos la limitación de líneas para nombres extremadamente largos
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3; // Permitimos hasta 3 líneas
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -79,6 +89,7 @@ a.product-card {
 .price {
   font-weight: 500;
   color: var(--text-secondary);
+  // Se alinea al final gracias al flex-grow del nombre
 }
 
 // --- Burbujas de Acción ---
