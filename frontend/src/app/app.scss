@@ -1,5 +1,7 @@
 :host {
-  // display: block; // Cambiamos esto por una estructura de layout
+  @media (max-width: 767px) {
+    display: block;
+  }
 }
 
 // Contenedor principal que envuelve toda la app
@@ -7,6 +9,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
 }
 
 .main-content {
@@ -23,6 +26,5 @@ app-header {
   top: 0; // Lo pegamos arriba
   left: 0;
   width: 100%;
-  z-index: 100; // ¡Le damos un z-index alto!
-  transform: translateZ(0);
+  z-index: 100;
 }

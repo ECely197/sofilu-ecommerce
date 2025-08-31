@@ -1,19 +1,87 @@
-.card {
-  // Necesitamos que la tarjeta sea un contenedor de posicionamiento
-  // para las burbujas. Es probable que ya lo tengas, pero confírmalo.
-  position: relative;
+:host {
+  // Aseguramos que el componente pueda aplicar transformaciones 3D
+  perspective: 1000px;
 }
 
-a {
+.card-container {
+  // Contenedor que permite que la sombra no se corte en el hover
+}
+
+.card {
+  position: relative; // Contexto para las burbujas
+  background-color: white;
+  border-radius: 1rem; // Bordes más suaves
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  // Transición suave para el efecto de elevación y rotación
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &:hover {
+    // Efecto de elevación sutil al pasar el ratón por encima
+    transform: translateY(-8px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+
+    // Cuando el ratón pasa por la tarjeta, las burbujas aparecen
+    .action-bubbles {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    // Y la imagen hace un ligero zoom
+    .product-image {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Enlace que envuelve toda la tarjeta
+a.product-card {
   text-decoration: none;
   color: inherit;
+  display: block;
 }
 
 .image-container {
-  // Esto asegura que las burbujas no se salgan de la imagen
   position: relative;
-  overflow: hidden;
+  overflow: hidden; // Esconde el overflow del zoom de la imagen
 }
+
+.product-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; // Mantiene la imagen cuadrada
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.image-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: var(--soft-gray);
+}
+
+.card-content {
+  padding: 1rem;
+}
+
+.product-name {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  // Limita el nombre a 2 líneas para evitar tarjetas muy largas
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.price {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+// --- Burbujas de Acción ---
 
 .action-bubbles {
   position: absolute;
@@ -22,36 +90,35 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  z-index: 10;
+  z-index: 2; // Asegura que estén por encima de la imagen
 
-  // Animación de entrada
-  transform: translateX(150%);
+  // Estado inicial: fuera de la pantalla y transparente
+  transform: translateX(120%);
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// Cuando el ratón pasa por encima de la tarjeta, las burbujas aparecen
-.card:hover .action-bubbles {
-  transform: translateX(0);
-  opacity: 1;
-}
-
 .bubble-button {
   background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
   border: 1px solid var(--soft-gray);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
   color: var(--text-charcoal);
 
+  // ¡NUEVA TRANSICIÓN ELÁSTICA!
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.2s, color 0.2s;
+
   &:hover {
-    transform: scale(1.1);
+    // Efecto de "salto" al pasar el ratón
+    transform: scale(1.15);
     background-color: white;
   }
 
@@ -59,97 +126,5 @@ a {
     background-color: var(--pastel-pink);
     color: white;
     border-color: var(--pastel-pink);
-  }
-}
-
-.card {
-  border: 1px solid #ddd;
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 1rem;
-  background-color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
-    box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  transform-style: preserve-3d;
-
-  &:hover {
-    transform: scale(1.05) perspective(1000px) rotateY(0deg) rotateX(0deg);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-  }
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-
-.card-content {
-  padding: 1rem;
-}
-
-.price {
-  font-weight: bold;
-  color: #333;
-}
-
-.card-link {
-  text-decoration: none;
-  color: inherit;
-  display: block; // Importante para que ocupe todo el espacio
-  perspective: 1000px; // La "profundidad" de nuestra escena 3D
-}
-
-.image-container {
-  position: relative;
-  overflow: hidden; // Para que las burbujas no se salgan
-}
-
-.action-bubbles {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  // Animación de entrada
-  transform: translateX(150%);
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-// Cuando el ratón pasa por encima de la tarjeta, las burbujas aparecen
-.card:hover .action-bubbles {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-.bubble-button {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--soft-gray);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-  font-size: 1.25rem;
-
-  &:hover {
-    transform: scale(1.1);
-    background-color: white;
-  }
-
-  &.active {
-    color: red; // El corazón se pone rojo si está en la wishlist
   }
 }

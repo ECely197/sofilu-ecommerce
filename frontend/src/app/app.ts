@@ -10,6 +10,7 @@ import { Footer } from './components/footer/footer';
 import { CartFlyout } from './components/cart-flyout/cart-flyout';
 import { BottomNavBarComponent } from './components/bottom-nav-bar.component/bottom-nav-bar.component';
 import { ToastContainerComponent } from './components/toast/toast';
+import { UiState } from './services/ui-state';
 
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
@@ -32,7 +33,9 @@ import { AosOptions } from 'aos';
 })
 export class App implements OnInit {
   private router = inject(Router);
+  public uiState = inject(UiState);
   showGlobalHeaderAndFooter = signal(true);
+  isSearchVisible = signal(false);
 
   ngOnInit() {
     // 1. Configuración inicial de AOS
@@ -66,5 +69,15 @@ export class App implements OnInit {
         // Opcional: Volver al principio de la página en cada navegación
         window.scrollTo(0, 0);
       });
+  }
+
+  handleSearch(event: Event, searchInput: HTMLInputElement): void {
+    event.preventDefault();
+    const query = searchInput.value.trim();
+    if (query) {
+      this.router.navigate(['/search'], { queryParams: { q: query } });
+      searchInput.value = '';
+      this.uiState.closeMobileSearch(); // Cierra a través del servicio
+    }
   }
 }

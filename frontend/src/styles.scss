@@ -83,3 +83,57 @@ li {
   margin: 0 auto; // Centra el contenedor
   padding: 0 0.5rem; // Espacio en los lados
 }
+
+.mobile-search-bar .search-form {
+  position: relative;
+  z-index: 2; // El formulario está por encima del overlay
+  display: flex;
+}
+
+.mobile-search-bar .search-input {
+  width: 100%;
+  border: 1px solid var(--soft-gray);
+  padding: 0.875rem 1rem;
+  border-radius: 9999px;
+  padding-right: 3.5rem; // Espacio para el botón
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-search-bar .search-submit-btn {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+  border: none;
+  background-color: var(--pastel-pink);
+  color: white;
+  border-radius: 9999px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #e8a7a7; // Tono más oscuro al pasar el ratón
+  }
+}
+
+// Animaciones (si no las tienes ya en global)
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -1,20 +1,33 @@
 :host {
+  // Ocultamos el componente por defecto en pantallas grandes
   display: none;
+
+  // Mostramos el componente solo en vista móvil
   @media (max-width: 767px) {
     display: block;
+    // ¡CLAVE! Hacemos que el componente host sea el contenedor fijo a pantalla completa.
+    // Esto establece el "contexto de apilamiento" para todo lo que está dentro.
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000; // Un z-index base alto
+    pointer-events: none; // Por defecto, el contenedor no es clickeable
   }
 }
 
+// --- BARRA DE NAVEGACIÓN INFERIOR ---
 .bottom-nav-bar {
-  position: fixed;
+  // Ahora se posiciona de forma absoluta dentro de su contenedor :host
+  position: absolute;
   bottom: 1rem;
   left: 1rem;
   right: 1rem;
-  z-index: 1000;
   height: 64px;
-
   transform: translateY(150%);
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: auto; // La barra en sí sí es interactiva
 
   &.is-visible {
     transform: translateY(0);
@@ -24,7 +37,6 @@
 .nav-content {
   position: relative;
   display: flex;
-  // Usamos 'space-between' para empujar los grupos de items a los extremos
   justify-content: space-between;
   align-items: center;
   height: 100%;
@@ -32,13 +44,13 @@
   border-radius: 9999px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.8);
-  padding: 0 1rem; // Aumentamos el padding para dar espacio a los lados
+  padding: 0 1rem;
 }
+
 .nav-group {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  // Cada grupo ocupa el 50% del espacio, menos el hueco para el FAB
   width: calc(50% - 40px);
 }
 
@@ -50,11 +62,10 @@
   height: 48px;
   background-color: var(--pastel-pink);
   border-radius: 9999px;
-  z-index: 0; // Detrás de los iconos
+  z-index: 0;
   transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
 }
-
 .nav-item {
   position: relative;
   z-index: 1;
@@ -64,10 +75,15 @@
   justify-content: center;
   text-decoration: none;
   color: var(--text-secondary);
-  // Damos un ancho fijo para que la burbuja se calcule bien
   width: 64px;
   height: 100%;
   transition: color 0.4s ease;
+  // Estilos para que los <button> se vean como <a>
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
 
   .label {
     font-size: 0.75rem;
@@ -79,7 +95,7 @@
     color: white;
   }
 }
-// Botón de Acción Flotante (FAB) y Muesca
+
 .fab {
   position: absolute;
   top: -24px;
@@ -109,5 +125,74 @@
     height: 20px;
     font-size: 0.75rem;
     font-weight: bold;
+  }
+}
+
+// --- ESTILOS PARA LA BÚSQUEDA (Patrón Flyout) ---
+
+.search-flyout-container {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none;
+
+  &.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.search-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.mobile-search-bar {
+  position: relative;
+  z-index: 1; // Por encima del overlay
+  padding: 1rem;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease-out;
+
+  .search-flyout-container.is-open & {
+    transform: translateY(0); // Animación de entrada
+  }
+
+  form {
+    position: relative;
+    display: flex;
+
+    .search-input {
+      width: 100%;
+      border: 1px solid var(--soft-gray);
+      padding: 0.875rem 1rem;
+      border-radius: 9999px;
+      padding-right: 3.5rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-submit-btn {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      bottom: 5px;
+      border: none;
+      background-color: var(--pastel-pink);
+      color: white;
+      border-radius: 9999px;
+      width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background-color: #e8a7a7;
+      }
+    }
   }
 }

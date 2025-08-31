@@ -1,4 +1,4 @@
-// Contenido completo y mejorado para: src/app/components/bottom-nav-bar/bottom-nav-bar.component.ts
+// Contenido Completo, Final y Limpio para: src/app/components/bottom-nav-bar.component.ts
 
 import {
   Component,
@@ -30,17 +30,14 @@ import { UiState } from '../../services/ui-state';
   styleUrl: './bottom-nav-bar.component.scss',
 })
 export class BottomNavBarComponent implements AfterViewInit {
+  // --- INYECCIÓN DE SERVICIOS ---
   public cartService = inject(CartService);
   public authService = inject(AuthService);
-  public uiStateService = inject(UiState);
+  public uiStateService = inject(UiState); // Hecho público para el HTML
   private router = inject(Router);
 
   // --- LÓGICA DE ANIMACIÓN DE LA BURBUJA ---
-
-  // Guardamos la referencia a todos los enlaces de la barra
-  @ViewChildren('navItem') navItems!: QueryList<ElementRef<HTMLAnchorElement>>;
-
-  // Un signal para guardar los estilos CSS (posición y tamaño) de la burbuja
+  @ViewChildren('navItem') navItems!: QueryList<ElementRef<HTMLElement>>;
   pillStyle = signal({ left: '0px', width: '0px', opacity: 0 });
 
   // --- LÓGICA DE SCROLL INTELIGENTE ---
@@ -49,14 +46,23 @@ export class BottomNavBarComponent implements AfterViewInit {
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    // ... (lógica de scroll sin cambios)
+    const currentScrollY = window.scrollY;
+    if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
+      this.isNavBarVisible.set(false); // Ocultar al bajar
+    } else {
+      this.isNavBarVisible.set(true); // Mostrar al subir
+    }
+    this.lastScrollY = currentScrollY;
   }
 
+  // --- CICLO DE VIDA ---
   ngAfterViewInit() {
-    // Usamos un pequeño retraso para asegurar que todo esté renderizado
+    this.navItems.changes.subscribe(() => {
+      this.updatePillPosition();
+    });
+
     setTimeout(() => this.updatePillPosition(), 100);
 
-    // Actualizamos la posición de la burbuja cada vez que la navegación termina
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -64,9 +70,7 @@ export class BottomNavBarComponent implements AfterViewInit {
       });
   }
 
-  /**
-   * Encuentra el enlace activo y mueve la burbuja a su posición.
-   */
+  // --- MÉTODO PARA LA BURBUJA ---
   updatePillPosition(): void {
     const activeItem = this.navItems.find((item) =>
       item.nativeElement.classList.contains('active')
@@ -80,8 +84,16 @@ export class BottomNavBarComponent implements AfterViewInit {
         opacity: 1,
       });
     } else {
-      // Si no hay ninguno activo, la ocultamos
       this.pillStyle.update((style) => ({ ...style, opacity: 0 }));
+    }
+  }
+  handleSearch(event: Event, searchInput: HTMLInputElement): void {
+    event.preventDefault();
+    const query = searchInput.value.trim();
+    if (query) {
+      this.router.navigate(['/search'], { queryParams: { q: query } });
+      searchInput.value = '';
+      this.uiStateService.closeMobileSearch(); // Cierra a través del servicio
     }
   }
 }

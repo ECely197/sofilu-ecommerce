@@ -6,9 +6,48 @@
     } @else {
     <h1>Explorar todos los productos</h1>
     }
-    <!-- Próximamente: Aquí irán los filtros y selectores de ordenamiento -->
   </header>
 
+  <!-- Barra de Filtros (basada en tu diseño) -->
+  <div class="filters-container">
+    <div class="filter-buttons">
+      <!-- Estos botones abrirían modales en un futuro, por ahora son visuales -->
+      <button class="filter-btn" appRipple>
+        <span>Talla</span>
+        <span class="material-symbols-outlined">expand_more</span>
+      </button>
+      <button class="filter-btn" appRipple>
+        <span>Color</span>
+        <span class="material-symbols-outlined">expand_more</span>
+      </button>
+      <button class="filter-btn" appRipple>
+        <span>Precio</span>
+        <span class="material-symbols-outlined">expand_more</span>
+      </button>
+    </div>
+
+    <div class="sort-selector">
+      <label for="sort">Ordenar por</label>
+      <select
+        id="sort"
+        class="sort-input"
+        (change)="applySort($event)"
+        [value]="
+          (activeFilters()['sortBy'] || 'relevance') +
+          ',' +
+          (activeFilters()['sortOrder'] || 'desc')
+        "
+      >
+        <option value="relevance,desc">Relevancia</option>
+        <option value="price,asc">Precio: de menor a mayor</option>
+        <option value="price,desc">Precio: de mayor a menor</option>
+        <option value="name,asc">Nombre: A-Z</option>
+        <option value="name,desc">Nombre: Z-A</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Resultados -->
   @if (isLoading()) {
   <p>Buscando...</p>
   } @else if (products().length > 0) {

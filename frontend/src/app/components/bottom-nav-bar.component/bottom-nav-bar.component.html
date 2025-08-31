@@ -1,7 +1,34 @@
-<!-- Contenido completo y corregido para: src/app/components/bottom-nav-bar/bottom-nav-bar.component.html -->
+<!-- Contenido Completo, Unificado y Corregido para: bottom-nav-bar.component.html -->
 
+<div
+  class="search-flyout-container"
+  [class.is-open]="uiStateService.isMobileSearchVisible()"
+>
+  <div
+    class="search-overlay"
+    (click)="uiStateService.closeMobileSearch()"
+  ></div>
+
+  <div class="mobile-search-bar">
+    <form (submit)="handleSearch($event, searchInput)">
+      <input
+        #searchInput
+        type="search"
+        placeholder="Buscar productos..."
+        class="search-input"
+        autofocus
+      />
+      <button type="submit" class="search-submit-btn">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- BARRA DE NAVEGACIÓN INFERIOR (Solo hay una) -->
 <nav class="bottom-nav-bar" [class.is-visible]="isNavBarVisible()">
   <div class="nav-content">
+    <!-- Burbuja de animación (sin cambios) -->
     <div
       class="nav-pill"
       [style.left]="pillStyle().left"
@@ -9,7 +36,7 @@
       [style.opacity]="pillStyle().opacity"
     ></div>
 
-    <!-- ¡NUEVO! Grupo de la izquierda -->
+    <!-- Grupo de la Izquierda -->
     <div class="nav-group">
       <a
         #navItem
@@ -32,6 +59,7 @@
       </a>
     </div>
 
+    <!-- Botón Flotante Central (sin cambios) -->
     <button (click)="uiStateService.openCartFlyout()" class="fab">
       <span class="material-symbols-outlined">shopping_bag</span>
       @if(cartService.totalItems() > 0){
@@ -39,17 +67,18 @@
       }
     </button>
 
-    <!-- ¡NUEVO! Grupo de la derecha -->
+    <!-- Grupo de la Derecha (Unificado) -->
     <div class="nav-group">
-      <a
-        #navItem
-        routerLink="/products"
-        routerLinkActive="active"
+      <!-- Botón de Búsqueda -->
+      <button
+        (click)="uiStateService.openMobileSearch()"
         class="nav-item"
+        #navItem
       >
-        <span class="material-symbols-outlined">store</span>
-        <span class="label">Tienda</span>
-      </a>
+        <span class="material-symbols-outlined">search</span>
+        <span class="label">Buscar</span>
+      </button>
+      <!-- Enlace a la Cuenta -->
       <a
         #navItem
         routerLink="/account"

@@ -42,7 +42,7 @@ export class CategoryFormComponent implements OnInit {
     // Inicializamos el formulario usando el FormBuilder inyectado
     this.categoryForm = this.fb.group({
       name: ['', Validators.required],
-      imageUrl: ['', Validators.required], // Este campo es requerido, pero lo llenamos después de subir la imagen
+      imageUrl: [''], // Este campo es requerido, pero lo llenamos después de subir la imagen
     });
 
     this.categoryId = this.route.snapshot.paramMap.get('id');
@@ -68,44 +68,52 @@ export class CategoryFormComponent implements OnInit {
   }
 
   handleSubmit(): void {
-    console.log("--- CategoryForm: Se ha hecho clic en 'Guardar'. ---"); // LOG 1
+    console.log('--- CategoryForm: handleSubmit disparado. ---');
 
-    // LOG 2: Imprimimos el estado completo del formulario
-    console.log('Estado del formulario:', this.categoryForm);
-    console.log('Valores del formulario:', this.categoryForm.value);
-    console.log('¿Formulario válido?', this.categoryForm.valid);
+    // 1. Marcamos los campos para mostrar errores de validación (ej: nombre vacío)
+    this.categoryForm.markAllAsTouched();
 
-    // LOG 3: Verificamos si hay un archivo seleccionado
-    console.log('¿Hay un archivo de imagen seleccionado?', !!this.selectedFile);
-
-    // --- Lógica de Validación Original (con logs) ---
-    if (!this.isEditMode() && !this.selectedFile) {
-      console.error(
-        "--- VALIDACIÓN FALLIDA: No se ha seleccionado una imagen en modo 'Crear'. ---"
-      );
+    // 2. Comprobamos si el resto del formulario es válido
+    if (this.categoryForm.get('name')?.invalid) {
       this.toastService.show(
-        'Por favor, selecciona una imagen para la categoría.'
+        'Por favor, introduce un nombre para la categoría.',
+        'error'
       );
       return;
     }
 
-    if (this.categoryForm.invalid) {
-      console.error(
-        '--- VALIDACIÓN FALLIDA: El formulario no es válido. Errores:',
-        this.categoryForm.errors
+    // 3. ¡VALIDACIÓN MANUAL DE LA IMAGEN!
+    // Debe haber una imagen ya cargada (en modo edición) O un nuevo archivo seleccionado.
+    const hasExistingImage =
+      this.isEditMode() && this.categoryForm.value.imageUrl;
+    const hasNewFile = !!this.selectedFile;
+
+    if (!hasExistingImage && !hasNewFile) {
+      this.toastService.show(
+        'Por favor, selecciona una imagen para la categoría.',
+        'error'
       );
-      // Marcamos los campos para que los errores visuales aparezcan si no lo han hecho
-      this.categoryForm.markAllAsTouched();
       return;
     }
 
-    console.log('--- VALIDACIÓN SUPERADA: Procediendo a guardar... ---'); // LOG 4
+    console.log('--- VALIDACIÓN SUPERADA ---');
 
-    // ... (el resto de la lógica para subir imagen y guardar no cambia)
+    // 4. Lógica de subida de imagen (si es necesario)
     if (this.selectedFile) {
       this.isUploading.set(true);
-      // ...
-    } else {
+      this.storageService.uploadImage(this.selectedFile).subscribe({
+        next: (downloadURL) => {
+          this.saveCategory(downloadURL); // Guardamos con la nueva URL
+        },
+        error: (err) => {
+          this.isUploading.set(false);
+          this.toastService.show('Error al subir la imagen.', 'error');
+          console.error('Error de subida:', err);
+        },
+      });
+    }
+    // 5. Si no hay archivo nuevo, guardamos con la URL existente
+    else {
       this.saveCategory(this.categoryForm.value.imageUrl);
     }
   }
