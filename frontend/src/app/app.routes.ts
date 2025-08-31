@@ -22,6 +22,7 @@ import { Account } from './pages/account/account/account';
 import { MyOrdersComponent } from './pages/account/my-orders/my-orders';
 import { MyAddressesComponent } from './pages/account/my-addresses/my-addresses';
 import { MyDetailsComponent } from './pages/account/my-details/my-details';
+import { SearchResultsComponent } from './pages/search-results/search-results';
 
 // Componentes de Página del Admin
 import { Dashboard } from './pages/admin/dashboard/dashboard';
@@ -49,6 +50,7 @@ export const routes: Routes = [
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   { path: 'wishlist', component: WishlistComponent },
+  { path: 'search', component: SearchResultsComponent },
 
   // --- Rutas del Área de Cuenta (Protegidas) ---
   {

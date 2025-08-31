@@ -10,6 +10,48 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 // RUTAS PÚBLICAS (para el cliente)
 // ===============================
 
+router.get("/", async (req, res) => {
+  try {
+    // Recogemos los parámetros de la URL (ej: /api/products?search=sábanas&sortBy=price)
+    const { search, category, sortBy, sortOrder } = req.query;
+
+    let query = {}; // Objeto de consulta para Mongoose
+    let sortOptions = {}; // Objeto de ordenamiento para Mongoose
+
+    // 1. Construir la consulta de búsqueda
+    if (search) {
+      // Usamos una expresión regular para buscar el término 'search' en los campos 'name' y 'description'.
+      // La 'i' hace que la búsqueda no distinga entre mayúsculas y minúsculas.
+      query = {
+        ...query,
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+
+    // 2. Construir la consulta de filtro por categoría
+    if (category) {
+      query = { ...query, category: category };
+    }
+
+    // 3. Construir las opciones de ordenamiento
+    if (sortBy) {
+      // El valor de sortOrder debe ser 'asc' o 'desc'. Por defecto, 'asc'.
+      sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+    }
+
+    // 4. Ejecutar la consulta final en la base de datos
+    const products = await Product.find(query).sort(sortOptions);
+
+    res.json(products);
+  } catch (error) {
+    console.error("Error al buscar o filtrar productos:", error);
+    res.status(500).json({ message: "Error al obtener los productos" });
+  }
+});
+
 router.get("/section/featured", async (req, res) => {
   try {
     const featuredProducts = await Product.find({ isFeatured: true }).limit(4);

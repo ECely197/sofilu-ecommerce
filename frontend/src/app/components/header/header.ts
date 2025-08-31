@@ -186,4 +186,13 @@ export class Header implements AfterViewInit {
       .then(() => this.router.navigate(['/']))
       .catch((error) => console.error('Error al cerrar sesión:', error));
   }
+  handleSearch(event: Event, searchInput: HTMLInputElement): void {
+    event.preventDefault(); // Previene el envío del formulario tradicional
+    const query = searchInput.value.trim();
+    if (query) {
+      // Navegamos a la página de resultados con el parámetro de búsqueda
+      this.router.navigate(['/search'], { queryParams: { q: query } });
+      searchInput.value = ''; // Limpiamos el input
+    }
+  }
 }

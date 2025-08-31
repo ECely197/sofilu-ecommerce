@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product } from '../interfaces/product.interface';
 import { environment } from '../../environments/environment.prod';
@@ -83,5 +83,20 @@ export class ProductServices {
     // Llamamos a la nueva ruta que creamos en el backend
     const url = `${this.apiUrl}/category/${slug}`;
     return this.http.get<Product[]>(url);
+  }
+
+  searchProducts(queryParams: {
+    [param: string]: string | number | boolean;
+  }): Observable<Product[]> {
+    // HttpParams nos ayuda a construir la URL de forma segura (ej: ?search=pijama&sortBy=price)
+    let params = new HttpParams();
+    for (const key in queryParams) {
+      if (queryParams.hasOwnProperty(key)) {
+        params = params.set(key, queryParams[key]);
+      }
+    }
+
+    // Hacemos la petición a nuestra nueva ruta GET /
+    return this.http.get<Product[]>(this.apiUrl, { params });
   }
 }

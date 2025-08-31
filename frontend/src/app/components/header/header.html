@@ -84,6 +84,17 @@
 
   <div class="header-pill right">
     <div class="header-right">
+      <form class="search-form" (submit)="handleSearch($event, searchInput)">
+        <input
+          #searchInput
+          type="text"
+          placeholder="Buscar..."
+          class="search-input"
+        />
+        <button type="submit" class="search-button">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+      </form>
       <a
         routerLink="/wishlist"
         class="icon-button"
