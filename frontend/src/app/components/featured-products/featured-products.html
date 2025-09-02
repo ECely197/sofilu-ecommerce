@@ -1,11 +1,19 @@
-<!-- Usamos un color de fondo diferente para esta sección, como en el diseño de Stitch -->
-<section class="section-container">
-  <h2 class="section-title" data-aos="fade-up">Nuestros Favoritos</h2>
-  <!-- El disparador de la animación en cascada se aplica aquí -->
-  <div class="products-grid" [@cardAnimation]>
-    <!-- Reutilizamos nuestro ProductCardComponent para mostrar los productos -->
-    @for (product of featuredProducts; track product._id) {
+<!-- En: frontend/src/app/components/featured-products/featured-products.html -->
+
+<!-- Añadimos la clase 'card' para encapsular toda la sección -->
+<section class="card" data-aos="fade-up">
+  <!-- Añadimos la cabecera con el título y el enlace "Ver todo" -->
+  <div class="card-header">
+    <h2 class="card-title">Nuestros Favoritos</h2>
+    <a routerLink="/products" class="btn btn-secondary">Ver todo</a>
+  </div>
+
+  <!-- La cuadrícula de productos ahora va dentro de un contenedor con padding -->
+  <div class="content-wrapper">
+    <div class="products-grid">
+      @for (product of products; track product._id) {
       <app-product-card [product]="product"></app-product-card>
-    }
+      }
+    </div>
   </div>
 </section>

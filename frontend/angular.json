@@ -26,7 +26,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/aos/dist/aos.css", "src/styles.scss"],
+            "styles": [
+              "node_modules/swiper/swiper-bundle.min.css",
+              "node_modules/aos/dist/aos.css",
+              "src/styles.scss"
+            ],
             "scripts": ["node_modules/aos/dist/aos.js"]
           },
           "configurations": {

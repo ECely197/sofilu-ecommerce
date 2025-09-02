@@ -1,10 +1,15 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Product } from '../../interfaces/product.interface';
-import { ProductServices } from '../../services/product';
-// Importamos nuestra tarjeta de producto reutilizable
 import { ProductCard } from '../product-card/product-card';
-import { trigger, transition, query, stagger, style, animate } from '@angular/animations';
+import {
+  trigger,
+  transition,
+  query,
+  stagger,
+  style,
+  animate,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-featured-products',
@@ -15,24 +20,23 @@ import { trigger, transition, query, stagger, style, animate } from '@angular/an
   animations: [
     trigger('cardAnimation', [
       transition(':enter', [
-        query('app-product-card', [
-          style({ opacity: 0, transform: 'translateY(30px)' }),
-          stagger('100ms', [
-            animate('0.6s cubic-bezier(0.35, 0, 0.25, 1)', 
-                    style({ opacity: 1, transform: 'none' }))
-          ])
-        ], { optional: true })
-      ])
-    ])
-  ]
+        query(
+          'app-product-card',
+          [
+            style({ opacity: 0, transform: 'translateY(30px)' }),
+            stagger('100ms', [
+              animate(
+                '0.6s cubic-bezier(0.35, 0, 0.25, 1)',
+                style({ opacity: 1, transform: 'none' })
+              ),
+            ]),
+          ],
+          { optional: true }
+        ),
+      ]),
+    ]),
+  ],
 })
-export class FeaturedProductsComponent implements OnInit {
-   private productService = inject(ProductServices);
-  public featuredProducts: Product[] = [];
-
-  ngOnInit(): void {
-    this.productService.getFeaturedProducts().subscribe(products => {
-      this.featuredProducts = products;
-    });
-  }
+export class FeaturedProductsComponent {
+  @Input() products: Product[] = [];
 }

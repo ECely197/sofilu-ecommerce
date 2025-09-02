@@ -1,38 +1,41 @@
 <!-- En: frontend/src/app/pages/home/home.html -->
-<div class="home-page-wrapper">
-  <!-- Sección Hero -->
-  <section class="hero-section">
-    <h1 class="hero-title" data-aos="fade-up">
-      Tu universo de confort te espera
-    </h1>
-    <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="100">
-      Descubre nuestra colección de sábanas, pijamas y más...
-    </p>
-    <a
-      routerLink="/products"
-      class="btn-material"
-      appRipple
-      data-aos="fade-up"
-      data-aos-delay="200"
-    >
-      Explorar Colección
-    </a>
+<div class="page-container">
+  <!-- 1. Hero Section -->
+  <section class="card hero-card" data-aos="fade-up">
+    <div class="hero-background">
+      <img src="/image-prueba-back.jpg" alt="Ambiente de confort y descanso" />
+    </div>
+    <div class="hero-content">
+      <h1 class="hero-title">Tu universo de confort te espera</h1>
+      <button routerLink="/products" class="hero-button">
+        Explorar Colección
+      </button>
+    </div>
   </section>
 
-  <!-- Cada sección ahora puede tener su propia animación -->
-  <div data-aos="fade-up" data-aos-offset="100">
-    <app-categories-section></app-categories-section>
-  </div>
+  <!-- 2. Carrusel de Categorías -->
+  <app-categories-section
+    [categories]="categories()"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  ></app-categories-section>
 
-  <div data-aos="fade-up" data-aos-offset="100">
-    <app-featured-products></app-featured-products>
-  </div>
+  <!-- 3. Productos Destacados -->
+  <app-featured-products
+    [products]="featuredProducts()"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  ></app-featured-products>
 
-  <div data-aos="fade-up" data-aos-offset="100">
-    <app-how-to-buy></app-how-to-buy>
-  </div>
-
-  <div data-aos="fade-up" data-aos-offset="100">
-    <app-sale-section></app-sale-section>
-  </div>
+  <!-- 4. Carruseles de Productos por Categoría -->
+  @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
+  <app-product-carousel
+    [title]="categoryGroup.name"
+    [products]="categoryGroup.products"
+    [categorySlug]="categoryGroup.slug"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
+  </app-product-carousel>
+  }
 </div>

@@ -1,22 +1,31 @@
-<!-- Contenido completo para: src/app/components/home/categories-section/categories-section.component.html -->
+<!-- En: categories-section.html -->
 
-<section class="categories-section">
-  <h2 class="section-title">Explora Nuestras Categorías</h2>
-  <div class="categories-grid">
-    <!-- Iteramos sobre las categorías obtenidas del servicio -->
-    @for (category of categories(); track category._id) {
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">Explora Nuestras Categorías</h2>
+  </div>
 
-    <!-- Cada categoría es un enlace que apunta a /category/[slug] -->
-    <a [routerLink]="['/category', category.slug]" class="category-card">
-      <div
-        class="card-image"
-        [style.backgroundImage]="'url(' + category.imageUrl + ')'"
-      ></div>
-      <div class="card-overlay">
-        <h3 class="card-title">{{ category.name }}</h3>
+  <!-- 1. Envolvemos el swiper en un carousel-container -->
+  <div class="carousel-container">
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        @for (category of categories; track category._id) {
+        <div class="swiper-slide">
+          <a [routerLink]="['/category', category.slug]" class="category-slide">
+            <img
+              [src]="category.imageUrl"
+              [alt]="category.name"
+              class="category-image"
+            />
+            <p class="category-name">{{ category.name }}</p>
+          </a>
+        </div>
+        }
       </div>
-    </a>
+    </div>
 
-    }
+    <!-- 2. Añadimos los botones, vinculados con el ID único -->
+    <div class="swiper-button-prev {{ uniqueId }}"></div>
+    <div class="swiper-button-next {{ uniqueId }}"></div>
   </div>
 </section>

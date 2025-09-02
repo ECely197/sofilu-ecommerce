@@ -1,0 +1,24 @@
+<section class="card">
+  <div class="card-header">
+    <h2 class="card-title">{{ title }}</h2>
+    <a [routerLink]="['/category', categorySlug]" class="btn btn-secondary"
+      >Ver todo</a
+    >
+  </div>
+
+  <div class="carousel-container">
+    <!-- Contenedor Swiper -->
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        @for (product of products; track product._id) {
+        <div class="swiper-slide">
+          <app-product-card [product]="product"></app-product-card>
+        </div>
+        }
+      </div>
+    </div>
+    <!-- Botones de Navegación con ID único -->
+    <div class="swiper-button-prev" [class]="uniqueId"></div>
+    <div class="swiper-button-next" [class]="uniqueId"></div>
+  </div>
+</section>

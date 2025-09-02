@@ -137,3 +137,46 @@ li {
     opacity: 1;
   }
 }
+
+/* ==========================================================================
+   Estilos de Botones Globales
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px; // Píldora
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+
+  // Estilo Primario (rosa)
+  &.btn-primary {
+    background-color: var(--pastel-pink);
+    color: white;
+    box-shadow: 0 4px 15px rgba(244, 194, 194, 0.4);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(244, 194, 194, 0.6);
+    }
+  }
+
+  // Estilo Secundario (bordeado)
+  &.btn-secondary {
+    background-color: transparent;
+    color: var(--text-charcoal);
+    border: 1px solid var(--soft-gray);
+
+    &:hover {
+      background-color: var(--soft-gray);
+      border-color: #dcd5cd;
+    }
+  }
+}

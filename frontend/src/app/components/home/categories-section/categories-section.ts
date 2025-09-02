@@ -1,10 +1,17 @@
-// Contenido completo para: src/app/components/home/categories-section/categories-section.component.ts
-
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  signal,
+  AfterViewInit,
+  ElementRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Category } from '../../../services/category.service';
+import Swiper from 'swiper'; // ¡Importamos Swiper!
+import { Navigation } from 'swiper/modules';
 
-import { CategoryService, Category } from '../../../services/category.service';
+Swiper.use([Navigation]);
 
 @Component({
   selector: 'app-categories-section',
@@ -13,14 +20,23 @@ import { CategoryService, Category } from '../../../services/category.service';
   templateUrl: './categories-section.html',
   styleUrl: './categories-section.scss',
 })
-export class CategoriesSection implements OnInit {
-  private categoryService = inject(CategoryService);
+export class CategoriesSection implements AfterViewInit {
+  @Input() categories: Category[] = [];
 
-  categories = signal<Category[]>([]);
+  uniqueId = `carousel-cat-${Math.random().toString(36).substring(2, 9)}`;
 
-  ngOnInit() {
-    this.categoryService.getCategories().subscribe((data) => {
-      this.categories.set(data);
+  constructor(private el: ElementRef) {}
+
+  ngAfterViewInit() {
+    new Swiper(this.el.nativeElement.querySelector('.swiper'), {
+      slidesPerView: 'auto',
+      spaceBetween: 24,
+      freeMode: true,
+      // ¡NUEVA CONFIGURACIÓN DE NAVEGACIÓN!
+      navigation: {
+        nextEl: `.swiper-button-next.${this.uniqueId}`,
+        prevEl: `.swiper-button-prev.${this.uniqueId}`,
+      },
     });
   }
 }

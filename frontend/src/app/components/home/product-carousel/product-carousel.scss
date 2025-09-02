@@ -12,10 +12,36 @@
 
 // Cabecera de la tarjeta
 .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 2rem 2.5rem 1.5rem;
+
   .card-title {
     font-size: 2rem;
     font-weight: 700;
+  }
+
+  .see-all-link {
+    // Aplicamos el nuevo estilo de botón global
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem; // Un poco más pequeño
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    background-color: transparent;
+    color: var(--text-charcoal);
+    border: 1px solid var(--soft-gray);
+
+    &:hover {
+      background-color: var(--soft-gray);
+      border-color: #dcd5cd;
+    }
   }
 }
 
@@ -26,38 +52,6 @@
 
 .swiper {
   padding: 0 2.5rem 2.5rem;
-}
-
-.swiper-slide {
-  width: 180px;
-  @media (min-width: 768px) {
-    width: 220px;
-  }
-}
-
-.category-slide {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-
-  .category-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 1.25rem;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
-
-  .category-name {
-    font-weight: 600;
-    text-align: center;
-  }
-
-  &:hover .category-image {
-    transform: scale(1.03);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  }
 }
 
 // --- ESTILOS UNIFICADOS PARA LAS FLECHAS ---
@@ -76,7 +70,7 @@
   background-color: white;
   border: 1px solid var(--soft-gray);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  top: 45%; // Centrado vertical
+  top: 50%; // Centrado vertical
 
   // Ocultos por defecto
   opacity: 0;

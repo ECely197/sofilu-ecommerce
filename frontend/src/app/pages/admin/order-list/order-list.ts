@@ -15,6 +15,7 @@ import {
 import { OrderService } from '../../../services/order';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
 // En el futuro, crearemos una interfaz robusta para Order
 // import { Order } from '../../../interfaces/order.interface';
 
@@ -47,6 +48,7 @@ import { ToastService } from '../../../services/toast.service';
 export class OrderList implements OnInit {
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
+  private confirmationService = inject(ConfirmationService);
 
   orders = signal<any[]>([]); // Usamos 'any' por ahora, pero lo ideal sería una interfaz 'Order'
   isLoading = signal<boolean>(true);
@@ -69,20 +71,32 @@ export class OrderList implements OnInit {
     });
   }
 
-  deleteOrder(orderId: string): void {
-    if (
-      confirm(
-        '¿Estás seguro de que quieres eliminar este pedido permanentemente?'
-      )
-    ) {
+  async deleteOrder(orderId: string): Promise<void> {
+    // 2. Llamamos a nuestro servicio y esperamos (await) la respuesta
+    const confirmed = await this.confirmationService.confirm({
+      title: '¿Confirmar Eliminación?',
+      message:
+        '¿Estás seguro de que quieres eliminar este pedido de forma permanente? Esta acción no se puede deshacer.',
+      confirmText: 'Sí, eliminar', // Texto del botón de confirmación
+      cancelText: 'No, cancelar', // Texto del botón de cancelar
+    });
+
+    // 3. Si 'confirmed' es true (el usuario hizo clic en "Aceptar"), continuamos
+    if (confirmed) {
       this.orderService.deleteOrder(orderId).subscribe({
         next: () => {
+          // Actualizamos la lista local
           this.orders.update((currentOrders) =>
             currentOrders.filter((order) => order._id !== orderId)
           );
+          // Usamos nuestro toast para la notificación de éxito
+          this.toastService.show('Pedido eliminado con éxito.', 'success');
         },
-        error: (err) => this.toastService.show('Error al eliminar el pedido.'),
+        error: (err) => {
+          this.toastService.show('Error al eliminar el pedido.', 'error');
+        },
       });
     }
+    // Si 'confirmed' es false, la función simplemente termina y no se hace nada.
   }
 }
