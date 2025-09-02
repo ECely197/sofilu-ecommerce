@@ -159,6 +159,125 @@ router.post("/", [authMiddleware], async (req, res) => {
   }
 });
 
+// --- ¡NUEVA RUTA PARA EDITAR UN PEDIDO POR EL CLIENTE! ---
+router.put("/:id", [authMiddleware], async (req, res) => {
+  try {
+    const { items: newItems } = req.body; // Solo esperamos una nueva lista de items
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId);
+
+    // --- Validaciones de Seguridad y Estado ---
+    if (!order) {
+      return res.status(404).json({ message: "Pedido no encontrado." });
+    }
+    if (order.userId !== req.user.uid) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para editar este pedido." });
+    }
+    if (order.status !== "Procesando") {
+      return res
+        .status(400)
+        .json({
+          message: "No puedes editar un pedido que ya ha sido enviado.",
+        });
+    }
+    if (!newItems || newItems.length === 0) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "El pedido no puede quedar vacío. Cancele el pedido en su lugar.",
+        });
+    }
+
+    // --- Lógica de Sincronización de Stock ---
+    // 1. Creamos un "mapa" para calcular los cambios netos de stock
+    const stockChanges = new Map();
+
+    // 2. Iteramos sobre los items ANTIGUOS para DEVOLVER su stock
+    for (const oldItem of order.items) {
+      const key = `${oldItem.product}-${JSON.stringify(
+        oldItem.selectedVariants
+      )}`;
+      stockChanges.set(key, (stockChanges.get(key) || 0) + oldItem.quantity);
+    }
+
+    // 3. Iteramos sobre los items NUEVOS para RESTAR su stock
+    let newSubTotal = 0;
+    for (const newItem of newItems) {
+      const product = await Product.findById(newItem.product);
+      if (!product)
+        throw new Error(`Producto ${newItem.product} no encontrado.`);
+
+      const key = `${newItem.product}-${JSON.stringify(
+        newItem.selectedVariants
+      )}`;
+      stockChanges.set(key, (stockChanges.get(key) || 0) - newItem.quantity);
+
+      // Validamos el stock del nuevo item
+      const option = product.variants
+        .find((v) => v.name === Object.keys(newItem.selectedVariants)[0])
+        ?.options.find(
+          (o) => o.name === Object.values(newItem.selectedVariants)[0]
+        );
+      if (!option || option.stock < stockChanges.get(key) * -1) {
+        // Comparamos con la cantidad neta a restar
+        throw new Error(`Stock insuficiente para ${product.name}.`);
+      }
+      newSubTotal += newItem.price * newItem.quantity;
+    }
+
+    // 4. Aplicamos los cambios de stock en la base de datos
+    for (const [key, change] of stockChanges.entries()) {
+      if (change === 0) continue; // No hay cambio neto, no hacemos nada
+
+      const [productId, variantsString] = key.split(/-(.+)/);
+      const variants = JSON.parse(variantsString);
+      const product = await Product.findById(productId);
+
+      const updateQuery = {};
+      for (const variantName in variants) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.name === variantName
+        );
+        if (variantIndex > -1) {
+          const optionIndex = product.variants[variantIndex].options.findIndex(
+            (o) => o.name === variants[variantName]
+          );
+          if (optionIndex > -1) {
+            const stockPath = `variants.${variantIndex}.options.${optionIndex}.stock`;
+            updateQuery[stockPath] = -change; // Usamos $inc con el cambio neto (negativo si restamos, positivo si sumamos)
+          }
+        }
+      }
+      if (Object.keys(updateQuery).length > 0) {
+        await Product.updateOne({ _id: productId }, { $inc: updateQuery });
+      }
+    }
+
+    // --- Recalcular Totales y Actualizar el Pedido ---
+    const shippingCost =
+      order.totalAmount -
+      order.items.reduce((acc, item) => acc + item.price * item.quantity, 0) +
+      (order.discountAmount || 0);
+    const newTotalAmount =
+      newSubTotal + shippingCost - (order.discountAmount || 0);
+
+    order.items = newItems;
+    order.totalAmount = newTotalAmount;
+
+    const savedOrder = await order.save();
+    res.json(savedOrder);
+  } catch (error) {
+    console.error("Error al editar el pedido:", error);
+    res
+      .status(400)
+      .json({ message: "Error al editar el pedido", details: error.message });
+  }
+});
+
 // --- ACTUALIZAR EL ESTADO DE UN PEDIDO ---
 router.put("/:id/status", [authMiddleware], async (req, res) => {
   try {
