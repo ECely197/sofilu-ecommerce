@@ -1,35 +1,39 @@
-// Contenido completo y mejorado para: src/app/pages/checkout/checkout.scss
 @use "../../../../buttons";
 
 :host {
   display: block;
-  background-color: white; // El fondo del formulario será blanco
+  background-color: white;
 }
 
-// --- Layout Principal ---
+// --- LAYOUT PRINCIPAL ---
 .checkout-layout {
-  display: grid;
+  display: block;
   min-height: 100vh;
   grid-template-columns: 1fr;
 
   @media (min-width: 1024px) {
-    grid-template-columns: 55fr 45fr; // Proporción 55/45
+    display: grid;
+    grid-template-columns: 58% 42%;
   }
 }
 
-// --- Columna de Formularios (Izquierda) ---
+// --- COLUMNA IZQUIERDA (SELECCIÓN) ---
 .form-column {
-  padding: 2rem 10%; // Más padding horizontal para centrar el contenido
+  padding: 2rem 5%;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+
+  @media (min-width: 1024px) {
+    padding: 3rem 10%;
+  }
 }
 
 .logo-header {
   padding-bottom: 2rem;
   text-align: center;
   .logo-text {
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
     font-size: 2.5rem;
     font-weight: 700;
     text-decoration: none;
@@ -37,109 +41,189 @@
   }
 }
 
-.checkout-form {
+.step-container {
+  .step-title {
+    font-family: "Baloo 2", serif;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+}
+
+.selector-list {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem; // Un poco más de espacio entre secciones
+  gap: 1rem;
 }
 
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--soft-gray);
-  font-family: "Playfair Display", serif;
-}
-
-// --- Estilos de Campos de Texto Material You ---
-.material-field {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.material-input {
-  width: 100%;
-  padding: 1rem 0.5rem 0.5rem;
-  border: none;
-  border-bottom: 1px solid var(--soft-gray);
-  background-color: transparent;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.2s ease-in-out;
-  border-radius: 4px 4px 0 0; // Ligero redondeo superior
-
-  &:focus {
-    border-bottom: 2px solid var(--pastel-pink);
-    background-color: var(--background-sec);
-  }
-
-  &:focus + .material-label,
-  &:not(:placeholder-shown) + .material-label {
-    transform: translateY(-1.25rem) scale(0.8);
-    color: var(--pastel-pink);
-  }
-}
-
-.material-label {
-  position: absolute;
-  top: 0.75rem;
-  left: 0.5rem;
-  color: var(--text-secondary);
-  pointer-events: none;
-  transition: all 0.2s ease-in-out;
-  transform-origin: left top;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.card-selector {
+  display: flex;
+  align-items: center;
   gap: 1.5rem;
+  padding: 1.5rem;
+  border: 2px solid var(--soft-gray);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+
+  &:hover {
+    border-color: var(--text-charcoal);
+  }
+
+  &.selected {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 15px rgba(244, 194, 194, 0.5);
+    background-color: var(--background-sec);
+
+    .radio-selector .radio-dot {
+      transform: scale(1);
+    }
+  }
 }
 
-// --- Columna de Resumen (Derecha) ---
+.radio-selector {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--soft-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease-in-out;
+
+  .card-selector.selected & {
+    border-color: var(--pastel-pink);
+  }
+
+  .radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--pastel-pink);
+    transform: scale(0);
+    transition: transform 0.2s ease-in-out;
+  }
+}
+
+.card-details {
+  .card-title-text {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .card-subtitle-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
+  }
+  .card-contact-text {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+  }
+}
+
+.preferred-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--pastel-pink);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.step-actions {
+  margin-top: 2rem;
+  .add-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-charcoal);
+    font-weight: 600;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.no-items-message {
+  border: 2px dashed var(--soft-gray);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+
+  h3 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+  }
+  p {
+    margin: 0 0 1rem 0;
+    color: var(--text-secondary);
+  }
+  a {
+    font-weight: 600;
+    text-decoration: underline;
+  }
+}
+
+// --- COLUMNA DE RESUMEN (Derecha) - VERSIÓN REDISEÑADA ---
 .summary-column {
-  background-color: var(--background); // Nuestro color de fondo principal
+  background-color: var(--background);
   padding: 3rem 5%;
+  // Añadimos un borde sutil solo en pantallas grandes
+  border-left: 1px solid var(--border);
 }
 
 .summary-card {
   position: sticky;
   top: 3rem;
+  display: flex;
+  flex-direction: column;
 }
 
-.summary-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  font-family: "Playfair Display", serif;
+// Estilo para el nuevo logo
+.summary-logo {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  img {
+    height: 40px; // Ajusta el tamaño según necesites
+    width: auto;
+  }
 }
 
 .summary-items {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; // Más espacio entre items
-  max-height: 40vh; // Altura máxima para evitar que sea muy largo
-  overflow-y: auto; // Scroll si hay muchos productos
-  padding-right: 0.5rem; // Espacio para la barra de scroll
+  gap: 1.5rem;
+  max-height: calc(100vh - 450px); // Altura máxima dinámica
+  overflow-y: auto;
+  padding: 0 0.5rem 1.5rem 0; // Padding para la barra de scroll
 }
 
 .summary-item {
   display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: start; // Alineamos al inicio por si el texto ocupa varias líneas
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
   gap: 1rem;
 }
 
-.item-image-container {
+.item-image-wrapper {
   position: relative;
-}
-.item-image {
   width: 64px;
   height: 64px;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
-  border-radius: 0.75rem; // Más redondeado
+  border-radius: 0.75rem;
   border: 1px solid var(--border);
 }
 
@@ -157,70 +241,101 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: bold;
-  // Añadimos un pequeño borde para que destaque sobre la imagen
   border: 2px solid var(--background);
 }
 
-.item-details-and-price {
-  display: flex;
-  justify-content: space-between; // ¡La clave! Empuja el precio a la derecha
-  gap: 1rem;
-  width: 100%;
-}
-
 .item-info {
-  display: flex;
-  flex-direction: column;
-}
-.item-name {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-.item-variants {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  span:not(:last-child)::after {
-    content: " / ";
-    margin: 0 0.25rem;
+  .item-name {
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .item-variants {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    // Para unir las variantes con comas
+    span:not(:last-child)::after {
+      content: ", ";
+    }
   }
 }
 
 .item-price {
   font-weight: 600;
   text-align: right;
-  white-space: nowrap; // Evita que el precio se parta en dos líneas
+  white-space: nowrap;
+}
+
+.coupon-section {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin: 1.5rem 0;
+
+  .form-field {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .form-input {
+    border: 1px solid var(--soft-gray);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    flex-grow: 1;
+    &:focus {
+      background-color: white;
+    }
+  }
+
+  .apply-button {
+    @extend .btn-secondary;
+    flex-shrink: 0;
+  }
+
+  .coupon-message {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    color: #065f46;
+    &.error {
+      color: #991b1b;
+    }
+  }
 }
 
 .summary-details {
-  padding-top: 1.5rem;
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
 
   span:first-child {
     color: var(--text-secondary);
   }
   span:last-child {
-    font-weight: 600;
+    font-weight: 500;
+  }
+
+  &.discount-row {
+    color: #065f46;
   }
 
   &.total {
     font-weight: 700;
     font-size: 1.25rem;
     color: var(--text-charcoal);
-    margin-top: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--text-charcoal);
   }
 }
 
-// --- Botón de Pagar ---
 .pay-button {
   @extend .btn-material;
   width: 100%;
@@ -240,96 +355,23 @@
   }
 }
 
-// --- ¡NUEVOS ESTILOS AQUÍ! ---
-.item-image-wrapper {
-  // Este nuevo contenedor es el que se encarga del posicionamiento relativo
-  position: relative;
-  width: 64px; // El mismo ancho que la imagen
-  height: 64px; // El mismo alto
-}
-
-.item-image {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  // Ya no necesita position: relative
-}
-// ------------------------------
-
-// --- NUEVOS ESTILOS PARA LA SECCIÓN DE CUPÓN ---
-.coupon-section {
-  .form-field {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .form-input {
-    // Hereda los estilos de los otros inputs pero con ajustes
-    border: 1px solid var(--soft-gray);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    background-color: white;
-    &:focus {
-      background-color: white;
-    }
-  }
-
-  .apply-button {
-    @extend .btn-secondary;
-    flex-shrink: 0; // Evita que el botón se encoja
-  }
-
-  .coupon-message {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #065f46; // Verde por defecto
-
-    &.error {
-      color: #991b1b; // Rojo si hay un error
-    }
-  }
-}
-
-// --- ACTUALIZACIÓN DE LA SECCIÓN DE TOTALES ---
-.summary-details {
-  // ...
-  .discount-row {
-    // Nueva clase para la fila del descuento
-    color: #065f46; // Verde
-  }
-}
-
-.step-container {
-  h2 {
-    font-family: "Playfair Display", serif;
-    font-size: 1.75rem;
-    margin-bottom: 2rem;
-  }
-}
-
-.addresses-list {
+// --- Esqueleto de Carga ---
+.loading-container {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 2rem;
 }
 
-.address-card {
-  border: 2px solid var(--soft-gray);
-  padding: 1.5rem;
+.skeleton-card {
+  height: 120px;
+  background-color: var(--soft-gray);
   border-radius: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  opacity: 0.5;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
-  &.selected {
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 15px rgba(244, 194, 194, 0.5);
-  }
-  &:hover {
-    border-color: var(--text-charcoal);
+@keyframes pulse {
+  50% {
+    opacity: 1;
   }
 }
