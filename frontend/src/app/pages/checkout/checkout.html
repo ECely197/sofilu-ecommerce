@@ -8,53 +8,11 @@
     </header>
 
     @if (isLoading()) {
-    <p class="loading-text">Cargando información...</p>
+    <p class="loading-text">Cargando...</p>
     } @else {
-    <!-- PASO 1: SELECCIONAR CONTACTO -->
-    <div class="step-container" [hidden]="currentStep() !== 'contact'">
-      <h2 class="step-title">¿Para quién es el envío?</h2>
-      @if (contacts().length > 0) {
-      <div class="selector-list">
-        @for (contact of contacts(); track contact._id) {
-        <div
-          class="card-selector"
-          [class.selected]="selectedContact()?._id === contact._id"
-          (click)="selectContact(contact)"
-        >
-          <div class="radio-selector"></div>
-          <div class="card-details">
-            <p class="card-title-text">{{ contact.fullName }}</p>
-            <p class="card-subtitle-text">
-              {{ contact.email }} - {{ contact.phone }}
-            </p>
-          </div>
-        </div>
-        }
-      </div>
-      } @else {
-      <p class="no-items-message">
-        No tienes contactos de envío.
-        <a routerLink="/account/contacts">Añade uno aquí.</a>
-      </p>
-      }
-      <div class="step-actions">
-        <button
-          (click)="proceedToShipping()"
-          [disabled]="!selectedContact()"
-          class="btn-material"
-          appRipple
-        >
-          Continuar a Dirección
-        </button>
-      </div>
-    </div>
-
-    <!-- PASO 2: SELECCIONAR DIRECCIÓN -->
-    <div class="step-container" [hidden]="currentStep() !== 'shipping'">
-      <a (click)="currentStep.set('contact')" class="back-link"
-        >&larr; Volver a Contactos</a
-      >
-      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
+    <!-- ¡UN ÚNICO PASO! -->
+    <div class="step-container">
+      <h2 class="step-title">¿Para quién y dónde es el envío?</h2>
       @if (addresses().length > 0) {
       <div class="selector-list">
         @for (address of addresses(); track address._id) {
@@ -65,9 +23,12 @@
         >
           <div class="radio-selector"></div>
           <div class="card-details">
-            <p class="card-title-text">{{ address.streetAddress }}</p>
+            <p class="card-title-text">{{ address.fullName }}</p>
             <p class="card-subtitle-text">
-              {{ address.city }}, {{ address.department }}
+              {{ address.streetAddress }}, {{ address.city }}
+            </p>
+            <p class="card-subtitle-text">
+              {{ address.email }} - {{ address.phone }}
             </p>
           </div>
         </div>
@@ -75,35 +36,15 @@
       </div>
       } @else {
       <p class="no-items-message">
-        No tienes direcciones guardadas.
-        <a routerLink="/account/addresses">Añade una aquí.</a>
+        No tienes direcciones de envío.
+        <a routerLink="/account/addresses">Añade una para continuar.</a>
       </p>
       }
       <div class="step-actions">
         <a routerLink="/account/addresses" class="add-link"
           >Administrar mis direcciones</a
         >
-        <button
-          (click)="proceedToSummary()"
-          [disabled]="!selectedAddress()"
-          class="btn-material"
-          appRipple
-        >
-          Continuar a Resumen
-        </button>
       </div>
-    </div>
-
-    <!-- PASO 3: RESUMEN FINAL -->
-    <div class="step-container" [hidden]="currentStep() !== 'summary'">
-      <a (click)="currentStep.set('shipping')" class="back-link"
-        >&larr; Volver a Direcciones</a
-      >
-      <h2 class="step-title">¡Casi listo! Confirma tu pedido</h2>
-      <p class="summary-text">
-        Revisa los detalles finales en el resumen de la derecha. Si todo es
-        correcto, haz clic en "Finalizar Compra" para completar tu pedido.
-      </p>
     </div>
     }
   </div>
@@ -196,7 +137,7 @@
       <button
         class="btn-material pay-button"
         (click)="placeOrder()"
-        [disabled]="currentStep() !== 'summary' || isProcessingOrder()"
+        [disabled]="!selectedAddress() || isProcessingOrder()"
       >
         {{ isProcessingOrder() ? "Procesando..." : "Finalizar Compra" }}
       </button>

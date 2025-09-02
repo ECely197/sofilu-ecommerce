@@ -5,7 +5,7 @@ import { forkJoin, take } from 'rxjs';
 
 // Servicios e Interfaces
 import { CartService } from '../../services/cart';
-import { Customer, Contact, Address } from '../../services/customer';
+import { Customer, Address } from '../../services/customer'; // Solo importamos Address
 import { AuthService } from '../../services/auth';
 import { SettingsService } from '../../services/settings.service';
 import { OrderService } from '../../services/order';
@@ -26,20 +26,19 @@ export class checkout implements OnInit {
   public cartService = inject(CartService);
   private router = inject(Router);
   private customerService = inject(Customer);
-  private authService = inject(AuthService);
+  private authService = inject(AuthService); // Lo mantenemos por si lo necesitamos en el futuro
   private settingsService = inject(SettingsService);
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
 
-  // --- Signals para el Estado ---
-  currentStep = signal<'contact' | 'shipping' | 'summary'>('contact');
-  contacts = signal<Contact[]>([]);
+  // --- Signals para el Estado (Versión Simplificada) ---
   addresses = signal<Address[]>([]);
-  selectedContact = signal<Contact | null>(null);
   selectedAddress = signal<Address | null>(null);
   isLoading = signal(true);
   isProcessingOrder = signal(false);
+
+  // Signals para costos y cupones
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
@@ -62,19 +61,13 @@ export class checkout implements OnInit {
     }
 
     this.isLoading.set(true);
+    // Ahora solo cargamos dos piezas de información en paralelo
     forkJoin({
       shippingCost: this.settingsService.getShippingCost(),
-      contacts: this.customerService.getContacts(),
       addresses: this.customerService.getAddresses(),
     }).subscribe({
-      next: ({ shippingCost, contacts, addresses }) => {
+      next: ({ shippingCost, addresses }) => {
         this.shippingCost.set(shippingCost);
-
-        this.contacts.set(contacts);
-        const preferredContact = contacts.find((c) => c.isPreferred);
-        this.selectedContact.set(
-          preferredContact || (contacts.length > 0 ? contacts[0] : null)
-        );
 
         this.addresses.set(addresses);
         const preferredAddress = addresses.find((a) => a.isPreferred);
@@ -84,54 +77,27 @@ export class checkout implements OnInit {
 
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (err) => {
         this.toastService.show(
           'Error al cargar los datos del checkout.',
           'error'
         );
         this.isLoading.set(false);
+        console.error('Error en forkJoin de checkout:', err);
       },
     });
   }
 
-  // --- MÉTODOS PARA EL FLUJO DE PASOS ---
-
-  selectContact(contact: Contact): void {
-    this.selectedContact.set(contact);
-  }
+  // --- MÉTODOS DE INTERACCIÓN ---
 
   selectAddress(address: Address): void {
     this.selectedAddress.set(address);
   }
 
-  proceedToShipping(): void {
-    if (!this.selectedContact()) {
-      this.toastService.show(
-        'Por favor, selecciona un contacto de envío.',
-        'error'
-      );
-      return;
-    }
-    this.currentStep.set('shipping');
-  }
-
-  proceedToSummary(): void {
+  placeOrder(): void {
     if (!this.selectedAddress()) {
       this.toastService.show(
         'Por favor, selecciona una dirección de envío.',
-        'error'
-      );
-      return;
-    }
-    this.currentStep.set('summary');
-  }
-
-  // --- LÓGICA FINAL DEL PEDIDO ---
-
-  placeOrder(): void {
-    if (!this.selectedContact() || !this.selectedAddress()) {
-      this.toastService.show(
-        'Falta información de contacto o dirección.',
         'error'
       );
       return;
@@ -158,27 +124,28 @@ export class checkout implements OnInit {
       error: (err) => {
         this.toastService.show('Hubo un error al crear tu pedido.', 'error');
         this.isProcessingOrder.set(false);
+        console.error('Error al crear el pedido:', err);
       },
     });
   }
 
+  // --- MÉTODOS HELPER ---
+
   private buildOrderData(): any | null {
-    if (!this.selectedContact() || !this.selectedAddress()) {
-      console.error(
-        'BuildOrderData falló: Falta contacto o dirección seleccionada.'
-      );
+    if (!this.selectedAddress()) {
       return null;
     }
 
+    // La información del cliente ahora viene DIRECTAMENTE de la dirección seleccionada.
     const customerInfo = {
-      name: this.selectedContact()!.fullName,
-      email: this.selectedContact()!.email,
-      phone: this.selectedContact()!.phone,
+      name: this.selectedAddress()!.fullName,
+      email: this.selectedAddress()!.email,
+      phone: this.selectedAddress()!.phone,
     };
 
     return {
       customerInfo: customerInfo,
-      shippingAddress: this.selectedAddress(),
+      shippingAddress: this.selectedAddress(), // Pasamos el objeto de dirección completo
       items: this.cartService.cartItems().map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
@@ -191,7 +158,6 @@ export class checkout implements OnInit {
     };
   }
 
-  // (Métodos applyCoupon, finalItemPrice, y objectKeys sin cambios)
   applyCoupon(code: string): void {
     if (!code.trim()) return;
     this.couponService.validateCoupon(code).subscribe({
@@ -200,6 +166,7 @@ export class checkout implements OnInit {
         const shipping = this.shippingCost();
         let discount = 0;
         let discountableBase = 0;
+
         if (coupon.appliesTo === 'Subtotal') {
           discountableBase = subtotal;
         } else if (coupon.appliesTo === 'Envío') {
@@ -207,11 +174,13 @@ export class checkout implements OnInit {
         } else {
           discountableBase = subtotal + shipping;
         }
+
         if (coupon.discountType === 'Porcentaje') {
           discount = (discountableBase * coupon.value) / 100;
         } else {
           discount = coupon.value;
         }
+
         discount = Math.min(discount, discountableBase);
         this.discountAmount.set(discount);
         this.appliedCoupon.set(coupon);
@@ -222,7 +191,7 @@ export class checkout implements OnInit {
         this.discountAmount.set(0);
         this.appliedCoupon.set(null);
         this.couponMessage.set(
-          err.error.message || 'Error al aplicar el cupón.'
+          err.error?.message || 'Error al aplicar el cupón.'
         );
         this.couponError.set(true);
       },
@@ -240,7 +209,7 @@ export class checkout implements OnInit {
         const option = variant?.options.find(
           (o) => o.name === selectedOptionName
         );
-        if (option && option.priceModifier) {
+        if (option?.priceModifier) {
           price += option.priceModifier;
         }
       }

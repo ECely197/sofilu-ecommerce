@@ -8,19 +8,12 @@ export interface Address {
   _id: string;
   fullName: string;
   phone: string;
+  email: string;
   streetAddress: string;
   addressDetails?: string;
   department: string;
   city: string;
   postalCode: string;
-  isPreferred: boolean;
-}
-
-export interface Contact {
-  _id: string;
-  fullName: string;
-  email: string;
-  phone: string;
   isPreferred: boolean;
 }
 
@@ -53,34 +46,6 @@ export class Customer {
     profileData: Partial<UserProfile>
   ): Observable<UserProfile> {
     return this.http.put<UserProfile>(`${this.apiUrl}/profile`, profileData);
-  }
-
-  // --- ¡NUEVOS MÉTODOS PARA CONTACTOS! ---
-  getContacts(): Observable<Contact[]> {
-    return this.http.get<Contact[]>(`${this.apiUrl}/contacts`);
-  }
-  addContact(
-    contactData: Omit<Contact, '_id' | 'isPreferred'>
-  ): Observable<Contact[]> {
-    return this.http.post<Contact[]>(`${this.apiUrl}/contacts`, contactData);
-  }
-  updateContact(
-    contactId: string,
-    contactData: Partial<Contact>
-  ): Observable<Contact[]> {
-    return this.http.put<Contact[]>(
-      `${this.apiUrl}/contacts/${contactId}`,
-      contactData
-    );
-  }
-  deleteContact(contactId: string): Observable<Contact[]> {
-    return this.http.delete<Contact[]>(`${this.apiUrl}/contacts/${contactId}`);
-  }
-  setPreferredContact(contactId: string): Observable<Contact[]> {
-    return this.http.patch<Contact[]>(
-      `${this.apiUrl}/contacts/${contactId}/set-preferred`,
-      {}
-    );
   }
 
   // --- MÉTODOS DE DIRECCIONES SIMPLIFICADOS ---
