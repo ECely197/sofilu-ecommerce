@@ -132,31 +132,29 @@ export class checkout implements OnInit {
   // --- MÉTODOS HELPER ---
 
   private buildOrderData(): any | null {
-    if (!this.selectedAddress()) {
+    const selectedAddr = this.selectedAddress();
+    if (!selectedAddr) {
       console.error('BuildOrderData falló: No hay dirección seleccionada.');
       return null;
     }
 
-    const address = this.selectedAddress()!;
-
-    const customerInfo = {
-      name: address.fullName,
-      email: address.email,
-      phone: address.phone,
+    const customerInfoPayload = {
+      name: selectedAddr.fullName,
+      email: selectedAddr.email,
+      phone: selectedAddr.phone,
     };
 
+    const { _id, ...shippingAddressPayload } = selectedAddr;
+
     return {
-      customerInfo: customerInfo,
-
-      shippingAddress: address,
-
+      customerInfo: customerInfoPayload,
+      shippingAddress: shippingAddressPayload,
       items: this.cartService.cartItems().map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
         price: this.finalItemPrice(item),
         selectedVariants: item.selectedVariants,
       })),
-
       appliedCoupon: this.appliedCoupon()?.code || null,
       discountAmount: this.discountAmount(),
       totalAmount: this.grandTotal(),
