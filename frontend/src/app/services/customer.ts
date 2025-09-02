@@ -15,6 +15,21 @@ export interface Address {
   postalCode: string;
   isPreferred: boolean;
 }
+
+export interface Contact {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  isPreferred: boolean;
+}
+
+export interface UserProfile {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -27,6 +42,45 @@ export class Customer {
 
   getCustomers(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
+  }
+
+  // --- ¡NUEVOS MÉTODOS DE PERFIL! ---
+  getUserProfile(): Observable<UserProfile> {
+    return this.http.get<UserProfile>(`${this.apiUrl}/profile`);
+  }
+
+  updateUserProfile(
+    profileData: Partial<UserProfile>
+  ): Observable<UserProfile> {
+    return this.http.put<UserProfile>(`${this.apiUrl}/profile`, profileData);
+  }
+
+  // --- ¡NUEVOS MÉTODOS PARA CONTACTOS! ---
+  getContacts(): Observable<Contact[]> {
+    return this.http.get<Contact[]>(`${this.apiUrl}/contacts`);
+  }
+  addContact(
+    contactData: Omit<Contact, '_id' | 'isPreferred'>
+  ): Observable<Contact[]> {
+    return this.http.post<Contact[]>(`${this.apiUrl}/contacts`, contactData);
+  }
+  updateContact(
+    contactId: string,
+    contactData: Partial<Contact>
+  ): Observable<Contact[]> {
+    return this.http.put<Contact[]>(
+      `${this.apiUrl}/contacts/${contactId}`,
+      contactData
+    );
+  }
+  deleteContact(contactId: string): Observable<Contact[]> {
+    return this.http.delete<Contact[]>(`${this.apiUrl}/contacts/${contactId}`);
+  }
+  setPreferredContact(contactId: string): Observable<Contact[]> {
+    return this.http.patch<Contact[]>(
+      `${this.apiUrl}/contacts/${contactId}/set-preferred`,
+      {}
+    );
   }
 
   // --- MÉTODOS DE DIRECCIONES SIMPLIFICADOS ---

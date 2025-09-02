@@ -13,10 +13,23 @@ const addressSchema = new Schema({
   isPreferred: { type: Boolean, default: false }, // <-- El campo clave
 });
 
+const contactSchema = new Schema({
+  fullName: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  isPreferred: { type: Boolean, default: false },
+});
+
 const userSchema = new Schema({
   uid: { type: String, required: true, unique: true, index: true },
   email: { type: String, required: true, unique: true },
-  displayName: { type: String },
+
+  firstName: { type: String, trim: true },
+  lastName: { type: String, trim: true },
+  phone: { type: String, trim: true },
+
+  contacts: [contactSchema],
+
   addresses: [addressSchema],
 });
 

@@ -1,14 +1,107 @@
+<!-- En: frontend/src/app/pages/account/my-details/my-details.html -->
 <section class="account-section">
-  <h2 class="section-title">Detalles de la Cuenta</h2>
-  <div *ngIf="currentUser$ | async as user" class="details-card">
+  <h2 class="section-title">Detalles Personales</h2>
+
+  @if (userProfile(); as profile) {
+  <!-- MODO VISTA -->
+  @if (!isEditing()) {
+  <div class="details-card view-mode">
     <div class="detail-row">
       <strong>Nombre:</strong>
-      <span>{{ user.displayName || 'No especificado' }}</span>
+      <span>{{ profile.firstName || "No especificado" }}</span>
+    </div>
+    <div class="detail-row">
+      <strong>Apellido:</strong>
+      <span>{{ profile.lastName || "No especificado" }}</span>
+    </div>
+    <div class="detail-row">
+      <strong>Teléfono:</strong>
+      <span>{{ profile.phone || "No especificado" }}</span>
     </div>
     <div class="detail-row">
       <strong>Email:</strong>
-      <span>{{ user.email }}</span>
+      <span>{{ profile.email }}</span>
     </div>
-    <!-- En el futuro, aquí iría un botón para "Editar" -->
+    <div class="card-actions">
+      <button (click)="startEditing()" class="btn-material" appRipple>
+        Editar Datos
+      </button>
+      <a (click)="handlePasswordReset()" class="action-link"
+        >Cambiar contraseña</a
+      >
+    </div>
   </div>
+  }
+
+  <!-- MODO EDICIÓN -->
+  @if (isEditing()) {
+  <div class="details-card edit-mode">
+    <form [formGroup]="detailsForm" (ngSubmit)="handleSubmit()">
+      <div class="form-grid">
+        <div class="material-field">
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="firstName" class="material-label">Nombre</label>
+        </div>
+        <div class="material-field">
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="lastName" class="material-label">Apellido</label>
+        </div>
+      </div>
+      <div class="material-field">
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="phone" class="material-label">Teléfono (Opcional)</label>
+      </div>
+      <div class="material-field">
+        <input
+          id="email"
+          [value]="profile.email"
+          class="material-input"
+          placeholder=" "
+          disabled
+        />
+        <label for="email" class="material-label"
+          >Email (no se puede cambiar)</label
+        >
+      </div>
+      <div class="form-actions">
+        <button
+          type="button"
+          (click)="cancelEditing()"
+          class="btn-secondary"
+          appRipple
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          [disabled]="detailsForm.invalid"
+          class="btn-material"
+          appRipple
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </div>
+  } } @else {
+  <p>Cargando tus datos...</p>
+  }
 </section>

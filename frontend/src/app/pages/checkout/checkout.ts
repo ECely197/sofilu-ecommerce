@@ -1,22 +1,18 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { firstValueFrom, take } from 'rxjs';
+import { forkJoin, take } from 'rxjs';
 
-// Tus servicios e interfaces
+// Servicios e Interfaces
 import { CartService } from '../../services/cart';
-import { PaymentService } from '../../services/payment.service';
-import { Customer } from '../../services/customer';
+import { Customer, Contact, Address } from '../../services/customer';
 import { AuthService } from '../../services/auth';
 import { SettingsService } from '../../services/settings.service';
 import { OrderService } from '../../services/order';
 import { Coupon } from '../../services/coupon';
-import { environment } from '../../../environments/environment';
+import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
-import { ToastService } from '../../services/toast.service';
-
-declare var MercadoPago: any;
 
 @Component({
   selector: 'app-checkout',
@@ -29,7 +25,6 @@ export class checkout implements OnInit {
   // --- Inyección de Servicios ---
   public cartService = inject(CartService);
   private router = inject(Router);
-  private paymentService = inject(PaymentService);
   private customerService = inject(Customer);
   private authService = inject(AuthService);
   private settingsService = inject(SettingsService);
@@ -38,10 +33,13 @@ export class checkout implements OnInit {
   private toastService = inject(ToastService);
 
   // --- Signals para el Estado ---
-  currentStep = signal<'shipping' | 'payment'>('shipping');
-  addresses = signal<any[]>([]);
-  selectedAddress = signal<any | null>(null);
+  currentStep = signal<'contact' | 'shipping' | 'summary'>('contact');
+  contacts = signal<Contact[]>([]);
+  addresses = signal<Address[]>([]);
+  selectedContact = signal<Contact | null>(null);
+  selectedAddress = signal<Address | null>(null);
   isLoading = signal(true);
+  isProcessingOrder = signal(false);
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
@@ -49,9 +47,10 @@ export class checkout implements OnInit {
   couponError = signal<boolean>(false);
 
   grandTotal = computed(() => {
-    const total =
-      this.cartService.subTotal() + this.shippingCost() - this.discountAmount();
-    return Math.max(0, total);
+    const subtotal = this.cartService.subTotal();
+    const shipping = this.shippingCost();
+    const discount = this.discountAmount();
+    return Math.max(0, subtotal + shipping - discount);
   });
 
   constructor() {}
@@ -61,209 +60,124 @@ export class checkout implements OnInit {
       this.router.navigate(['/cart']);
       return;
     }
-    this.settingsService
-      .getShippingCost()
-      .subscribe((cost) => this.shippingCost.set(cost));
-    this.loadAddresses();
-  }
 
-  loadAddresses(): void {
     this.isLoading.set(true);
-    // ¡Ahora esta llamada es correcta!
-    this.customerService.getAddresses().subscribe({
-      next: (data) => {
-        this.addresses.set(data);
-        const preferred = data.find((addr) => addr.isPreferred);
+    forkJoin({
+      shippingCost: this.settingsService.getShippingCost(),
+      contacts: this.customerService.getContacts(),
+      addresses: this.customerService.getAddresses(),
+    }).subscribe({
+      next: ({ shippingCost, contacts, addresses }) => {
+        this.shippingCost.set(shippingCost);
+
+        this.contacts.set(contacts);
+        const preferredContact = contacts.find((c) => c.isPreferred);
+        this.selectedContact.set(
+          preferredContact || (contacts.length > 0 ? contacts[0] : null)
+        );
+
+        this.addresses.set(addresses);
+        const preferredAddress = addresses.find((a) => a.isPreferred);
         this.selectedAddress.set(
-          preferred || (data.length > 0 ? data[0] : null)
+          preferredAddress || (addresses.length > 0 ? addresses[0] : null)
+        );
+
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toastService.show(
+          'Error al cargar los datos del checkout.',
+          'error'
         );
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false),
     });
   }
 
-  selectAddress(address: any): void {
+  // --- MÉTODOS PARA EL FLUJO DE PASOS ---
+
+  selectContact(contact: Contact): void {
+    this.selectedContact.set(contact);
+  }
+
+  selectAddress(address: Address): void {
     this.selectedAddress.set(address);
   }
 
-  async proceedToPayment(): Promise<void> {
-    // 1. Validación inicial (sin cambios)
-    if (!this.selectedAddress()) {
-      this.toastService.show('Por favor, selecciona una dirección de envío.');
+  proceedToShipping(): void {
+    if (!this.selectedContact()) {
+      this.toastService.show(
+        'Por favor, selecciona un contacto de envío.',
+        'error'
+      );
       return;
     }
-
-    console.log("--- CHECKOUT.TS [1/4]: Clic en 'Continuar al Pago'. ---");
-    this.isLoading.set(true);
-
-    try {
-      // 2. Recopilación de los datos del pagador
-      console.log(
-        '--- CHECKOUT.TS: Recopilando información del pagador... ---'
-      );
-
-      const fullName: string = this.selectedAddress().fullName || '';
-      const fullNameParts = fullName.split(' ').filter((part) => part); // Divide y elimina espacios extra
-      const name = fullNameParts.shift() || ''; // El primer elemento es el nombre
-      const surname = fullNameParts.join(' ') || name; // El resto es el apellido (o el nombre si no hay apellido)
-
-      let currentUserEmail: string | null | undefined;
-      // Usamos await aquí para asegurarnos de tener el email antes de continuar
-      const user = await firstValueFrom(
-        this.authService.currentUser$.pipe(take(1))
-      );
-      currentUserEmail = user?.email || null;
-
-      // Verificación de que tenemos toda la información necesaria
-      if (!currentUserEmail) {
-        throw new Error(
-          'No se pudo obtener el email del usuario para el pago.'
-        );
-      }
-
-      const payerInfo = {
-        name: name,
-        surname: surname,
-        email: currentUserEmail,
-      };
-
-      console.log(
-        '--- CHECKOUT.TS: Información del pagador recopilada:',
-        payerInfo
-      );
-
-      // 3. Llamada al servicio con todos los datos
-      console.log(
-        '--- CHECKOUT.TS [2/4]: Llamando a paymentService.createPreference con el total:',
-        this.grandTotal()
-      );
-
-      const preference = await firstValueFrom(
-        this.paymentService.createPreference(
-          this.cartService.cartItems(),
-          this.grandTotal(),
-          payerInfo // Pasamos el objeto completo
-        )
-      );
-
-      console.log(
-        '--- CHECKOUT.TS [3/4]: Preferencia recibida del backend. ID:',
-        preference?.id
-      );
-
-      // 4. Renderizado del Brick (sin cambios en esta parte)
-      if (preference && preference.id) {
-        this.currentStep.set('payment');
-        setTimeout(() => {
-          console.log(
-            '--- CHECKOUT.TS [4/4]: Renderizando el Payment Brick. ---'
-          );
-          this.renderPaymentBrick(preference.id);
-        }, 0);
-      } else {
-        throw new Error('No se recibió ID de preferencia del backend.');
-      }
-    } catch (error) {
-      console.error(
-        '--- CHECKOUT.TS: ERROR al crear la preferencia de pago:',
-        error
-      );
-      this.toastService.show(
-        'Error al conectar con la pasarela de pagos. Revisa la consola.'
-      );
-      this.isLoading.set(false);
-    }
+    this.currentStep.set('shipping');
   }
 
-  async renderPaymentBrick(preferenceId: string) {
-    const publicKey = environment.MERCADOPAGO_PUBLIC_KEY;
-    if (!publicKey) {
-      console.error('Error: La Public Key de MP no está configurada.');
-      this.isLoading.set(false);
+  proceedToSummary(): void {
+    if (!this.selectedAddress()) {
+      this.toastService.show(
+        'Por favor, selecciona una dirección de envío.',
+        'error'
+      );
       return;
     }
-    // Inicializamos la instancia de MercadoPago. Esto es correcto.
-    const mp = new MercadoPago(publicKey, { locale: 'es-CO' });
-    const bricksBuilder = mp.bricks();
+    this.currentStep.set('summary');
+  }
 
-    const container = document.getElementById('paymentBrick_container');
-    if (container) {
-      container.innerHTML = '';
-    }
+  // --- LÓGICA FINAL DEL PEDIDO ---
 
-    const user = await firstValueFrom(
-      this.authService.currentUser$.pipe(take(1))
-    );
-    const currentUserEmail = user?.email;
-
-    if (!currentUserEmail) {
-      console.error('No se pudo obtener el email del usuario para el pago.');
-      this.isLoading.set(false);
+  placeOrder(): void {
+    if (!this.selectedContact() || !this.selectedAddress()) {
+      this.toastService.show(
+        'Falta información de contacto o dirección.',
+        'error'
+      );
       return;
     }
 
-    await bricksBuilder.create('payment', 'paymentBrick_container', {
-      initialization: {
-        amount: this.grandTotal(),
-        preferenceId: preferenceId,
-        payer: {
-          email: currentUserEmail,
-        },
+    this.isProcessingOrder.set(true);
+    const orderData = this.buildOrderData();
+
+    if (!orderData) {
+      this.toastService.show(
+        'No se pudo recopilar la información del pedido.',
+        'error'
+      );
+      this.isProcessingOrder.set(false);
+      return;
+    }
+
+    this.orderService.createOrder(orderData).subscribe({
+      next: (savedOrder) => {
+        this.toastService.show('¡Pedido realizado con éxito!', 'success');
+        this.cartService.clearCart();
+        this.router.navigate(['/order-confirmation', savedOrder._id]);
       },
-      // --- ¡CORRECCIÓN FINAL AQUÍ! ---
-      customization: {
-        paymentMethods: {
-          // Restauramos la lista completa de métodos de pago que queremos aceptar
-          creditCard: 'all',
-          debitCard: 'all',
-          ticket: 'all', // Para Efecty, etc.
-          bankTransfer: 'all', // Para PSE
-          maxInstallments: 1,
-        },
-      },
-      callbacks: {
-        onReady: () => {
-          this.isLoading.set(false);
-          console.log('--- Payment Brick está listo. ---');
-        },
-        onSubmit: () => {
-          console.log(
-            '--- onSubmit del Brick disparado. Guardando orden pendiente... ---'
-          );
-          const orderData = this.buildOrderData();
-          if (orderData) {
-            localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
-          }
-          return new Promise<void>((resolve) => {
-            resolve();
-          });
-        },
-        onError: (error: any) => {
-          console.error('Error en el Payment Brick:', error);
-          this.toastService.show('Ocurrió un error con la pasarela de pago.');
-          this.isLoading.set(false);
-          this.currentStep.set('shipping');
-        },
+      error: (err) => {
+        this.toastService.show('Hubo un error al crear tu pedido.', 'error');
+        this.isProcessingOrder.set(false);
       },
     });
   }
 
   private buildOrderData(): any | null {
-    let currentUser: any = null;
-    this.authService.currentUser$
-      .pipe(take(1))
-      .subscribe((user) => (currentUser = user));
-
-    if (!this.selectedAddress() || !currentUser) {
+    if (!this.selectedContact() || !this.selectedAddress()) {
+      console.error(
+        'BuildOrderData falló: Falta contacto o dirección seleccionada.'
+      );
       return null;
     }
 
+    const customerInfo = {
+      name: this.selectedContact()!.fullName,
+      email: this.selectedContact()!.email,
+      phone: this.selectedContact()!.phone,
+    };
+
     return {
-      customerInfo: {
-        name: this.selectedAddress().fullName,
-        email: currentUser.email,
-      },
+      customerInfo: customerInfo,
       shippingAddress: this.selectedAddress(),
       items: this.cartService.cartItems().map((item) => ({
         product: item.product._id,
@@ -271,7 +185,7 @@ export class checkout implements OnInit {
         price: this.finalItemPrice(item),
         selectedVariants: item.selectedVariants,
       })),
-      appliedCoupon: this.appliedCoupon() ? this.appliedCoupon().code : null,
+      appliedCoupon: this.appliedCoupon()?.code || null,
       discountAmount: this.discountAmount(),
       totalAmount: this.grandTotal(),
     };

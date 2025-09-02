@@ -22,8 +22,132 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
-// --- RUTAS DE DIRECCIONES UNIFICADAS ---
-// El UID ahora se obtiene siempre del token (req.user.uid)
+// --- ¡NUEVA RUTA: OBTENER PERFIL DE USUARIO! ---
+router.get("/profile", [authMiddleware], async (req, res) => {
+  try {
+    // Buscamos al usuario en nuestra base de datos MongoDB usando el uid del token
+    const userProfile = await User.findOne({ uid: req.user.uid }).select(
+      "firstName lastName phone email"
+    );
+
+    if (!userProfile) {
+      // Si el usuario existe en Firebase Auth pero no en nuestra DB, devolvemos los datos básicos.
+      return res.json({
+        email: req.user.email,
+        firstName: "",
+        lastName: "",
+        phone: "",
+      });
+    }
+    res.json(userProfile);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener el perfil" });
+  }
+});
+
+// --- ¡NUEVA RUTA: ACTUALIZAR PERFIL DE USUARIO! ---
+router.put("/profile", [authMiddleware], async (req, res) => {
+  try {
+    const { firstName, lastName, phone } = req.body;
+
+    // findOneAndUpdate con 'upsert: true' buscará un documento que coincida con el uid
+    // y lo actualizará. Si no lo encuentra, creará uno nuevo.
+    const updatedProfile = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      {
+        $set: {
+          firstName,
+          lastName,
+          phone,
+          email: req.user.email, // Aseguramos que el email esté sincronizado
+        },
+      },
+      { new: true, upsert: true, runValidators: true }
+    ).select("firstName lastName phone email");
+
+    res.json(updatedProfile);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar el perfil" });
+  }
+});
+
+// OBTENER TODOS LOS CONTACTOS
+router.get("/contacts", [authMiddleware], async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.user.uid }).select("contacts");
+    res.json(user ? user.contacts : []);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener contactos" });
+  }
+});
+
+// AÑADIR UN NUEVO CONTACTO
+router.post("/contacts", [authMiddleware], async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      { $push: { contacts: req.body } },
+      { new: true, upsert: true }
+    ).select("contacts");
+    res.status(201).json(user.contacts);
+  } catch (error) {
+    res.status(500).json({ message: "Error al añadir contacto" });
+  }
+});
+
+// ACTUALIZAR UN CONTACTO
+router.put("/contacts/:contactId", [authMiddleware], async (req, res) => {
+  try {
+    const user = await User.findOne({ uid: req.user.uid });
+    if (!user)
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    const contact = user.contacts.id(req.params.contactId);
+    if (!contact)
+      return res.status(404).json({ message: "Contacto no encontrado" });
+
+    contact.set(req.body);
+    await user.save();
+    res.json(user.contacts);
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar contacto" });
+  }
+});
+
+// ELIMINAR UN CONTACTO
+router.delete("/contacts/:contactId", [authMiddleware], async (req, res) => {
+  try {
+    const user = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      { $pull: { contacts: { _id: req.params.contactId } } },
+      { new: true }
+    ).select("contacts");
+    res.json(user ? user.contacts : []);
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar contacto" });
+  }
+});
+
+// ESTABLECER UN CONTACTO COMO PREFERIDO
+router.patch(
+  "/contacts/:contactId/set-preferred",
+  [authMiddleware],
+  async (req, res) => {
+    try {
+      const user = await User.findOne({ uid: req.user.uid });
+      if (!user)
+        return res.status(404).json({ message: "Usuario no encontrado" });
+
+      user.contacts.forEach((c) => (c.isPreferred = false));
+      const preferredContact = user.contacts.id(req.params.contactId);
+      if (preferredContact) preferredContact.isPreferred = true;
+
+      await user.save();
+      res.json(user.contacts);
+    } catch (error) {
+      res.status(500).json({ message: "Error al establecer preferido" });
+    }
+  }
+);
 
 router.get("/addresses", [authMiddleware], async (req, res) => {
   try {

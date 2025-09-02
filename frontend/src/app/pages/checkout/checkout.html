@@ -1,5 +1,5 @@
 <div class="checkout-layout">
-  <!-- Columna Izquierda -->
+  <!-- Columna Izquierda (Pasos del Checkout) -->
   <div class="form-column">
     <header class="logo-header">
       <a routerLink="/" class="logo-link">
@@ -8,65 +8,106 @@
     </header>
 
     @if (isLoading()) {
-    <p class="loading-text">Cargando...</p>
-    }
-
-    <!-- PASO 1: DIRECCIÓN -->
-    <!-- Usamos [hidden] para ocultar/mostrar sin eliminar del DOM -->
-    <div
-      class="step-container"
-      [hidden]="currentStep() !== 'shipping' || isLoading()"
-    >
-      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
-      @if (addresses().length > 0) {
-      <div class="addresses-list">
-        @for (address of addresses(); track address._id) {
+    <p class="loading-text">Cargando información...</p>
+    } @else {
+    <!-- PASO 1: SELECCIONAR CONTACTO -->
+    <div class="step-container" [hidden]="currentStep() !== 'contact'">
+      <h2 class="step-title">¿Para quién es el envío?</h2>
+      @if (contacts().length > 0) {
+      <div class="selector-list">
+        @for (contact of contacts(); track contact._id) {
         <div
-          class="address-card"
-          [class.selected]="selectedAddress()?._id === address._id"
-          (click)="selectAddress(address)"
+          class="card-selector"
+          [class.selected]="selectedContact()?._id === contact._id"
+          (click)="selectContact(contact)"
         >
           <div class="radio-selector"></div>
-          <div class="address-details">
-            <p class="address-street">{{ address.streetAddress }}</p>
-            <p class="address-city">
-              {{ address.city }}, {{ address.department }}
-            </p>
-            <p class="address-name">
-              {{ address.fullName }} - {{ address.phone }}
+          <div class="card-details">
+            <p class="card-title-text">{{ contact.fullName }}</p>
+            <p class="card-subtitle-text">
+              {{ contact.email }} - {{ contact.phone }}
             </p>
           </div>
         </div>
         }
       </div>
       } @else {
-      <p class="no-address-message">No tienes direcciones guardadas.</p>
+      <p class="no-items-message">
+        No tienes contactos de envío.
+        <a routerLink="/account/contacts">Añade uno aquí.</a>
+      </p>
       }
-      <div class="address-actions">
-        <a routerLink="/account/addresses" class="add-address-link"
-          >Administrar mis direcciones</a
+      <div class="step-actions">
+        <button
+          (click)="proceedToShipping()"
+          [disabled]="!selectedContact()"
+          class="btn-material"
+          appRipple
         >
+          Continuar a Dirección
+        </button>
       </div>
-      <button
-        class="btn-material"
-        (click)="proceedToPayment()"
-        [disabled]="!selectedAddress()"
-      >
-        Continuar al Pago
-      </button>
     </div>
 
-    <!-- PASO 2: PAGO -->
-    <!-- ¡CAMBIO CLAVE! Este div ahora SIEMPRE está en el DOM, pero puede estar oculto. -->
-    <div
-      class="step-container"
-      [hidden]="currentStep() !== 'payment' || isLoading()"
-    >
-      <h2 class="step-title">Elige cómo pagar</h2>
-      <!-- El ID está en el contenedor que siempre existe -->
-      <div id="paymentBrick_container"></div>
+    <!-- PASO 2: SELECCIONAR DIRECCIÓN -->
+    <div class="step-container" [hidden]="currentStep() !== 'shipping'">
+      <a (click)="currentStep.set('contact')" class="back-link"
+        >&larr; Volver a Contactos</a
+      >
+      <h2 class="step-title">¿Dónde quieres recibir tu compra?</h2>
+      @if (addresses().length > 0) {
+      <div class="selector-list">
+        @for (address of addresses(); track address._id) {
+        <div
+          class="card-selector"
+          [class.selected]="selectedAddress()?._id === address._id"
+          (click)="selectAddress(address)"
+        >
+          <div class="radio-selector"></div>
+          <div class="card-details">
+            <p class="card-title-text">{{ address.streetAddress }}</p>
+            <p class="card-subtitle-text">
+              {{ address.city }}, {{ address.department }}
+            </p>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <p class="no-items-message">
+        No tienes direcciones guardadas.
+        <a routerLink="/account/addresses">Añade una aquí.</a>
+      </p>
+      }
+      <div class="step-actions">
+        <a routerLink="/account/addresses" class="add-link"
+          >Administrar mis direcciones</a
+        >
+        <button
+          (click)="proceedToSummary()"
+          [disabled]="!selectedAddress()"
+          class="btn-material"
+          appRipple
+        >
+          Continuar a Resumen
+        </button>
+      </div>
     </div>
+
+    <!-- PASO 3: RESUMEN FINAL -->
+    <div class="step-container" [hidden]="currentStep() !== 'summary'">
+      <a (click)="currentStep.set('shipping')" class="back-link"
+        >&larr; Volver a Direcciones</a
+      >
+      <h2 class="step-title">¡Casi listo! Confirma tu pedido</h2>
+      <p class="summary-text">
+        Revisa los detalles finales en el resumen de la derecha. Si todo es
+        correcto, haz clic en "Finalizar Compra" para completar tu pedido.
+      </p>
+    </div>
+    }
   </div>
+
   <!-- Columna Derecha: Resumen del Pedido -->
   <aside class="summary-column">
     <div class="summary-card">
@@ -75,28 +116,17 @@
         @for (item of cartService.cartItems(); track item.id) {
         <div class="summary-item">
           <div class="item-image-wrapper">
-            @if (item.product.images && item.product.images.length > 0) {
             <div
               class="item-image"
-              [style.backgroundImage]="'url(' + item.product.images[0] + ')'"
+              [style.backgroundImage]="
+                'url(' + (item.product.images[0] || '') + ')'
+              "
             ></div>
-            } @else {
-            <div class="item-image placeholder-image"></div>
-            }
             <span class="item-quantity">{{ item.quantity }}</span>
           </div>
           <div class="item-details-and-price">
             <div class="item-info">
               <p class="item-name">{{ item.product.name }}</p>
-              <div class="item-variants">
-                @for (variantKey of objectKeys(item.selectedVariants); track
-                variantKey) {
-                <span
-                  >{{ variantKey }}:
-                  <strong>{{ item.selectedVariants[variantKey] }}</strong></span
-                >
-                }
-              </div>
             </div>
             <p class="item-price">
               {{
@@ -108,8 +138,6 @@
         </div>
         }
       </div>
-      <hr />
-      <hr />
       <div class="coupon-section">
         <div class="form-field">
           <input
@@ -163,6 +191,15 @@
           }}</span>
         </div>
       </div>
+
+      <!-- BOTÓN FINAL -->
+      <button
+        class="btn-material pay-button"
+        (click)="placeOrder()"
+        [disabled]="currentStep() !== 'summary' || isProcessingOrder()"
+      >
+        {{ isProcessingOrder() ? "Procesando..." : "Finalizar Compra" }}
+      </button>
     </div>
   </aside>
 </div>

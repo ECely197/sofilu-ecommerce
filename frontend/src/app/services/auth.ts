@@ -7,6 +7,8 @@ import {
   UserCredential,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
+  sendPasswordResetEmail,
 } from '@angular/fire/auth';
 import { BehaviorSubject, Observable, from } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
@@ -46,6 +48,28 @@ export class AuthService {
           })
         );
       })
+    );
+  }
+
+  updateUserProfile(newName: string): Promise<void> {
+    const user = this.auth.currentUser;
+    if (user) {
+      // updateProfile es una función de Firebase que actualiza los datos del usuario
+      return updateProfile(user, { displayName: newName });
+    }
+    // Si no hay usuario, devolvemos una promesa rechazada
+    return Promise.reject(new Error('No hay usuario logueado.'));
+  }
+
+  // --- ¡NUEVO MÉTODO para restablecer la contraseña! ---
+  sendPasswordResetEmail(): Promise<void> {
+    const user = this.auth.currentUser;
+    if (user && user.email) {
+      // sendPasswordResetEmail envía un correo al email del usuario con un enlace para cambiar la contraseña
+      return sendPasswordResetEmail(this.auth, user.email);
+    }
+    return Promise.reject(
+      new Error('No se pudo encontrar el email del usuario.')
     );
   }
 

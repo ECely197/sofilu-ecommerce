@@ -1,0 +1,69 @@
+// En: frontend/src/app/pages/account/my-details/my-details.scss
+@use "../../../../../buttons";
+@use "../../../../forms";
+
+.account-section {
+  .section-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.875rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.details-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--soft-gray);
+
+  strong {
+    font-weight: 600;
+  }
+  span {
+    color: var(--text-secondary);
+  }
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.action-link {
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.875rem;
+  &:hover {
+    color: var(--text-charcoal);
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.material-input:disabled {
+  color: var(--text-secondary);
+  border-bottom-color: transparent;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
