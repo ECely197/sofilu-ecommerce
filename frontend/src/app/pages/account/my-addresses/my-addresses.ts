@@ -1,4 +1,5 @@
-// Contenido completo y final para: src/app/pages/account/my-addresses/my-addresses.component.ts
+// En: frontend/src/app/pages/account/my-addresses/my-addresses.ts
+
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -7,10 +8,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { switchMap, take } from 'rxjs/operators';
-
-import { Customer } from '../../../services/customer';
-import { AuthService } from '../../../services/auth';
+import { Customer, Address } from '../../../services/customer'; // Asegúrate de que Address se importa
+import { ToastService } from '../../../services/toast.service';
 import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
@@ -23,23 +22,24 @@ import { RippleDirective } from '../../../directives/ripple';
 export class MyAddressesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private customerService = inject(Customer);
-  private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
-  addresses = signal<any[]>([]);
+  addresses = signal<Address[]>([]);
   isLoading = signal(true);
   isFormVisible = signal(false);
   editingAddressId = signal<string | null>(null);
-
   addressForm!: FormGroup;
 
   ngOnInit() {
+    // ¡AÑADIMOS 'email' AL FORMULARIO CON VALIDACIÓN!
     this.addressForm = this.fb.group({
       fullName: ['', Validators.required],
       phone: ['', Validators.required],
-      department: ['', Validators.required],
-      city: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]], // <-- Campo nuevo
       streetAddress: ['', Validators.required],
       addressDetails: [''],
+      department: ['', Validators.required],
+      city: ['', Validators.required],
       postalCode: ['', Validators.required],
     });
     this.loadAddresses();
@@ -59,7 +59,8 @@ export class MyAddressesComponent implements OnInit {
     this.isFormVisible.set(true);
   }
 
-  showEditForm(address: any) {
+  showEditForm(address: Address) {
+    // Tipado fuerte aquí
     this.editingAddressId.set(address._id);
     this.addressForm.patchValue(address);
     this.isFormVisible.set(true);
@@ -70,7 +71,11 @@ export class MyAddressesComponent implements OnInit {
   }
 
   handleSubmit() {
-    if (this.addressForm.invalid) return;
+    if (this.addressForm.invalid) {
+      this.toastService.show('Por favor, revisa todos los campos.', 'error');
+      return;
+    }
+
     const operation$ = this.editingAddressId()
       ? this.customerService.updateAddress(
           this.editingAddressId()!,
@@ -78,18 +83,26 @@ export class MyAddressesComponent implements OnInit {
         )
       : this.customerService.addAddress(this.addressForm.value);
 
-    operation$.subscribe((updatedAddresses) => {
-      this.addresses.set(updatedAddresses);
-      this.hideForm();
+    operation$.subscribe({
+      next: (updatedAddresses) => {
+        this.addresses.set(updatedAddresses);
+        this.toastService.show('¡Dirección guardada con éxito!', 'success');
+        this.hideForm();
+      },
+      error: () => {
+        this.toastService.show('No se pudo guardar la dirección.', 'error');
+      },
     });
   }
 
   deleteAddress(addressId: string) {
-    if (!confirm('¿Estás seguro?')) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar esta dirección?'))
+      return;
     this.customerService
       .deleteAddress(addressId)
       .subscribe((updatedAddresses) => {
         this.addresses.set(updatedAddresses);
+        this.toastService.show('Dirección eliminada.', 'success');
       });
   }
 
@@ -98,6 +111,7 @@ export class MyAddressesComponent implements OnInit {
       .setPreferredAddress(addressId)
       .subscribe((updatedAddresses) => {
         this.addresses.set(updatedAddresses);
+        this.toastService.show('Dirección marcada como preferida.', 'success');
       });
   }
 }

@@ -83,19 +83,24 @@ router.get("/addresses", [authMiddleware], async (req, res) => {
 
 router.post("/addresses", [authMiddleware], async (req, res) => {
   try {
-    let user = await User.findOne({ uid: req.user.uid });
-    if (!user) {
-      user = new User({
-        uid: req.user.uid,
-        email: req.user.email,
-        addresses: [],
-      });
-    }
-    user.addresses.push(req.body);
-    const savedUser = await user.save();
-    res.status(201).json(savedUser.addresses);
+    const user = await User.findOneAndUpdate(
+      { uid: req.user.uid },
+      {
+        $push: { addresses: req.body },
+        $setOnInsert: { email: req.user.email },
+      },
+      { new: true, upsert: true, runValidators: true }
+    ).select("addresses");
+
+    res.status(201).json(user.addresses);
   } catch (error) {
-    res.status(500).json({ message: "Error al añadir dirección" });
+    console.error("Error al añadir dirección:", error);
+    res
+      .status(500)
+      .json({
+        message: "Error al añadir la dirección",
+        details: error.message,
+      });
   }
 });
 

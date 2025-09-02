@@ -1,7 +1,6 @@
 <div class="addresses-container">
   <header class="page-header">
-    <h2>Mis Direcciones</h2>
-    <!-- El botón ahora se deshabilita si el formulario ya está visible -->
+    <h2>Mis Direcciones de Envío</h2>
     <button
       (click)="showAddForm()"
       class="btn-material"
@@ -44,8 +43,34 @@
             placeholder=" "
           />
           <label for="phone" class="material-label">Teléfono</label>
+          @if(addressForm.get('phone')?.touched &&
+          addressForm.get('phone')?.hasError('required')) {
+          <p class="error-text">El teléfono es requerido.</p>
+          }
         </div>
       </div>
+
+      <!-- ¡NUEVO CAMPO DE EMAIL! -->
+      <div class="material-field">
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="email" class="material-label">Email de Contacto</label>
+        @if(addressForm.get('email')?.touched &&
+        addressForm.get('email')?.invalid) {
+        <p class="error-text">
+          @if(addressForm.get('email')?.hasError('required')) {
+          <span>El email es requerido.</span> }
+          @if(addressForm.get('email')?.hasError('email')) {
+          <span>Introduce un email válido.</span> }
+        </p>
+        }
+      </div>
+
       <div class="material-field">
         <input
           id="streetAddress"
@@ -105,13 +130,19 @@
 
       <!-- ACCIONES DEL FORMULARIO -->
       <div class="form-actions">
-        <button type="button" (click)="hideForm()" class="btn-secondary">
+        <button
+          type="button"
+          (click)="hideForm()"
+          class="btn-secondary"
+          appRipple
+        >
           Cancelar
         </button>
         <button
           type="submit"
           [disabled]="addressForm.invalid"
           class="btn-material"
+          appRipple
         >
           Guardar Dirección
         </button>
@@ -120,7 +151,7 @@
   </div>
   }
 
-  <!-- VISTA PRINCIPAL (CARGA O LISTA DE DIRECCIONES) -->
+  <!-- VISTA PRINCIPAL (LISTA DE DIRECCIONES) -->
   <div class="content-area">
     @if (isLoading()) {
     <p>Cargando direcciones...</p>
@@ -135,6 +166,8 @@
         <p>{{ address.streetAddress }}, {{ address.addressDetails }}</p>
         <p>{{ address.city }}, {{ address.department }}</p>
         <p>{{ address.phone }}</p>
+        <p>{{ address.email }}</p>
+        <!-- Mostramos el email -->
         <div class="card-actions">
           <button (click)="showEditForm(address)">Editar</button>
           <button (click)="deleteAddress(address._id)">Eliminar</button>
