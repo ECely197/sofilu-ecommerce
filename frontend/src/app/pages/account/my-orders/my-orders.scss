@@ -176,3 +176,36 @@
     color: #991b1b;
   }
 }
+
+// --- ¡NUEVOS ESTILOS PARA LA SECCIÓN DE ACCIONES! ---
+.order-actions {
+  display: flex;
+  flex-wrap: wrap; // Permite que los botones se apilen en pantallas pequeñas
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--soft-gray);
+}
+
+.action-btn {
+  // Heredamos la estructura base de nuestros botones secundarios
+  @extend .btn-secondary;
+  padding: 0.6rem 1.25rem; // Hacemos los botones un poco más pequeños
+  font-size: 0.875rem;
+  border-width: 1px; // Aseguramos que tengan borde
+}
+
+// Estilo específico para el botón de cancelar
+.btn-danger {
+  // Heredamos la estructura, pero cambiamos los colores para indicar una acción destructiva
+  @extend .action-btn;
+  background-color: transparent;
+  color: #b91c1c; // Rojo oscuro
+  border-color: #fecaca; // Borde rojo claro
+
+  &:hover {
+    background-color: #fee2e2; // Fondo rojo muy claro al pasar el ratón
+    color: #991b1b;
+    border-color: #991b1b;
+  }
+}

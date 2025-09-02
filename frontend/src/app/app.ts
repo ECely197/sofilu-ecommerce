@@ -11,6 +11,7 @@ import { CartFlyout } from './components/cart-flyout/cart-flyout';
 import { BottomNavBarComponent } from './components/bottom-nav-bar.component/bottom-nav-bar.component';
 import { ToastContainerComponent } from './components/toast/toast';
 import { UiState } from './services/ui-state';
+import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal';
 
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
@@ -27,6 +28,7 @@ import { AosOptions } from 'aos';
     CartFlyout,
     BottomNavBarComponent,
     ToastContainerComponent,
+    ConfirmationModalComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

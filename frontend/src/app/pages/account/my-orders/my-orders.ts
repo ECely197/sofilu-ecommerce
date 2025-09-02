@@ -18,6 +18,8 @@ import {
   transition,
   animate,
 } from '@angular/animations';
+import { ToastService } from '../../../services/toast.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
 
 @Component({
   selector: 'app-my-orders',
@@ -46,8 +48,12 @@ export class MyOrdersComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   public orders: any[] = [];
   public isLoadingOrders = true;
-
+  private toastService = inject(ToastService);
   public expandedOrderId = signal<string | null>(null);
+  private confirmationService = inject(ConfirmationService);
+
+  isEditModalVisible = signal(false);
+  editingOrder = signal<any | null>(null);
 
   ngOnInit(): void {
     console.log(
@@ -100,6 +106,96 @@ export class MyOrdersComponent implements OnInit {
     this.expandedOrderId.update((currentId) =>
       currentId === orderId ? null : orderId
     );
+  }
+
+  openEditModal(order: any): void {
+    // Creamos una copia profunda del pedido para no modificar el original hasta guardar
+    this.editingOrder.set(JSON.parse(JSON.stringify(order)));
+    this.isEditModalVisible.set(true);
+  }
+
+  // ¡NUEVO MÉTODO para cerrar el modal!
+  closeEditModal(): void {
+    this.isEditModalVisible.set(false);
+    this.editingOrder.set(null);
+  }
+
+  // ¡NUEVO MÉTODO para actualizar la cantidad en el modal!
+  updateItemQuantityInModal(itemIndex: number, change: 1 | -1): void {
+    this.editingOrder.update((order) => {
+      if (!order) return null;
+      const newQuantity = order.items[itemIndex].quantity + change;
+      if (newQuantity > 0) {
+        order.items[itemIndex].quantity = newQuantity;
+      }
+      return { ...order };
+    });
+  }
+
+  // ¡NUEVO MÉTODO para eliminar un item en el modal!
+  removeItemInModal(itemIndex: number): void {
+    this.editingOrder.update((order) => {
+      if (!order) return null;
+      order.items.splice(itemIndex, 1);
+      return { ...order };
+    });
+  }
+
+  // ¡NUEVO MÉTODO para guardar los cambios!
+  saveOrderChanges(): void {
+    const orderToSave = this.editingOrder();
+    if (!orderToSave) return;
+
+    // Extraemos solo los datos de 'items' que necesita el backend
+    const newItemsPayload = orderToSave.items.map((item: any) => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      price: item.price,
+      selectedVariants: item.selectedVariants,
+    }));
+
+    this.orderService.editOrder(orderToSave._id, newItemsPayload).subscribe({
+      next: (updatedOrder) => {
+        // Actualizamos la lista original y cerramos el modal
+        this.orders = this.orders.map((o) =>
+          o._id === updatedOrder._id ? updatedOrder : o
+        );
+        this.toastService.show('Pedido actualizado con éxito.', 'success');
+        this.closeEditModal();
+      },
+      error: (err) => {
+        this.toastService.show(
+          err.error.message || 'No se pudo actualizar el pedido.',
+          'error'
+        );
+      },
+    });
+  }
+
+  async cancelOrder(orderId: string): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: '¿Cancelar Pedido?',
+      message:
+        'Esta acción devolverá los productos al inventario y no se puede deshacer.',
+      confirmText: 'Sí, cancelar',
+    });
+
+    if (confirmed) {
+      this.orderService.updateOrderStatus(orderId, 'Cancelado').subscribe({
+        next: (updatedOrder) => {
+          this.orders = this.orders.map((o) =>
+            o._id === orderId ? updatedOrder : o
+          );
+          this.toastService.show('Pedido cancelado con éxito.', 'success');
+        },
+        error: (err) => {
+          this.toastService.show(
+            err.error.message || 'No se pudo cancelar el pedido.',
+            'error'
+          );
+        },
+      });
+    }
   }
 
   // Helper para la plantilla (para que sea más legible)

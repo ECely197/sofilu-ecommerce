@@ -1,0 +1,23 @@
+@if (confirmationService.modalState(); as config) {
+<div class="modal-overlay" (click)="confirmationService.onCancel()"></div>
+<div class="modal-panel" @fadeScale>
+  <h2 class="modal-title">{{ config.title }}</h2>
+  <p class="modal-message">{{ config.message }}</p>
+  <div class="modal-actions">
+    <button
+      (click)="confirmationService.onCancel()"
+      class="btn-secondary"
+      appRipple
+    >
+      {{ config.cancelText }}
+    </button>
+    <button
+      (click)="confirmationService.onConfirm()"
+      class="btn-danger"
+      appRipple
+    >
+      {{ config.confirmText }}
+    </button>
+  </div>
+</div>
+}

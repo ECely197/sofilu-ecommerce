@@ -160,23 +160,87 @@ router.post("/", [authMiddleware], async (req, res) => {
 });
 
 // --- ACTUALIZAR EL ESTADO DE UN PEDIDO ---
-router.put("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
+router.put("/:id/status", [authMiddleware], async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedStatus = ["Procesando", "Enviado", "Entregado", "Cancelado"];
-    if (!status || !allowedStatus.includes(status)) {
-      return res
-        .status(400)
-        .json({ message: "Estado no válido proporcionado" });
-    }
-    const updatedOrder = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status: status },
-      { new: true }
-    );
-    if (!updatedOrder) {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
       return res.status(404).json({ message: "Pedido no encontrado" });
     }
+
+    // Verificación de permisos
+    const isAdmin = req.user.admin === true;
+    const isOwner = order.userId === req.user.uid;
+
+    if (!isAdmin && !isOwner) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para modificar este pedido." });
+    }
+
+    // Lógica para el Cliente
+    if (isOwner && !isAdmin) {
+      if (status !== "Cancelado") {
+        return res
+          .status(403)
+          .json({ message: "Solo puedes cancelar tu pedido." });
+      }
+      if (order.status !== "Procesando") {
+        return res.status(400).json({
+          message: "No puedes cancelar un pedido que ya ha sido enviado.",
+        });
+      }
+    }
+
+    // Lógica para el Admin (puede cambiar a cualquier estado válido)
+    if (isAdmin) {
+      const allowedStatus = ["Procesando", "Enviado", "Entregado", "Cancelado"];
+      if (!allowedStatus.includes(status)) {
+        return res
+          .status(400)
+          .json({ message: "Estado no válido proporcionado" });
+      }
+    }
+
+    // Si el pedido se cancela (por cliente o admin), devolvemos el stock.
+    if (status === "Cancelado" && order.status !== "Cancelado") {
+      await Promise.all(
+        order.items.map(async (item) => {
+          // Lógica para devolver el stock (similar a la de restar, pero con cantidad positiva)
+          const updateQuery = {};
+          const product = await Product.findById(item.product);
+          if (product) {
+            for (const variantName in item.selectedVariants) {
+              const variantIndex = product.variants.findIndex(
+                (v) => v.name === variantName
+              );
+              if (variantIndex > -1) {
+                const optionIndex = product.variants[
+                  variantIndex
+                ].options.findIndex(
+                  (o) => o.name === item.selectedVariants[variantName]
+                );
+                if (optionIndex > -1) {
+                  const stockPath = `variants.${variantIndex}.options.${optionIndex}.stock`;
+                  updateQuery[stockPath] = item.quantity; // Sumamos la cantidad
+                }
+              }
+            }
+            if (Object.keys(updateQuery).length > 0) {
+              await Product.updateOne(
+                { _id: item.product },
+                { $inc: updateQuery }
+              );
+            }
+          }
+        })
+      );
+    }
+
+    order.status = status;
+    const updatedOrder = await order.save();
+
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error al actualizar el estado:", error);

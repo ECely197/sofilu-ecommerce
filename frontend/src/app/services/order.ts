@@ -44,4 +44,9 @@ export class OrderService {
   getDashboardSummary(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/summary/stats`);
   }
+  editOrder(orderId: string, newItems: any[]): Observable<any> {
+    const url = `${this.apiUrl}/${orderId}`;
+    // Solo enviamos la nueva lista de items
+    return this.http.put<any>(url, { items: newItems });
+  }
 }
