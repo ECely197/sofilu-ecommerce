@@ -1,45 +1,33 @@
-/* You can add global styles to this file, and also import other style files */
 /* ==========================================================================
-   Estilos Globales y Variables de Diseño de Sofilu
+   1. IMPORTACIONES Y FUENTES
    ========================================================================== */
 
-// -- Paleta de Colores --
+// -- Fuentes de Google --
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;700;800&family=Baloo+2:wght@400;500;600;700&display=swap");
+
+/* ==========================================================================
+   2. VARIABLES GLOBALES DE DISEÑO (ROOT)
+   ========================================================================== */
+
 :root {
+  // -- Paleta de Colores --
   --background: #faf3e9;
   --text-charcoal: #36454f;
   --pastel-pink: #f4c2c2;
   --soft-white: #fbf8f9;
   --soft-gray: #eae3d9;
-  --primary: #f4c2c2;
-  --border: #f1eae9; // Un color de borde sutil que combina
-  --text-primary: #36454f; // Nuestro gris carbón para textos principales
+  --primary: var(--pastel-pink);
+  --border: #f1eae9;
+  --text-primary: var(--text-charcoal);
   --text-secondary: #8e807a;
   --background-sec: #fcf8f7;
   --primary-light: #fff5ee;
 }
 
-body {
-  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-// Clases de color para cada sección
-// Usamos colores pastel que combinan con tu paleta
-.theme-default {
-  background-color: var(--background);
-} // #FAF3E9 (Seashell)
-.theme-categories {
-  background-color: #f3e8ff;
-} // Un lavanda muy suave
-.theme-featured {
-  background-color: #f0f9ff;
-} // Un azul cielo muy pálido
-.theme-pijamas {
-  background-color: #fff7ed;
-} // Un naranja/melocotón muy suave
-.theme-sabanas {
-  background-color: #f0fdf4;
-} // Un verde menta muy claro
+/* ==========================================================================
+   3. RESETEO BÁSICO Y ESTILOS GLOBALES DEL BODY
+   ========================================================================== */
 
-// -- Reseteo Básico y Estilos del Body --
 *,
 *::before,
 *::after {
@@ -48,9 +36,13 @@ body {
 
 body {
   margin: 0;
-  background-color: var(--background);
-  font-family: "Baloo 2", "Baloo 2";
-  color: var(--text-charcoal);
+  font-family: "Baloo 2", sans-serif;
+  // Por defecto, usa las variables del tema 'default'.
+  background-color: var(--page-bg, var(--background));
+  color: var(--text-color, var(--text-charcoal));
+  // La transición se aplica a los cambios de color de fondo y texto.
+  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 // -- Estilos para Títulos --
@@ -59,28 +51,99 @@ h2,
 h3,
 h4,
 h5,
-h6,
-a,
-li {
-  font-family: "Baloo 2", "Baloo 2";
+h6 {
+  font-family: "Baloo 2", serif;
   margin: 0;
-  font-weight: 700; // Aseguramos que los títulos sean en negrita
+  font-weight: 700;
 }
 
-// -- Añadir las fuentes de Google --
-// Es mejor importarlas aquí que en el index.html para mantener todo el CSS en un solo lugar.
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;700&display=swap");
-
 /* ==========================================================================
-   Estilos para la Directiva Ripple (Material You)
+   4. TEMAS DINÁMICOS PARA LA LANDING PAGE
    ========================================================================== */
 
-// Cualquier elemento con la directiva [appRipple] debe tener estas propiedades
+.theme-default {
+  --page-bg: #fdf8f2; // Un marfil cálido (casi blanco)
+  --card-bg: white;
+  --card-border-color: #f1eae9;
+}
+.theme-categories {
+  --page-bg: #e9e6ff; // Lavanda un poco más intenso
+  --card-bg: #f5f3ff; // Fondo de tarjeta lavanda muy pálido
+  --card-border-color: #c7c0fe; // Borde lavanda más notorio
+}
+.theme-featured {
+  --page-bg: #e0f2fe; // Azul cielo
+  --card-bg: #f0f9ff; // Fondo de tarjeta azul muy pálido
+  --card-border-color: #a5dcfd; // Borde azul más notorio
+}
+.theme-pijamas {
+  --page-bg: #ffedd5; // Melocotón
+  --card-bg: #fff7ed; // Fondo de tarjeta melocotón muy pálido
+  --card-border-color: #fdba74; // Borde naranja más notorio
+}
+.theme-sabanas {
+  --page-bg: #dcfce7; // Verde menta
+  --card-bg: #f0fdf4; // Fondo de tarjeta verde muy pálido
+  --card-border-color: #a7f3d0; // Borde verde más notorio
+}
+
+/* ==========================================================================
+   5. ESTILOS DE BOTONES GLOBALES
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+
+  &.btn-primary {
+    background-color: var(--pastel-pink);
+    color: white;
+    box-shadow: 0 4px 15px rgba(244, 194, 194, 0.4);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(244, 194, 194, 0.6);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: transparent;
+    color: var(--text-charcoal);
+    border: 1px solid var(--soft-gray);
+
+    &:hover {
+      background-color: var(--soft-gray);
+      border-color: #dcd5cd;
+    }
+  }
+}
+
+/* ==========================================================================
+   6. COMPONENTES Y UTILIDADES GLOBALES
+   ========================================================================== */
+
+.page-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 0.5rem;
+}
+
+// --- Efecto Ripple (Onda) ---
 [appRipple] {
   position: relative;
   overflow: hidden;
 }
-
 .ripple-effect {
   position: absolute;
   border-radius: 50%;
@@ -88,7 +151,6 @@ li {
   transform: scale(0);
   animation: ripple 600ms linear;
 }
-
 @keyframes ripple {
   to {
     transform: scale(4);
@@ -96,30 +158,37 @@ li {
   }
 }
 
-// Creamos una clase 'btn-material' que podremos aplicar a cualquier <a> o <button>
-
-.page-container {
-  width: 100%;
-  max-width: 1440px; // El ancho máximo para nuestro contenido
-  margin: 0 auto; // Centra el contenedor
-  padding: 0 0.5rem; // Espacio en los lados
+// --- Barra de Búsqueda Móvil ---
+.mobile-search-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  padding: 1rem;
+  animation: slideDown 0.3s ease-out forwards;
 }
-
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+  animation: fadeIn 0.3s ease-out forwards;
+}
 .mobile-search-bar .search-form {
   position: relative;
-  z-index: 2; // El formulario está por encima del overlay
+  z-index: 2;
   display: flex;
 }
-
 .mobile-search-bar .search-input {
   width: 100%;
   border: 1px solid var(--soft-gray);
   padding: 0.875rem 1rem;
   border-radius: 9999px;
-  padding-right: 3.5rem; // Espacio para el botón
+  padding-right: 3.5rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
-
 .mobile-search-bar .search-submit-btn {
   position: absolute;
   right: 5px;
@@ -135,13 +204,12 @@ li {
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
-
   &:hover {
-    background-color: #e8a7a7; // Tono más oscuro al pasar el ratón
+    background-color: #e8a7a7;
   }
 }
 
-// Animaciones (si no las tienes ya en global)
+// --- Animaciones Globales ---
 @keyframes slideDown {
   from {
     transform: translateY(-100%);
@@ -156,48 +224,5 @@ li {
   }
   to {
     opacity: 1;
-  }
-}
-
-/* ==========================================================================
-   Estilos de Botones Globales
-   ========================================================================== */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px; // Píldora
-  font-weight: 700;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
-
-  // Estilo Primario (rosa)
-  &.btn-primary {
-    background-color: var(--pastel-pink);
-    color: white;
-    box-shadow: 0 4px 15px rgba(244, 194, 194, 0.4);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(244, 194, 194, 0.6);
-    }
-  }
-
-  // Estilo Secundario (bordeado)
-  &.btn-secondary {
-    background-color: transparent;
-    color: var(--text-charcoal);
-    border: 1px solid var(--soft-gray);
-
-    &:hover {
-      background-color: var(--soft-gray);
-      border-color: #dcd5cd;
-    }
   }
 }

@@ -4,10 +4,24 @@
 
 // Estilos para la tarjeta contenedora
 .card {
-  background-color: white;
+  // ¡USAMOS AMBAS VARIABLES DE TEMA!
+  background-color: var(--card-bg);
+  border: 2px solid var(--card-border-color);
+
+  // La sombra ahora usa el mismo color del borde para el efecto "glow"
+  box-shadow: 0 0 25px -8px var(--card-border-color);
+
   border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+
+  // Transición suave para todos los cambios
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-5px);
+    // Al hacer hover, la sombra se vuelve un poco más oscura y definida
+    box-shadow: 0 10px 30px -5px var(--card-border-color);
+  }
 }
 
 // Cabecera de la tarjeta
