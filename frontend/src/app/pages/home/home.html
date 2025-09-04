@@ -1,7 +1,11 @@
-<!-- En: frontend/src/app/pages/home/home.html -->
 <div class="page-container">
   <!-- 1. Hero Section -->
-  <section class="card hero-card" data-aos="fade-up">
+  <section
+    #sectionCard
+    data-theme="theme-default"
+    class="card hero-card"
+    data-aos="fade-up"
+  >
     <div class="hero-background">
       <img src="/image-prueba-back.jpg" alt="Ambiente de confort y descanso" />
     </div>
@@ -14,28 +18,53 @@
   </section>
 
   <!-- 2. Carrusel de Categorías -->
-  <app-categories-section
-    [categories]="categories()"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  ></app-categories-section>
-
-  <!-- 3. Productos Destacados -->
-  <app-featured-products
-    [products]="featuredProducts()"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  ></app-featured-products>
-
-  <!-- 4. Carruseles de Productos por Categoría -->
-  @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <app-product-carousel
-    [title]="categoryGroup.name"
-    [products]="categoryGroup.products"
-    [categorySlug]="categoryGroup.slug"
+  <!-- Envolvemos el componente en un div para aplicar la referencia y el data-theme -->
+  <div
+    #sectionCard
+    data-theme="theme-categories"
     data-aos="fade-up"
     data-aos-delay="100"
   >
-  </app-product-carousel>
+    <app-categories-section
+      [categories]="categories()"
+    ></app-categories-section>
+  </div>
+
+  <!-- 3. Productos Destacados -->
+  <div
+    #sectionCard
+    data-theme="theme-featured"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
+    <app-featured-products
+      [products]="featuredProducts()"
+    ></app-featured-products>
+  </div>
+
+  <!-- 4. Carruseles de Productos por Categoría -->
+  @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
+  <div
+    #sectionCard
+    [attr.data-theme]="categoryGroup.theme"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
+    <app-product-carousel
+      [title]="categoryGroup.name"
+      [products]="categoryGroup.products"
+      [categorySlug]="categoryGroup.slug"
+    >
+    </app-product-carousel>
+  </div>
   }
+
+  <div
+    #sectionCard
+    data-theme="theme-default"
+    data-aos="fade-up"
+    data-aos-delay="100"
+  >
+    <app-how-to-buy></app-how-to-buy>
+  </div>
 </div>

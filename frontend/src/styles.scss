@@ -18,6 +18,27 @@
   --primary-light: #fff5ee;
 }
 
+body {
+  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+// Clases de color para cada sección
+// Usamos colores pastel que combinan con tu paleta
+.theme-default {
+  background-color: var(--background);
+} // #FAF3E9 (Seashell)
+.theme-categories {
+  background-color: #f3e8ff;
+} // Un lavanda muy suave
+.theme-featured {
+  background-color: #f0f9ff;
+} // Un azul cielo muy pálido
+.theme-pijamas {
+  background-color: #fff7ed;
+} // Un naranja/melocotón muy suave
+.theme-sabanas {
+  background-color: #f0fdf4;
+} // Un verde menta muy claro
+
 // -- Reseteo Básico y Estilos del Body --
 *,
 *::before,
