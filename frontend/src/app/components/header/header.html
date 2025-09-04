@@ -1,100 +1,79 @@
 <header class="sofilu-header">
-  <div class="header-pill left">
+  <div class="header-pill">
     <nav #navContainer class="desktop-nav">
       <div #navPill class="nav-pill"></div>
 
       <a
         #navLink
-        class="nav-link"
         routerLink="/"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link"
       >
-        <span class="nav-link-text-wrapper">
-          <span class="nav-link-text-inner">
-            <span class="nav-link-text">Inicio</span>
-            <span class="nav-link-text">Inicio</span>
-          </span>
-        </span>
+        <span class="nav-text-original">Inicio</span>
+        <span class="nav-text-reveal">Inicio</span>
       </a>
       <a
         #navLink
-        class="nav-link"
         routerLink="/category/sabanas"
         routerLinkActive="active"
+        class="nav-link"
       >
-        <span class="nav-link-text-wrapper">
-          <span class="nav-link-text-inner">
-            <span class="nav-link-text">Sábanas</span>
-            <span class="nav-link-text">Sábanas</span>
-          </span>
-        </span>
+        <span class="nav-text-original">Sábanas</span>
+        <span class="nav-text-reveal">Sábanas</span>
       </a>
       <a
         #navLink
-        class="nav-link"
         routerLink="/category/pijamas"
         routerLinkActive="active"
+        class="nav-link"
       >
-        <span class="nav-link-text-wrapper">
-          <span class="nav-link-text-inner">
-            <span class="nav-link-text">Pijamas</span>
-            <span class="nav-link-text">Pijamas</span>
-          </span>
-        </span>
+        <span class="nav-text-original">Pijamas</span>
+        <span class="nav-text-reveal">Pijamas</span>
       </a>
       <a
         #navLink
-        class="nav-link"
         routerLink="/category/toallas"
         routerLinkActive="active"
+        class="nav-link"
       >
-        <span class="nav-link-text-wrapper">
-          <span class="nav-link-text-inner">
-            <span class="nav-link-text">Toallas</span>
-            <span class="nav-link-text">Toallas</span>
-          </span>
-        </span>
+        <span class="nav-text-original">Toallas</span>
+        <span class="nav-text-reveal">Toallas</span>
       </a>
       <a
         #navLink
-        class="nav-link"
         routerLink="/category/batas"
         routerLinkActive="active"
+        class="nav-link"
       >
-        <span class="nav-link-text-wrapper">
-          <span class="nav-link-text-inner">
-            <span class="nav-link-text">Batas</span>
-            <span class="nav-link-text">Batas</span>
-          </span>
-        </span>
+        <span class="nav-text-original">Batas</span>
+        <span class="nav-text-reveal">Batas</span>
       </a>
     </nav>
-  </div>
 
-  <div class="logo-wrapper">
-    <a routerLink="/" class="logo-link" (click)="closeAllMenus()">
-      <img
-        src="/sofilu-logo-text.svg"
-        alt="Logo de Sofilu"
-        class="logo-image"
-      />
-    </a>
-  </div>
+    <!-- LOGO (CENTRO) -->
+    <div class="logo-wrapper">
+      <a routerLink="/" class="logo-link">
+        <img
+          src="/sofilu-logo-text.svg"
+          alt="Logo de Sofilu"
+          class="logo-image"
+        />
+      </a>
+    </div>
 
-  <div class="header-pill right">
+    <!-- ACCIONES (DERECHA) -->
     <div class="header-right">
       <form class="search-form" (submit)="handleSearch($event, searchInput)">
+        <span class="material-symbols-outlined search-icon">search</span>
         <input
           #searchInput
           type="text"
           placeholder="Buscar..."
           class="search-input"
         />
-        <button type="submit" class="search-button">
-          <span class="material-symbols-outlined">search</span>
-        </button>
       </form>
+
       <a
         routerLink="/wishlist"
         class="icon-button"
@@ -102,6 +81,7 @@
       >
         <span class="material-symbols-outlined">favorite_border</span>
       </a>
+
       <button
         (click)="uiStateService.openCartFlyout()"
         class="icon-button"
@@ -112,19 +92,15 @@
         <span class="cart-badge">{{ cartService.totalItems() }}</span>
         }
       </button>
+
       @if (currentUser$ | async; as user) {
       <div class="profile-container">
-        <button
-          (click)="toggleProfileMenu($event)"
-          class="profile-button"
-          aria-label="Abrir menú de perfil"
-        >
-          @if(user.email) {
-          <span>{{ user.email.charAt(0).toUpperCase() }}</span>
-          }
+        <button (click)="toggleProfileMenu($event)" class="profile-button">
+          <span>{{ user.email?.charAt(0)?.toUpperCase() }}</span>
         </button>
         @if (isProfileMenuOpen()) {
-        <div class="profile-menu" @flyInOut>
+        <div #profileMenu class="profile-menu">
+          <!-- Quitamos la animación @flyInOut de aquí -->
           <div class="menu-header">
             @if(user.email) {
             <p class="user-email">{{ user.email }}</p>
@@ -147,51 +123,10 @@
         }
       </div>
       } @else {
-      <a routerLink="/login" class="login-button">Iniciar Sesión</a>
+      <a routerLink="/login" class="login-button btn btn-primary"
+        >Iniciar Sesión</a
+      >
       }
     </div>
   </div>
-
-  <!-- Controles para Móvil -->
-  <button
-    class="hamburger-button"
-    (click)="toggleMobileMenu()"
-    aria-label="Abrir menú de navegación"
-  >
-    <span class="material-symbols-outlined">{{
-      isMobileMenuOpen() ? "close" : "menu"
-    }}</span>
-  </button>
-
-  <nav class="mobile-nav" [class.is-open]="isMobileMenuOpen()">
-    <a
-      class="mobile-nav-link"
-      routerLink="/category/sabanas"
-      (click)="toggleMobileMenu()"
-      >Sábanas</a
-    >
-    <a
-      class="mobile-nav-link"
-      routerLink="/category/pijamas"
-      (click)="toggleMobileMenu()"
-      >Pijamas</a
-    >
-    <a
-      class="mobile-nav-link"
-      routerLink="/category/toallas"
-      (click)="toggleMobileMenu()"
-      >Toallas</a
-    >
-    <a
-      class="mobile-nav-link"
-      routerLink="/category/batas"
-      (click)="toggleMobileMenu()"
-      >Batas</a
-    >
-  </nav>
-  <div
-    class="mobile-overlay"
-    [class.is-open]="isMobileMenuOpen()"
-    (click)="toggleMobileMenu()"
-  ></div>
 </header>

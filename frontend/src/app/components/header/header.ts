@@ -4,9 +4,11 @@ import {
   signal,
   ElementRef,
   AfterViewInit,
-  ViewChild,
   ViewChildren,
   QueryList,
+  NgZone,
+  ViewChild,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -18,11 +20,18 @@ import {
 import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { User } from '@angular/fire/auth';
+
+// Importamos GSAP y el plugin SplitText
 import { gsap } from 'gsap';
-import { trigger, transition, style, animate } from '@angular/animations';
+import { SplitText } from 'gsap/SplitText';
+
+// Servicios
 import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
 import { UiState } from '../../services/ui-state';
+
+// Registramos el plugin
+gsap.registerPlugin(SplitText);
 
 @Component({
   selector: 'app-header',
@@ -30,153 +39,170 @@ import { UiState } from '../../services/ui-state';
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.html',
   styleUrl: './header.scss',
-  animations: [
-    trigger('flyInOut', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0.95) translateY(-10px)' }),
-        animate(
-          '150ms ease-out',
-          style({ opacity: 1, transform: 'scale(1) translateY(0)' })
-        ),
-      ]),
-      transition(':leave', [
-        animate(
-          '150ms ease-in',
-          style({ opacity: 0, transform: 'scale(0.95) translateY(-50px)' })
-        ),
-      ]),
-    ]),
-  ],
 })
 export class Header implements AfterViewInit {
   public cartService = inject(CartService);
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  public authService = inject(AuthService);
   public uiStateService = inject(UiState);
+  private router = inject(Router);
+  private zone = inject(NgZone);
+  private lastScrollY = 0;
 
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
-
   isProfileMenuOpen = signal(false);
-  isMobileMenuOpen = signal(false);
 
+  // Obtenemos referencias a los elementos del DOM
   @ViewChildren('navLink', { read: ElementRef }) navLinks!: QueryList<
     ElementRef<HTMLAnchorElement>
   >;
   @ViewChild('navPill') navPill!: ElementRef<HTMLElement>;
   @ViewChild('navContainer') navContainer!: ElementRef<HTMLElement>;
+  @ViewChild('profileMenu') profileMenu!: ElementRef<HTMLElement>;
 
-  ngAfterViewInit() {
-    // Esperamos a que los elementos estén disponibles en el DOM
-    this.navLinks.changes.subscribe(() => this.setupNavAnimations());
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    const currentScrollY = window.scrollY;
+    const headerPill = this.navContainer.nativeElement.closest('.header-pill');
 
-    // Usamos un pequeño retraso para asegurar que Angular haya aplicado la clase 'active' inicial
-    setTimeout(() => {
-      this.setupNavAnimations();
-      this.updatePillToActiveLink(false);
-    }, 100);
+    // Si estamos haciendo scroll hacia abajo Y hemos pasado el inicio de la página
+    if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
+      gsap.to(headerPill, { y: -100, duration: 0.3, ease: 'power2.inOut' });
+    }
+    // Si estamos haciendo scroll hacia arriba
+    else {
+      gsap.to(headerPill, { y: 0, duration: 0.3, ease: 'power2.inOut' });
+    }
 
-    // Actualizamos la píldora cada vez que la navegación termina
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        setTimeout(() => this.updatePillToActiveLink(false), 100);
-      });
+    this.lastScrollY = currentScrollY;
   }
 
-  // --- ¡LÓGICA DE ANIMACIÓN UNIFICADA CON GSAP! ---
-  private setupNavAnimations(): void {
+  ngAfterViewInit() {
+    // Ejecutamos las animaciones fuera de la zona de Angular para optimizar el rendimiento
+    this.zone.runOutsideAngular(() => {
+      gsap.from(this.navContainer.nativeElement.closest('.header-pill'), {
+        y: -100, // Empieza 100px por encima de la pantalla
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        delay: 0.5, // Un pequeño retraso para que la página cargue primero
+      });
+      this.navLinks.changes.subscribe(() => this.setupNavAnimations());
+      this.setupNavAnimations();
+
+      this.router.events
+        .pipe(filter((event) => event instanceof NavigationEnd))
+        .subscribe(() => {
+          setTimeout(() => this.updatePillToActiveLink(false), 150);
+        });
+    });
+  }
+
+  setupNavAnimations(): void {
     const pillEl = this.navPill.nativeElement;
 
     this.navLinks.forEach((linkRef) => {
       const linkEl = linkRef.nativeElement;
-      const textWrapper = linkEl.querySelector('.nav-link-text-inner');
+      const originalText = linkEl.querySelector('.nav-text-original');
+      const revealText = linkEl.querySelector('.nav-text-reveal');
 
-      // Animación al entrar el mouse en un enlace
+      const splitOriginal = new SplitText(originalText, { type: 'chars' });
+      const splitReveal = new SplitText(revealText, { type: 'chars' });
+
+      gsap.set(splitReveal.chars, { yPercent: 100 });
+
       linkEl.addEventListener('mouseenter', () => {
-        // Mover la píldora
+        gsap.to(splitOriginal.chars, {
+          yPercent: -150,
+          stagger: 0.02,
+          duration: 0.3,
+          ease: 'power2.inOut',
+        });
+        gsap.to(splitReveal.chars, {
+          yPercent: -45,
+          stagger: 0.02,
+          duration: 0.3,
+          ease: 'power2.inOut',
+        });
+
         gsap.to(pillEl, {
           x: linkEl.offsetLeft,
           width: linkEl.offsetWidth,
-          opacity: 1,
+          opacity: 1, // Solo muestra píldora si es el activo
+          backgroundColor: 'var(--pastel-pink)',
           duration: 0.4,
           ease: 'power3.out',
         });
-        // Animar el texto (efecto "slot machine")
-        if (textWrapper) {
-          gsap.to(textWrapper, {
-            yPercent: -56,
-            duration: 0.28,
-            ease: 'power2.inOut',
-          });
-        }
+      });
+
+      linkEl.addEventListener('mouseleave', () => {
+        gsap.to(splitOriginal.chars, {
+          yPercent: 0,
+          stagger: 0.02,
+          duration: 0.3,
+          ease: 'power2.inOut',
+        });
+        gsap.to(splitReveal.chars, {
+          yPercent: 100,
+          stagger: 0.02,
+          duration: 0.3,
+          ease: 'power2.inOut',
+        });
+
+        this.updatePillToActiveLink(true);
       });
     });
 
-    // Animación al salir el mouse del contenedor de navegación
-    this.navContainer.nativeElement.addEventListener('mouseleave', () => {
-      this.updatePillToActiveLink(true);
-    });
+    setTimeout(() => this.updatePillToActiveLink(false), 100);
   }
 
-  public updatePillToActiveLink(animated: boolean = true): void {
-    if (!this.navLinks || this.navLinks.length === 0) return;
-
+  updatePillToActiveLink(animated: boolean): void {
     const activeLink = this.navLinks.find((link) =>
       link.nativeElement.classList.contains('active')
     );
 
-    // Revertir la animación de texto para todos los enlaces que no sean el activo
-    this.navLinks.forEach((linkRef) => {
-      const linkEl = linkRef.nativeElement;
-      if (linkEl !== activeLink?.nativeElement) {
-        const textWrapper = linkEl.querySelector('.nav-link-text-inner');
-        if (textWrapper) {
-          gsap.to(textWrapper, {
-            yPercent: 0,
-            duration: 0.2,
-            ease: 'power2.inOut',
-          });
-        }
-      }
-    });
-
     if (activeLink) {
       const linkEl = activeLink.nativeElement;
-      // Mueve la píldora a la posición del enlace activo
       gsap.to(this.navPill.nativeElement, {
         x: linkEl.offsetLeft,
         width: linkEl.offsetWidth,
         opacity: 1,
-        duration: animated ? 0.3 : 0,
+        backgroundColor: 'var(--pastel-pink)', // Fondo rosa para el activo
+        duration: animated ? 0.4 : 0,
         ease: 'power3.out',
       });
-      // Asegurarse de que el texto activo esté en la posición correcta (sin animar)
-      const activeTextWrapper = linkEl.querySelector('.nav-link-text-inner');
-      if (activeTextWrapper) {
-        gsap.set(activeTextWrapper, { yPercent: 0 });
-      }
     } else {
-      // Si no hay ningún enlace activo, oculta la píldora
       gsap.to(this.navPill.nativeElement, { opacity: 0, duration: 0.2 });
     }
   }
 
-  // --- (El resto de tus métodos: toggleProfileMenu, logout, etc. se quedan igual) ---
-  toggleProfileMenu(event?: MouseEvent): void {
-    event?.stopPropagation();
-    this.isProfileMenuOpen.update((value) => !value);
+  handleSearch(event: Event, searchInput: HTMLInputElement): void {
+    event.preventDefault();
+    const query = searchInput.value.trim();
+    if (query) {
+      this.router.navigate(['/search'], { queryParams: { q: query } });
+      searchInput.value = '';
+      searchInput.blur();
+    }
   }
 
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen.update((value) => !value);
-    document.body.style.overflow = this.isMobileMenuOpen() ? 'hidden' : '';
+  toggleProfileMenu(event?: MouseEvent): void {
+    event?.stopPropagation();
+    const isOpen = this.isProfileMenuOpen();
+    this.isProfileMenuOpen.set(!isOpen);
+    if (!isOpen) {
+      setTimeout(() => {
+        gsap.fromTo(
+          this.profileMenu.nativeElement,
+          { y: -20, opacity: 0, scale: 0.95 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.2, ease: 'power2.out' }
+        );
+      }, 0);
+    }
   }
 
   closeAllMenus(): void {
     this.isProfileMenuOpen.set(false);
-    this.isMobileMenuOpen.set(false);
-    document.body.style.overflow = '';
   }
 
   logout(): void {
@@ -185,14 +211,5 @@ export class Header implements AfterViewInit {
       .logout()
       .then(() => this.router.navigate(['/']))
       .catch((error) => console.error('Error al cerrar sesión:', error));
-  }
-  handleSearch(event: Event, searchInput: HTMLInputElement): void {
-    event.preventDefault(); // Previene el envío del formulario tradicional
-    const query = searchInput.value.trim();
-    if (query) {
-      // Navegamos a la página de resultados con el parámetro de búsqueda
-      this.router.navigate(['/search'], { queryParams: { q: query } });
-      searchInput.value = ''; // Limpiamos el input
-    }
   }
 }

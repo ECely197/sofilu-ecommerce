@@ -1,12 +1,22 @@
+/* ==========================================================================
+   HEADER COMPONENT STYLES
+   - Diseño de píldora única flotante.
+   - Animación de texto y píldora deslizante gestionada por GSAP.
+   ========================================================================== */
+
+// Importamos los estilos de botón para el botón de Iniciar Sesión
 @use "../../../../buttons";
 
+// --- CONTENEDOR PRINCIPAL DEL COMPONENTE ---
 :host {
   display: block;
-  @media (max-width: 767px) {
-    display: none; // Ocultamos todo el header en móvil
+  // Ocultamos este header de escritorio en pantallas de tablet hacia abajo
+  @media (max-width: 991px) {
+    display: none;
   }
 }
 
+// --- ESTRUCTURA GENERAL DEL HEADER ---
 .sofilu-header {
   position: fixed;
   top: 1rem;
@@ -14,111 +24,34 @@
   right: 1rem;
   z-index: 1000;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  pointer-events: none;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 1440px;
-  padding: 0 1rem;
+  justify-content: center;
 }
 
+// La píldora principal que envuelve todo
 .header-pill {
-  pointer-events: auto;
+  width: 100%;
+  max-width: 1200px;
+  height: 60px;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; // Izquierda (flexible), Centro (auto), Derecha (flexible)
+  align-items: center;
   background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
-  padding: 0.5rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 8px 32px rgba(0, 0, 0, 0.1);
-
-  display: flex;
-  align-items: center;
-  height: 52px; // Altura fija
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.logo-wrapper {
-  pointer-events: auto;
-  position: relative;
-  z-index: 1;
-}
-
-.logo-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-decoration: none;
-  transition: transform 0.3s ease;
-  &:hover {
-    transform: scale(1.05);
-  }
-}
-.logo-image {
-  height: 80px;
-  width: auto;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
-}
-.logo-text {
-  display: block;
-  font-family: "Baloo 2", sans-serif;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text-charcoal);
-  margin-top: -10px;
-}
-
+/* ==========================================================================
+   SECCIÓN IZQUIERDA: NAVEGACIÓN Y ANIMACIÓN
+   ========================================================================== */
 .desktop-nav {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.nav-link {
-  padding: 0; // Padding va en el wrapper
-  text-decoration: none;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-  cursor: pointer;
-
-  // Wrapper que "recorta" la animación
-  .nav-link-text-wrapper {
-    display: block;
-    height: 2.5em; // Sincronizamos altura y línea-altura
-    overflow: hidden;
-    padding: 0.5rem 1.25rem;
-  }
-
-  // Contenedor que se mueve
-  .nav-link-text-inner {
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.1s cubic-bezier(0.25, 0.8, 0.25, 1); // ¡Animación más rápida!
-  }
-
-  .nav-link-text {
-    color: var(--text-secondary);
-  }
-
-  &:hover .nav-link-text-inner {
-    transform: translateY(-5em);
-  }
-
-  .nav-link-text.hover-text {
-    color: var(--text-charcoal); // El segundo texto es más oscuro
-  }
-
-  &.active {
-    .nav-link-text {
-      color: white;
-    }
-    // Si está activo, forzamos que el texto esté en la posición original
-    .nav-link-text-inner {
-      transform: translateY(0);
-    }
-  }
+  gap: 0.5rem;
 }
 
 .nav-pill {
@@ -126,44 +59,121 @@
   top: 0;
   left: 0;
   height: 100%;
-  width: 1px;
-  background-color: var(--pastel-pink);
-  box-shadow: 0 2px 8px rgba(244, 194, 194, 0.5);
   border-radius: 9999px;
-  transform-origin: left;
+  background-color: var(--pastel-pink); // Color rosa para el estado activo
   z-index: 0;
   opacity: 0;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 0.5rem;
+.nav-link {
+  position: relative;
+  display: block;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  cursor: pointer;
+  line-height: 1.2;
+  overflow: hidden; // Recorta las letras
 }
 
-.icon-button,
-.profile-button,
-.login-button {
-  flex-shrink: 0;
+// Contenedor para ambos textos
+.nav-text-original,
+.nav-text-reveal {
+  display: block;
+  font-weight: 600;
+  // GSAP controlará el transform
+}
+
+.nav-text-original {
+  color: var(--text-charcoal); // Color por defecto (oscuro)
+}
+
+.nav-text-reveal {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 100%;
+  padding: inherit;
+  color: var(--soft-white); // El texto que se revela es rosa
+}
+
+// Cuando el enlace está activo, el texto original se vuelve blanco
+.nav-link.active .nav-text-original {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   SECCIÓN CENTRAL: LOGO
+   ========================================================================== */
+.logo-wrapper {
+  padding: 0 2rem;
+  .logo-link {
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s;
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  .logo-image {
+    height: 40px;
+    width: auto;
+  }
+}
+// --- SECCIÓN DERECHA: ACCIONES ---
+.header-right {
+  display: flex;
+  justify-content: flex-end; // Alinea los iconos a la derecha
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    pointer-events: none;
+    color: var(--text-secondary);
+  }
+
+  .search-input {
+    width: 150px;
+    height: 40px;
+    border-radius: 9999px;
+    border: none;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      width: 220px;
+      background-color: white;
+      box-shadow: 0 0 0 2px var(--pastel-pink);
+      outline: none;
+    }
+  }
 }
 
 .icon-button {
-  position: relative;
   width: 44px;
   height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  color: var(--text-charcoal);
   background-color: transparent;
   border: none;
   cursor: pointer;
+  transition: background-color 0.2s;
   text-decoration: none;
-  color: var(--text-charcoal);
+  position: relative;
+
   &:hover {
-    background-color: var(--soft-gray);
+    background-color: rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -186,6 +196,7 @@
 .profile-container {
   position: relative;
 }
+
 .profile-button {
   width: 44px;
   height: 44px;
@@ -211,19 +222,20 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--soft-gray);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   z-index: 10;
 }
+
 .menu-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--soft-gray);
 }
+
 .user-email {
   font-weight: 500;
   text-align: center;
   word-break: break-all;
 }
+
 .menu-links {
   display: flex;
   flex-direction: column;
@@ -240,11 +252,13 @@
     }
   }
 }
+
 .menu-footer {
   margin-top: auto;
   padding: 0.5rem;
   border-top: 1px solid var(--soft-gray);
 }
+
 .logout-button {
   width: 100%;
   background: none;
@@ -260,55 +274,4 @@
     background-color: #fee2e2;
     color: #b91c1c;
   }
-}
-.login-button {
-  @extend .btn-material;
-  padding: 0.5rem 1.25rem;
-}
-
-.hamburger-button {
-  @extend .icon-button;
-  display: none;
-  pointer-events: auto;
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1001;
-}
-
-.mobile-nav,
-.mobile-overlay {
-  display: none;
-}
-
-.search-form {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-.search-input {
-  border: 1px solid transparent;
-  border-radius: 9999px;
-  padding: 0.5rem 2.5rem 0.5rem 1rem;
-  width: 150px;
-  background-color: var(--soft-gray);
-  transition: all 0.3s;
-  &:focus {
-    outline: none;
-    width: 200px;
-    background-color: white;
-    border-color: var(--soft-gray);
-  }
-}
-.search-button {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  color: var(--text-secondary);
-  display: flex;
 }
