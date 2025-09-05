@@ -1,0 +1,116 @@
+@use "../../../../buttons"; // Para usar nuestros estilos de botón
+
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  // Centramos el modal en la pantalla
+  align-items: center;
+  justify-content: center;
+  // Añadimos padding para que el modal no se pegue a los bordes en pantallas pequeñas
+  padding: 1rem;
+  pointer-events: none;
+}
+
+// El overlay sigue siendo a pantalla completa
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+// --- ¡CAMBIOS CLAVE AQUÍ! ---
+.modal-sheet {
+  // Ya no se posiciona 'absolute' pegado abajo
+  position: relative; // Es relativo a la rejilla flex del :host
+  z-index: 1; // Por encima del overlay
+
+  // Definimos un tamaño que NO ocupe toda la pantalla
+  width: 100%;
+  max-width: 1200px; // Un ancho máximo generoso
+  height: 100vh; // Ocupa el 90% de la altura de la vista
+  max-height: 900px; // Pero nunca más de 900px de alto
+
+  background-color: var(--card-bg);
+  // Bordes redondeados en TODAS las esquinas
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-family: "Baloo 2", serif;
+  font-size: 1.75rem;
+}
+
+// --- ¡BOTÓN DE CIERRE REDISEÑADO! ---
+.close-btn {
+  @extend .btn-secondary; // Hereda la forma y el hover
+
+  // Lo hacemos redondo y solo con icono
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+
+  .material-symbols-outlined {
+    font-size: 24px;
+  }
+}
+
+.modal-filters {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background-color: rgba(0, 0, 0, 0.02); // Un fondo muy sutil para la barra
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  label {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .filter-select {
+    // Reutilizamos el estilo de los botones secundarios
+    @extend .btn-secondary;
+    // Sobrescribimos para que parezca un select
+    padding-right: 2.5rem; // Espacio para la flecha
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2336454F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+}
+
+.modal-content {
+  flex-grow: 1;
+  overflow-y: auto; // Habilita el scroll vertical
+  padding: 2rem;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}

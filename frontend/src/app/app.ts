@@ -12,6 +12,7 @@ import { BottomNavBarComponent } from './components/bottom-nav-bar.component/bot
 import { ToastContainerComponent } from './components/toast/toast';
 import { UiState } from './services/ui-state';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal';
+import { ProductExplorerModalComponent } from './components/product-explorer-modal/product-explorer-modal';
 
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
@@ -29,6 +30,7 @@ import { AosOptions } from 'aos';
     BottomNavBarComponent,
     ToastContainerComponent,
     ConfirmationModalComponent,
+    ProductExplorerModalComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

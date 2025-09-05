@@ -1,9 +1,7 @@
 <section class="card">
   <div class="card-header">
     <h2 class="card-title">{{ title }}</h2>
-    <a [routerLink]="['/category', categorySlug]" class="btn btn-secondary"
-      >Ver todo</a
-    >
+    <button (click)="openExplorer()" class="btn btn-secondary">Ver todo</button>
   </div>
 
   <div class="carousel-container">

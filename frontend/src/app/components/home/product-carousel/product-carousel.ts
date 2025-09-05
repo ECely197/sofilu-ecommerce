@@ -1,30 +1,33 @@
 import { Component, Input, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Product } from '../../../interfaces/product.interface';
 import { ProductCard } from '../../product-card/product-card';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules'; // Importamos el módulo de navegación
+import { ProductModalService } from '../../../services/product-modal.service';
 
 Swiper.use([Navigation]); // Activamos el módulo
 
 @Component({
   selector: 'app-product-carousel',
   standalone: true,
-  imports: [CommonModule, RouterLink, ProductCard],
+  imports: [CommonModule, ProductCard],
   templateUrl: './product-carousel.html',
   styleUrl: './product-carousel.scss',
 })
 export class ProductCarousel implements AfterViewInit {
-  // ¡DEFINIMOS LOS INPUTS!
+  // --- @Inputs (sin cambios) ---
   @Input() title: string = '';
-  @Input() products: Product[] = [];
+  @Input() products: Product[] = []; // Recibimos la lista COMPLETA de productos
   @Input() categorySlug: string = '';
 
-  // Creamos un ID único para cada instancia del carrusel
   uniqueId = `carousel-${Math.random().toString(36).substring(2, 9)}`;
 
-  constructor(private el: ElementRef) {}
+  // ¡Inyectamos el servicio del modal!
+  constructor(
+    private el: ElementRef,
+    private productModalService: ProductModalService
+  ) {}
 
   ngAfterViewInit() {
     new Swiper(this.el.nativeElement.querySelector('.swiper'), {
@@ -40,5 +43,14 @@ export class ProductCarousel implements AfterViewInit {
         1024: { slidesPerView: 4, spaceBetween: 24 },
       },
     });
+  }
+
+  openExplorer(): void {
+    if (this.products && this.products.length > 0) {
+      this.productModalService.open({
+        title: this.title,
+        products: this.products, // Pasamos la lista completa de productos al modal
+      });
+    }
   }
 }
