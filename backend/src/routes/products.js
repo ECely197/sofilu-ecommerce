@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
 
 router.get("/section/featured", async (req, res) => {
   try {
-    const featuredProducts = await Product.find({ isFeatured: true });
+    const featuredProducts = await Product.find({ isFeatured: true }).limit(4);
     res.json(featuredProducts);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener productos destacados" });
