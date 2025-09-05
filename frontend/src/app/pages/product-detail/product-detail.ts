@@ -263,11 +263,6 @@ export class ProductDetailComponent implements OnInit {
   toggleWishlist(): void {
     const currentProduct = this.product();
     if (!currentProduct) return;
-
-    if (this.isProductInWishlist()) {
-      this.wishlistService.removeProduct(currentProduct);
-    } else {
-      this.wishlistService.addProduct(currentProduct);
-    }
+    this.wishlistService.toggleProduct(currentProduct);
   }
 }

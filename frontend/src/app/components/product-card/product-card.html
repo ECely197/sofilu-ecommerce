@@ -1,35 +1,21 @@
-<!-- Contenido completo y seguro para: src/app/components/product-card/product-card.html -->
-
 @if (product) {
-<div class="card-container">
-  <div class="card">
-    <a
-      [routerLink]="['/product', product._id]"
-      class="product-card"
-      data-aos="fade-up"
-    >
-      <div class="image-container">
-        @if (product.images && product.images.length > 0) {
-        <img
-          [src]="product.images[0]"
-          [alt]="product.name"
-          class="product-image"
-          loading="lazy"
-          decoding="async"
-        />
-        } @else {
-        <div class="image-placeholder"></div>
-        }
-      </div>
-      <div class="card-content">
-        <h3 class="product-name">{{ product.name }}</h3>
-        <p class="price">
-          {{ product.variants.length > 0 ? "Desde " : ""
-          }}{{ displayPrice | currency : "COP" : "symbol" : "1.0-0" }}
-        </p>
-      </div>
-    </a>
+<!-- El enlace ahora es el contenedor principal de la tarjeta -->
+<a [routerLink]="['/product', product._id]" class="product-card">
+  <!-- Contenedor de la Imagen con las burbujas de acción -->
+  <div class="image-container">
+    @if (product.images && product.images.length > 0) {
+    <img
+      [src]="product.images[0]"
+      [alt]="product.name"
+      class="product-image"
+      loading="lazy"
+      decoding="async"
+    />
+    } @else {
+    <div class="image-placeholder"></div>
+    }
 
+    <!-- Las burbujas ahora son siempre visibles en el hover de la imagen -->
     @if (authService.currentUser$ | async) {
     <div class="action-bubbles">
       <button
@@ -37,9 +23,9 @@
         class="bubble-button"
         [class.active]="isProductInWishlist()"
       >
-        <span class="material-symbols-outlined">
-          {{ isProductInWishlist() ? "favorite" : "favorite_border" }}
-        </span>
+        <span class="material-symbols-outlined">{{
+          isProductInWishlist() ? "favorite" : "favorite_border"
+        }}</span>
       </button>
       <button (click)="addToCart($event)" class="bubble-button">
         <span class="material-symbols-outlined">add_shopping_cart</span>
@@ -47,5 +33,13 @@
     </div>
     }
   </div>
-</div>
+
+  <!-- Contenido de texto -->
+  <div class="card-content">
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="price">
+      {{ displayPrice | currency : "COP" : "symbol" : "1.0-0" }}
+    </p>
+  </div>
+</a>
 }

@@ -6,7 +6,6 @@
 .card {
   // ¡USAMOS AMBAS VARIABLES DE TEMA!
   background-color: var(--card-bg);
-  border: 2px solid var(--card-border-color);
 
   // La sombra ahora usa el mismo color del borde para el efecto "glow"
   box-shadow: 0 0 25px -8px var(--card-border-color);
