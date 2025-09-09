@@ -1,11 +1,6 @@
 <div class="page-container">
   <!-- 1. Hero Section -->
-  <section
-    #sectionCard
-    data-theme="theme-default"
-    class="card hero-card"
-    data-aos="fade-up"
-  >
+  <section class="card hero-card" data-aos="fade-up">
     <div class="hero-background">
       <img
         src="/background-cover-cat.jpeg"
@@ -14,32 +9,19 @@
     </div>
     <div class="hero-content">
       <h1 class="hero-title">Tu universo de confort te espera</h1>
-      <button routerLink="/products" class="hero-button">
-        Explorar Colección
-      </button>
+      <a routerLink="/products" class="hero-button">Explorar Colección</a>
     </div>
   </section>
 
   <!-- 2. Carrusel de Categorías -->
-  <!-- Envolvemos el componente en un div para aplicar la referencia y el data-theme -->
-  <div
-    #sectionCard
-    data-theme="theme-categories"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  >
+  <div data-aos="fade-up" data-aos-delay="100">
     <app-categories-section
       [categories]="categories()"
     ></app-categories-section>
   </div>
 
   <!-- 3. Productos Destacados -->
-  <div
-    #sectionCard
-    data-theme="theme-featured"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  >
+  <div data-aos="fade-up" data-aos-delay="100">
     <app-featured-products
       [products]="featuredProducts()"
     ></app-featured-products>
@@ -47,12 +29,7 @@
 
   <!-- 4. Carruseles de Productos por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <div
-    #sectionCard
-    [attr.data-theme]="categoryGroup.theme"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  >
+  <div data-aos="fade-up" data-aos-delay="100">
     <app-product-carousel
       [title]="categoryGroup.name"
       [products]="categoryGroup.products"
@@ -62,12 +39,8 @@
   </div>
   }
 
-  <div
-    #sectionCard
-    data-theme="theme-default"
-    data-aos="fade-up"
-    data-aos-delay="100"
-  >
+  <!-- 5. Sección Cómo Comprar -->
+  <div data-aos="fade-up" data-aos-delay="100">
     <app-how-to-buy></app-how-to-buy>
   </div>
 </div>

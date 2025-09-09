@@ -11,12 +11,14 @@
       <div class="swiper-wrapper">
         @for (category of categories; track category._id) {
         <div class="swiper-slide">
-          <a [routerLink]="['/category', category.slug]" class="category-slide">
-            <img
-              [src]="category.imageUrl"
-              [alt]="category.name"
-              class="category-image"
-            />
+          <a [routerLink]="['/category', category.slug]" class="category-card">
+            <div class="icon-container">
+              <img
+                [src]="category.imageUrl"
+                class="category-icon"
+                alt="{{ category.name }}"
+              />
+            </div>
             <p class="category-name">{{ category.name }}</p>
           </a>
         </div>

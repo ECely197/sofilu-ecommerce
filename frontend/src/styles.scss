@@ -10,18 +10,57 @@
    ========================================================================== */
 
 :root {
-  // -- Paleta de Colores --
-  --background: #faf3e9;
-  --text-charcoal: #36454f;
-  --pastel-pink: #f4c2c2;
+  /* ================================== */
+  /* --- PALETA DE COLORES PRINCIPAL 
+  /* ================================== */
+  --color-brand-peach: #ffdab9;
+  --color-brand-pink: #f4c2c2;
+  --color-brand-lavender: #e6e6fa;
+  --color-brand-dark: #4a4a4a;
+
+  /* ================================== */
+  /* --- NUEVOS: TONOS NEUTROS Y DE FONDO --- */
+  /* ================================== */
+  --color-neutral-100: #ffffff; /* Blanco Puro (para tarjetas) */
+  --color-neutral-200: #faf7f5; /* Blanco Roto Cálido (para fondo de página) */
+  --color-neutral-300: #f1f1f1; /* Gris muy claro (para bordes) */
+  --color-neutral-400: #eae3d9; /* Tu 'soft-gray' original, bueno para fondos sutiles */
+  --color-neutral-800: #575757; /* Un gris oscuro alternativo para texto */
+
+  /* ================================== */
+  /* --- NUEVOS: COLORES DE ACENTO (Para botones, insignias, enlaces) --- */
+  /* ================================== */
+  --color-accent-teal: #a0d2db; /* Un turquesa suave y relajante */
+  --color-accent-mint: #a7f3d0; /* Verde menta fresco */
+  --color-accent-sage: #b4c8a6; /* Verde salvia, muy elegante y natural */
+  --color-accent-sky: #bde0fe; /* Azul cielo claro y amigable */
+  --color-accent-gold: #eac696; /* Un dorado/mostaza suave y cálido */
+
+  /* ================================== */
+  /* --- NUEVOS: COLORES SEMÁNTICOS (Para notificaciones, estados) --- */
+  /* ================================== */
+  --color-success: #34d399; /* Verde para éxito (toasts, insignias de 'disponible') */
+  --color-success-light: #f0fdf4; /* Fondo para toasts de éxito */
+  --color-warning: #fbbf24; /* Amarillo/Ámbar para advertencias */
+  --color-warning-light: #fffbeb; /* Fondo para toasts de advertencia */
+  --color-danger: #f87171; /* Rojo suave para errores o acciones destructivas */
+  --color-danger-light: #fef2f2; /* Fondo para toasts de error */
+
+  /* ================================== */
+  /* --- VARIABLES SEMÁNTICAS
+  /* ================================== */
+  --background-page: var(--color-neutral-200);
+  --background-card: var(--color-neutral-100);
+  --text-primary: var(--color-brand-dark);
+  --text-secondary: #8d8d8d;
+  --color-accent: var(--color-brand-pink);
+  --color-border: var(--color-neutral-300);
+
+  --background: var(--background-page);
+  --text-charcoal: var(--text-primary);
+  --pastel-pink: var(--color-accent);
   --soft-white: #fbf8f9;
-  --soft-gray: #eae3d9;
-  --primary: var(--pastel-pink);
-  --border: #f1eae9;
-  --text-primary: var(--text-charcoal);
-  --text-secondary: #8e807a;
-  --background-sec: #fcf8f7;
-  --primary-light: #fff5ee;
+  --soft-gray: var(--color-neutral-400);
 }
 
 /* ==========================================================================
@@ -37,12 +76,11 @@
 body {
   margin: 0;
   font-family: "Baloo 2", sans-serif;
-  // Por defecto, usa las variables del tema 'default'.
-  background-color: var(--page-bg, var(--background));
-  color: var(--text-color, var(--text-charcoal));
-  // La transición se aplica a los cambios de color de fondo y texto.
-  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background-color: var(--background-page);
+  color: var(--text-primary);
+
+  transition: none;
 }
 
 // -- Estilos para Títulos --
@@ -51,7 +89,8 @@ h2,
 h3,
 h4,
 h5,
-h6 {
+h6,
+a {
   font-family: "Baloo 2", serif;
   margin: 0;
   font-weight: 700;
@@ -70,21 +109,6 @@ h6 {
   --page-bg: #e9e6ff; // Lavanda un poco más intenso
   --card-bg: #f5f3ff; // Fondo de tarjeta lavanda muy pálido
   --card-border-color: #c7c0fe; // Borde lavanda más notorio
-}
-.theme-featured {
-  --page-bg: #e0f2fe; // Azul cielo
-  --card-bg: #f0f9ff; // Fondo de tarjeta azul muy pálido
-  --card-border-color: #a5dcfd; // Borde azul más notorio
-}
-.theme-pijamas {
-  --page-bg: #ffedd5; // Melocotón
-  --card-bg: #fff7ed; // Fondo de tarjeta melocotón muy pálido
-  --card-border-color: #fdba74; // Borde naranja más notorio
-}
-.theme-sabanas {
-  --page-bg: #dcfce7; // Verde menta
-  --card-bg: #f0fdf4; // Fondo de tarjeta verde muy pálido
-  --card-border-color: #a7f3d0; // Borde verde más notorio
 }
 
 /* ==========================================================================

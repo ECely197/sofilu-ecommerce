@@ -4,32 +4,23 @@
 
 // Estilos para la tarjeta contenedora
 .card {
-  // ¡USAMOS AMBAS VARIABLES DE TEMA!
   background-color: var(--card-bg);
-  border: 2px solid var(--card-border-color);
-
-  // La sombra ahora usa el mismo color del borde para el efecto "glow"
-  box-shadow: 0 0 25px -8px var(--card-border-color);
-
+  border: 1px solid var(--card-border, var(--soft-gray));
   border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-
-  // Transición suave para todos los cambios
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    transform: translateY(-5px);
-    // Al hacer hover, la sombra se vuelve un poco más oscura y definida
-    box-shadow: 0 10px 30px -5px var(--card-border-color);
-  }
 }
 
 // Cabecera de la tarjeta
 .card-header {
   padding: 2rem 2.5rem 1.5rem;
   .card-title {
-    font-size: 2rem;
+    font-size: 1.7rem;
     font-weight: 700;
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
   }
 }
 
@@ -43,9 +34,60 @@
 }
 
 .swiper-slide {
-  width: 180px;
+  width: 150px;
+  display: flex;
+  justify-content: center;
+
   @media (min-width: 768px) {
-    width: 220px;
+    width: 180px;
+  }
+}
+
+.category-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0.3rem 0.3rem 0 0.3rem;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid transparent;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: var(--card-border-color);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary-light);
+  flex-shrink: 0;
+}
+
+.category-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.category-name {
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  height: 2.4em;
+  overflow: hidden;
+  @media (max-width: 768px) {
+    font-size: 1rem;
   }
 }
 
