@@ -18,6 +18,7 @@ import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
+import { Product } from '../../../interfaces/product.interface';
 
 @Component({
   selector: 'app-product-form',
@@ -49,8 +50,9 @@ export class ProductForm implements OnInit {
       name: ['', Validators.required],
       description: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
+      costPrice: [0, [Validators.required, Validators.min(0)]], // Campo de costo principal
       category: [null, Validators.required],
-      images: this.fb.array([]), // Sin validadores aquí
+      images: this.fb.array([]),
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
@@ -76,23 +78,28 @@ export class ProductForm implements OnInit {
             name: product.name,
             description: product.description,
             price: product.price,
+            costPrice: product.costPrice, // Cargar el costo
             category: categoryId,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
             salePrice: product.salePrice,
           });
 
-          this.images.clear();
           product.images.forEach((imgUrl) =>
             this.images.push(this.fb.control(imgUrl))
           );
           this.imagePreviews.set([...product.images]);
 
-          this.variants.clear();
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
-              (variant.options as any[]).map((opt) =>
-                this.newOption(opt.name, opt.priceModifier, opt.stock)
+              (variant.options as any[]).map(
+                (opt) =>
+                  this.newOption(
+                    opt.name,
+                    opt.priceModifier,
+                    opt.stock,
+                    opt.costPrice
+                  ) // Pasar el costo
               )
             );
             this.variants.push(
@@ -249,15 +256,12 @@ export class ProductForm implements OnInit {
   variantOptions(variantIndex: number): FormArray {
     return this.variants.at(variantIndex).get('options') as FormArray;
   }
-  newOption(
-    name: string = '',
-    priceModifier: number = 0,
-    stock: number = 0
-  ): FormGroup {
+  newOption(name = '', priceModifier = 0, stock = 0, costPrice = 0): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
       priceModifier: [priceModifier, [Validators.required, Validators.min(0)]],
       stock: [stock, [Validators.required, Validators.min(0)]],
+      costPrice: [costPrice, [Validators.required, Validators.min(0)]], // Campo de costo por opción
     });
   }
   addVariantOption(variantIndex: number): void {

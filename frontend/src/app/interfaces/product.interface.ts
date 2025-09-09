@@ -7,6 +7,7 @@ export interface Option {
   name: string;
   priceModifier: number;
   stock: number;
+  costPrice?: number;
 }
 
 export interface Variant {
@@ -19,7 +20,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-
+  costPrice?: number;
   category: Category;
 
   images: string[];

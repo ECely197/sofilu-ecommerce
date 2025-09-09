@@ -68,14 +68,7 @@ router.post("/", [authMiddleware], async (req, res) => {
         .json({ message: "El carrito no puede estar vacío." });
     }
 
-    if (!shippingAddress) {
-      // Una validación extra por seguridad
-      return res
-        .status(400)
-        .json({ message: "La dirección de envío es requerida." });
-    }
-
-    // --- 1. Verificación de Stock (esta parte ya estaba bien, la dejamos igual) ---
+    // --- 1. Verificación de Stock y Añadir Costo a los Items ---
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
@@ -83,6 +76,8 @@ router.post("/", [authMiddleware], async (req, res) => {
           .status(404)
           .json({ message: `Producto con ID ${item.product} no encontrado.` });
       }
+
+      // Validar stock de variantes
       if (item.selectedVariants) {
         for (const variantName in item.selectedVariants) {
           const variant = product.variants.find((v) => v.name === variantName);
@@ -90,12 +85,32 @@ router.post("/", [authMiddleware], async (req, res) => {
             (o) => o.name === item.selectedVariants[variantName]
           );
           if (!option || option.stock < item.quantity) {
-            return res.status(400).json({
-              message: `Stock insuficiente para ${product.name} - ${option.name}.`,
-            });
+            return res
+              .status(400)
+              .json({
+                message: `Stock insuficiente para ${product.name} - ${option.name}.`,
+              });
           }
         }
       }
+
+      // ¡AÑADIMOS EL COSTO AL ITEM ANTES DE GUARDAR!
+      // Buscamos la opción específica para obtener su costo si existe, si no, usamos el del producto base.
+      let itemCost = product.costPrice || 0;
+      if (item.selectedVariants) {
+        const firstVariantKey = Object.keys(item.selectedVariants)[0];
+        const firstVariantValue = item.selectedVariants[firstVariantKey];
+        const variant = product.variants.find(
+          (v) => v.name === firstVariantKey
+        );
+        const option = variant?.options.find(
+          (o) => o.name === firstVariantValue
+        );
+        if (option && option.costPrice) {
+          itemCost = option.costPrice;
+        }
+      }
+      item.costPrice = itemCost * item.quantity; // Guardamos el costo total del item (costo * cantidad)
     }
 
     // --- 2. Crear y Guardar el Pedido ---
@@ -103,7 +118,7 @@ router.post("/", [authMiddleware], async (req, res) => {
       userId,
       customerInfo,
       shippingAddress,
-      items,
+      items, // 'items' ahora contiene el 'costPrice'
       appliedCoupon,
       discountAmount,
       totalAmount,
@@ -114,25 +129,25 @@ router.post("/", [authMiddleware], async (req, res) => {
     await Promise.all(
       items.map(async (item) => {
         const updateQuery = {};
-        for (const variantName in item.selectedVariants) {
-          const product = await Product.findById(item.product);
-          const variantIndex = product.variants.findIndex(
-            (v) => v.name === variantName
-          );
-          if (variantIndex > -1) {
-            const optionIndex = product.variants[
-              variantIndex
-            ].options.findIndex(
-              (o) => o.name === item.selectedVariants[variantName]
+        const product = await Product.findById(item.product); // Necesitamos recargar el producto
+        if (item.selectedVariants) {
+          for (const variantName in item.selectedVariants) {
+            const variantIndex = product.variants.findIndex(
+              (v) => v.name === variantName
             );
-            if (optionIndex > -1) {
-              const stockPath = `variants.${variantIndex}.options.${optionIndex}.stock`;
-
-              updateQuery[stockPath] = -item.quantity;
+            if (variantIndex > -1) {
+              const optionIndex = product.variants[
+                variantIndex
+              ].options.findIndex(
+                (o) => o.name === item.selectedVariants[variantName]
+              );
+              if (optionIndex > -1) {
+                const stockPath = `variants.${variantIndex}.options.${optionIndex}.stock`;
+                updateQuery[stockPath] = -item.quantity;
+              }
             }
           }
         }
-
         if (Object.keys(updateQuery).length > 0) {
           await Product.updateOne({ _id: item.product }, { $inc: updateQuery });
         }
@@ -177,19 +192,15 @@ router.put("/:id", [authMiddleware], async (req, res) => {
         .json({ message: "No tienes permiso para editar este pedido." });
     }
     if (order.status !== "Procesando") {
-      return res
-        .status(400)
-        .json({
-          message: "No puedes editar un pedido que ya ha sido enviado.",
-        });
+      return res.status(400).json({
+        message: "No puedes editar un pedido que ya ha sido enviado.",
+      });
     }
     if (!newItems || newItems.length === 0) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "El pedido no puede quedar vacío. Cancele el pedido en su lugar.",
-        });
+      return res.status(400).json({
+        message:
+          "El pedido no puede quedar vacío. Cancele el pedido en su lugar.",
+      });
     }
 
     // --- Lógica de Sincronización de Stock ---

@@ -73,6 +73,7 @@
               <label class="flex-3">Valor (ej. S, M, L)</label>
               <label class="flex-2">Modificador de Precio (+)</label>
               <label class="flex-2">Stock</label>
+              <label class="flex-2">Costo</label>
               <div class="flex-1"></div>
             </div>
 
@@ -90,6 +91,12 @@
                 type="number"
                 formControlName="priceModifier"
                 placeholder="+ COP"
+                class="form-input-small flex-2"
+              />
+              <input
+                type="number"
+                formControlName="costPrice"
+                placeholder="Costo"
                 class="form-input-small flex-2"
               />
               <input
@@ -177,9 +184,9 @@
     </div>
 
     <div class="card">
-      <h2 class="card-title">Precio</h2>
+      <h2 class="card-title">Precio y Costo</h2>
       <div class="form-field">
-        <label for="price">Precio Base</label>
+        <label for="price">Precio de Venta (Cliente)</label>
         <input
           id="price"
           type="number"
@@ -194,6 +201,15 @@
           id="salePrice"
           type="number"
           formControlName="salePrice"
+          class="form-input"
+        />
+      </div>
+      <div class="form-field">
+        <label for="costPrice">Costo del Producto (Interno)</label>
+        <input
+          id="costPrice"
+          type="number"
+          formControlName="costPrice"
           class="form-input"
         />
       </div>
