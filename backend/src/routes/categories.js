@@ -9,7 +9,12 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 // Útil para que el cliente vea las categorías en el home
 router.get("/", async (req, res) => {
   try {
-    const categories = await Category.find().sort({ name: 1 }); // Ordenadas alfabéticamente
+    const { search } = req.query;
+    let query = {};
+    if (search) {
+      query = { name: { $regex: search, $options: "i" } };
+    }
+    const categories = await Category.find(query).sort({ name: 1 });
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener las categorías" });

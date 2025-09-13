@@ -6,6 +6,19 @@
   </a>
 </header>
 
+<!-- BARRA DE BÚSQUEDA -->
+<div class="search-bar-wrapper">
+  <div class="search-field">
+    <span class="material-symbols-outlined">search</span>
+    <input
+      type="text"
+      [formControl]="searchControl"
+      placeholder="Buscar por nombre o descripción..."
+      class="search-input"
+    />
+  </div>
+</div>
+
 <div class="table-container">
   <!-- Estado de Carga (Esqueleto) -->
   @if (isLoading()) {

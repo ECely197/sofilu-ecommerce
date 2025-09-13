@@ -10,9 +10,19 @@ const { sendOrderConfirmationEmail } = require("../services/emailService");
 // Esta es la ruta que le faltaba el .populate()
 router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    const orders = await Order.find()
+    const { search } = req.query;
+    let query = {};
+
+    if (search) {
+      // 2. Buscamos por el nombre del cliente o por el ID del pedido
+      query = {
+        $or: [{ "customerInfo.name": { $regex: search, $options: "i" } }],
+      };
+    }
+
+    const orders = await Order.find(query) // <-- 3. Aplicamos la consulta
       .sort({ createdAt: -1 })
-      .populate("items.product"); // Popula los detalles del producto para la lista
+      .populate("items.product");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los pedidos" });

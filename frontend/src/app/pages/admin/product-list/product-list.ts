@@ -13,11 +13,18 @@ import {
 import { ProductServices } from '../../../services/product';
 import { Product } from '../../../interfaces/product.interface';
 import { RippleDirective } from '../../../directives/ripple';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  startWith,
+} from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, RippleDirective],
+  imports: [CommonModule, RouterLink, RippleDirective, ReactiveFormsModule],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
   animations: [
@@ -48,8 +55,32 @@ export class ProductList implements OnInit {
   products = signal<Product[]>([]);
   isLoading = signal<boolean>(true);
 
+  searchControl = new FormControl('');
+
   ngOnInit() {
-    this.fetchProducts();
+    // La magia de la búsqueda reactiva
+    this.searchControl.valueChanges
+      .pipe(
+        startWith(''),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((searchTerm) => {
+          this.isLoading.set(true);
+          return this.productService.searchProducts({
+            search: searchTerm || '',
+          });
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.products.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error al buscar productos:', err);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   fetchProducts(): void {
