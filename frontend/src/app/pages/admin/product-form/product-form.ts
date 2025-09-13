@@ -1,5 +1,3 @@
-// Contenido completo y corregido para: frontend/src/app/pages/admin/product-form/product-form.ts
-
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -19,11 +17,18 @@ import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
 import { Product } from '../../../interfaces/product.interface';
+import { NumericFormatDirective } from '../../../directives/numeric-format';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, RippleDirective],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    RippleDirective,
+    NumericFormatDirective,
+  ],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
 })
@@ -49,8 +54,8 @@ export class ProductForm implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
-      price: [0, [Validators.required, Validators.min(0)]],
-      costPrice: [0, [Validators.required, Validators.min(0)]], // Campo de costo principal
+      price: [null, [Validators.min(0)]],
+      costPrice: [null, [Validators.min(0)]],
       category: [null, Validators.required],
       images: this.fb.array([]),
       isFeatured: [false],
@@ -78,7 +83,7 @@ export class ProductForm implements OnInit {
             name: product.name,
             description: product.description,
             price: product.price,
-            costPrice: product.costPrice, // Cargar el costo
+            costPrice: product.costPrice,
             category: categoryId,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
@@ -92,14 +97,13 @@ export class ProductForm implements OnInit {
 
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
-              (variant.options as any[]).map(
-                (opt) =>
-                  this.newOption(
-                    opt.name,
-                    opt.priceModifier,
-                    opt.stock,
-                    opt.costPrice
-                  ) // Pasar el costo
+              (variant.options as any[]).map((opt) =>
+                this.newOption(
+                  opt.name,
+                  opt.priceModifier,
+                  opt.stock,
+                  opt.costPrice
+                )
               )
             );
             this.variants.push(
@@ -117,7 +121,6 @@ export class ProductForm implements OnInit {
     return this.productForm.get('images') as FormArray;
   }
 
-  // --- FUNCIÓN onFilesSelected CORREGIDA ---
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -129,12 +132,10 @@ export class ProductForm implements OnInit {
     }
   }
 
-  // --- FUNCIÓN handleSubmit CON CORRECCIÓN DE TIPADO ---
   handleSubmit() {
     console.log('--- handleSubmit INICIADO ---');
     this.productForm.markAllAsTouched();
 
-    // Validaciones primarias (sin cambios)
     if (this.images.length === 0 && this.selectedFiles.length === 0) {
       this.toastService.show(
         'Por favor, añade al menos una imagen para el producto.'
@@ -151,9 +152,6 @@ export class ProductForm implements OnInit {
     console.log('--- FORMULARIO VÁLIDO ---');
     this.isUploading.set(true);
 
-    // --- ¡LÓGICA SIMPLIFICADA Y CORREGIDA! ---
-
-    // CASO 1: Hay nuevos archivos para subir
     if (this.selectedFiles.length > 0) {
       console.log('--- Detectados nuevos archivos. Subiendo imágenes... ---');
       const uploadOperations$ = forkJoin(
@@ -162,7 +160,6 @@ export class ProductForm implements OnInit {
 
       uploadOperations$.subscribe({
         next: (newImageUrls) => {
-          // Al subir nuevas imágenes, reemplazamos TODAS las anteriores.
           this.images.clear();
           newImageUrls.forEach((url: string) =>
             this.images.push(this.fb.control(url))
@@ -170,7 +167,7 @@ export class ProductForm implements OnInit {
           console.log(
             '--- Imágenes subidas. Guardando datos del producto... ---'
           );
-          this.saveProductData(); // Guardamos con las nuevas URLs
+          this.saveProductData();
         },
         error: (err) => {
           this.isUploading.set(false);
@@ -178,13 +175,11 @@ export class ProductForm implements OnInit {
           this.toastService.show('No se pudieron subir las imágenes.');
         },
       });
-    }
-    // CASO 2: No hay archivos nuevos, solo guardar los cambios de texto/precio/etc.
-    else {
+    } else {
       console.log(
         '--- No hay nuevos archivos. Guardando datos del producto directamente... ---'
       );
-      // Las URLs existentes ya están en el FormArray 'images' desde ngOnInit.
+
       this.saveProductData();
     }
   }
@@ -192,10 +187,12 @@ export class ProductForm implements OnInit {
   private saveProductData(): void {
     const formValue = this.productForm.getRawValue();
 
+    // Construimos el payload, asegurándonos de incluir TODOS los campos necesarios.
     const productPayload = {
       name: formValue.name,
       description: formValue.description,
       price: formValue.price,
+      costPrice: formValue.costPrice, // <-- Campo que faltaba
       category: formValue.category,
       images: formValue.images,
       isFeatured: formValue.isFeatured,
@@ -207,14 +204,12 @@ export class ProductForm implements OnInit {
           name: option.name,
           priceModifier: option.priceModifier,
           stock: option.stock,
+          costPrice: option.costPrice, // <-- Campo que faltaba
         })),
       })),
     };
 
-    console.log(
-      '--- FRONTEND TRACE: Payload limpio que se envía al backend ---',
-      productPayload
-    );
+    console.log('--- Payload enviado al backend ---', productPayload);
 
     const operation = this.isEditMode()
       ? this.productService.updateProduct(this.productId!, productPayload)
@@ -224,7 +219,8 @@ export class ProductForm implements OnInit {
       next: () => {
         this.isUploading.set(false);
         this.toastService.show(
-          `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`
+          `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`,
+          'success'
         );
         this.router.navigate(['/admin/products']);
       },
@@ -232,15 +228,15 @@ export class ProductForm implements OnInit {
         this.isUploading.set(false);
         console.error('Error al guardar el producto:', err);
         this.toastService.show(
-          err.error.details ||
-            err.error.message ||
-            'No se pudo guardar el producto.'
+          err.error?.details ||
+            err.error?.message ||
+            'No se pudo guardar el producto.',
+          'error'
         );
       },
     });
   }
 
-  // --- MÉTODOS PARA VARIANTES (sin cambios) ---
   newVariant(name: string = ''): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
@@ -256,12 +252,17 @@ export class ProductForm implements OnInit {
   variantOptions(variantIndex: number): FormArray {
     return this.variants.at(variantIndex).get('options') as FormArray;
   }
-  newOption(name = '', priceModifier = 0, stock = 0, costPrice = 0): FormGroup {
+  newOption(
+    name = '',
+    priceModifier: number | null = null,
+    stock: number | null = null,
+    costPrice: number | null = null
+  ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
       priceModifier: [priceModifier, [Validators.required, Validators.min(0)]],
       stock: [stock, [Validators.required, Validators.min(0)]],
-      costPrice: [costPrice, [Validators.required, Validators.min(0)]], // Campo de costo por opción
+      costPrice: [costPrice, [Validators.min(0)]],
     });
   }
   addVariantOption(variantIndex: number): void {
