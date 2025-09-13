@@ -42,6 +42,54 @@
     </div>
   </div>
 
+  <!-- ¡NUEVA TARJETA: VALOR DE INVENTARIO! -->
+  <div class="stat-card inventory-card">
+    <div class="card-icon inventory">
+      <span class="material-symbols-outlined">inventory</span>
+    </div>
+    <div class="card-content">
+      <p class="stat-title">Valor de Inventario (Venta)</p>
+      <p class="stat-value">
+        {{
+          stats.inventoryValue.totalSaleValue
+            | currency : "COP" : "symbol" : "1.0-0"
+        }}
+      </p>
+      <p class="stat-subtitle">
+        Costo:
+        {{
+          stats.inventoryValue.totalCostValue
+            | currency : "COP" : "symbol" : "1.0-0"
+        }}
+      </p>
+    </div>
+  </div>
+
+  <!-- ¡NUEVA TARJETA: CUPONES! -->
+  <div class="card coupon-performance">
+    <h2 class="card-title">Rendimiento de Cupones</h2>
+    <div class="coupon-list">
+      @for(coupon of stats.couponPerformance; track coupon._id){
+      <div class="coupon-item">
+        <span class="coupon-code">{{ coupon._id }}</span>
+        <div class="coupon-stats">
+          <span
+            >Usos: <strong>{{ coupon.timesUsed }}</strong></span
+          >
+          <span
+            >Descuento Total:
+            <strong>{{
+              coupon.totalDiscount | currency : "COP" : "symbol" : "1.0-0"
+            }}</strong></span
+          >
+        </div>
+      </div>
+      } @empty {
+      <p class="empty-message">Aún no se han usado cupones.</p>
+      }
+    </div>
+  </div>
+
   <!-- Tarjeta de Pedidos Recientes -->
   <div class="card recent-orders">
     <h2 class="card-title">Pedidos Recientes</h2>

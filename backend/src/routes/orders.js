@@ -85,11 +85,9 @@ router.post("/", [authMiddleware], async (req, res) => {
             (o) => o.name === item.selectedVariants[variantName]
           );
           if (!option || option.stock < item.quantity) {
-            return res
-              .status(400)
-              .json({
-                message: `Stock insuficiente para ${product.name} - ${option.name}.`,
-              });
+            return res.status(400).json({
+              message: `Stock insuficiente para ${product.name} - ${option.name}.`,
+            });
           }
         }
       }
@@ -203,8 +201,6 @@ router.put("/:id", [authMiddleware], async (req, res) => {
       });
     }
 
-    // --- Lógica de Sincronización de Stock ---
-    // 1. Creamos un "mapa" para calcular los cambios netos de stock
     const stockChanges = new Map();
 
     // 2. Iteramos sobre los items ANTIGUOS para DEVOLVER su stock
@@ -396,28 +392,97 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // --- ¡NUEVA RUTA PARA ESTADÍSTICAS DEL DASHBOARD! ---
+// --- ¡RUTA DE ESTADÍSTICAS MEJORADA! ---
 router.get("/summary/stats", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    // Usamos Promise.all para ejecutar todas las consultas en paralelo
-    const [totalRevenue, totalOrders, totalProducts, latestOrders] =
-      await Promise.all([
-        // Suma el totalAmount de todos los pedidos
-        Order.aggregate([
-          { $group: { _id: null, total: { $sum: "$totalAmount" } } },
-        ]),
-        // Cuenta el número total de documentos en la colección de pedidos
-        Order.countDocuments(),
-        // Cuenta el número total de productos
-        Product.countDocuments(),
-        // Obtiene los 5 pedidos más recientes, populando los productos
-        Order.find().sort({ createdAt: -1 }).limit(5).populate("items.product"),
-      ]);
+    const [
+      // Métricas de Pedidos
+      totalRevenueData,
+      totalOrders,
+      latestOrders,
+      // Métricas de Productos
+      inventoryValue,
+      totalProducts,
+      // Métricas de Cupones
+      couponPerformance,
+    ] = await Promise.all([
+      // 1. Métricas de Pedidos
+      Order.aggregate([
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      ]),
+      Order.countDocuments(),
+      Order.find().sort({ createdAt: -1 }).limit(5).populate("items.product"),
+
+      // 2. Métricas de Productos (¡NUEVO!)
+      Product.aggregate([
+        {
+          $project: {
+            // Calculamos el valor de venta y costo para productos SIN variantes
+            baseSaleValue: {
+              $multiply: ["$price", { $sum: "$variants.options.stock" }],
+            }, // Estimación simple
+            baseCostValue: {
+              $multiply: ["$costPrice", { $sum: "$variants.options.stock" }],
+            },
+            // Calculamos el valor para productos CON variantes
+            variantsSaleValue: {
+              $sum: {
+                $map: {
+                  input: "$variants",
+                  as: "v",
+                  in: { $sum: "$$v.options.stock" },
+                },
+              },
+            },
+            variantsCostValue: {
+              $sum: {
+                $map: {
+                  input: "$variants",
+                  as: "v",
+                  in: { $sum: "$$v.options.costPrice" },
+                },
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalSaleValue: {
+              $sum: { $add: ["$baseSaleValue", "$variantsSaleValue"] },
+            },
+            totalCostValue: {
+              $sum: { $add: ["$baseCostValue", "$variantsCostValue"] },
+            },
+          },
+        },
+      ]),
+      Product.countDocuments(),
+
+      // 3. Métricas de Cupones (¡NUEVO!)
+      Order.aggregate([
+        { $match: { appliedCoupon: { $ne: null } } }, // Solo pedidos con cupón
+        {
+          $group: {
+            _id: "$appliedCoupon", // Agrupamos por el código del cupón
+            timesUsed: { $sum: 1 },
+            totalDiscount: { $sum: "$discountAmount" },
+          },
+        },
+        { $sort: { totalDiscount: -1 } }, // Ordenamos por el que más ha descontado
+      ]),
+    ]);
 
     res.json({
-      totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
+      totalRevenue: totalRevenueData.length > 0 ? totalRevenueData[0].total : 0,
       totalOrders,
       totalProducts,
       latestOrders,
+      inventoryValue:
+        inventoryValue.length > 0
+          ? inventoryValue[0]
+          : { totalSaleValue: 0, totalCostValue: 0 },
+      couponPerformance,
     });
   } catch (error) {
     console.error("Error al obtener las estadísticas del dashboard:", error);
