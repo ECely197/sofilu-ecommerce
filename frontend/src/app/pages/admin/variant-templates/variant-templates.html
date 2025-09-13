@@ -1,0 +1,150 @@
+<header class="page-header">
+  <h1>Plantillas de Variantes</h1>
+</header>
+
+<div class="templates-layout">
+  <!-- ============================================= -->
+  <!-- Columna del Formulario de Creación -->
+  <!-- ============================================= -->
+  <div class="form-column">
+    <div class="card">
+      <h2 class="card-title">Crear Nueva Plantilla</h2>
+      <form [formGroup]="templateForm" (ngSubmit)="handleSubmit()">
+        <div class="material-field">
+          <input
+            id="templateName"
+            type="text"
+            formControlName="templateName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="templateName" class="material-label"
+            >Nombre de la Plantilla (ej. Tallas de Ropa)</label
+          >
+        </div>
+
+        <div class="material-field">
+          <input
+            id="variantName"
+            type="text"
+            formControlName="variantName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="variantName" class="material-label"
+            >Nombre de la Variante (ej. Talla)</label
+          >
+        </div>
+
+        <div class="options-group" formArrayName="options">
+          <label class="options-label"
+            >Valores de la Opción (precio, stock y costo son opcionales)</label
+          >
+
+          <!-- Cabecera de la tabla de opciones -->
+          <div class="option-row header">
+            <span>Valor (ej. S)</span>
+            <span>Mod. Precio</span>
+            <span>Stock</span>
+            <span>Costo</span>
+            <span></span>
+            <!-- Celda vacía para el botón de eliminar -->
+          </div>
+
+          <!-- Filas de opciones dinámicas -->
+          @for (option of options.controls; track option; let i = $index) {
+          <div class="option-row" [formGroupName]="i">
+            <input
+              type="text"
+              formControlName="name"
+              class="form-input"
+              placeholder="Nombre"
+            />
+            <input
+              type="number"
+              formControlName="priceModifier"
+              class="form-input"
+              placeholder="+ COP"
+            />
+            <input
+              type="number"
+              formControlName="stock"
+              class="form-input"
+              placeholder="Cantidad"
+            />
+            <input
+              type="number"
+              formControlName="costPrice"
+              class="form-input"
+              placeholder="Costo"
+            />
+            <button
+              type="button"
+              (click)="removeOption(i)"
+              class="delete-button-tiny"
+              [disabled]="options.controls.length <= 1"
+            >
+              ✖
+            </button>
+          </div>
+          }
+
+          <button
+            type="button"
+            (click)="addOption()"
+            class="add-button-tiny"
+            appRipple
+          >
+            + Añadir valor
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="templateForm.invalid || isSaving()"
+            class="btn btn-primary"
+            appRipple
+          >
+            {{ isSaving() ? "Guardando..." : "Guardar Plantilla" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================= -->
+  <!-- Columna de la Lista de Plantillas Existentes -->
+  <!-- ============================================= -->
+  <div class="list-column">
+    <div class="card">
+      <h2 class="card-title">Plantillas Existentes</h2>
+      @if (isLoading()) {
+      <p>Cargando...</p>
+      } @else {
+      <div class="templates-list">
+        @for (template of templates(); track template._id) {
+        <div class="template-item">
+          <div class="template-info">
+            <p class="template-name">{{ template.templateName }}</p>
+            <p class="template-details">
+              <strong>{{ template.variantName }}:</strong>
+              {{ getOptionNames(template.options) }}
+            </p>
+          </div>
+          <button
+            (click)="deleteTemplate(template)"
+            class="delete-button-small"
+            appRipple
+          >
+            ✖
+          </button>
+        </div>
+        } @empty {
+        <p class="empty-message">No has creado ninguna plantilla todavía.</p>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

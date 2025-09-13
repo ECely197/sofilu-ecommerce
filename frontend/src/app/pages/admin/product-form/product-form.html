@@ -41,6 +41,20 @@
     <div class="card" formArrayName="variants">
       <div class="card-header">
         <h2 class="card-title">Variantes</h2>
+
+        <div class="template-selector">
+          <select
+            #templateSelect
+            (change)="onTemplateSelected($event); templateSelect.value = ''"
+          >
+            <option value="" disabled selected>
+              Añadir desde plantilla...
+            </option>
+            @for (template of variantTemplates(); track template._id) {
+            <option [ngValue]="template">{{ template.templateName }}</option>
+            }
+          </select>
+        </div>
         <button
           type="button"
           (click)="addVariant()"

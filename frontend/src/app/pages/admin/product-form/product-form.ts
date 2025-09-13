@@ -4,19 +4,26 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 
+// Servicios
 import { ProductServices } from '../../../services/product';
 import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
-import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
+// ¡NUEVAS IMPORTACIONES CORRECTAS!
+import {
+  VariantTemplateService,
+  VariantTemplate,
+} from '../../../services/variant-template.service';
+
+// Tipos y Directivas
 import { Product } from '../../../interfaces/product.interface';
+import { RippleDirective } from '../../../directives/ripple';
 import { NumericFormatDirective } from '../../../directives/numeric-format';
 
 @Component({
@@ -40,6 +47,7 @@ export class ProductForm implements OnInit {
   private storageService = inject(StorageService);
   private categoryService = inject(CategoryService);
   private toastService = inject(ToastService);
+  private variantTemplateService = inject(VariantTemplateService);
 
   productForm!: FormGroup;
   isEditMode = signal(false);
@@ -49,6 +57,7 @@ export class ProductForm implements OnInit {
   imagePreviews = signal<string[]>([]);
   private selectedFiles: File[] = [];
   isUploading = signal(false);
+  variantTemplates = signal<VariantTemplate[]>([]);
 
   ngOnInit() {
     this.productForm = this.fb.group({
@@ -67,6 +76,10 @@ export class ProductForm implements OnInit {
     this.categoryService
       .getCategories()
       .subscribe((cats) => this.categories.set(cats));
+
+    this.variantTemplateService.getTemplates().subscribe((templates) => {
+      this.variantTemplates.set(templates);
+    });
 
     this.productId = this.route.snapshot.paramMap.get('id');
     if (this.productId) {
@@ -235,6 +248,36 @@ export class ProductForm implements OnInit {
         );
       },
     });
+  }
+
+  onTemplateSelected(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const selectedTemplateName = (selectElement as any).value;
+    const selectedTemplate = this.variantTemplates().find(
+      (t) => t.templateName === selectedTemplateName
+    );
+
+    if (selectedTemplate) {
+      this.addVariantFromTemplate(selectedTemplate);
+    }
+  }
+
+  addVariantFromTemplate(template: VariantTemplate): void {
+    if (!template) return;
+
+    const newVariant = this.fb.group({
+      name: [template.variantName, Validators.required],
+      options: this.fb.array(
+        template.options.map((opt) =>
+          this.newOption(opt.name, opt.priceModifier, opt.stock, opt.costPrice)
+        )
+      ),
+    });
+    this.variants.push(newVariant);
+    this.toastService.show(
+      `Variante "${template.variantName}" añadida desde plantilla.`,
+      'success'
+    );
   }
 
   newVariant(name: string = ''): FormGroup {

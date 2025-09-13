@@ -5,15 +5,19 @@ const { Schema } = mongoose;
 const optionSchema = new Schema(
   {
     name: { type: String, required: true },
+    // --- ¡AÑADIMOS LOS CAMPOS OPCIONALES! ---
+    priceModifier: { type: Number, default: null },
+    stock: { type: Number, default: null },
+    costPrice: { type: Number, default: null },
   },
   { _id: false }
 );
 
 const variantTemplateSchema = new Schema(
   {
-    templateName: { type: String, required: true, unique: true }, // Ej: "Tallas de Ropa (S-XL)"
-    variantName: { type: String, required: true }, // Ej: "Talla"
-    options: [optionSchema], // Ej: [{name: 'S'}, {name: 'M'}, {name: 'L'}, {name: 'XL'}]
+    templateName: { type: String, required: true, unique: true },
+    variantName: { type: String, required: true },
+    options: [optionSchema],
   },
   { timestamps: true }
 );
