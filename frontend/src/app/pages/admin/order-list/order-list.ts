@@ -16,13 +16,19 @@ import { OrderService } from '../../../services/order';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
-// En el futuro, crearemos una interfaz robusta para Order
-// import { Order } from '../../../interfaces/order.interface';
+
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  startWith,
+} from 'rxjs/operators';
 
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, RippleDirective],
+  imports: [CommonModule, RouterLink, RippleDirective, ReactiveFormsModule],
   templateUrl: './order-list.html',
   styleUrl: './order-list.scss',
   animations: [
@@ -53,8 +59,29 @@ export class OrderList implements OnInit {
   orders = signal<any[]>([]); // Usamos 'any' por ahora, pero lo ideal sería una interfaz 'Order'
   isLoading = signal<boolean>(true);
 
+  searchControl = new FormControl('');
+
   ngOnInit() {
-    this.fetchOrders();
+    this.searchControl.valueChanges
+      .pipe(
+        startWith(''),
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((searchTerm) => {
+          this.isLoading.set(true);
+          return this.orderService.searchOrders({ search: searchTerm || '' });
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.orders.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error al buscar pedidos:', err);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   fetchOrders(): void {

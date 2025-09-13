@@ -9,9 +9,9 @@ router.get("/", async (req, res) => {
     const { search } = req.query;
     let query = {};
     if (search) {
-      query = { name: { $regex: search, $options: "i" } };
+      query = { code: { $regex: search, $options: "i" } };
     }
-    const coupons = await Coupon.find(query).sort({ name: 1 });
+    const coupons = await Coupon.find(query).sort({ code: 1 });
     res.json(coupons);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los cupones" });

@@ -13,10 +13,18 @@ import {
 import { Customer } from '../../../services/customer';
 import { RippleDirective } from '../../../directives/ripple';
 
+import { FormControl, ReactiveFormsModule } from '@angular/forms'; // ¡Importante!
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  startWith,
+} from 'rxjs/operators';
+
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, RippleDirective],
+  imports: [CommonModule, RippleDirective, ReactiveFormsModule],
   templateUrl: './customer-list.html',
   styleUrl: './customer-list.scss', // Apuntamos a su propio archivo SCSS
   animations: [
@@ -45,8 +53,37 @@ export class CustomerList implements OnInit {
   customers = signal<any[]>([]);
   isLoading = signal<boolean>(true);
 
+  searchControl = new FormControl('');
+
   ngOnInit() {
-    this.fetchCustomers();
+    // La magia de la búsqueda reactiva
+    this.searchControl.valueChanges
+      .pipe(
+        // Empieza inmediatamente con un valor vacío
+        startWith(''),
+        // Espera 300ms después de que el usuario deja de teclear
+        debounceTime(300),
+        // Solo emite si el valor ha cambiado
+        distinctUntilChanged(),
+        // Muestra el loader
+        switchMap((searchTerm) => {
+          this.isLoading.set(true);
+          // Llama al servicio de búsqueda. Si el término es nulo o vacío, lo maneja.
+          return this.customerService.searchCustomers({
+            search: searchTerm || '',
+          });
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.customers.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error al buscar clientes:', err);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   fetchCustomers(): void {

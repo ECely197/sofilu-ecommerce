@@ -8,16 +8,42 @@ const User = require("../models/User");
 // --- OBTENER TODOS LOS USUARIOS (PARA EL ADMIN) ---
 router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
+    const { search } = req.query;
+
+    // 1. Obtenemos la lista completa de usuarios de Firebase Auth.
+    //    '1000' es el máximo por página, puedes implementar paginación en el futuro si es necesario.
     const userRecords = await admin.auth().listUsers(1000);
-    const users = userRecords.users.map((user) => ({
+    let usersToReturn = userRecords.users;
+
+    // 2. Si se proporcionó un término de búsqueda, filtramos la lista.
+    if (search) {
+      const lowerCaseSearch = search.toLowerCase();
+
+      usersToReturn = userRecords.users.filter((user) => {
+        // Comprobamos si el término de búsqueda está incluido en el email (si existe)
+        const emailMatch = user.email?.toLowerCase().includes(lowerCaseSearch);
+        // Comprobamos si el término de búsqueda está incluido en el nombre (si existe)
+        const nameMatch = user.displayName
+          ?.toLowerCase()
+          .includes(lowerCaseSearch);
+
+        // Devolvemos true si hay coincidencia en cualquiera de los dos campos
+        return emailMatch || nameMatch;
+      });
+    }
+
+    // 3. Mapeamos la lista (ya sea la completa o la filtrada) al formato que necesita el frontend.
+    const formattedUsers = usersToReturn.map((user) => ({
       uid: user.uid,
       email: user.email,
       displayName: user.displayName,
       creationTime: user.metadata.creationTime,
       disabled: user.disabled,
     }));
-    res.json(users);
+
+    res.json(formattedUsers);
   } catch (error) {
+    console.error("Error al obtener o buscar usuarios:", error); // Log de error mejorado
     res.status(500).json({ message: "Error al obtener los usuarios" });
   }
 });
@@ -95,12 +121,10 @@ router.post("/addresses", [authMiddleware], async (req, res) => {
     res.status(201).json(user.addresses);
   } catch (error) {
     console.error("Error al añadir dirección:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error al añadir la dirección",
-        details: error.message,
-      });
+    res.status(500).json({
+      message: "Error al añadir la dirección",
+      details: error.message,
+    });
   }
 });
 

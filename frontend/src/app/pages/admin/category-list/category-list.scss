@@ -128,3 +128,40 @@
   padding: 4rem 2rem;
 }
 // (Puedes añadir estilos más detallados para el esqueleto si lo deseas)
+
+// --- ¡NUEVOS ESTILOS DE BÚSQUEDA! ---
+.search-bar-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.search-field {
+  position: relative;
+  max-width: 400px; // Limita el ancho de la barra
+
+  .material-symbols-outlined {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+}
+
+.search-input {
+  width: 100%;
+  height: 48px;
+  border-radius: 9999px;
+  border: 1px solid var(--soft-gray);
+  background-color: white;
+  padding: 0 1rem 0 3rem; // Espacio para el icono
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  }
+}

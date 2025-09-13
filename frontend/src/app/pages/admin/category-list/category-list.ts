@@ -16,10 +16,18 @@ import { CategoryService, Category } from '../../../services/category.service';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
 
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+  startWith,
+} from 'rxjs/operators';
+
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, RippleDirective],
+  imports: [CommonModule, RouterLink, RippleDirective, ReactiveFormsModule],
   templateUrl: './category-list.html',
   styleUrl: './category-list.scss',
   animations: [
@@ -49,8 +57,37 @@ export class CategoryList implements OnInit {
   categories = signal<Category[]>([]);
   isLoading = signal<boolean>(true);
 
+  searchControl = new FormControl('');
+
   ngOnInit() {
-    this.fetchCategories();
+    // La magia de la búsqueda reactiva
+    this.searchControl.valueChanges
+      .pipe(
+        // Empieza inmediatamente con un valor vacío
+        startWith(''),
+        // Espera 300ms después de que el usuario deja de teclear
+        debounceTime(300),
+        // Solo emite si el valor ha cambiado
+        distinctUntilChanged(),
+        // Muestra el loader
+        switchMap((searchTerm) => {
+          this.isLoading.set(true);
+          // Llama al servicio de búsqueda. Si el término es nulo o vacío, lo maneja.
+          return this.categoryService.searchCategories({
+            search: searchTerm || '',
+          });
+        })
+      )
+      .subscribe({
+        next: (data) => {
+          this.categories.set(data);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Error al buscar categorías:', err);
+          this.isLoading.set(false);
+        },
+      });
   }
 
   fetchCategories(): void {
