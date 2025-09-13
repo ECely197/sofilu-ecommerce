@@ -102,3 +102,66 @@
     font-size: 0.75rem;
   }
 }
+
+// --- NUEVOS ESTILOS ---
+.stat-card.inventory-card {
+  grid-column: span 2; // Hacemos que esta tarjeta ocupe 2 columnas
+  @media (max-width: 900px) {
+    grid-column: span 1; // En pantallas más pequeñas, vuelve a 1 columna
+  }
+}
+
+.card-icon.inventory {
+  background: linear-gradient(45deg, #f97316, #ea580c); // Naranja
+}
+
+.stat-subtitle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: -0.25rem;
+}
+
+.coupon-performance {
+  grid-column: 1 / -1; // Ocupa todo el ancho
+}
+
+.coupon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.coupon-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.coupon-code {
+  font-weight: 700;
+  font-family: monospace;
+  background-color: var(--soft-gray);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.coupon-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  strong {
+    color: var(--text-primary);
+  }
+}
+
+.empty-message {
+  color: var(--text-secondary);
+  font-style: italic;
+}
