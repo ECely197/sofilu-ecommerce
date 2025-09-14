@@ -153,3 +153,29 @@
   display: flex;
   gap: 0.5rem;
 }
+
+.edit-btn {
+  // Cambiamos los colores para que no sea rojo
+  background-color: var(--soft-gray);
+  color: var(--text-charcoal);
+
+  &:hover {
+    background-color: #dcd5cd; // Un gris un poco más oscuro
+  }
+}
+
+.template-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Estilo base para ambos botones de acción (editar y eliminar)
+.action-button {
+  // Heredamos la forma y comportamiento del botón de eliminar pequeño
+  @extend .delete-button-tiny;
+  // Sobrescribimos el tamaño para que sea un poco más grande
+  width: 32px;
+  height: 32px;
+  font-size: 1rem; // Ajusta el tamaño del icono si es necesario
+}
