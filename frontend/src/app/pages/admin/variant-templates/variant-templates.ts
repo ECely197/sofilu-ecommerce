@@ -8,12 +8,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+
+// Servicios
 import {
   VariantTemplateService,
   VariantTemplate,
 } from '../../../services/variant-template.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
+
+// Directivas y Componentes
 import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
@@ -24,6 +28,7 @@ import { RippleDirective } from '../../../directives/ripple';
   styleUrl: './variant-templates.scss',
 })
 export class VariantTemplatesComponent implements OnInit {
+  // --- Inyecciones y Signals ---
   private fb = inject(FormBuilder);
   private variantTemplateService = inject(VariantTemplateService);
   private toastService = inject(ToastService);
@@ -32,13 +37,17 @@ export class VariantTemplatesComponent implements OnInit {
   templates = signal<VariantTemplate[]>([]);
   isLoading = signal(true);
   isSaving = signal(false);
+
+  // ¡NUEVO! Signal para rastrear el ID de la plantilla que se está editando
+  editingTemplateId = signal<string | null>(null);
+
   templateForm!: FormGroup;
 
   ngOnInit(): void {
     this.templateForm = this.fb.group({
       templateName: ['', Validators.required],
       variantName: ['', Validators.required],
-      options: this.fb.array([this.newOption('')], Validators.required),
+      options: this.fb.array([this.newOption()], Validators.required),
     });
     this.loadTemplates();
   }
@@ -47,12 +56,17 @@ export class VariantTemplatesComponent implements OnInit {
     return this.templateForm.get('options') as FormArray;
   }
 
-  newOption(name: string = ''): FormGroup {
+  newOption(
+    name: string = '',
+    priceModifier: number | null = null,
+    stock: number | null = null,
+    costPrice: number | null = null
+  ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
-      priceModifier: [null, [Validators.min(0)]],
-      stock: [null, [Validators.min(0)]],
-      costPrice: [null, [Validators.min(0)]],
+      priceModifier: [priceModifier, [Validators.min(0)]],
+      stock: [stock, [Validators.min(0)]],
+      costPrice: [costPrice, [Validators.min(0)]],
     });
   }
 
@@ -80,6 +94,31 @@ export class VariantTemplatesComponent implements OnInit {
     });
   }
 
+  // --- ¡NUEVO! Método para empezar a editar ---
+  startEditing(template: VariantTemplate): void {
+    this.editingTemplateId.set(template._id);
+    this.templateForm.patchValue({
+      templateName: template.templateName,
+      variantName: template.variantName,
+    });
+
+    this.options.clear();
+    template.options.forEach((opt) => {
+      this.options.push(
+        this.newOption(opt.name, opt.priceModifier, opt.stock, opt.costPrice)
+      );
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  cancelEditing(): void {
+    this.editingTemplateId.set(null);
+    this.templateForm.reset();
+    this.options.clear();
+    this.addOption();
+  }
+
   handleSubmit(): void {
     if (this.templateForm.invalid) {
       this.toastService.show(
@@ -89,48 +128,42 @@ export class VariantTemplatesComponent implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    const formValue = this.templateForm.getRawValue();
+    const formData = this.templateForm.getRawValue();
 
-    const payload = {
-      templateName: formValue.templateName,
-      variantName: formValue.variantName,
-      options: formValue.options.map((opt: any) => {
-        const cleanOption: any = { name: opt.name };
-        const priceModifier = parseFloat(opt.priceModifier);
-        const stock = parseInt(opt.stock, 10);
-        const costPrice = parseFloat(opt.costPrice);
+    // Decidimos si crear o actualizar basándonos en si estamos en modo edición
+    const operation$ = this.editingTemplateId()
+      ? this.variantTemplateService.updateTemplate(
+          this.editingTemplateId()!,
+          formData
+        )
+      : this.variantTemplateService.createTemplate(formData);
 
-        if (!isNaN(priceModifier)) cleanOption.priceModifier = priceModifier;
-        if (!isNaN(stock)) cleanOption.stock = stock;
-        if (!isNaN(costPrice)) cleanOption.costPrice = costPrice;
-
-        return cleanOption;
-      }),
-    };
-
-    this.variantTemplateService.createTemplate(payload).subscribe({
-      next: (newTemplate) => {
-        this.templates.update((current) =>
-          [...current, newTemplate].sort((a, b) =>
-            a.templateName.localeCompare(b.templateName)
-          )
-        );
+    operation$.subscribe({
+      next: (savedTemplate) => {
+        if (this.editingTemplateId()) {
+          // Si actualizamos, reemplazamos el item en el array
+          this.templates.update((current) =>
+            current.map((t) =>
+              t._id === savedTemplate._id ? savedTemplate : t
+            )
+          );
+        } else {
+          // Si creamos, lo añadimos al final
+          this.templates.update((current) => [...current, savedTemplate]);
+        }
         this.toastService.show(
-          `Plantilla "${newTemplate.templateName}" creada.`,
+          `Plantilla "${savedTemplate.templateName}" guardada con éxito.`,
           'success'
         );
-        this.templateForm.reset();
-        this.options.clear();
-        this.addOption();
-        this.isSaving.set(false);
+        this.cancelEditing(); // Resetea el formulario y el estado de edición
       },
       error: (err) => {
-        const errorDetail =
-          err.error?.details || 'No se pudo crear la plantilla.';
-        const userMessage = errorDetail.includes('duplicate key')
-          ? 'Ya existe una plantilla con ese nombre.'
-          : errorDetail;
-        this.toastService.show(userMessage, 'error');
+        this.toastService.show(
+          err.error?.details || 'No se pudo guardar la plantilla.',
+          'error'
+        );
+      },
+      complete: () => {
         this.isSaving.set(false);
       },
     });

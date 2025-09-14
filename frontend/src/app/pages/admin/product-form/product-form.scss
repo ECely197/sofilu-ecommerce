@@ -59,6 +59,10 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  .template-selector {
+    margin-bottom: 0;
+    min-width: 250px;
+  }
 }
 
 .card-title {

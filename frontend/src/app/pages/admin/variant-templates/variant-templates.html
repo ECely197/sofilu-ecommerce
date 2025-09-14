@@ -133,6 +133,12 @@
             </p>
           </div>
           <button
+            (click)="startEditing(template)"
+            class="action-button edit-btn"
+          >
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+          <button
             (click)="deleteTemplate(template)"
             class="delete-button-small"
             appRipple

@@ -34,6 +34,16 @@ export class VariantTemplateService {
     return this.http.post<VariantTemplate>(this.apiUrl, templateData);
   }
 
+  updateTemplate(
+    templateId: string,
+    templateData: Partial<VariantTemplate>
+  ): Observable<VariantTemplate> {
+    return this.http.put<VariantTemplate>(
+      `${this.apiUrl}/${templateId}`,
+      templateData
+    );
+  }
+
   deleteTemplate(templateId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${templateId}`);
   }

@@ -5,7 +5,7 @@
   margin-bottom: 2rem;
   h1 {
     font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
   }
 }
 
@@ -47,7 +47,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 1.5rem;
-  font-family: "Playfair Display", serif;
+  font-family: "Baloo 2", serif;
 }
 
 // --- Estilos de Campos de Formulario ---
@@ -85,6 +85,12 @@
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 2.5rem;
 
   &:focus {
     outline: none;
@@ -97,4 +103,11 @@
 textarea.form-input {
   resize: vertical;
   min-height: 120px;
+}
+
+.form-input option {
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: white;
 }

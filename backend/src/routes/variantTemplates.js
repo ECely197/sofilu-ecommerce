@@ -34,10 +34,35 @@ router.post("/", async (req, res) => {
   } catch (error) {
     // Este catch ahora capturará errores de validación (ej: nombre duplicado)
     console.error("Error al crear la plantilla:", error);
+    res.status(400).json({
+      message: "Error de validación al crear la plantilla",
+      details: error.message,
+    });
+  }
+});
+
+// PUT para actualizar una plantilla existente
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const templateData = req.body;
+
+    const updatedTemplate = await VariantTemplate.findByIdAndUpdate(
+      id,
+      templateData,
+      { new: true, runValidators: true } // Opciones importantes
+    );
+
+    if (!updatedTemplate) {
+      return res.status(404).json({ message: "Plantilla no encontrada" });
+    }
+
+    res.json(updatedTemplate);
+  } catch (error) {
     res
       .status(400)
       .json({
-        message: "Error de validación al crear la plantilla",
+        message: "Error al actualizar la plantilla",
         details: error.message,
       });
   }

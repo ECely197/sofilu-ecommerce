@@ -42,10 +42,11 @@
       <div class="card-header">
         <h2 class="card-title">Variantes</h2>
 
-        <div class="template-selector">
+        <div class="template-selector form-field has-arrow">
           <select
             #templateSelect
             (change)="onTemplateSelected($event); templateSelect.value = ''"
+            class="form-input"
           >
             <option value="" disabled selected>
               Añadir desde plantilla...
@@ -55,13 +56,9 @@
             }
           </select>
         </div>
-        <button
-          type="button"
-          (click)="addVariant()"
-          class="add-button-small"
-          appRipple
-        >
-          + Añadir Variante
+
+        <button type="button" (click)="addVariant()" class="add-button-small">
+          + Añadir Variante Manualmente
         </button>
       </div>
 
