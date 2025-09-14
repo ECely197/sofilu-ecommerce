@@ -20,16 +20,29 @@ router.get("/", async (req, res) => {
 // POST para crear una nueva plantilla
 router.post("/", async (req, res) => {
   try {
-    // --- AÑADE ESTE LOG ---
+    const { templateName, variantName, options } = req.body;
     console.log(
       "BACKEND LOG: Intentando crear nueva plantilla con datos:",
       req.body
     );
-    const newTemplate = new VariantTemplate(req.body);
+    const parsedOptions = options.map((opt) => ({
+      name: opt.name,
+      priceModifier: opt.priceModifier ? parseFloat(opt.priceModifier) : null,
+      stock: opt.stock ? parseInt(opt.stock, 10) : null,
+      costPrice: opt.costPrice ? parseFloat(opt.costPrice) : null,
+    }));
+
+    const newTemplate = new VariantTemplate({
+      templateName,
+      variantName,
+      options: parsedOptions,
+    });
+
     await newTemplate.save();
     console.log("BACKEND LOG: Plantilla guardada con éxito.");
     res.status(201).json(newTemplate);
   } catch (error) {
+    console.error("Error al crear la plantilla:", error.message);
     res
       .status(400)
       .json({ message: "Error al crear la plantilla", details: error.message });
