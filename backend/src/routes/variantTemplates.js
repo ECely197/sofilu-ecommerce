@@ -20,8 +20,14 @@ router.get("/", async (req, res) => {
 // POST para crear una nueva plantilla
 router.post("/", async (req, res) => {
   try {
+    // --- AÑADE ESTE LOG ---
+    console.log(
+      "BACKEND LOG: Intentando crear nueva plantilla con datos:",
+      req.body
+    );
     const newTemplate = new VariantTemplate(req.body);
     await newTemplate.save();
+    console.log("BACKEND LOG: Plantilla guardada con éxito.");
     res.status(201).json(newTemplate);
   } catch (error) {
     res

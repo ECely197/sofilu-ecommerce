@@ -5,7 +5,6 @@ const { Schema } = mongoose;
 const optionSchema = new Schema(
   {
     name: { type: String, required: true },
-    // --- ¡AÑADIMOS LOS CAMPOS OPCIONALES! ---
     priceModifier: { type: Number, default: null },
     stock: { type: Number, default: null },
     costPrice: { type: Number, default: null },
@@ -19,7 +18,10 @@ const variantTemplateSchema = new Schema(
     variantName: { type: String, required: true },
     options: [optionSchema],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    collection: "varianttemplates",
+  }
 );
 
 module.exports = mongoose.model("VariantTemplate", variantTemplateSchema);

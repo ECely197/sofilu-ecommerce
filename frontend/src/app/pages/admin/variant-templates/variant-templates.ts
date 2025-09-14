@@ -109,9 +109,38 @@ export class VariantTemplatesComponent implements OnInit {
     }
 
     this.isSaving.set(true);
-    const formData = this.templateForm.getRawValue();
+    const formValue = this.templateForm.getRawValue();
 
-    this.variantTemplateService.createTemplate(formData).subscribe({
+    // --- LÓGICA DE LIMPIEZA MEJORADA ---
+    const payload = {
+      templateName: formValue.templateName,
+      variantName: formValue.variantName,
+      options: formValue.options.map((opt: any) => {
+        const cleanOption: any = { name: opt.name };
+
+        // Convierte el valor a número, si no es válido, queda como null
+        const priceModifier = parseFloat(opt.priceModifier);
+        const stock = parseInt(opt.stock, 10);
+        const costPrice = parseFloat(opt.costPrice);
+
+        // Solo añadimos la propiedad si el valor es un número válido y no es NaN
+        if (!isNaN(priceModifier)) {
+          cleanOption.priceModifier = priceModifier;
+        }
+        if (!isNaN(stock)) {
+          cleanOption.stock = stock;
+        }
+        if (!isNaN(costPrice)) {
+          cleanOption.costPrice = costPrice;
+        }
+
+        return cleanOption;
+      }),
+    };
+
+    console.log('Payload enviado al backend:', payload);
+
+    this.variantTemplateService.createTemplate(payload).subscribe({
       next: (newTemplate) => {
         this.templates.update((current) => [...current, newTemplate]);
         this.toastService.show(
@@ -119,14 +148,18 @@ export class VariantTemplatesComponent implements OnInit {
           'success'
         );
         this.templateForm.reset();
-        // Reseteamos el FormArray a un solo campo vacío
         this.options.clear();
         this.addOption();
         this.isSaving.set(false);
       },
       error: (err) => {
+        // Intentamos mostrar un mensaje de error más específico
+        const errorDetail =
+          err.error?.details || 'No se pudo crear la plantilla.';
         this.toastService.show(
-          err.error?.details || 'No se pudo crear la plantilla.',
+          errorDetail.includes('duplicate key')
+            ? 'Ya existe una plantilla con ese nombre.'
+            : errorDetail,
           'error'
         );
         this.isSaving.set(false);
