@@ -20,6 +20,8 @@ import {
   switchMap,
   startWith,
 } from 'rxjs/operators';
+import { ToastService } from '../../../services/toast.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
 
 @Component({
   selector: 'app-customer-list',
@@ -49,6 +51,8 @@ import {
 })
 export class CustomerList implements OnInit {
   private customerService = inject(Customer);
+  private toastService = inject(ToastService);
+  private confirmationService = inject(ConfirmationService);
 
   customers = signal<any[]>([]);
   isLoading = signal<boolean>(true);
@@ -84,6 +88,53 @@ export class CustomerList implements OnInit {
           this.isLoading.set(false);
         },
       });
+  }
+
+  async toggleAdmin(customer: any): Promise<void> {
+    const action = customer.isAdmin ? 'quitar el rol de' : 'convertir en';
+    const confirmed = await this.confirmationService.confirm({
+      title: `¿Confirmar cambio de rol?`,
+      message: `Estás a punto de ${action} administrador a ${customer.email}.`,
+      confirmText: 'Sí, confirmar',
+    });
+
+    if (confirmed) {
+      this.customerService.toggleAdminRole(customer.uid).subscribe({
+        next: () => {
+          this.toastService.show('Rol de usuario actualizado.', 'success');
+          // Actualizamos el estado localmente para reflejar el cambio sin recargar
+          customer.isAdmin = !customer.isAdmin;
+        },
+        error: () =>
+          this.toastService.show('Error al cambiar el rol.', 'error'),
+      });
+    }
+  }
+
+  async toggleDisable(customer: any): Promise<void> {
+    const action = customer.disabled ? 'habilitar' : 'deshabilitar';
+    const confirmed = await this.confirmationService.confirm({
+      title: `¿Confirmar ${action}?`,
+      message: `Estás a punto de ${action} la cuenta de ${customer.email}.`,
+      confirmText: `Sí, ${action}`,
+    });
+
+    if (confirmed) {
+      this.customerService.toggleDisableUser(customer.uid).subscribe({
+        next: () => {
+          this.toastService.show('Estado del usuario actualizado.', 'success');
+          customer.disabled = !customer.disabled;
+        },
+        error: () =>
+          this.toastService.show('Error al cambiar el estado.', 'error'),
+      });
+    }
+  }
+
+  viewDetails(customer: any): void {
+    // Lógica para abrir el modal, que implementaremos en el siguiente paso
+    console.log('Ver detalles de:', customer);
+    // this.customerDetailModalService.open(customer.uid);
   }
 
   fetchCustomers(): void {

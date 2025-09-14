@@ -56,7 +56,23 @@
       </div>
       <div class="cell" data-label="Acciones">
         <div class="action-buttons">
-          <a class="action-button details" appRipple>Detalles</a>
+          <button (click)="viewDetails(customer)" class="action-button details">
+            Detalles
+          </button>
+          <button
+            (click)="toggleAdmin(customer)"
+            class="action-button"
+            [class.admin]="customer.isAdmin"
+          >
+            {{ customer.isAdmin ? "Quitar Admin" : "Hacer Admin" }}
+          </button>
+          <button
+            (click)="toggleDisable(customer)"
+            class="action-button"
+            [class.danger]="!customer.disabled"
+          >
+            {{ customer.disabled ? "Habilitar" : "Deshabilitar" }}
+          </button>
         </div>
       </div>
     </div>

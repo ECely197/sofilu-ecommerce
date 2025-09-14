@@ -87,4 +87,16 @@ export class Customer {
   deleteAddress(addressId: string): Observable<Address[]> {
     return this.http.delete<Address[]>(`${this.apiUrl}/addresses/${addressId}`);
   }
+
+  toggleAdminRole(uid: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${uid}/toggle-admin`, {});
+  }
+
+  toggleDisableUser(uid: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${uid}/toggle-disable`, {});
+  }
+
+  getCustomerDetails(uid: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${uid}/details`);
+  }
 }

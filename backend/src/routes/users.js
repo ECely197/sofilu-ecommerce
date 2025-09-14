@@ -48,6 +48,130 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
+router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    // Usamos Promise.all para obtener todo en paralelo
+    const [firebaseUser, mongoUser, userOrders] = await Promise.all([
+      admin.auth().getUser(uid), // 1. Datos de Firebase Auth (rol, email, etc.)
+      User.findOne({ uid }), // 2. Datos de nuestro perfil en MongoDB (nombre, teléfono)
+      Order.find({ userId: uid }), // 3. Todos los pedidos de este usuario
+    ]);
+
+    if (!firebaseUser) {
+      return res
+        .status(404)
+        .json({ message: "Usuario no encontrado en Firebase." });
+    }
+
+    // --- CÁLCULO DE MÉTRICAS ---
+    const totalOrders = userOrders.length;
+    const totalSpent = userOrders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
+
+    const usedCoupons = userOrders.reduce((acc, order) => {
+      if (order.appliedCoupon) {
+        if (!acc[order.appliedCoupon]) {
+          acc[order.appliedCoupon] = { timesUsed: 0, totalDiscount: 0 };
+        }
+        acc[order.appliedCoupon].timesUsed += 1;
+        acc[order.appliedCoupon].totalDiscount += order.discountAmount;
+      }
+      return acc;
+    }, {});
+
+    // --- ENSAMBLAJE DEL OBJETO FINAL ---
+    const userDetails = {
+      // Datos de Firebase
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      isAdmin: firebaseUser.customClaims?.admin === true,
+      isDisabled: firebaseUser.disabled,
+      creationTime: firebaseUser.metadata.creationTime,
+
+      // Datos de MongoDB
+      firstName: mongoUser?.firstName || "",
+      lastName: mongoUser?.lastName || "",
+      phone: mongoUser?.phone || "",
+
+      // Métricas calculadas
+      totalOrders,
+      totalSpent,
+      usedCoupons: Object.entries(usedCoupons).map(([code, data]) => ({
+        code,
+        ...data,
+      })),
+    };
+
+    res.json(userDetails);
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Error al obtener los detalles del cliente",
+        details: error.message,
+      });
+  }
+});
+
+// Asignar o quitar rol de administrador
+router.post(
+  "/:uid/toggle-admin",
+  [authMiddleware, adminOnly],
+  async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const user = await admin.auth().getUser(uid);
+
+      // Obtenemos el estado actual del claim 'admin'
+      const currentAdminClaim = user.customClaims?.admin === true;
+
+      // Establecemos el nuevo claim al valor opuesto
+      await admin
+        .auth()
+        .setCustomUserClaims(uid, { admin: !currentAdminClaim });
+
+      res.json({
+        message: `Rol de admin para ${uid} actualizado a ${!currentAdminClaim}.`,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al cambiar el rol de admin",
+        details: error.message,
+      });
+    }
+  }
+);
+
+// Habilitar o deshabilitar un usuario
+router.post(
+  "/:uid/toggle-disable",
+  [authMiddleware, adminOnly],
+  async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const user = await admin.auth().getUser(uid);
+
+      // Actualizamos el estado 'disabled' al opuesto del actual
+      await admin.auth().updateUser(uid, { disabled: !user.disabled });
+
+      res.json({
+        message: `Usuario ${uid} ha sido ${
+          !user.disabled ? "deshabilitado" : "habilitado"
+        }.`,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Error al cambiar el estado del usuario",
+        details: error.message,
+      });
+    }
+  }
+);
+
 // --- ¡NUEVA RUTA: OBTENER PERFIL DE USUARIO! ---
 router.get("/profile", [authMiddleware], async (req, res) => {
   try {
