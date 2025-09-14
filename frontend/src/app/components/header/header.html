@@ -74,13 +74,18 @@
         />
       </form>
 
-      <a
-        routerLink="/wishlist"
+      <button
+        (click)="uiStateService.openWishlistFlyout()"
         class="icon-button"
-        aria-label="Lista de deseos"
+        aria-label="Abrir lista de deseos"
       >
-        <span class="material-symbols-outlined">favorite_border</span>
-      </a>
+        <span class="material-symbols-outlined">favorite</span>
+        @if (wishlistService.wishlistProductIds().length > 0) {
+        <span class="wishlist-badge">{{
+          wishlistService.wishlistProductIds().length
+        }}</span>
+        }
+      </button>
 
       <button
         (click)="uiStateService.openCartFlyout()"

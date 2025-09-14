@@ -10,6 +10,9 @@ export class UiState {
   private _isMobileSearchVisible = signal(false);
   public isMobileSearchVisible = this._isMobileSearchVisible.asReadonly();
 
+  private _isWishlistFlyoutVisible = signal(false);
+  public isWishlistFlyoutVisible = this._isWishlistFlyoutVisible.asReadonly();
+
   constructor() {}
 
   openCartFlyout(): void {
@@ -25,5 +28,13 @@ export class UiState {
   }
   closeMobileSearch(): void {
     this._isMobileSearchVisible.set(false);
+  }
+  openWishlistFlyout(): void {
+    this._isWishlistFlyoutVisible.set(true);
+    // Opcional: cierra otros paneles al abrir este
+    this.closeCartFlyout();
+  }
+  closeWishlistFlyout(): void {
+    this._isWishlistFlyoutVisible.set(false);
   }
 }

@@ -10,13 +10,13 @@ export class CustomerDetailModalService {
 
   // Método para abrir el modal para un cliente específico
   open(uid: string): void {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = '';
     this.activeCustomerId.set(uid);
   }
 
   // Método para cerrar el modal
   close(): void {
-    document.body.style.overflow = '';
+    document.body.style.overflow = 'auto';
     this.activeCustomerId.set(null);
   }
 }

@@ -1,0 +1,21 @@
+.star-container {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.star-icon {
+  font-size: 2rem; // Tamaño de las estrellas
+  cursor: pointer;
+  color: var(--soft-gray);
+  transition: color 0.2s, transform 0.2s;
+
+  // Estilo para la estrella llena (activa o en hover)
+  &.filled {
+    color: #facc15; // Amarillo estrella
+  }
+
+  // Efecto sutil al pasar el ratón
+  &:hover {
+    transform: scale(1.1);
+  }
+}

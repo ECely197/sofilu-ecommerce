@@ -29,6 +29,8 @@ import { AuthService } from '../../services/auth';
 import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
 
+import { StarRatingComponent } from '../../components/star-rating/star-rating';
+
 // Pipe para renderizar HTML de forma segura
 @Pipe({ name: 'safeHtml', standalone: true })
 export class SafeHtmlPipe implements PipeTransform {
@@ -41,7 +43,13 @@ export class SafeHtmlPipe implements PipeTransform {
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective, SafeHtmlPipe],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RippleDirective,
+    SafeHtmlPipe,
+    StarRatingComponent,
+  ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
@@ -123,7 +131,8 @@ export class ProductDetailComponent implements OnInit {
 
   isProductInWishlist = computed(() => {
     const p = this.product();
-    return p ? this.wishlistService.isInWishlist(p._id) : false;
+    if (!p) return false;
+    return this.wishlistService.wishlistProductIds().includes(p._id);
   });
 
   canWriteReview = computed(() => {

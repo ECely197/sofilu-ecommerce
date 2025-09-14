@@ -1,0 +1,183 @@
+@use "../../../../buttons"; // Para heredar estilos de botón
+
+// --- CONTENEDOR PRINCIPAL DEL COMPONENTE ---
+:host {
+  position: fixed;
+  inset: 0; // Ocupa toda la pantalla
+  z-index: 1000; // Un z-index alto
+  pointer-events: none; // No es clickeable por defecto
+}
+
+// --- CONTENEDOR DEL FLYOUT (Controla la visibilidad) ---
+.flyout-container {
+  position: absolute;
+  inset: 0;
+
+  // Oculto por defecto
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0s 0.4s; // Transición suave
+
+  // Estado abierto
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto; // Se vuelve interactivo cuando está abierto
+    transition-delay: 0s;
+  }
+}
+
+// --- FONDO OSCURO (Overlay) ---
+.flyout-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(32, 34, 31, 0.4);
+}
+
+// --- PANEL FLOTANTE (El contenido) ---
+.flyout-panel {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+
+  // ¡CAMBIOS CLAVE AQUÍ!
+  bottom: auto; // <-- Ya no lo anclamos a la parte inferior
+  width: 420px;
+  max-width: calc(100% - 2rem);
+
+  // Le damos una altura máxima, pero puede ser más pequeño si el contenido no la llena
+  max-height: calc(100vh - 2rem);
+
+  background-color: var(--background);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // Animación (sin cambios)
+  transform: translateX(110%);
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  .flyout-container.is-open & {
+    transform: translateX(0);
+  }
+}
+
+// --- CABECERA DEL PANEL ---
+.flyout-header {
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.header-title-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--soft-white);
+  border-radius: 9999px;
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--soft-gray);
+}
+
+.close-button {
+  background-color: var(--soft-gray);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    background-color: #dcd5cd;
+  }
+}
+
+// --- LISTA DE ITEMS ---
+.items-list {
+  padding: 1rem 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.item-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--soft-gray);
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.item-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+}
+.item-info a {
+  text-decoration: none;
+  color: inherit;
+}
+.item-name {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.item-price {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.action-btn {
+  @extend .btn-secondary;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  &.remove-btn {
+    color: #ef4444;
+  }
+}
+
+// --- ESTADO VACÍO ---
+.empty-state {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+
+  .empty-illustration {
+    width: 100%;
+    max-width: 150px;
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  p {
+    color: var(--text-secondary);
+  }
+}

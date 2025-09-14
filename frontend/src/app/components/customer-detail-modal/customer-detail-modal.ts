@@ -17,16 +17,24 @@ import {
   imports: [CommonModule],
   templateUrl: './customer-detail-modal.html',
   styleUrl: './customer-detail-modal.scss',
+
+  // --- ¡AÑADE ESTE BLOQUE COMPLETO! ---
   animations: [
     trigger('flyInOut', [
-      state('void', style({ transform: 'translateY(100%)', opacity: 0 })),
+      state('void', style({ transform: 'translateY(100%)', opacity: 0.5 })),
       transition(
         'void => *',
-        animate('400ms cubic-bezier(0.25, 0.8, 0.25, 1)')
+        animate(
+          '400ms cubic-bezier(0.4, 0.0, 0.2, 1)',
+          style({ transform: 'translateY(0)', opacity: 1 })
+        )
       ),
       transition(
         '* => void',
-        animate('300ms cubic-bezier(0.25, 0.8, 0.25, 1)')
+        animate(
+          '300ms cubic-bezier(0.4, 0.0, 0.2, 1)',
+          style({ transform: 'translateY(100%)', opacity: 0 })
+        )
       ),
     ]),
   ],

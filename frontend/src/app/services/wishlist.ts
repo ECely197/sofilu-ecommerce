@@ -1,4 +1,6 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+// En: frontend/src/app/services/wishlist.ts
+
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth';
@@ -13,37 +15,42 @@ export class WishlistService {
   private authService = inject(AuthService);
   private apiUrl = `${environment.apiUrl}/wishlist`;
 
-  // ¡HACEMOS ESTE SIGNAL PÚBLICO!
+  // --- SIGNALS PÚBLICOS ---
+  // Un signal para los IDs (útil para comprobaciones rápidas)
   public wishlistProductIds = signal<string[]>([]);
-
-  // Este computed es para uso interno o para componentes que necesitan la lista completa
-  public wishlistProducts = computed(() => {
-    // Aquí puedes tener una lógica para obtener los objetos de producto completos si los necesitas
-    return []; // Simplificado por ahora
-  });
+  // Un signal para los objetos de producto completos (para la UI)
+  public wishlistProducts = signal<Product[]>([]);
 
   constructor() {
     this.authService.currentUser$
       .pipe(
-        switchMap((user) =>
-          user
-            ? this.http.get<{ products: Product[] }>(
-                `${this.apiUrl}/${user.uid}`
-              )
-            : of({ products: [] })
+        switchMap(
+          (user) =>
+            user
+              ? this.http.get<{ products: Product[] }>(
+                  `${this.apiUrl}/${user.uid}`
+                )
+              : of({ products: [] }) // Si no hay usuario, devuelve una wishlist vacía
         )
       )
       .subscribe({
-        next: (wishlist) => this.updateLocalWishlist(wishlist.products),
-        error: (err) => console.error('Error cargando wishlist:', err),
+        next: (wishlist) => {
+          // Nos aseguramos de manejar el caso en que 'wishlist.products' pueda ser nulo o indefinido
+          this.updateLocalWishlist(wishlist?.products || []);
+        },
+        error: (err) => {
+          console.error('Error cargando wishlist:', err);
+          this.updateLocalWishlist([]); // En caso de error, reseteamos a un array vacío
+        },
       });
   }
 
-  // Ahora es un método normal, no un computed
-  isInWishlist(productId: string): boolean {
+  // Este método ahora es interno. Los componentes usarán el signal directamente.
+  private isInWishlist(productId: string): boolean {
     return this.wishlistProductIds().includes(productId);
   }
 
+  // El método público principal para añadir/quitar
   toggleProduct(product: Product): void {
     if (this.isInWishlist(product._id)) {
       this.removeProduct(product);
@@ -60,8 +67,8 @@ export class WishlistService {
           productId: product._id,
         })
         .subscribe({
-          next: (updatedWishlist) =>
-            this.updateLocalWishlist(updatedWishlist.products),
+          next: (response) =>
+            this.updateLocalWishlist(response?.products || []),
         });
     });
   }
@@ -74,14 +81,17 @@ export class WishlistService {
           `${this.apiUrl}/${user.uid}/${product._id}`
         )
         .subscribe({
-          next: (updatedWishlist) =>
-            this.updateLocalWishlist(updatedWishlist.products),
+          next: (response) =>
+            this.updateLocalWishlist(response?.products || []),
         });
     });
   }
 
   private updateLocalWishlist(products: Product[]): void {
-    const productIds = products.map((p) => p._id);
+    const safeProducts = products || []; // Aseguramos que 'products' sea siempre un array
+    const productIds = safeProducts.map((p) => p._id);
+
     this.wishlistProductIds.set(productIds);
+    this.wishlistProducts.set(safeProducts); // Actualizamos el signal con los productos completos
   }
 }

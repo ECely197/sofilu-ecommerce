@@ -29,6 +29,7 @@ import { SplitText } from 'gsap/SplitText';
 import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
 import { UiState } from '../../services/ui-state';
+import { WishlistService } from '../../services/wishlist';
 
 // Registramos el plugin
 gsap.registerPlugin(SplitText);
@@ -50,6 +51,7 @@ export class Header implements AfterViewInit {
 
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
+  public wishlistService = inject(WishlistService);
   isProfileMenuOpen = signal(false);
 
   // Obtenemos referencias a los elementos del DOM

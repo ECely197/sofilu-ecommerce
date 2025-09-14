@@ -9,17 +9,16 @@ import {
   query,
   stagger,
 } from '@angular/animations';
-
-import { Customer } from '../../../services/customer';
-import { RippleDirective } from '../../../directives/ripple';
-
-import { FormControl, ReactiveFormsModule } from '@angular/forms'; // ¡Importante!
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   debounceTime,
   distinctUntilChanged,
   switchMap,
   startWith,
 } from 'rxjs/operators';
+
+// Servicios
+import { Customer } from '../../../services/customer';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
 import { CustomerDetailModalService } from '../../../services/customer-detail-modal.service';
@@ -27,9 +26,9 @@ import { CustomerDetailModalService } from '../../../services/customer-detail-mo
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule], // Eliminamos RippleDirective si no se usa
   templateUrl: './customer-list.html',
-  styleUrl: './customer-list.scss', // Apuntamos a su propio archivo SCSS
+  styleUrl: './customer-list.scss',
   animations: [
     trigger('listAnimation', [
       transition('* => *', [
@@ -51,30 +50,25 @@ import { CustomerDetailModalService } from '../../../services/customer-detail-mo
   ],
 })
 export class CustomerList implements OnInit {
+  // --- Inyecciones en la propiedad de la clase ---
   private customerService = inject(Customer);
   private toastService = inject(ToastService);
   private confirmationService = inject(ConfirmationService);
-  private customerDetailModalService = inject(CustomerDetailModalService);
+  public customerDetailModalService = inject(CustomerDetailModalService); // Hacemos público para el HTML si es necesario
 
   customers = signal<any[]>([]);
   isLoading = signal<boolean>(true);
-
   searchControl = new FormControl('');
 
+  // ngOnInit se queda como está
   ngOnInit() {
-    // La magia de la búsqueda reactiva
     this.searchControl.valueChanges
       .pipe(
-        // Empieza inmediatamente con un valor vacío
         startWith(''),
-        // Espera 300ms después de que el usuario deja de teclear
         debounceTime(300),
-        // Solo emite si el valor ha cambiado
         distinctUntilChanged(),
-        // Muestra el loader
         switchMap((searchTerm) => {
           this.isLoading.set(true);
-          // Llama al servicio de búsqueda. Si el término es nulo o vacío, lo maneja.
           return this.customerService.searchCustomers({
             search: searchTerm || '',
           });
@@ -134,20 +128,7 @@ export class CustomerList implements OnInit {
   }
 
   viewDetails(customer: any): void {
+    // Llama al método 'open' del servicio inyectado
     this.customerDetailModalService.open(customer.uid);
-  }
-
-  fetchCustomers(): void {
-    this.isLoading.set(true);
-    this.customerService.getCustomers().subscribe({
-      next: (data) => {
-        this.customers.set(data);
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error al obtener los clientes:', err);
-        this.isLoading.set(false);
-      },
-    });
   }
 }

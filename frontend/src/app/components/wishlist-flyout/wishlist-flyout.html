@@ -1,0 +1,78 @@
+<div
+  class="flyout-container"
+  [class.is-open]="uiState.isWishlistFlyoutVisible()"
+>
+  <div class="flyout-overlay" (click)="uiState.closeWishlistFlyout()"></div>
+  <aside class="flyout-panel" @flyInOut>
+    <header class="flyout-header">
+      <div class="header-title-pill">
+        <span>Tu Lista de Deseos</span>
+        <button
+          class="close-button"
+          (click)="uiState.closeWishlistFlyout()"
+          appRipple
+        >
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </header>
+
+    @if (wishlistService.wishlistProducts().length > 0) {
+    <div class="items-list">
+      @for (product of wishlistService.wishlistProducts(); track product._id) {
+      <div class="item-card">
+        <a
+          [routerLink]="['/product', product._id]"
+          (click)="uiState.closeWishlistFlyout()"
+        >
+          <img
+            [src]="product.images[0]"
+            [alt]="product.name"
+            class="item-image"
+          />
+        </a>
+        <div class="item-info">
+          <a
+            [routerLink]="['/product', product._id]"
+            (click)="uiState.closeWishlistFlyout()"
+            class="item-name"
+            >{{ product.name }}</a
+          >
+          <p class="item-price">
+            {{ product.price | currency : "COP" : "symbol" : "1.0-0" }}
+          </p>
+        </div>
+        <div class="item-actions">
+          <button
+            (click)="addToCart(product)"
+            class="action-btn cart-btn"
+            appRipple
+          >
+            <span class="material-symbols-outlined">add_shopping_cart</span>
+          </button>
+          <button
+            (click)="removeFromWishlist(product)"
+            class="action-btn remove-btn"
+            appRipple
+          >
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="empty-state">
+      <img
+        src="icon-cat.gif"
+        alt="Tu lista de deseos está vacía"
+        class="empty-illustration"
+      />
+      <h2>Tu lista de deseos te espera</h2>
+      <p>
+        Haz clic en el corazón de tus productos favoritos para guardarlos aquí.
+      </p>
+    </div>
+    }
+  </aside>
+</div>

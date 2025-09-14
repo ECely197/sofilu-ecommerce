@@ -1,98 +1,133 @@
-// Importamos los botones para usar @extend
-@use "../../../../buttons";
+@use "./../../../../buttons";
+@use "../../../forms";
 
-// --- Estructura Principal ---
+:host {
+  display: block;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+// Estilo base para las tarjetas de esta página
+.card {
+  background-color: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+// --- LAYOUT PRINCIPAL ---
 .product-detail-layout {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 2rem auto;
+  grid-template-columns: 1fr; // Una columna en móvil por defecto
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 
   @media (min-width: 1024px) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4rem;
+    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); // Dos columnas en escritorio
+    gap: 2rem;
   }
 }
 
-// --- Galería de Imágenes ---
-.image-gallery {
+// --- GALERÍA DE IMÁGENES ---
+.gallery-card {
+  padding: 1.5rem;
+  display: flex; // Usamos flex para el layout
+  flex-direction: column; // En móvil, las miniaturas van abajo
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    // En escritorio, es una fila
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+}
+
+.main-image-wrapper {
   width: 100%;
+  aspect-ratio: 4 / 5; // Proporción vertical
+  border-radius: 1rem;
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    order: 2; // Se posiciona a la derecha
+    flex-grow: 1; // Ocupa el espacio restante
+  }
+}
+.placeholder-image {
+  background-color: var(--soft-gray);
 }
 
 .main-image {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  background-size: cover;
-  background-position: center;
-  border-radius: 1.5rem; // Bordes más redondeados
-  margin-bottom: 1rem;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s;
 }
 
-.placeholder-image {
-  background-color: var(--soft-gray);
+.thumbnail-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  // Opcional: poner un icono
-}
+  flex-direction: row; // En móvil, las miniaturas son una fila horizontal
+  gap: 0.75rem;
+  overflow-x: auto; // Con scroll horizontal si no caben
+  padding-bottom: 0.5rem; // Espacio para la barra de scroll
 
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  @media (min-width: 768px) {
+    // En escritorio, es una columna vertical
+    flex-direction: column;
+    order: 1; // Se posiciona a la izquierda
+    overflow-x: visible;
+  }
 }
 
 .thumbnail {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background-size: cover;
-  background-position: center;
-  border-radius: 1rem;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0; // Evita que las imágenes se encojan
+  border-radius: 0.75rem;
+  overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    transform: scale(1.05);
-  }
+  border: 2px solid var(--border);
+  transition: border-color 0.2s;
 
   &.active {
     border-color: var(--pastel-pink);
-    box-shadow: 0 0 10px rgba(244, 194, 194, 0.5);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
-// --- Información del Producto ---
-.product-info {
+// --- INFORMACIÓN Y ACCIONES ---
+.info-card {
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
-  padding-top: 1rem;
 }
 
 .product-title {
   font-family: "Playfair Display", serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  font-size: 2.25rem;
   line-height: 1.2;
 }
 
 .product-price {
   font-size: 1.75rem;
-  margin-bottom: 2rem;
-  color: var(--text-charcoal);
   font-weight: 500;
+  margin: 0.5rem 0 1.5rem;
 }
 
-// --- Variantes ---
 .variant-group {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .variant-name {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
   text-transform: uppercase;
@@ -107,19 +142,9 @@
 }
 
 .variant-button {
+  @extend .btn-material;
+  @extend .btn-secondary; // Hereda el estilo base
   padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid var(--soft-gray);
-  background-color: white;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    border-color: var(--text-charcoal);
-    background-color: var(--background-sec);
-  }
 
   &.active {
     background-color: var(--pastel-pink);
@@ -127,242 +152,29 @@
     border-color: var(--pastel-pink);
   }
 
-  &.unavailable {
+  &:disabled {
     text-decoration: line-through;
-    color: var(--soft-gray);
-    border-color: var(--soft-gray);
+    color: var(--text-secondary);
+    background-color: var(--soft-white);
+    border-color: var(--border);
     cursor: not-allowed;
-
-    &:hover {
-      border-color: var(--soft-gray); // Evita el cambio de color en hover
-    }
   }
 }
 
-// --- Botones de Acción ---
 .actions {
-  display: flex; // Cambiamos a flex para alinear los elementos en una fila
-  flex-direction: row; // Aseguramos que sea una fila
+  display: flex;
   gap: 1rem;
   margin-top: auto;
-  padding-top: 2rem;
-
-  // Hacemos que el botón principal ocupe el espacio restante
-  .btn-material {
-    flex-grow: 1;
-  }
-}
-
-// --- Pestañas (Tabs) ---
-.product-tabs-container {
-  grid-column: 1 / -1;
-  margin-top: 4rem;
-}
-
-.tab-header {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid var(--soft-gray);
-}
-
-.tab-link {
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.2s;
-
-  &.active {
-    color: var(--text-charcoal);
-    border-bottom-color: var(--pastel-pink);
-  }
-}
-
-.tab-content {
-  padding: 2.5rem 0;
-}
-
-.prose {
-  line-height: 1.7;
-  color: var(--text-secondary);
-}
-
-// --- Sección de Reseñas ---
-.reviews-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.reviews-summary-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.reviews-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.review-card {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border: 1px solid var(--soft-gray);
-}
-
-.review-header,
-.review-rating,
-.review-title {
-  margin-bottom: 0.75rem;
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.review-author {
-  font-weight: 700;
-}
-
-.review-date {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.review-rating .star {
-  color: var(--soft-gray);
-  font-size: 1.25rem;
-
-  &.filled {
-    color: #ffc107;
-  }
-}
-
-.review-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.review-comment {
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-
-.empty-reviews-message {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-}
-
-// --- Formulario de reseña ---
-.review-form-container {
-  background-color: var(--background-sec);
-  padding: 2rem;
-  border-radius: 1rem;
-  margin-top: 3rem;
-  border: 1px solid var(--soft-gray);
-}
-
-.review-form-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  padding-top: 1.5rem;
   margin-bottom: 1.5rem;
+  border-top: 1px solid var(--border);
 }
 
-.form-field {
-  margin-bottom: 1rem;
-
-  label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-  }
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--soft-gray);
-  border-radius: 0.5rem;
-  background-color: white;
-  transition: all 0.2s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
-  }
-}
-
-textarea.form-input {
-  resize: vertical;
-}
-
-.btn-material[type="submit"] {
-  width: 100%;
-}
-
-// --- Estado de Carga ---
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60vh;
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-}
-
-// --- Iconos de Material Symbols ---
-// (Opcional pero recomendado para que el corazón se vea bien)
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-}
-
-.actions .btn-material {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  // Estilo para el estado "Añadido"
-  &.was-added {
-    background-color: #16a34a; // Un verde de éxito
-    color: white;
-    cursor: default;
-  }
-}
 .quantity-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: white;
-  border: 1px solid var(--soft-gray);
-  border-radius: 9999px; // Píldora
-  flex-shrink: 0; // Evita que se encoja
-  height: 56px; // Misma altura aproximada que los botones
+  @extend .btn-material;
+  padding: 0;
+  background-color: var(--soft-white);
+  color: var(--text-charcoal);
 
   .quantity-btn {
     background: none;
@@ -377,8 +189,224 @@ textarea.form-input {
   .quantity-value {
     font-weight: 700;
     font-size: 1.125rem;
-    min-width: 2ch; // Ancho mínimo para 2 caracteres (evita saltos de 9 a 10)
+    min-width: 2ch;
     text-align: center;
-    padding: 0 0.5rem;
   }
+}
+
+.add-to-cart-btn {
+  @extend .btn-material;
+  flex-grow: 1;
+
+  &.was-added {
+    background-color: #16a34a; // Verde éxito
+    box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+    cursor: default;
+    &:hover {
+      transform: none;
+      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
+    }
+  }
+}
+
+.wishlist-btn {
+  @extend .btn-material;
+  @extend .btn-secondary;
+  margin-top: 1.5rem;
+}
+
+// --- PESTAÑAS DE INFORMACIÓN ADICIONAL ---
+.details-card {
+  padding: 2rem;
+
+  @media (min-width: 1024px) {
+    // En escritorio, esta tarjeta ocupa las dos columnas del grid
+    grid-column: 1 / -1;
+  }
+}
+
+.tab-header {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-link {
+  padding: 0.75rem 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px; // Para que el borde se alinee con el borde del contenedor
+  transition: all 0.2s;
+
+  &.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--pastel-pink);
+  }
+}
+
+.tab-content {
+  padding: 2.5rem 0;
+}
+
+.prose {
+  line-height: 1.7;
+  color: var(--text-primary);
+  h1,
+  h2,
+  h3 {
+    margin-bottom: 1rem;
+  }
+  ul,
+  ol {
+    padding-left: 1.5rem;
+  }
+  li {
+    margin-bottom: 0.5rem;
+  }
+}
+
+// --- SECCIÓN DE RESEÑAS ---
+.reviews-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .reviews-summary-title {
+    font-size: 1.5rem;
+  }
+  .btn-secondary {
+    @extend .btn-secondary;
+  }
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.review-card {
+  background-color: var(--soft-white);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+}
+
+.review-header,
+.review-rating,
+.review-title {
+  margin-bottom: 0.75rem;
+}
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .review-author {
+    font-weight: 700;
+  }
+  .review-date {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+}
+.review-rating .star {
+  color: var(--soft-gray);
+  font-size: 1.25rem;
+  &.filled {
+    color: #facc15;
+  } // Amarillo estrella
+}
+.review-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.review-comment {
+  line-height: 1.6;
+}
+
+.empty-reviews-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  border: 2px dashed var(--border);
+  border-radius: 1rem;
+}
+
+// --- FORMULARIO DE RESEÑA ---
+.review-form-container {
+  background-color: var(--soft-white);
+  padding: 2rem;
+  border-radius: 1.5rem; // Bordes más redondeados
+  margin-top: 3rem;
+  border: 1px solid var(--border);
+}
+
+.review-form-title {
+  font-family: "Baloo 2", serif;
+  font-size: 1.75rem; // Un poco más grande
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+// Hacemos que el botón ocupe todo el ancho
+.submit-review-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.875rem; // Un poco más de padding
+  font-size: 1rem;
+}
+
+// --- ESTADO DE CARGA ---
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+// --- ICONOS DE MATERIAL SYMBOLS ---
+.material-symbols-outlined {
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+.variants-container {
+  background-color: var(--soft-white);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem; // Espacio antes de los botones de acción
+}
+
+.variant-group {
+  // Ya no necesita un margen inferior tan grande
+  margin-bottom: 1.5rem;
+  &:last-child {
+    margin-bottom: 0; // El último grupo de variantes no necesita margen inferior
+  }
+}
+
+.rating-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Centra las estrellas
+  gap: 0.75rem;
 }

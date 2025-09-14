@@ -16,7 +16,6 @@ import { checkout } from './pages/checkout/checkout';
 import { OrderConfirmation } from './pages/order-confirmation/order-confirmation';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
-import { WishlistComponent } from './pages/wishlist/wishlist';
 import { CategoryView } from './pages/category-view/category-view';
 import { Account } from './pages/account/account/account';
 import { MyOrdersComponent } from './pages/account/my-orders/my-orders';
@@ -50,7 +49,6 @@ export const routes: Routes = [
   { path: 'order-confirmation/:id', component: OrderConfirmation },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  { path: 'wishlist', component: WishlistComponent },
   { path: 'search', component: SearchResultsComponent },
 
   // --- Rutas del Área de Cuenta (Protegidas) ---
