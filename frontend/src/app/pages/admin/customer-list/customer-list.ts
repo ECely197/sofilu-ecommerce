@@ -22,6 +22,7 @@ import {
 } from 'rxjs/operators';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
+import { CustomerDetailModalService } from '../../../services/customer-detail-modal.service';
 
 @Component({
   selector: 'app-customer-list',
@@ -53,6 +54,7 @@ export class CustomerList implements OnInit {
   private customerService = inject(Customer);
   private toastService = inject(ToastService);
   private confirmationService = inject(ConfirmationService);
+  private customerDetailModalService = inject(CustomerDetailModalService);
 
   customers = signal<any[]>([]);
   isLoading = signal<boolean>(true);
@@ -132,9 +134,7 @@ export class CustomerList implements OnInit {
   }
 
   viewDetails(customer: any): void {
-    // Lógica para abrir el modal, que implementaremos en el siguiente paso
-    console.log('Ver detalles de:', customer);
-    // this.customerDetailModalService.open(customer.uid);
+    this.customerDetailModalService.open(customer.uid);
   }
 
   fetchCustomers(): void {

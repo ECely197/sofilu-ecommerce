@@ -13,6 +13,14 @@ import { ToastContainerComponent } from './components/toast/toast';
 import { UiState } from './services/ui-state';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal';
 import { ProductExplorerModalComponent } from './components/product-explorer-modal/product-explorer-modal';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
+import { CustomerDetailModalComponent } from './components/customer-detail-modal/customer-detail-modal';
 
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
@@ -31,6 +39,7 @@ import { AosOptions } from 'aos';
     ToastContainerComponent,
     ConfirmationModalComponent,
     ProductExplorerModalComponent,
+    CustomerDetailModalComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

@@ -48,15 +48,16 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   }
 });
 
+// --- RUTA DE DETALLES COMPLETOS DEL CLIENTE (CORREGIDA) ---
 router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const { uid } = req.params;
 
     // Usamos Promise.all para obtener todo en paralelo
     const [firebaseUser, mongoUser, userOrders] = await Promise.all([
-      admin.auth().getUser(uid), // 1. Datos de Firebase Auth (rol, email, etc.)
-      User.findOne({ uid }), // 2. Datos de nuestro perfil en MongoDB (nombre, teléfono)
-      Order.find({ userId: uid }), // 3. Todos los pedidos de este usuario
+      admin.auth().getUser(uid),
+      User.findOne({ uid: uid }), // Aseguramos que busca por el campo correcto
+      Order.find({ userId: uid }), // Y aquí también
     ]);
 
     if (!firebaseUser) {
@@ -72,34 +73,34 @@ router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
       0
     );
 
+    // Agrupamos los cupones usados por este cliente
     const usedCoupons = userOrders.reduce((acc, order) => {
       if (order.appliedCoupon) {
         if (!acc[order.appliedCoupon]) {
           acc[order.appliedCoupon] = { timesUsed: 0, totalDiscount: 0 };
         }
         acc[order.appliedCoupon].timesUsed += 1;
-        acc[order.appliedCoupon].totalDiscount += order.discountAmount;
+        acc[order.appliedCoupon].totalDiscount += order.discountAmount || 0;
       }
       return acc;
     }, {});
 
     // --- ENSAMBLAJE DEL OBJETO FINAL ---
     const userDetails = {
-      // Datos de Firebase
       uid: firebaseUser.uid,
       email: firebaseUser.email,
       isAdmin: firebaseUser.customClaims?.admin === true,
       isDisabled: firebaseUser.disabled,
       creationTime: firebaseUser.metadata.creationTime,
 
-      // Datos de MongoDB
+      // Usamos el operador 'optional chaining' (?.) por si el usuario aún no tiene perfil en MongoDB
       firstName: mongoUser?.firstName || "",
       lastName: mongoUser?.lastName || "",
       phone: mongoUser?.phone || "",
 
-      // Métricas calculadas
       totalOrders,
       totalSpent,
+      // Convertimos el objeto de cupones en un array para que sea más fácil de usar en el frontend
       usedCoupons: Object.entries(usedCoupons).map(([code, data]) => ({
         code,
         ...data,
@@ -108,6 +109,7 @@ router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
 
     res.json(userDetails);
   } catch (error) {
+    console.error("Error al obtener los detalles del cliente:", error);
     res
       .status(500)
       .json({
