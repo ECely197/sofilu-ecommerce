@@ -43,6 +43,7 @@ const allowedOrigins = [
   "http://localhost:4200", // Para desarrollo local
   "https://sofilu-ecommerce-kuw79hb3s-ecely28s-projects.vercel.app",
   "https://sofilu-ecommerce-fq50p215z-ecely28s-projects.vercel.app",
+  "https://sofilu-ecommerce-git-main-ecely28s-projects.vercel.app",
 ];
 
 const corsOptions = {
