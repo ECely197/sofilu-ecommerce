@@ -18,7 +18,7 @@ const couponRoutes = require("./routes/coupons");
 const settingsRoutes = require("./routes/settings");
 const paymentRoutes = require("./routes/payments");
 const categoryRoutes = require("./routes/categories");
-const VariantTemplate = require("./routes/variantTemplates");
+const variantTemplateRoutes = require("./routes/variantTemplates");
 
 // ==========================================================================
 // 2. INICIALIZACIÓN
@@ -92,9 +92,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/settings", settingsRoutes);
-app.use("/api/payments", paymentRoutes);
+//app.use("/api/payments", paymentRoutes);
 app.use("/api/categories", categoryRoutes);
-app.use("/api/variant-templates", VariantTemplate);
+app.use("/api/variant-templates", variantTemplateRoutes);
 
 // ==========================================================================
 // 6. ARRANQUE DEL SERVIDOR

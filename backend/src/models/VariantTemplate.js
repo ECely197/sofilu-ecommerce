@@ -5,17 +5,18 @@ const { Schema } = mongoose;
 const optionSchema = new Schema(
   {
     name: { type: String, required: true },
-    priceModifier: { type: Number, default: null },
-    stock: { type: Number, default: null },
-    costPrice: { type: Number, default: null },
+    // Campos opcionales sin 'default: null' para máxima flexibilidad
+    priceModifier: { type: Number },
+    stock: { type: Number },
+    costPrice: { type: Number },
   },
   { _id: false }
 );
 
 const variantTemplateSchema = new Schema(
   {
-    templateName: { type: String, required: true, unique: true },
-    variantName: { type: String, required: true },
+    templateName: { type: String, required: true, unique: true, trim: true },
+    variantName: { type: String, required: true, trim: true },
     options: [optionSchema],
   },
   {
