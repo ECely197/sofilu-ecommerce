@@ -27,7 +27,7 @@ import { CustomerDetailModalService } from '../../../services/customer-detail-mo
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, RippleDirective, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './customer-list.html',
   styleUrl: './customer-list.scss', // Apuntamos a su propio archivo SCSS
   animations: [

@@ -4,6 +4,7 @@ const router = express.Router();
 // ¡Importamos admin, pero no lo inicializamos aquí!
 const admin = require("firebase-admin");
 const User = require("../models/User");
+const Order = require("../models/Order");
 
 // --- OBTENER TODOS LOS USUARIOS (PARA EL ADMIN) ---
 router.get("/", [authMiddleware, adminOnly], async (req, res) => {
@@ -110,12 +111,10 @@ router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
     res.json(userDetails);
   } catch (error) {
     console.error("Error al obtener los detalles del cliente:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los detalles del cliente",
-        details: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener los detalles del cliente",
+      details: error.message,
+    });
   }
 });
 
