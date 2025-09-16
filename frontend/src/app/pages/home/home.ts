@@ -27,7 +27,6 @@ interface ProductsByCategory {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     CategoriesSection,
     FeaturedProductsComponent,
     ProductCarousel,
