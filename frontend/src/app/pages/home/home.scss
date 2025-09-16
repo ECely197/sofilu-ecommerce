@@ -64,10 +64,14 @@
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem); // Tamaño de fuente responsive
+  font-family: "Baloo 2", serif;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+
   font-weight: 700;
-  max-width: 20ch;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  max-width: 20ch; // Mantenemos el ancho máximo para una buena legibilidad
 }
 
 .hero-button {

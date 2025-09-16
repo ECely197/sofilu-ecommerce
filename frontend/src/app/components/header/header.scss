@@ -72,7 +72,8 @@
   text-decoration: none;
   cursor: pointer;
   line-height: 1.2;
-  overflow: hidden; // Recorta las letras
+  overflow: hidden;
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
 }
 
 // Contenedor para ambos textos
@@ -147,6 +148,7 @@
     background-color: rgba(0, 0, 0, 0.05);
     padding: 0.5rem 1rem 0.5rem 2.5rem;
     transition: all 0.3s ease;
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
 
     &:focus {
       width: 220px;
