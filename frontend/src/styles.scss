@@ -61,6 +61,21 @@
   --pastel-pink: var(--color-accent);
   --soft-white: #fbf8f9;
   --soft-gray: var(--color-neutral-400);
+
+  // --- NUEVA PALETA DE SOPORTE (CON MÁS CONTRASTE) ---
+  --color-background-page: #f8f4f0;
+  --color-background-card: #ffffff;
+  --color-text-primary: var(--color-brand-dark);
+  --color-text-secondary: #8d8d8d;
+  --color-accent: var(--color-brand-pink);
+  --color-border: #efefef;
+
+  // --- Variables heredadas ---
+  --background: var(--color-background-page);
+  --text-charcoal: var(--color-text-primary);
+  --pastel-pink: var(--color-accent);
+  --soft-white: #fbf8f9;
+  --soft-gray: #eae3d9;
 }
 
 /* ==========================================================================
@@ -79,7 +94,6 @@ body {
 
   background-color: var(--background-page);
   color: var(--text-primary);
-
   transition: none;
 }
 

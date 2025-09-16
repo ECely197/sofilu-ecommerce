@@ -9,11 +9,10 @@ import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import {
   trigger,
-  transition,
+  state,
   style,
+  transition,
   animate,
-  query,
-  stagger,
 } from '@angular/animations';
 
 @Component({
@@ -23,22 +22,10 @@ import {
   templateUrl: './wishlist-flyout.html',
   styleUrl: './wishlist-flyout.scss',
   animations: [
-    trigger('listAnimation', [
-      transition('* => *', [
-        query(
-          ':enter',
-          [
-            style({ opacity: 0, transform: 'translateY(20px)' }),
-            stagger('80ms', [
-              animate(
-                '400ms cubic-bezier(0.35, 0, 0.25, 1)',
-                style({ opacity: 1, transform: 'none' })
-              ),
-            ]),
-          ],
-          { optional: true }
-        ),
-      ]),
+    trigger('flyInOut', [
+      state('void', style({ transform: 'translateX(100%)', opacity: 0 })),
+      transition('void => *', animate('300ms ease-out')),
+      transition('* => void', animate('300ms ease-in')),
     ]),
   ],
 })
