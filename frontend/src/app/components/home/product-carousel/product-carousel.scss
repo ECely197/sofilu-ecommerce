@@ -2,17 +2,14 @@
   display: block;
 }
 
-// Estilos para la tarjeta contenedora
 .card {
-  // Usa las variables de color FIJAS
-  background-color: var(--background-card); // Fondo blanco puro
-  border: 1px solid var(--color-border); // Borde gris muy claro
+  background-color: var(--background-card);
+  border: 1px solid var(--color-border);
 
   border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04); // Sombra sutil
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 
-  // Transición sutil solo para el hover
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
