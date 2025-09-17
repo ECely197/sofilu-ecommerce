@@ -1,20 +1,9 @@
-// En: product-explorer-modal.component.ts
-import {
-  Component,
-  inject,
-  signal,
-  computed,
-  OnInit,
-  effect,
-} from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms'; // Importa ReactiveFormsModule
-import {
-  ProductModalService,
-  ProductModalData,
-} from '../../services/product-modal.service';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ProductModalService } from '../../services/product-modal.service';
 import { ProductCard } from '../product-card/product-card';
-import { Product } from '../../interfaces/product.interface';
+import { Product, Variant } from '../../interfaces/product.interface';
 import {
   trigger,
   state,
@@ -22,7 +11,6 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-explorer-modal',
@@ -32,64 +20,124 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   styleUrl: './product-explorer-modal.scss',
   animations: [
     trigger('flyInOut', [
-      state('void', style({ transform: 'translateY(100%)' })),
-      transition('void => *', animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-      transition('* => void', animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+      state('void', style({ transform: 'translateY(100%)', opacity: 0 })),
+      transition(
+        'void => *',
+        animate(
+          '400ms cubic-bezier(0.25, 0.8, 0.25, 1)',
+          style({ transform: 'translateY(0)', opacity: 1 })
+        )
+      ),
+      transition(
+        '* => void',
+        animate(
+          '300ms cubic-bezier(0.25, 0.8, 0.25, 1)',
+          style({ transform: 'translateY(100%)', opacity: 0 })
+        )
+      ),
     ]),
   ],
 })
-export class ProductExplorerModalComponent implements OnInit {
+export class ProductExplorerModalComponent {
   public productModalService = inject(ProductModalService);
   private fb = inject(FormBuilder);
 
-  // Signal para guardar la lista original de productos
   private originalProducts = signal<Product[]>([]);
+  availableFilters = signal<Variant[]>([]);
+  filterForm!: FormGroup;
 
-  // Signal (computado) para mostrar los productos filtrados y ordenados
   filteredProducts = computed(() => {
-    const products = this.originalProducts();
-    const sortValue = this.filterForm.value.sortBy;
+    let products = [...this.originalProducts()];
+    if (!this.filterForm || !this.filterForm.value) return products;
 
-    if (!products || !sortValue) {
-      return [];
-    }
+    const filters = this.filterForm.value;
 
-    // Clonamos el array para no modificar el original
-    const sortedProducts = [...products];
-    const [key, order] = sortValue.split(',');
-
-    if (key === 'relevance') {
-      return sortedProducts; // No hacemos nada para "Relevancia"
-    }
-
-    sortedProducts.sort((a, b) => {
-      let valA, valB;
-
-      if (key === 'price') {
-        valA = a.isOnSale ? a.salePrice! : a.price;
-        valB = b.isOnSale ? b.salePrice! : b.price;
-      } else {
-        // Asumimos que es 'name'
-        valA = a.name.toLowerCase();
-        valB = b.name.toLowerCase();
+    // 1. Aplicar Filtros de Variantes
+    for (const key in filters) {
+      if (key !== 'sortBy' && filters[key] && filters[key] !== 'all') {
+        products = products.filter((p) =>
+          p.variants.some(
+            (v) =>
+              v.name === key && v.options.some((o) => o.name === filters[key])
+          )
+        );
       }
+    }
 
-      if (valA < valB) return order === 'asc' ? -1 : 1;
-      if (valA > valB) return order === 'asc' ? 1 : -1;
-      return 0;
-    });
+    // 2. Aplicar Ordenamiento
+    const [sortKey, sortOrder] = (filters.sortBy || 'relevance,desc').split(
+      ','
+    );
+    if (sortKey !== 'relevance') {
+      products.sort((a, b) => {
+        const valA =
+          sortKey === 'price'
+            ? a.isOnSale
+              ? a.salePrice!
+              : a.price
+            : a.name.toLowerCase();
+        const valB =
+          sortKey === 'price'
+            ? b.isOnSale
+              ? b.salePrice!
+              : b.price
+            : b.name.toLowerCase();
+        if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
 
-    return sortedProducts;
+    return products;
   });
 
-  // FormGroup para los controles del filtro
-  filterForm!: FormGroup;
-  modalData = this.productModalService.modalState;
-
-  ngOnInit(): void {
-    // En ngOnInit solo inicializamos el formulario
+  constructor() {
     this.filterForm = this.fb.group({
       sortBy: ['relevance,desc'],
     });
+
+    effect(() => {
+      const data = this.productModalService.modalState();
+      if (data) {
+        this.originalProducts.set(data.products);
+        this.generateFiltersFromProducts(data.products);
+      } else {
+        this.originalProducts.set([]);
+        this.availableFilters.set([]);
+      }
+    });
+  }
+
+  private generateFiltersFromProducts(products: Product[]): void {
+    const filtersMap = new Map<string, Set<string>>();
+
+    products.forEach((product) => {
+      product.variants.forEach((variant) => {
+        if (!filtersMap.has(variant.name)) {
+          filtersMap.set(variant.name, new Set());
+        }
+        const optionsSet = filtersMap.get(variant.name)!;
+        variant.options.forEach((option) => optionsSet.add(option.name));
+      });
+    });
+
+    const newFilters: Variant[] = [];
+    filtersMap.forEach((optionsSet, name) => {
+      newFilters.push({
+        name,
+        options: Array.from(optionsSet)
+          .sort()
+          .map((optName) => ({ name: optName, stock: 0, priceModifier: 0 })),
+      });
+    });
+    this.availableFilters.set(newFilters);
+
+    const newFormControls: { [key: string]: any } = {
+      sortBy: 'relevance,desc',
+    };
+    newFilters.forEach((filter) => {
+      newFormControls[filter.name] = 'all';
+    });
+    this.filterForm = this.fb.group(newFormControls);
   }
 }
