@@ -1,4 +1,11 @@
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  effect,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ProductModalService } from '../../services/product-modal.service';
@@ -38,7 +45,7 @@ import {
     ]),
   ],
 })
-export class ProductExplorerModalComponent {
+export class ProductExplorerModalComponent implements OnInit {
   public productModalService = inject(ProductModalService);
   private fb = inject(FormBuilder);
 
@@ -49,7 +56,6 @@ export class ProductExplorerModalComponent {
   filteredProducts = computed(() => {
     let products = [...this.originalProducts()];
     if (!this.filterForm || !this.filterForm.value) return products;
-
     const filters = this.filterForm.value;
 
     // 1. Aplicar Filtros de Variantes
@@ -72,14 +78,14 @@ export class ProductExplorerModalComponent {
       products.sort((a, b) => {
         const valA =
           sortKey === 'price'
-            ? a.isOnSale
-              ? a.salePrice!
+            ? a.isOnSale && a.salePrice
+              ? a.salePrice
               : a.price
             : a.name.toLowerCase();
         const valB =
           sortKey === 'price'
-            ? b.isOnSale
-              ? b.salePrice!
+            ? b.isOnSale && b.salePrice
+              ? b.salePrice
               : b.price
             : b.name.toLowerCase();
         if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
@@ -87,14 +93,11 @@ export class ProductExplorerModalComponent {
         return 0;
       });
     }
-
     return products;
   });
 
   constructor() {
-    this.filterForm = this.fb.group({
-      sortBy: ['relevance,desc'],
-    });
+    this.filterForm = this.fb.group({ sortBy: ['relevance,desc'] });
 
     effect(() => {
       const data = this.productModalService.modalState();
@@ -108,9 +111,11 @@ export class ProductExplorerModalComponent {
     });
   }
 
+  // ngOnInit no es estrictamente necesario, pero es buena práctica tenerlo
+  ngOnInit(): void {}
+
   private generateFiltersFromProducts(products: Product[]): void {
     const filtersMap = new Map<string, Set<string>>();
-
     products.forEach((product) => {
       product.variants.forEach((variant) => {
         if (!filtersMap.has(variant.name)) {
@@ -132,6 +137,7 @@ export class ProductExplorerModalComponent {
     });
     this.availableFilters.set(newFilters);
 
+    // Reconstruimos el FormGroup con los nuevos filtros
     const newFormControls: { [key: string]: any } = {
       sortBy: 'relevance,desc',
     };
