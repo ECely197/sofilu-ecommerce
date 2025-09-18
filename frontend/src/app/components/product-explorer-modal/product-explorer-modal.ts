@@ -56,21 +56,24 @@ export class ProductExplorerModalComponent implements OnInit {
   filteredProducts = computed(() => {
     let products = [...this.originalProducts()];
     if (!this.filterForm || !this.filterForm.value) return products;
+
     const filters = this.filterForm.value;
 
     // 1. Aplicar Filtros de Variantes
     for (const key in filters) {
       if (key !== 'sortBy' && filters[key] && filters[key] !== 'all') {
-        products = products.filter((p) =>
-          p.variants.some(
+        products = products.filter((p) => {
+          if (!p.variants || p.variants.length === 0) {
+            return false;
+          }
+          return p.variants.some(
             (v) =>
               v.name === key && v.options.some((o) => o.name === filters[key])
-          )
-        );
+          );
+        });
       }
     }
 
-    // 2. Aplicar Ordenamiento
     const [sortKey, sortOrder] = (filters.sortBy || 'relevance,desc').split(
       ','
     );
@@ -93,12 +96,12 @@ export class ProductExplorerModalComponent implements OnInit {
         return 0;
       });
     }
+
     return products;
   });
 
   constructor() {
     this.filterForm = this.fb.group({ sortBy: ['relevance,desc'] });
-
     effect(() => {
       const data = this.productModalService.modalState();
       if (data) {
@@ -111,7 +114,6 @@ export class ProductExplorerModalComponent implements OnInit {
     });
   }
 
-  // ngOnInit no es estrictamente necesario, pero es buena práctica tenerlo
   ngOnInit(): void {}
 
   private generateFiltersFromProducts(products: Product[]): void {
@@ -137,7 +139,6 @@ export class ProductExplorerModalComponent implements OnInit {
     });
     this.availableFilters.set(newFilters);
 
-    // Reconstruimos el FormGroup con los nuevos filtros
     const newFormControls: { [key: string]: any } = {
       sortBy: 'relevance,desc',
     };
