@@ -11,7 +11,7 @@ require("dotenv").config();
 // Importación de TODAS las Rutas
 const productRoutes = require("./routes/products");
 const wishlistRoutes = require("./routes/wishlist");
-const reviewRoutes = require("./routes/reviews"); // Los quitamos al revertir
+const reviewRoutes = require("./routes/reviews");
 const orderRoutes = require("./routes/orders");
 const userRoutes = require("./routes/users");
 const couponRoutes = require("./routes/coupons");
@@ -19,6 +19,7 @@ const settingsRoutes = require("./routes/settings");
 const paymentRoutes = require("./routes/payments");
 const categoryRoutes = require("./routes/categories");
 const variantTemplateRoutes = require("./routes/variantTemplates");
+const navigationRoutes = require("./routes/navigation");
 
 // ==========================================================================
 // 2. INICIALIZACIÓN
@@ -37,10 +38,10 @@ admin.initializeApp({
 // 3. MIDDLEWARES
 // ==========================================================================
 const allowedOrigins = [
-  "https://sofilu.shop", // Tu dominio principal
+  "https://sofilu.shop",
   "https://www.sofilu.shop",
-  "https://sofilu-ecommerce.vercel.app", // ¡Añadimos la versión www!
-  "http://localhost:4200", // Para desarrollo local
+  "https://sofilu-ecommerce.vercel.app",
+  "http://localhost:4200",
   "https://sofilu-ecommerce-kuw79hb3s-ecely28s-projects.vercel.app",
   "https://sofilu-ecommerce-fq50p215z-ecely28s-projects.vercel.app",
   "https://sofilu-ecommerce-git-main-ecely28s-projects.vercel.app",
@@ -59,15 +60,10 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// --- ¡CORRECCIÓN CLAVE AQUÍ! ---
-// Aumentamos el límite de tamaño para el cuerpo de la petición.
-// '50mb' es un valor generoso que debería ser más que suficiente.
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // ---------------------------------
 
-// AÑADIMOS UN MIDDLEWARE DE LOGGING GLOBAL
-// Este se ejecutará para CADA petición que llegue al servidor.
 app.use((req, res, next) => {
   console.log(
     `--- GLOBAL LOG: Petición entrante: ${req.method} ${req.path} ---`
@@ -96,6 +92,7 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/variant-templates", variantTemplateRoutes);
+app.use("/api/navigation", navigationRoutes);
 
 // ==========================================================================
 // 6. ARRANQUE DEL SERVIDOR

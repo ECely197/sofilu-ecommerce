@@ -30,6 +30,11 @@ import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
 import { UiState } from '../../services/ui-state';
 import { WishlistService } from '../../services/wishlist';
+import {
+  NavigationService,
+  NavItem,
+  SubCategory,
+} from '../../services/navigation.service';
 
 // Registramos el plugin
 gsap.registerPlugin(SplitText);
@@ -48,11 +53,16 @@ export class Header implements AfterViewInit {
   private router = inject(Router);
   private zone = inject(NgZone);
   private lastScrollY = 0;
+  private navigationService = inject(NavigationService);
 
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
   public wishlistService = inject(WishlistService);
   isProfileMenuOpen = signal(false);
+
+  navItems = signal<NavItem[]>([]);
+  activeMenu = signal<NavItem | null>(null);
+  activeSubCategory = signal<SubCategory | null>(null);
 
   // Obtenemos referencias a los elementos del DOM
   @ViewChildren('navLink', { read: ElementRef }) navLinks!: QueryList<
@@ -77,6 +87,28 @@ export class Header implements AfterViewInit {
     }
 
     this.lastScrollY = currentScrollY;
+  }
+
+  ngOnInit() {
+    this.navigationService.getNavigationData().subscribe((data) => {
+      this.navItems.set(data);
+    });
+  }
+
+  handleMouseEnter(item: NavItem): void {
+    if (item.subCategories && item.subCategories.length > 0) {
+      this.activeMenu.set(item);
+      this.activeSubCategory.set(item.subCategories[0]);
+    }
+  }
+
+  handleMouseLeave(): void {
+    this.activeMenu.set(null);
+    this.activeSubCategory.set(null);
+  }
+
+  handleSubCategoryEnter(subCategory: SubCategory): void {
+    this.activeSubCategory.set(subCategory);
   }
 
   ngAfterViewInit() {
