@@ -67,9 +67,13 @@ export class ProductServices {
   }
 
   getFeaturedProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(
-      `${environment.apiUrl}/products/section/featured`
-    );
+    // Ahora tenemos dos. Para evitar confusiones, creemos un nuevo método.
+    return this.http.get<Product[]>(`${this.apiUrl}/section/featured`);
+  }
+
+  // ¡NUEVO MÉTODO!
+  getAllFeaturedProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/section/featured/all`);
   }
 
   // --- MÉTODO NUEVO ---
@@ -88,7 +92,6 @@ export class ProductServices {
   searchProducts(queryParams: {
     [param: string]: string | number | boolean;
   }): Observable<Product[]> {
-    // HttpParams nos ayuda a construir la URL de forma segura (ej: ?search=pijama&sortBy=price)
     let params = new HttpParams();
     for (const key in queryParams) {
       if (queryParams.hasOwnProperty(key)) {
@@ -96,7 +99,6 @@ export class ProductServices {
       }
     }
 
-    // Hacemos la petición a nuestra nueva ruta GET /
     return this.http.get<Product[]>(this.apiUrl, { params });
   }
 }

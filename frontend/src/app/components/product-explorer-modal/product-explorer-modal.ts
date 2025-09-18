@@ -51,29 +51,32 @@ export class ProductExplorerModalComponent implements OnInit {
 
   private originalProducts = signal<Product[]>([]);
   availableFilters = signal<Variant[]>([]);
-  filterForm!: FormGroup;
+  filterForm: FormGroup;
 
+  // --- ¡LÓGICA DE FILTRADO Y ORDENAMIENTO REFINADA! ---
   filteredProducts = computed(() => {
     let products = [...this.originalProducts()];
-    if (!this.filterForm || !this.filterForm.value) return products;
-
     const filters = this.filterForm.value;
 
-    // 1. Aplicar Filtros de Variantes
-    for (const key in filters) {
-      if (key !== 'sortBy' && filters[key] && filters[key] !== 'all') {
-        products = products.filter((p) => {
-          if (!p.variants || p.variants.length === 0) {
-            return false;
-          }
-          return p.variants.some(
-            (v) =>
-              v.name === key && v.options.some((o) => o.name === filters[key])
-          );
-        });
+    // 1. Filtrar por variantes (Color, Tamaño, etc.)
+    for (const filterKey in filters) {
+      if (
+        filterKey !== 'sortBy' &&
+        filters[filterKey] &&
+        filters[filterKey] !== 'all'
+      ) {
+        const filterValue = filters[filterKey];
+        products = products.filter((product) =>
+          product.variants.some(
+            (variant) =>
+              variant.name === filterKey &&
+              variant.options.some((option) => option.name === filterValue)
+          )
+        );
       }
     }
 
+    // 2. Ordenar
     const [sortKey, sortOrder] = (filters.sortBy || 'relevance,desc').split(
       ','
     );
@@ -102,9 +105,10 @@ export class ProductExplorerModalComponent implements OnInit {
 
   constructor() {
     this.filterForm = this.fb.group({ sortBy: ['relevance,desc'] });
+
     effect(() => {
       const data = this.productModalService.modalState();
-      if (data) {
+      if (data && data.products) {
         this.originalProducts.set(data.products);
         this.generateFiltersFromProducts(data.products);
       } else {
@@ -116,18 +120,23 @@ export class ProductExplorerModalComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  // --- ¡FUNCIÓN 'generateFiltersFromProducts' CORREGIDA! ---
   private generateFiltersFromProducts(products: Product[]): void {
     const filtersMap = new Map<string, Set<string>>();
+
+    // 1. Recopilamos todas las variantes y opciones únicas de la lista de productos
     products.forEach((product) => {
       product.variants.forEach((variant) => {
         if (!filtersMap.has(variant.name)) {
           filtersMap.set(variant.name, new Set());
         }
-        const optionsSet = filtersMap.get(variant.name)!;
-        variant.options.forEach((option) => optionsSet.add(option.name));
+        variant.options.forEach((option) =>
+          filtersMap.get(variant.name)!.add(option.name)
+        );
       });
     });
 
+    // 2. Creamos la estructura de datos para la plantilla (HTML)
     const newFilters: Variant[] = [];
     filtersMap.forEach((optionsSet, name) => {
       newFilters.push({
@@ -139,12 +148,20 @@ export class ProductExplorerModalComponent implements OnInit {
     });
     this.availableFilters.set(newFilters);
 
+    // 3. Reconstruimos el FormGroup CON LOS CONTROLES CORRECTOS
     const newFormControls: { [key: string]: any } = {
       sortBy: 'relevance,desc',
     };
     newFilters.forEach((filter) => {
+      // El nombre del control (ej: 'Tamaño') ahora coincide con 'filter.name'
       newFormControls[filter.name] = 'all';
     });
-    this.filterForm = this.fb.group(newFormControls);
+
+    // Si el FormGroup ya existe, lo actualizamos. Si no, lo creamos.
+    if (this.filterForm) {
+      this.filterForm = this.fb.group(newFormControls);
+    } else {
+      this.filterForm = this.fb.group(newFormControls);
+    }
   }
 }
