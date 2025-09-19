@@ -49,9 +49,9 @@ router.get("/id/:id", async (req, res) => {
 
 // --- CREAR UNA NUEVA CATEGORÍA (Solo Admin) ---
 router.post("/", [authMiddleware, adminOnly], async (req, res) => {
-  const { name, imageUrl } = req.body;
+  const { name, imageUrl, section } = req.body;
   // Ya no generamos el slug aquí
-  const newCategory = new Category({ name, imageUrl });
+  const newCategory = new Category({ name, imageUrl, section });
   try {
     const savedCategory = await newCategory.save();
     res.status(201).json(savedCategory);
@@ -70,13 +70,13 @@ router.post("/", [authMiddleware, adminOnly], async (req, res) => {
 
 // --- ACTUALIZAR UNA CATEGORÍA (Solo Admin) ---
 router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
-  const { name, imageUrl } = req.body;
+  const { name, imageUrl, section } = req.body;
   // Ya no generamos el slug aquí
   try {
     // Al actualizar el 'name', el hook pre-save del modelo se encargará del slug
     const updatedCategory = await Category.findByIdAndUpdate(
       req.params.id,
-      { name, imageUrl },
+      { name, imageUrl, section },
       { new: true }
     );
     if (!updatedCategory) {

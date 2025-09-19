@@ -38,7 +38,7 @@ export class CategoryService {
 
   // Obtener una categoría por su ID (para el formulario de edición)
   getCategoryById(id: string): Observable<Category> {
-    return this.http.get<Category>(`${this.apiUrl}/${id}`);
+    return this.http.get<Category>(`${this.apiUrl}/id/${id}`);
   }
 
   // Crear una nueva categoría
