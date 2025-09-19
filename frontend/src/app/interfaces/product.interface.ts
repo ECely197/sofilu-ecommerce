@@ -2,6 +2,7 @@
 
 // Importamos la interfaz Category para poder usarla como tipo
 import { Category } from '../services/category.service';
+import { Vendor } from '../services/vendor.service';
 
 export interface Option {
   name: string;
@@ -19,6 +20,8 @@ export interface Product {
   _id: string;
   name: string;
   description: string;
+  sku?: string;
+  vendor?: Vendor;
   price: number;
   costPrice?: number;
   category: Category;

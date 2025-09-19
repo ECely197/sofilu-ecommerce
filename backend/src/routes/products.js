@@ -121,68 +121,91 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    const {
+      name,
+      description,
+      sku,
+      vendor,
+      price,
+      costPrice,
+      category,
+      images,
+      isFeatured,
+      isOnSale,
+      salePrice,
+      variants,
+    } = req.body;
+
+    const newProduct = new Product({
+      name,
+      description,
+      sku,
+      vendor,
+      price,
+      costPrice,
+      category,
+      images,
+      isFeatured,
+      isOnSale,
+      salePrice,
+      variants,
+    });
+
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
     console.error("Error al crear el producto:", error);
     res.status(400).json({
       message: "Error de validación al crear el producto.",
-      error: error.message,
+      details: error.message,
     });
   }
 });
 
+// --- ACTUALIZAR UN PRODUCTO ---
 router.put("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    // --- LOG DE DEPURACIÓN DETALLADO ---
     console.log(
-      `--- BACKEND TRACE: Petición PUT recibida para el producto ID: ${req.params.id} ---`
+      `--- BACKEND TRACE: Petición PUT para producto ID: ${req.params.id} ---`
     );
-    console.log("--- BACKEND TRACE: Datos recibidos en req.body: ---");
-    console.log(JSON.stringify(req.body, null, 2));
+    console.log(
+      "--- BACKEND TRACE: Datos recibidos:",
+      JSON.stringify(req.body, null, 2)
+    );
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body }, // <--- ¡LA CORRECCIÓN CLAVE ESTÁ AQUÍ!
-      { new: true, runValidators: true, context: "query" } // Añadimos context: 'query' para asegurar que los validadores se ejecuten bien con $set
+      { $set: req.body },
+      { new: true, runValidators: true, context: "query" }
     );
 
     if (!updatedProduct) {
-      console.error(
-        `--- BACKEND TRACE: ERROR - Producto con ID ${req.params.id} no encontrado para actualizar.`
-      );
       return res
         .status(404)
         .json({ message: "Producto no encontrado para actualizar" });
     }
 
-    console.log(
-      "--- BACKEND TRACE: Producto actualizado con éxito en la BBDD. ---"
-    );
+    console.log("--- BACKEND TRACE: Producto actualizado con éxito. ---");
     res.json(updatedProduct);
   } catch (error) {
-    // --- LOG DE ERROR DETALLADO ---
     console.error(
-      "--- BACKEND TRACE: ¡ERROR! La operación .findByIdAndUpdate() ha fallado. ---"
+      "--- BACKEND TRACE: ERROR en .findByIdAndUpdate() ---",
+      error
     );
-    console.error(error); // Mostramos el error completo de Mongoose
-
-    // ¡MEJORA! Verificamos si es un error de validación de Mongoose
     if (error.name === "ValidationError") {
       return res.status(400).json({
-        message: "Error de validación. Revisa los datos enviados.",
-        details: error.message, // El mensaje de Mongoose es muy descriptivo
+        message: "Error de validación.",
+        details: error.message,
       });
     }
-
-    // Si es otro tipo de error, mantenemos la respuesta genérica
     res.status(500).json({
       message: "Error interno del servidor al actualizar el producto.",
       details: error.message,
     });
   }
 });
+
+// Eliminar un producto por ID
 router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const deletedProduct = await Product.findByIdAndDelete(req.params.id);

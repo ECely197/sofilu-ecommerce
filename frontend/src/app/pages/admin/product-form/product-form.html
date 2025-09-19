@@ -186,6 +186,27 @@
 
     <div class="card">
       <h2 class="card-title">Organización</h2>
+      <div class="material-field">
+        <input
+          id="sku"
+          type="text"
+          formControlName="sku"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="sku" class="material-label">SKU (Código de Producto)</label>
+      </div>
+
+      <div class="form-field has-arrow">
+        <label for="vendor">Vendedor / Proveedor (Opcional)</label>
+        <select id="vendor" formControlName="vendor" class="form-input">
+          <option [ngValue]="null">Ninguno</option>
+          <!-- Opción para no asignar vendedor -->
+          @for (vend of vendors(); track vend._id) {
+          <option [value]="vend._id">{{ vend.name }}</option>
+          }
+        </select>
+      </div>
       <div class="form-field has-arrow">
         <label for="category">Categoría</label>
         <select id="category" formControlName="category" class="form-input">

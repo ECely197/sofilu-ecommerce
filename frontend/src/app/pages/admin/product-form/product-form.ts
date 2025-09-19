@@ -15,6 +15,7 @@ import { ProductServices } from '../../../services/product';
 import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
 import { ToastService } from '../../../services/toast.service';
+import { VendorService, Vendor } from '../../../services/vendor.service';
 // ¡NUEVAS IMPORTACIONES CORRECTAS!
 import {
   VariantTemplateService,
@@ -48,11 +49,12 @@ export class ProductForm implements OnInit {
   private categoryService = inject(CategoryService);
   private toastService = inject(ToastService);
   private variantTemplateService = inject(VariantTemplateService);
+  private vendorService = inject(VendorService);
 
   productForm!: FormGroup;
   isEditMode = signal(false);
   private productId: string | null = null;
-
+  vendors = signal<Vendor[]>([]);
   categories = signal<Category[]>([]);
   imagePreviews = signal<string[]>([]);
   private selectedFiles: File[] = [];
@@ -63,6 +65,8 @@ export class ProductForm implements OnInit {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
+      sku: [''],
+      vendor: [null],
       price: [null, [Validators.min(0)]],
       costPrice: [null, [Validators.min(0)]],
       category: [null, Validators.required],
@@ -76,6 +80,10 @@ export class ProductForm implements OnInit {
     this.categoryService
       .getCategories()
       .subscribe((cats) => this.categories.set(cats));
+
+    this.vendorService
+      .getVendors()
+      .subscribe((vends) => this.vendors.set(vends));
 
     this.variantTemplateService.getTemplates().subscribe((templates) => {
       this.variantTemplates.set(templates);
@@ -95,6 +103,8 @@ export class ProductForm implements OnInit {
           this.productForm.patchValue({
             name: product.name,
             description: product.description,
+            sku: product.sku,
+            vendor: (product.vendor as Vendor)?._id,
             price: product.price,
             costPrice: product.costPrice,
             category: categoryId,
@@ -200,12 +210,11 @@ export class ProductForm implements OnInit {
   private saveProductData(): void {
     const formValue = this.productForm.getRawValue();
 
-    // Construimos el payload, asegurándonos de incluir TODOS los campos necesarios.
     const productPayload = {
       name: formValue.name,
       description: formValue.description,
       price: formValue.price,
-      costPrice: formValue.costPrice, // <-- Campo que faltaba
+      costPrice: formValue.costPrice,
       category: formValue.category,
       images: formValue.images,
       isFeatured: formValue.isFeatured,
