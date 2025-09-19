@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
+import { Section } from './section.service';
 
 // Opcional: Crear una interfaz para tipado fuerte
 export interface Category {
@@ -10,6 +11,7 @@ export interface Category {
   name: string;
   slug: string;
   imageUrl: string;
+  section: string | Section;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,6 +45,7 @@ export class CategoryService {
   createCategory(categoryData: {
     name: string;
     imageUrl: string;
+    section: string;
   }): Observable<Category> {
     return this.http.post<Category>(this.apiUrl, categoryData);
   }
@@ -50,7 +53,7 @@ export class CategoryService {
   // Actualizar una categoría
   updateCategory(
     id: string,
-    categoryData: { name: string; imageUrl: string }
+    categoryData: { name: string; imageUrl: string; section: string }
   ): Observable<Category> {
     return this.http.put<Category>(`${this.apiUrl}/${id}`, categoryData);
   }

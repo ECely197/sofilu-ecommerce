@@ -37,6 +37,7 @@ import { InvoiceViewComponent } from './pages/admin/invoice-view/invoice-view';
 import { CategoryList } from './pages/admin/category-list/category-list';
 import { CategoryFormComponent } from './pages/admin/category-form/category-form';
 import { VariantTemplatesComponent } from './pages/admin/variant-templates/variant-templates';
+import { SectionsComponent } from './pages/admin/sections/sections';
 
 export const routes: Routes = [
   // --- Rutas del Cliente (Públicas y para usuarios) ---
@@ -101,6 +102,7 @@ export const routes: Routes = [
       { path: 'categories/new', component: CategoryFormComponent },
       { path: 'categories/edit/:id', component: CategoryFormComponent },
       { path: 'variant-templates', component: VariantTemplatesComponent },
+      { path: 'sections', component: SectionsComponent },
     ],
   },
 

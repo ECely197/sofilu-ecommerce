@@ -13,6 +13,7 @@
   <div class="main-column">
     <div class="card">
       <h2 class="card-title">Detalles de la Categoría</h2>
+
       <div class="form-field">
         <label for="name">Nombre de la categoría</label>
         <input
@@ -21,6 +22,17 @@
           formControlName="name"
           class="form-input"
         />
+      </div>
+
+      <!-- ¡NUEVO SELECTOR DE SECCIÓN! -->
+      <div class="form-field has-arrow">
+        <label for="section">Asignar a Sección</label>
+        <select id="section" formControlName="section" class="form-input">
+          <option [ngValue]="null" disabled>Selecciona una sección...</option>
+          @for (sec of sections(); track sec._id) {
+          <option [value]="sec._id">{{ sec.name }}</option>
+          }
+        </select>
       </div>
     </div>
   </div>

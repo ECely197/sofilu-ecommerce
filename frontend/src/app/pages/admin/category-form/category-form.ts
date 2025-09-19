@@ -13,6 +13,7 @@ import {
 import { CategoryService } from '../../../services/category.service';
 import { StorageService } from '../../../services/storage';
 import { RippleDirective } from '../../../directives/ripple';
+import { SectionService, Section } from '../../../services/section.service';
 import { ToastService } from '../../../services/toast.service';
 
 @Component({
@@ -23,27 +24,33 @@ import { ToastService } from '../../../services/toast.service';
   styleUrl: './category-form.scss',
 })
 export class CategoryFormComponent implements OnInit {
-  private fb = inject(FormBuilder); // Inyección de FormBuilder
+  private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private categoryService = inject(CategoryService);
   private storageService = inject(StorageService);
   private toastService = inject(ToastService);
+  private sectionService = inject(SectionService);
 
   categoryForm!: FormGroup; // Se inicializa en ngOnInit
   isEditMode = signal(false);
   private categoryId: string | null = null;
+  sections = signal<Section[]>([]);
 
   imagePreview = signal<string | null>(null);
   private selectedFile: File | null = null;
   isUploading = signal(false);
 
   ngOnInit(): void {
-    // Inicializamos el formulario usando el FormBuilder inyectado
     this.categoryForm = this.fb.group({
       name: ['', Validators.required],
-      imageUrl: [''], // Este campo es requerido, pero lo llenamos después de subir la imagen
+      imageUrl: [''],
+      section: [null, Validators.required],
     });
+
+    this.sectionService
+      .getSections()
+      .subscribe((data) => this.sections.set(data));
 
     this.categoryId = this.route.snapshot.paramMap.get('id');
     if (this.categoryId) {
@@ -51,7 +58,14 @@ export class CategoryFormComponent implements OnInit {
       this.categoryService
         .getCategoryById(this.categoryId)
         .subscribe((category) => {
-          this.categoryForm.patchValue(category);
+          this.categoryForm.patchValue({
+            name: category.name,
+            imageUrl: category.imageUrl,
+            section:
+              typeof category.section === 'string'
+                ? category.section
+                : (category.section as Section)?._id,
+          });
           this.imagePreview.set(category.imageUrl);
         });
     }
@@ -62,18 +76,14 @@ export class CategoryFormComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
       this.imagePreview.set(URL.createObjectURL(this.selectedFile));
-      // Importante: Si se selecciona una imagen nueva, el campo imageUrl ya no es válido hasta que se suba.
-      // Pero no necesitamos cambiar el validador, lo manejamos en el handleSubmit.
     }
   }
 
   handleSubmit(): void {
     console.log('--- CategoryForm: handleSubmit disparado. ---');
 
-    // 1. Marcamos los campos para mostrar errores de validación (ej: nombre vacío)
     this.categoryForm.markAllAsTouched();
 
-    // 2. Comprobamos si el resto del formulario es válido
     if (this.categoryForm.get('name')?.invalid) {
       this.toastService.show(
         'Por favor, introduce un nombre para la categoría.',
@@ -82,8 +92,6 @@ export class CategoryFormComponent implements OnInit {
       return;
     }
 
-    // 3. ¡VALIDACIÓN MANUAL DE LA IMAGEN!
-    // Debe haber una imagen ya cargada (en modo edición) O un nuevo archivo seleccionado.
     const hasExistingImage =
       this.isEditMode() && this.categoryForm.value.imageUrl;
     const hasNewFile = !!this.selectedFile;
@@ -96,9 +104,16 @@ export class CategoryFormComponent implements OnInit {
       return;
     }
 
+    if (this.categoryForm.invalid) {
+      this.toastService.show(
+        'Por favor, completa todos los campos requeridos.',
+        'error'
+      );
+      return;
+    }
+
     console.log('--- VALIDACIÓN SUPERADA ---');
 
-    // 4. Lógica de subida de imagen (si es necesario)
     if (this.selectedFile) {
       this.isUploading.set(true);
       this.storageService.uploadImage(this.selectedFile).subscribe({
@@ -111,17 +126,13 @@ export class CategoryFormComponent implements OnInit {
           console.error('Error de subida:', err);
         },
       });
-    }
-    // 5. Si no hay archivo nuevo, guardamos con la URL existente
-    else {
+    } else {
       this.saveCategory(this.categoryForm.value.imageUrl);
     }
   }
 
   private saveCategory(imageUrl: string): void {
-    // Actualizamos el valor de imageUrl en el formulario antes de enviarlo
     this.categoryForm.patchValue({ imageUrl: imageUrl });
-
     const categoryData = this.categoryForm.value;
 
     const operation = this.isEditMode()
@@ -131,7 +142,8 @@ export class CategoryFormComponent implements OnInit {
     operation.subscribe({
       next: () => {
         this.toastService.show(
-          `Categoría ${this.isEditMode() ? 'actualizada' : 'creada'} con éxito`
+          `Categoría ${this.isEditMode() ? 'actualizada' : 'creada'} con éxito`,
+          'success'
         );
         this.router.navigate(['/admin/categories']);
       },
