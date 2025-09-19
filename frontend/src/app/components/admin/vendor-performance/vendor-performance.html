@@ -1,0 +1,46 @@
+<div class="card">
+  <h2 class="card-title">Rendimiento por Vendedor</h2>
+  @if (isLoading()) {
+  <p>Calculando métricas...</p>
+  } @else {
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Vendedor</th>
+          <th>Productos Activos</th>
+          <th>Valor Inventario (Costo)</th>
+          <th>Valor Inventario (Venta)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(stat of stats(); track stat.vendorName) {
+        <tr>
+          <td class="vendor-name">{{ stat.vendorName }}</td>
+          <td>{{ stat.totalProducts }}</td>
+          <td>
+            {{
+              stat.totalInventoryCostValue
+                | currency : "COP" : "symbol" : "1.0-0"
+            }}
+          </td>
+          <td>
+            {{
+              stat.totalInventorySaleValue
+                | currency : "COP" : "symbol" : "1.0-0"
+            }}
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="4" class="empty-message">
+            No hay datos de vendedores para mostrar. Asigna vendedores a tus
+            productos.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

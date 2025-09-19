@@ -12,11 +12,17 @@ import {
   stagger,
   query,
 } from '@angular/animations';
+import { VendorPerformanceComponent } from '../../../components/admin/vendor-performance/vendor-performance';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, RippleDirective],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RippleDirective,
+    VendorPerformanceComponent,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   animations: [

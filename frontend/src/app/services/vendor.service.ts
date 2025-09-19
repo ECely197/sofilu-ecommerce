@@ -8,6 +8,12 @@ export interface Vendor {
   _id: string;
   name: string;
 }
+export interface VendorStats {
+  vendorName: string;
+  totalProducts: number;
+  totalInventorySaleValue: number;
+  totalInventoryCostValue: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -26,5 +32,9 @@ export class VendorService {
 
   deleteVendor(vendorId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${vendorId}`);
+  }
+
+  getVendorStats(): Observable<VendorStats[]> {
+    return this.http.get<VendorStats[]>(`${this.apiUrl}/stats`);
   }
 }

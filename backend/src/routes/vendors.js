@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const Vendor = require("../models/Vendor");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
+const Product = require("../models/Product");
 
 // Middleware de protección para todas las rutas
 router.use(authMiddleware, adminOnly);
@@ -38,14 +39,88 @@ router.post("/", async (req, res) => {
 // DELETE para eliminar un vendedor
 router.delete("/:id", async (req, res) => {
   try {
-    // En el futuro, aquí se podría añadir una lógica para verificar si el vendedor
-    // tiene productos asociados antes de permitir su eliminación.
     const deleted = await Vendor.findByIdAndDelete(req.params.id);
     if (!deleted)
       return res.status(404).json({ message: "Vendedor no encontrado" });
     res.json({ message: "Vendedor eliminado" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar el vendedor" });
+  }
+});
+
+router.get("/stats", async (req, res) => {
+  try {
+    const vendorStats = await Product.aggregate([
+      { $match: { vendor: { $exists: true, $ne: null } } },
+
+      {
+        $lookup: {
+          from: "vendors",
+          localField: "vendor",
+          foreignField: "_id",
+          as: "vendorInfo",
+        },
+      },
+
+      { $unwind: "$vendorInfo" },
+
+      {
+        $project: {
+          vendorName: "$vendorInfo.name",
+          inventorySaleValue: {
+            $sum: {
+              $map: {
+                input: "$variants",
+                as: "variant",
+                in: { $sum: "$$variant.options.stock" },
+              },
+            },
+          },
+          inventoryCostValue: {
+            $sum: {
+              $map: {
+                input: "$variants",
+                as: "variant",
+                in: {
+                  $multiply: [
+                    "$$variant.options.costPrice",
+                    "$$variant.options.stock",
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: "$vendorName",
+          totalProducts: { $sum: 1 },
+          totalInventorySaleValue: { $sum: "$inventorySaleValue" },
+          totalInventoryCostValue: { $sum: "$inventoryCostValue" },
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          vendorName: "$_id",
+          totalProducts: 1,
+          totalInventorySaleValue: 1,
+          totalInventoryCostValue: 1,
+        },
+      },
+
+      { $sort: { vendorName: 1 } },
+    ]);
+
+    res.json(vendorStats);
+  } catch (error) {
+    console.error("Error al obtener estadísticas de vendedores:", error);
+    res
+      .status(500)
+      .json({ message: "Error al obtener estadísticas de vendedores" });
   }
 });
 

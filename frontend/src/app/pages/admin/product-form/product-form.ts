@@ -213,20 +213,22 @@ export class ProductForm implements OnInit {
     const productPayload = {
       name: formValue.name,
       description: formValue.description,
+      sku: formValue.sku,
+      vendor: formValue.vendor,
+      category: formValue.category,
       price: formValue.price,
       costPrice: formValue.costPrice,
-      category: formValue.category,
-      images: formValue.images,
-      isFeatured: formValue.isFeatured,
       isOnSale: formValue.isOnSale,
       salePrice: formValue.isOnSale ? formValue.salePrice : null,
+      images: formValue.images,
+      isFeatured: formValue.isFeatured,
       variants: formValue.variants.map((variant: any) => ({
         name: variant.name,
         options: variant.options.map((option: any) => ({
           name: option.name,
           priceModifier: option.priceModifier,
           stock: option.stock,
-          costPrice: option.costPrice, // <-- Campo que faltaba
+          costPrice: option.costPrice,
         })),
       })),
     };

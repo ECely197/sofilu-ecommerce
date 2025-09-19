@@ -1,0 +1,93 @@
+// Importamos las variables y estilos compartidos del admin
+@use "../../../../pages/admin/_admin-shared.scss";
+
+:host {
+  display: block;
+}
+
+// Estilo de la tarjeta principal que envuelve todo el componente
+.card {
+  // Estos estilos ya deberían estar aplicados globalmente a los .card del admin,
+  // pero los repetimos aquí para asegurar que el componente sea autocontenido.
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-family: "Baloo 2", serif;
+}
+
+// Contenedor para hacer la tabla scrolleable en pantallas pequeñas
+.table-wrapper {
+  overflow-x: auto;
+
+  // Estilos para la barra de scroll (opcional pero elegante)
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--soft-white);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--soft-gray);
+    border-radius: 3px;
+  }
+}
+
+// Estilos de la tabla
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; // Ancho mínimo para evitar que el contenido se comprima demasiado
+}
+
+thead {
+  th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border);
+  }
+}
+
+tbody {
+  tr {
+    transition: background-color 0.2s ease-in-out;
+    &:hover {
+      background-color: var(--soft-white);
+    }
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+  }
+
+  tr:last-child td {
+    border-bottom: none; // Quitamos el borde de la última fila
+  }
+}
+
+.vendor-name {
+  font-weight: 700;
+}
+
+// Mensaje para cuando no hay datos
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
