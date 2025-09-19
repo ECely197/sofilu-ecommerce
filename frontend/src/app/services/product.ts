@@ -98,7 +98,6 @@ export class ProductServices {
         params = params.set(key, queryParams[key]);
       }
     }
-
     return this.http.get<Product[]>(this.apiUrl, { params });
   }
 }

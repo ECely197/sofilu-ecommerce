@@ -23,6 +23,7 @@ router.get("/", async (req, res) => {
         $or: [
           { name: { $regex: search, $options: "i" } },
           { description: { $regex: search, $options: "i" } },
+          { sku: { $regex: search, $options: "i" } },
         ],
       };
     }
@@ -35,7 +36,9 @@ router.get("/", async (req, res) => {
       sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
     }
 
-    const products = await Product.find(query).sort(sortOptions);
+    const products = await Product.find(query)
+      .populate("vendor")
+      .sort(sortOptions);
 
     res.json(products);
   } catch (error) {
