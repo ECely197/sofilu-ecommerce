@@ -27,8 +27,12 @@ router.use(authMiddleware, adminOnly);
 // --- CREAR UNA NUEVA SECCIÓN (Admin) ---
 router.post("/", async (req, res) => {
   const { name } = req.body;
+  const slug = name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "");
 
-  const newSection = new Section({ name });
+  const newSection = new Section({ name, slug });
 
   try {
     const savedSection = await newSection.save();
