@@ -1,0 +1,60 @@
+<header class="page-header">
+  <h1>Gestionar Vendedores / Proveedores</h1>
+</header>
+
+<div class="vendors-layout">
+  <!-- Columna del Formulario -->
+  <div class="form-column">
+    <div class="card">
+      <h2 class="card-title">Añadir Nuevo Vendedor</h2>
+      <form [formGroup]="vendorForm" (ngSubmit)="handleSubmit()">
+        <p class="form-description">
+          Registra los diferentes proveedores o marcas de tus productos.
+        </p>
+        <div class="material-field">
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="name" class="material-label">Nombre del Vendedor</label>
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="vendorForm.invalid || isSaving()"
+            class="btn btn-primary"
+            appRipple
+          >
+            {{ isSaving() ? "Guardando..." : "Guardar Vendedor" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <hr />
+  <!-- Columna de la Lista -->
+  <div class="list-column">
+    <div class="card">
+      <h2 class="card-title">Vendedores Existentes</h2>
+      @if (isLoading()) {
+      <p>Cargando...</p>
+      } @else {
+      <div class="vendors-list">
+        @for (vendor of vendors(); track vendor._id) {
+        <div class="vendor-item">
+          <span class="vendor-name">{{ vendor.name }}</span>
+          <button (click)="deleteVendor(vendor)" class="delete-button-tiny">
+            ✖
+          </button>
+        </div>
+        } @empty {
+        <p class="empty-message">No has registrado ningún vendedor.</p>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+// Reutilizamos los mismos estilos de la página de Secciones
+@use "../sections/sections.scss";
+
+.vendor-name {
+  font-style: italic;
+}
