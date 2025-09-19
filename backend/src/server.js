@@ -21,6 +21,7 @@ const categoryRoutes = require("./routes/categories");
 const variantTemplateRoutes = require("./routes/variantTemplates");
 const navigationRoutes = require("./routes/navigation");
 const sectionRoutes = require("./routes/sections");
+const vendorRoutes = require("./routes/vendors");
 
 // ==========================================================================
 // 2. INICIALIZACIÓN
@@ -95,6 +96,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/variant-templates", variantTemplateRoutes);
 app.use("/api/navigation", navigationRoutes);
 app.use("/api/sections", sectionRoutes);
+app.use("/api/vendors", vendorRoutes);
 
 // ==========================================================================
 // 6. ARRANQUE DEL SERVIDOR
