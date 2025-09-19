@@ -1,0 +1,52 @@
+@use "../../../../../buttons";
+@use "../../../../forms";
+@use "../_admin-shared.scss";
+
+.sections-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.form-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: -1rem 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background-color: var(--soft-white);
+}
+
+.section-name {
+  font-weight: 600;
+}
+
+.empty-message {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
+}

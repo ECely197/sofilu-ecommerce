@@ -1,0 +1,61 @@
+<header class="page-header">
+  <h1>Gestionar Secciones</h1>
+</header>
+
+<div class="sections-layout">
+  <!-- Columna del Formulario -->
+  <div class="form-column">
+    <div class="card">
+      <h2 class="card-title">Crear Nueva Sección</h2>
+      <form [formGroup]="sectionForm" (ngSubmit)="handleSubmit()">
+        <p class="form-description">
+          Las secciones agrupan tus categorías principales (ej. "Productos",
+          "Servicios", "Blog").
+        </p>
+        <div class="material-field">
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="name" class="material-label">Nombre de la Sección</label>
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            [disabled]="sectionForm.invalid || isSaving()"
+            class="btn btn-primary"
+            appRipple
+          >
+            {{ isSaving() ? "Guardando..." : "Guardar Sección" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Columna de la Lista -->
+  <div class="list-column">
+    <div class="card">
+      <h2 class="card-title">Secciones Existentes</h2>
+      @if (isLoading()) {
+      <p>Cargando...</p>
+      } @else {
+      <div class="sections-list">
+        @for (section of sections(); track section._id) {
+        <div class="section-item">
+          <span class="section-name">{{ section.name }}</span>
+          <button (click)="deleteSection(section)" class="delete-button-tiny">
+            ✖
+          </button>
+        </div>
+        } @empty {
+        <p class="empty-message">No has creado ninguna sección todavía.</p>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

@@ -8,6 +8,7 @@ const categorySchema = new Schema(
     name: { type: String, required: true, trim: true },
     slug: { type: String, unique: true, lowercase: true, trim: true },
     imageUrl: { type: String, required: true },
+    section: { type: Schema.Types.ObjectId, ref: "Section", required: true },
   },
   { timestamps: true }
 );

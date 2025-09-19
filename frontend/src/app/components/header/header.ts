@@ -54,6 +54,7 @@ export class Header implements AfterViewInit {
   private zone = inject(NgZone);
   private lastScrollY = 0;
   private navigationService = inject(NavigationService);
+  private elementRef = inject(ElementRef);
 
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
@@ -79,7 +80,7 @@ export class Header implements AfterViewInit {
 
     // Si estamos haciendo scroll hacia abajo Y hemos pasado el inicio de la página
     if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      gsap.to(headerPill, { y: -100, duration: 0.3, ease: 'power2.inOut' });
+      gsap.to(headerPill, { y: -400, duration: 0.3, ease: 'power2.inOut' });
     }
     // Si estamos haciendo scroll hacia arriba
     else {
@@ -90,25 +91,57 @@ export class Header implements AfterViewInit {
   }
 
   ngOnInit() {
-    this.navigationService.getNavigationData().subscribe((data) => {
-      this.navItems.set(data);
-    });
+    this.navigationService
+      .getNavigationData()
+      .subscribe((data) => this.navItems.set(data));
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.closeMegaMenu();
+      });
   }
 
-  handleMouseEnter(item: NavItem): void {
-    if (item.subCategories && item.subCategories.length > 0) {
-      this.activeMenu.set(item);
-      this.activeSubCategory.set(item.subCategories[0]);
+  // --- LÓGICA DEL MEGA MENÚ HÍBRIDO ---
+
+  // 1. HostListener para cerrar con clic externo
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (
+      this.activeMenu() &&
+      !this.elementRef.nativeElement.contains(event.target)
+    ) {
+      this.closeMegaMenu();
     }
   }
 
-  handleMouseLeave(): void {
-    this.activeMenu.set(null);
-    this.activeSubCategory.set(null);
+  // 2. Abrir con hover (mouseenter)
+  handleMouseEnter(item: NavItem): void {
+    if (item.subCategories && item.subCategories.length > 0) {
+      this.activeMenu.set(item);
+      if (
+        !this.activeSubCategory() ||
+        !item.subCategories.find((s) => s.id === this.activeSubCategory()?.id)
+      ) {
+        this.activeSubCategory.set(item.subCategories[0]);
+      }
+    } else {
+      // Si el item no tiene subcategorías (como "Inicio"), cerramos cualquier menú abierto
+      this.closeMegaMenu();
+    }
+  }
+
+  // 3. Este método ahora solo evita que el clic en el nav cierre el menú
+  onNavClick(event: MouseEvent): void {
+    event.stopPropagation();
   }
 
   handleSubCategoryEnter(subCategory: SubCategory): void {
     this.activeSubCategory.set(subCategory);
+  }
+
+  closeMegaMenu(): void {
+    this.activeMenu.set(null);
+    this.activeSubCategory.set(null);
   }
 
   ngAfterViewInit() {

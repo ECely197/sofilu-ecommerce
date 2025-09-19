@@ -1,4 +1,4 @@
-<header (mouseleave)="handleMouseLeave()" class="sofilu-header">
+<header class="sofilu-header">
   <div class="header-pill">
     <!-- LOGO (IZQUIERDA) -->
     <div class="logo-wrapper">
@@ -17,14 +17,12 @@
 
       @for (item of navItems(); track item.id) {
       <div
-        (mouseenter)="handleMouseEnter(item)"
-        (mouseleave)="handleMouseLeave()"
+        #navLink
         class="nav-item-wrapper"
+        (mouseenter)="handleMouseEnter(item)"
       >
         <a
-          [routerLink]="item.slug"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: item.slug === '/' }"
+          [routerLink]="item.subCategories.length === 0 ? item.slug : null"
           class="nav-link"
         >
           <span class="nav-text-original">{{ item.name }}</span>
@@ -36,17 +34,83 @@
 
     <!-- ACCIONES (DERECHA) -->
     <div class="header-right">
-      <!-- ... (El código de la búsqueda, wishlist, carrito y perfil no cambia) ... -->
+      <div class="header-right">
+        <form class="search-form" (submit)="handleSearch($event, searchInput)">
+          <span class="material-symbols-outlined search-icon">search</span>
+          <input
+            #searchInput
+            type="text"
+            placeholder="Buscar..."
+            class="search-input"
+          />
+        </form>
+
+        <button
+          (click)="uiStateService.openWishlistFlyout()"
+          class="icon-button"
+          aria-label="Abrir lista de deseos"
+        >
+          <span class="material-symbols-outlined">favorite</span>
+          @if (wishlistService.wishlistProductIds().length > 0) {
+          <span class="wishlist-badge">{{
+            wishlistService.wishlistProductIds().length
+          }}</span>
+          }
+        </button>
+
+        <button
+          (click)="uiStateService.openCartFlyout()"
+          class="icon-button"
+          aria-label="Abrir carrito"
+        >
+          <span class="material-symbols-outlined">shopping_bag</span>
+          @if (cartService.totalItems() > 0) {
+          <span class="cart-badge">{{ cartService.totalItems() }}</span>
+          }
+        </button>
+
+        @if (currentUser$ | async; as user) {
+        <div class="profile-container">
+          <button (click)="toggleProfileMenu($event)" class="profile-button">
+            <span>{{ user.email?.charAt(0)?.toUpperCase() }}</span>
+          </button>
+          @if (isProfileMenuOpen()) {
+          <div #profileMenu class="profile-menu">
+            <!-- Quitamos la animación @flyInOut de aquí -->
+            <div class="menu-header">
+              @if(user.email) {
+              <p class="user-email">{{ user.email }}</p>
+              }
+            </div>
+            <div class="menu-links">
+              <a routerLink="/account" (click)="toggleProfileMenu()"
+                >Mi Cuenta</a
+              >
+              @if(isAdmin$ | async) {
+              <a routerLink="/admin" (click)="toggleProfileMenu()"
+                >Panel de Admin</a
+              >
+              }
+            </div>
+            <div class="menu-footer">
+              <button (click)="logout()" class="logout-button">
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <a routerLink="/login" class="login-button btn btn-primary"
+          >Iniciar Sesión</a
+        >
+        }
+      </div>
     </div>
   </div>
 
-  <!-- ¡MEGA MENÚ FLOTANTE! (La lógica interna no cambia) -->
-  <div
-    class="mega-menu-container"
-    [class.is-active]="activeMenu()"
-    (mouseenter)="handleMouseEnter(activeMenu()!)"
-    (mouseleave)="handleMouseLeave()"
-  >
+  <!-- ¡MEGA MENÚ-->
+  <div class="mega-menu-container" [class.is-active]="activeMenu()">
     @if (activeMenu(); as menu) {
     <div class="mega-menu-card">
       <!-- Columna Izquierda: Subcategorías -->
@@ -63,21 +127,26 @@
         }
       </div>
       <!-- Columna Derecha: Previsualización de Productos -->
-      <div class="product-preview-grid">
-        @if (activeSubCategory(); as subCat) { @for (product of subCat.products;
-        track product._id) {
-        <a
-          [routerLink]="['/product', product._id]"
-          class="preview-product-card"
-        >
-          @if(product.images.length > 0) {
-          <img [src]="product.images[0]" [alt]="product.name" />
-          } @else {
-          <div class="image-placeholder"></div>
+      <div class="product-preview-container">
+        @if (activeSubCategory(); as subCat) {
+        <div class="product-preview-grid">
+          @for (product of subCat.products; track product._id) {
+          <a
+            [routerLink]="['/product', product._id]"
+            class="preview-product-card"
+          >
+            <div class="preview-image-wrapper">
+              @if(product.images.length > 0) {
+              <img [src]="product.images[0]" [alt]="product.name" />
+              } @else {
+              <div class="image-placeholder"></div>
+              }
+            </div>
+            <p>{{ product.name }}</p>
+          </a>
           }
-          <p>{{ product.name }}</p>
-        </a>
-        } }
+        </div>
+        }
       </div>
     </div>
     }
