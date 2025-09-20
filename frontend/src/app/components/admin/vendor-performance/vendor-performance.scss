@@ -7,8 +7,7 @@
 
 // Estilo de la tarjeta principal que envuelve todo el componente
 .card {
-  // Estos estilos ya deberían estar aplicados globalmente a los .card del admin,
-  // pero los repetimos aquí para asegurar que el componente sea autocontenido.
+  width: 650px;
   background-color: white;
   border-radius: 1rem;
   padding: 1.5rem;
