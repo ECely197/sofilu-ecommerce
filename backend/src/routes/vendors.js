@@ -49,7 +49,7 @@ router.get("/stats", async (req, res) => {
                       in: {
                         $multiply: [
                           "$$option.stock",
-                          { $add: ["$price", "$$option.priceModifier"] },
+                          { $add: ["$price", "$$option.price"] },
                         ],
                       },
                     },
