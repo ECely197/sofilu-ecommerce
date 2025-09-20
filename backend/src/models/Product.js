@@ -28,7 +28,7 @@ const productSchema = new Schema(
     description: { type: String, required: true },
     price: { type: Number, default: 0 },
     costPrice: { type: Number, default: 0 },
-
+    stock: { type: Number, default: 0 },
     sku: { type: String, trim: true, uppercase: true },
     vendor: { type: Schema.Types.ObjectId, ref: "Vendor" },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },

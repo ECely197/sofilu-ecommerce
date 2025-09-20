@@ -37,20 +37,23 @@ router.get("/stats", async (req, res) => {
         $project: {
           vendorName: "$vendorInfo.name",
           inventorySaleValue: {
-            $sum: {
-              $map: {
-                input: "$variants",
-                as: "variant",
-                in: {
-                  $sum: {
-                    $map: {
-                      input: "$$variant.options",
-                      as: "option",
-                      in: {
-                        $multiply: [
-                          "$$option.stock",
-                          { $add: ["$price", "$$option.price"] },
-                        ],
+            $cond: {
+              if: { $eq: [{ $size: "$variants" }, 0] },
+              then: { $multiply: ["$price", "$stock"] },
+              else: {
+                $sum: {
+                  $map: {
+                    input: "$variants",
+                    as: "variant",
+                    in: {
+                      $sum: {
+                        $map: {
+                          input: "$$variant.options",
+                          as: "option",
+                          in: {
+                            $multiply: ["$$option.stock", "$$option.price"],
+                          },
+                        },
                       },
                     },
                   },
@@ -69,7 +72,10 @@ router.get("/stats", async (req, res) => {
                       input: "$$variant.options",
                       as: "option",
                       in: {
-                        $multiply: ["$$option.stock", "$$option.costPrice"],
+                        $multiply: [
+                          "$$option.stock",
+                          { $ifNull: ["$$option.costPrice", 0] },
+                        ],
                       },
                     },
                   },

@@ -9,7 +9,7 @@ const vendorSchema = new Schema(
       required: true,
       unique: true,
       trim: true,
-    }, // Ej: "Telas Inc.", "Confecciones Sofía"
+    },
   },
   { timestamps: true }
 );
