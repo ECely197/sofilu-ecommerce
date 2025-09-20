@@ -6,7 +6,7 @@ const { Schema } = mongoose;
 const optionSchema = new Schema(
   {
     name: { type: String, required: true },
-    priceModifier: { type: Number, default: 0 },
+    price: { type: Number, default: 0, required: true },
     stock: { type: Number, default: 0 },
     costPrice: { type: Number, default: 0 },
   },
@@ -26,10 +26,11 @@ const productSchema = new Schema(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
-    sku: { type: String, trim: true, uppercase: true },
-    vendor: { type: Schema.Types.ObjectId, ref: "Vendor" },
     price: { type: Number, default: 0 },
     costPrice: { type: Number, default: 0 },
+
+    sku: { type: String, trim: true, uppercase: true },
+    vendor: { type: Schema.Types.ObjectId, ref: "Vendor" },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     images: [{ type: String, required: true }],
     isFeatured: { type: Boolean, default: false },

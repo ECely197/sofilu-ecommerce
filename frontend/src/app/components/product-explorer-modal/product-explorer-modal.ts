@@ -143,7 +143,7 @@ export class ProductExplorerModalComponent implements OnInit {
         name,
         options: Array.from(optionsSet)
           .sort()
-          .map((optName) => ({ name: optName, stock: 0, priceModifier: 0 })),
+          .map((optName) => ({ name: optName, stock: 0, price: 0 })),
       });
     });
     this.availableFilters.set(newFilters);

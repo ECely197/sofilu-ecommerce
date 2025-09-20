@@ -46,8 +46,8 @@ export class Cart {
         const option = variant?.options.find(
           (o) => o.name === selectedOptionName
         );
-        if (option && option.priceModifier) {
-          price += option.priceModifier;
+        if (option && option.price) {
+          price += option.price;
         }
       }
     }

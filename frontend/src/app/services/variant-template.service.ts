@@ -11,7 +11,7 @@ export interface VariantTemplate {
   variantName: string;
   options: {
     name: string;
-    priceModifier?: number;
+    price?: number;
     stock?: number;
     costPrice?: number;
   }[];

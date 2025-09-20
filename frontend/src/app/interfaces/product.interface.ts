@@ -6,7 +6,7 @@ import { Vendor } from '../services/vendor.service';
 
 export interface Option {
   name: string;
-  priceModifier: number;
+  price: number;
   stock: number;
   costPrice?: number;
 }

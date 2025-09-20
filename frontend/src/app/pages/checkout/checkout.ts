@@ -212,8 +212,8 @@ export class checkout implements OnInit {
         const option = variant?.options.find(
           (o) => o.name === selectedOptionName
         );
-        if (option?.priceModifier) {
-          price += option.priceModifier;
+        if (option?.price) {
+          price += option.price;
         }
       }
     }

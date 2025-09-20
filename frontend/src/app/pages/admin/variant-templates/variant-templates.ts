@@ -58,13 +58,13 @@ export class VariantTemplatesComponent implements OnInit {
 
   newOption(
     name: string = '',
-    priceModifier: number | null = null,
+    price: number | null = null,
     stock: number | null = null,
     costPrice: number | null = null
   ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
-      priceModifier: [priceModifier, [Validators.min(0)]],
+      price: [price, [Validators.min(0)]],
       stock: [stock, [Validators.min(0)]],
       costPrice: [costPrice, [Validators.min(0)]],
     });
@@ -105,7 +105,7 @@ export class VariantTemplatesComponent implements OnInit {
     this.options.clear();
     template.options.forEach((opt) => {
       this.options.push(
-        this.newOption(opt.name, opt.priceModifier, opt.stock, opt.costPrice)
+        this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
       );
     });
 

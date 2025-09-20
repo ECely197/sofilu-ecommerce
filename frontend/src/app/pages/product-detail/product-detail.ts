@@ -95,7 +95,7 @@ export class ProductDetailComponent implements OnInit {
         const option = variant.options.find(
           (opt) => opt.name === selectedOptionName
         );
-        return total + (option?.priceModifier || 0);
+        return total + (option?.price || 0);
       }
       return total;
     }, 0);

@@ -121,12 +121,7 @@ export class ProductForm implements OnInit {
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
               (variant.options as any[]).map((opt) =>
-                this.newOption(
-                  opt.name,
-                  opt.priceModifier,
-                  opt.stock,
-                  opt.costPrice
-                )
+                this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
               )
             );
             this.variants.push(
@@ -226,7 +221,7 @@ export class ProductForm implements OnInit {
         name: variant.name,
         options: variant.options.map((option: any) => ({
           name: option.name,
-          priceModifier: option.priceModifier,
+          price: option.price,
           stock: option.stock,
           costPrice: option.costPrice,
         })),
@@ -280,7 +275,8 @@ export class ProductForm implements OnInit {
       name: [template.variantName, Validators.required],
       options: this.fb.array(
         template.options.map((opt) =>
-          this.newOption(opt.name, opt.priceModifier, opt.stock, opt.costPrice)
+          // ¡AHORA ESTO ES CORRECTO!
+          this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
         )
       ),
     });
@@ -308,13 +304,13 @@ export class ProductForm implements OnInit {
   }
   newOption(
     name = '',
-    priceModifier: number | null = null,
+    price: number | null = null,
     stock: number | null = null,
     costPrice: number | null = null
   ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
-      priceModifier: [priceModifier, [Validators.required, Validators.min(0)]],
+      price: [price, [Validators.required, Validators.min(0)]],
       stock: [stock, [Validators.required, Validators.min(0)]],
       costPrice: [costPrice, [Validators.min(0)]],
     });

@@ -6,7 +6,7 @@ const optionSchema = new Schema(
   {
     name: { type: String, required: true },
     // Campos opcionales sin 'default: null' para máxima flexibilidad
-    priceModifier: { type: Number },
+    price: { type: Number },
     stock: { type: Number },
     costPrice: { type: Number },
   },
