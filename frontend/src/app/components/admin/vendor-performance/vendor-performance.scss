@@ -1,5 +1,5 @@
 // Importamos las variables y estilos compartidos del admin
-@use "../../../../pages/admin/_admin-shared.scss";
+@use "../../../../app/pages/admin/admin-shared";
 
 :host {
   display: block;

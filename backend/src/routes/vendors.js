@@ -18,36 +18,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST para crear un nuevo vendedor
-router.post("/", async (req, res) => {
-  try {
-    const newVendor = new Vendor({ name: req.body.name });
-    await newVendor.save();
-    res.status(201).json(newVendor);
-  } catch (error) {
-    if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({ message: "Un vendedor con este nombre ya existe." });
-    }
-    res
-      .status(400)
-      .json({ message: "Error al crear el vendedor", details: error.message });
-  }
-});
-
-// DELETE para eliminar un vendedor
-router.delete("/:id", async (req, res) => {
-  try {
-    const deleted = await Vendor.findByIdAndDelete(req.params.id);
-    if (!deleted)
-      return res.status(404).json({ message: "Vendedor no encontrado" });
-    res.json({ message: "Vendedor eliminado" });
-  } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el vendedor" });
-  }
-});
-
 router.get("/stats", async (req, res) => {
   try {
     const vendorStats = await Product.aggregate([
@@ -61,7 +31,6 @@ router.get("/stats", async (req, res) => {
           as: "vendorInfo",
         },
       },
-
       { $unwind: "$vendorInfo" },
 
       {
@@ -72,7 +41,20 @@ router.get("/stats", async (req, res) => {
               $map: {
                 input: "$variants",
                 as: "variant",
-                in: { $sum: "$$variant.options.stock" },
+                in: {
+                  $sum: {
+                    $map: {
+                      input: "$$variant.options",
+                      as: "option",
+                      in: {
+                        $multiply: [
+                          "$$option.stock",
+                          { $add: ["$price", "$$option.priceModifier"] },
+                        ],
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -82,10 +64,15 @@ router.get("/stats", async (req, res) => {
                 input: "$variants",
                 as: "variant",
                 in: {
-                  $multiply: [
-                    "$$variant.options.costPrice",
-                    "$$variant.options.stock",
-                  ],
+                  $sum: {
+                    $map: {
+                      input: "$$variant.options",
+                      as: "option",
+                      in: {
+                        $multiply: ["$$option.stock", "$$option.costPrice"],
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -121,6 +108,36 @@ router.get("/stats", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error al obtener estadísticas de vendedores" });
+  }
+});
+
+// POST para crear un nuevo vendedor
+router.post("/", async (req, res) => {
+  try {
+    const newVendor = new Vendor({ name: req.body.name });
+    await newVendor.save();
+    res.status(201).json(newVendor);
+  } catch (error) {
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ message: "Un vendedor con este nombre ya existe." });
+    }
+    res
+      .status(400)
+      .json({ message: "Error al crear el vendedor", details: error.message });
+  }
+});
+
+// DELETE para eliminar un vendedor
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleted = await Vendor.findByIdAndDelete(req.params.id);
+    if (!deleted)
+      return res.status(404).json({ message: "Vendedor no encontrado" });
+    res.json({ message: "Vendedor eliminado" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el vendedor" });
   }
 });
 
