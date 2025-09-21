@@ -30,6 +30,7 @@ import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
 
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
+import { Title, Meta } from '@angular/platform-browser';
 
 // Pipe para renderizar HTML de forma segura
 @Pipe({ name: 'safeHtml', standalone: true })
@@ -62,6 +63,8 @@ export class ProductDetailComponent implements OnInit {
   public wishlistService = inject(WishlistService);
   private authService = inject(AuthService);
   private orderService = inject(OrderService);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
   // --- SIGNALS PARA EL ESTADO ---
   product = signal<Product | null>(null);
@@ -152,22 +155,72 @@ export class ProductDetailComponent implements OnInit {
 
   // --- CICLO DE VIDA ---
   ngOnInit() {
+    // Obtenemos el ID del producto de los parámetros de la URL
     const productId = this.route.snapshot.paramMap.get('id');
+
     if (productId) {
+      // Hacemos la llamada a la API para obtener los datos del producto
       this.productService.getProductById(productId).subscribe({
         next: (foundProduct) => {
+          // --- 1. Lógica existente: Actualizamos el estado del componente ---
           this.product.set(foundProduct);
-          // Aseguramos que 'selectedImage' se inicialice solo si hay imágenes
+
           if (foundProduct.images && foundProduct.images.length > 0) {
             this.selectedImage.set(foundProduct.images[0]);
           }
+
           this.initializeVariants(foundProduct);
+
+          // --- 2. ¡NUEVA LÓGICA DE SEO! ---
+          // Construimos el título y la descripción
+          const title = `Sofilu | ${foundProduct.name}`;
+
+          // Creamos una descripción corta y limpia (máximo 155 caracteres)
+          // Eliminamos las etiquetas HTML para que no aparezcan en la descripción de Google
+          const cleanDescription = foundProduct.description.replace(
+            /<[^>]*>?/gm,
+            ''
+          );
+          const description = `${cleanDescription.substring(
+            0,
+            120
+          )}... Encuentra el mejor confort y estilo en Sofilu.`;
+
+          // Actualizamos las metaetiquetas de la página
+          this.titleService.setTitle(title);
+          this.metaService.updateTag({
+            name: 'description',
+            content: description,
+          });
+
+          // (Opcional pero muy recomendado) Etiquetas Open Graph para redes sociales
+          this.metaService.updateTag({ property: 'og:title', content: title });
+          this.metaService.updateTag({
+            property: 'og:description',
+            content: description,
+          });
+          this.metaService.updateTag({
+            property: 'og:image',
+            content: foundProduct.images[0] || '',
+          });
+          this.metaService.updateTag({
+            property: 'og:url',
+            content: `https://www.sofilu.shop/product/${foundProduct._id}`,
+          });
+          this.metaService.updateTag({
+            property: 'og:site_name',
+            content: 'Sofilu',
+          });
         },
         error: (err) => {
           console.error('Error al cargar el producto:', err);
-          this.product.set(null); // En caso de error, aseguramos que el producto sea nulo
+          this.product.set(null);
+          // Opcional: Redirigir a una página 404 si el producto no se encuentra
+          // this.router.navigate(['/not-found']);
         },
       });
+
+      // Estas llamadas se mantienen igual
       this.fetchReviews(productId);
       this.fetchUserOrders();
     }
@@ -176,7 +229,6 @@ export class ProductDetailComponent implements OnInit {
   // --- MÉTODOS ---
 
   initializeVariants(p: Product): void {
-    // Reiniciamos las variantes a un objeto vacío para forzar al usuario a seleccionar
     this.selectedVariants.set({});
   }
 

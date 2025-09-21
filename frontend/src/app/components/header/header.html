@@ -47,8 +47,9 @@
             >
               @for (sub of activeMenu()!.subCategories; track sub.id) {
               <a
+                href="#"
+                (click)="openSubCategoryModal($event, sub)"
                 #subCategoryLink
-                [routerLink]="['/category', sub.id.split('-')[0]]"
                 (mouseenter)="handleSubCategoryEnter(sub, $event)"
                 [class.active]="activeSubCategory()?.id === sub.id"
                 class="sub-category-link"

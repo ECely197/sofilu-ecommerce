@@ -34,6 +34,7 @@ import {
   NavItem,
   SubCategory,
 } from '../../services/navigation.service';
+import { ProductModalService } from '../../services/product-modal.service';
 
 gsap.registerPlugin(SplitText);
 
@@ -54,6 +55,7 @@ export class Header implements OnInit, AfterViewInit {
   private zone = inject(NgZone);
   private navigationService = inject(NavigationService);
   private elementRef = inject(ElementRef);
+  private productModalService = inject(ProductModalService);
 
   // --- Signals ---
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
@@ -76,14 +78,27 @@ export class Header implements OnInit, AfterViewInit {
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    const headerPill = this.navContainer?.nativeElement.closest('.header-pill');
+    const headerPill = this.navContainer?.nativeElement.closest(
+      '.header-pill, .logo-wrapper'
+    );
     if (!headerPill) return;
 
     const currentScrollY = window.scrollY;
     if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      gsap.to(headerPill, { y: -120, duration: 0.3, ease: 'power2.inOut' });
+      gsap.to(headerPill, { y: -97.5, duration: 0.3, ease: 'power2.inOut' });
+      gsap.to(headerPill.querySelector('.logo-wrapper'), {
+        y: 80,
+        duration: 0.3,
+        ease: 'power2.inOut',
+      });
     } else {
       gsap.to(headerPill, { y: 0, duration: 0.3, ease: 'power2.inOut' });
+      gsap.to(headerPill.querySelector('.logo-wrapper'), {
+        y: 0,
+        duration: 0.3,
+        ease: 'power2.inOut',
+        backgroundColor: 'transparent',
+      });
     }
     this.lastScrollY = currentScrollY;
   }
@@ -301,5 +316,18 @@ export class Header implements OnInit, AfterViewInit {
       .logout()
       .then(() => this.router.navigate(['/']))
       .catch((error) => console.error('Error al cerrar sesión:', error));
+  }
+
+  openSubCategoryModal(event: MouseEvent, subCategory: SubCategory): void {
+    event.preventDefault(); // Previene la navegación
+    event.stopPropagation(); // Detiene otros clics
+
+    // Abre el modal con los datos de la subcategoría actual
+    this.productModalService.open({
+      title: subCategory.name,
+      products: subCategory.products,
+    });
+
+    this.closeMegaMenu(); // Cierra el mega menú
   }
 }

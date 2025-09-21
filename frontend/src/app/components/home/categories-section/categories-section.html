@@ -11,7 +11,12 @@
       <div class="swiper-wrapper">
         @for (category of categories; track category._id) {
         <div class="swiper-slide">
-          <a [routerLink]="['/category', category.slug]" class="category-card">
+          <!-- ¡AÑADIMOS [class]="category.slug"! -->
+          <a
+            [routerLink]="['/category', category.slug]"
+            class="category-card"
+            [class]="category.slug"
+          >
             <div class="icon-container">
               <img
                 [src]="category.imageUrl"

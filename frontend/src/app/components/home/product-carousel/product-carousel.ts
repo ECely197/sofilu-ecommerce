@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Product } from '../../../interfaces/product.interface';
 import { ProductCard } from '../../product-card/product-card';
 import Swiper from 'swiper';
-import { Navigation } from 'swiper/modules'; // Importamos el módulo de navegación
+import { Navigation } from 'swiper/modules';
 import { ProductModalService } from '../../../services/product-modal.service';
 
 Swiper.use([Navigation]); // Activamos el módulo

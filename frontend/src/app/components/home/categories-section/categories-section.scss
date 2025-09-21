@@ -2,22 +2,26 @@
   display: block;
 }
 
-// Estilos para la tarjeta contenedora
+// -------------------------------------
+// Estilos para la Tarjeta Contenedora Principal
+// -------------------------------------
 .card {
-  // Usa las variables de color FIJAS
-  background-color: var(--background-card); // Fondo blanco puro
-  border: 1px solid var(--color-border); // Borde gris muy claro
-
+  background-color: var(--background-card);
+  border: 1px solid var(--color-border);
   border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04); // Sombra sutil
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
   overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
 
-  // Transición sutil solo para el hover
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08);
+.card-header {
+  padding: 2rem 2.5rem 1.5rem;
+  .card-title {
+    font-size: 1.7rem;
+    font-weight: 700;
+    @media (max-width: 768px) {
+      font-size: 1.2rem;
+    }
   }
 }
 
@@ -33,7 +37,9 @@
   }
 }
 
-// Contenedor del carrusel (para posicionar los botones)
+// -------------------------------------
+// Contenedor del Carrusel y Swiper
+// -------------------------------------
 .carousel-container {
   position: relative;
 }
@@ -46,57 +52,116 @@
   width: 150px;
   display: flex;
   justify-content: center;
-
   @media (min-width: 768px) {
     width: 180px;
   }
 }
 
+// -------------------------------------
+// Estilos de la Tarjeta de Categoría Individual
+// -------------------------------------
 .category-card {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0.3rem 0.3rem 0 0.3rem;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
   border-radius: 1.25rem;
   text-decoration: none;
-  color: inherit;
-  border: 2px solid transparent;
+  border: 2px solid transparent; // Borde invisible por defecto
   transition: all 0.3s ease-in-out;
 
+  .icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.3s ease-in-out;
+  }
+
+  .category-icon {
+    width: 40px;
+    height: 40px;
+    transition: color 0.3s ease-in-out;
+  }
+
+  .category-name {
+    color: var(--text-charcoal);
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    height: 2.4em;
+    overflow: hidden;
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+  }
   &:hover {
     transform: translateY(-5px);
-    border-color: var(--card-border-color);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   }
 }
 
-.icon-container {
-  width: 80px;
-  height: 80px;
-  border-radius: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--primary-light);
-  flex-shrink: 0;
+// -------------------------------------
+// Paleta de Colores Dinámica por Categoría
+// -------------------------------------
+// Define las variables de color para cada categoría
+.sabanas {
+  --category-color-light: #e0f2fe;
+  --category-color-dark: #0284c7;
+}
+.pijamas,
+.pijama-mujer {
+  --category-color-light: #fee2e2;
+  --category-color-dark: #ef4444;
+}
+.cojines,
+.almohadas {
+  --category-color-light: #f5f3ff;
+  --category-color-dark: #8b5cf6;
+}
+.batas {
+  --category-color-light: #f0fdf4;
+  --category-color-dark: #22c55e;
+}
+.joyas {
+  --category-color-light: #fffbeb;
+  --category-color-dark: #f59e0b;
+}
+.cajas-sorpresa {
+  --category-color-light: #f1f5f9;
+  --category-color-dark: #64748b;
+}
+.cubrelechos {
+  --category-color-light: #e5e7eb;
+  --category-color-dark: #4b5563;
+}
+.peluches {
+  --category-color-light: #fae8ff;
+  --category-color-dark: #d946ef;
 }
 
-.category-icon {
-  width: 50px;
-  height: 50px;
-}
+// Aplica los colores usando las variables
+.category-card {
+  margin-top: 0.5rem;
+  .icon-container {
+    background-color: var(--category-color-light);
+  }
+  .category-icon {
+    color: var(--category-color-dark);
+  }
 
-.category-name {
-  font-weight: 600;
-  text-align: center;
-  line-height: 1.2;
-  height: 2.4em;
-  overflow: hidden;
-  @media (max-width: 768px) {
-    font-size: 1rem;
+  // Estado Hover
+  &:hover {
+    border-color: var(--category-color-dark);
+    box-shadow: 0 8px 25px -5px var(--category-color-light);
+
+    .category-icon {
+      color: white;
+    }
   }
 }
 
@@ -125,25 +190,22 @@
   }
 }
 
-// --- ESTILOS UNIFICADOS PARA LAS FLECHAS ---
-
+// -------------------------------------
+// Flechas de Navegación del Carrusel
+// -------------------------------------
 .swiper-button-next,
 .swiper-button-prev {
-  // Variables de Swiper para el icono
-  --swiper-navigation-size: 22px;
+  --swiper-navigation-size: 17px;
   --swiper-navigation-color: var(--text-charcoal);
-
-  // Estilos de botón
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border-radius: 50%;
   background-color: white;
   border: 1px solid var(--soft-gray);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  top: 45%; // Centrado vertical
+  top: 35%; // Ligeramente más arriba
 
-  // Ocultos por defecto
   opacity: 0;
   transform: translateY(-50%) scale(0.8);
   transition: all 0.3s ease;
@@ -154,7 +216,6 @@
   }
 }
 
-// Muestra los botones al hacer hover
 .carousel-container:hover {
   .swiper-button-next,
   .swiper-button-prev {
@@ -163,7 +224,6 @@
   }
 }
 
-// Posicionamiento de botones
 .swiper-button-prev {
   left: 0.5rem;
 }
