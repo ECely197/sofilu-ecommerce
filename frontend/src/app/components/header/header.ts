@@ -9,6 +9,7 @@ import {
   NgZone,
   ViewChild,
   HostListener,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -21,11 +22,9 @@ import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { User } from '@angular/fire/auth';
 
-// Importamos GSAP y el plugin SplitText
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 
-// Servicios
 import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
 import { UiState } from '../../services/ui-state';
@@ -36,59 +35,60 @@ import {
   SubCategory,
 } from '../../services/navigation.service';
 
-// Registramos el plugin
 gsap.registerPlugin(SplitText);
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
-export class Header implements AfterViewInit {
+export class Header implements OnInit, AfterViewInit {
+  // --- Inyecciones ---
   public cartService = inject(CartService);
   public authService = inject(AuthService);
   public uiStateService = inject(UiState);
+  public wishlistService = inject(WishlistService);
   private router = inject(Router);
   private zone = inject(NgZone);
-  private lastScrollY = 0;
   private navigationService = inject(NavigationService);
   private elementRef = inject(ElementRef);
 
+  // --- Signals ---
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
-  public wishlistService = inject(WishlistService);
   isProfileMenuOpen = signal(false);
-
   navItems = signal<NavItem[]>([]);
   activeMenu = signal<NavItem | null>(null);
   activeSubCategory = signal<SubCategory | null>(null);
 
-  // Obtenemos referencias a los elementos del DOM
-  @ViewChildren('navLink', { read: ElementRef }) navLinks!: QueryList<
-    ElementRef<HTMLAnchorElement>
-  >;
+  // --- Referencias al DOM ---
+  @ViewChildren('navLink') navLinks!: QueryList<ElementRef<HTMLDivElement>>;
   @ViewChild('navPill') navPill!: ElementRef<HTMLElement>;
   @ViewChild('navContainer') navContainer!: ElementRef<HTMLElement>;
   @ViewChild('profileMenu') profileMenu!: ElementRef<HTMLElement>;
+  @ViewChildren('subCategoryLink') subCategoryLinks!: QueryList<ElementRef>;
+  @ViewChildren('previewCard') previewCards!: QueryList<ElementRef>;
+  @ViewChild('subCategoryPill') subCategoryPill!: ElementRef<HTMLElement>;
+
+  private lastScrollY = 0;
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    const currentScrollY = window.scrollY;
-    const headerPill = this.navContainer.nativeElement.closest('.header-pill');
+    const headerPill = this.navContainer?.nativeElement.closest('.header-pill');
+    if (!headerPill) return;
 
-    // Si estamos haciendo scroll hacia abajo Y hemos pasado el inicio de la página
+    const currentScrollY = window.scrollY;
     if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      gsap.to(headerPill, { y: -400, duration: 0.3, ease: 'power2.inOut' });
-    }
-    // Si estamos haciendo scroll hacia arriba
-    else {
+      gsap.to(headerPill, { y: -120, duration: 0.3, ease: 'power2.inOut' });
+    } else {
       gsap.to(headerPill, { y: 0, duration: 0.3, ease: 'power2.inOut' });
     }
-
     this.lastScrollY = currentScrollY;
   }
+
+  constructor() {}
 
   ngOnInit() {
     this.navigationService
@@ -96,73 +96,96 @@ export class Header implements AfterViewInit {
       .subscribe((data) => this.navItems.set(data));
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe(() => {
-        this.closeMegaMenu();
+      .subscribe(() => this.closeMegaMenu());
+  }
+
+  ngAfterViewInit() {
+    this.zone.runOutsideAngular(() => {
+      gsap.from(this.navContainer.nativeElement.closest('.header-pill'), {
+        y: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        delay: 0.5,
       });
+      this.navLinks.changes.subscribe(() => this.setupNavAnimations());
+      this.setupNavAnimations();
+      this.previewCards.changes.subscribe(() => this.animatePreviewCards());
+    });
   }
 
-  // --- LÓGICA DEL MEGA MENÚ HÍBRIDO ---
-
-  // 1. HostListener para cerrar con clic externo
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (
-      this.activeMenu() &&
-      !this.elementRef.nativeElement.contains(event.target)
-    ) {
-      this.closeMegaMenu();
-    }
-  }
-
-  // 2. Abrir con hover (mouseenter)
+  // --- Lógica del Mega Menú ---
   handleMouseEnter(item: NavItem): void {
     if (item.subCategories && item.subCategories.length > 0) {
       this.activeMenu.set(item);
-      if (
-        !this.activeSubCategory() ||
-        !item.subCategories.find((s) => s.id === this.activeSubCategory()?.id)
-      ) {
-        this.activeSubCategory.set(item.subCategories[0]);
-      }
-    } else {
-      // Si el item no tiene subcategorías (como "Inicio"), cerramos cualquier menú abierto
-      this.closeMegaMenu();
+      this.activeSubCategory.set(item.subCategories[0]);
     }
   }
 
-  // 3. Este método ahora solo evita que el clic en el nav cierre el menú
-  onNavClick(event: MouseEvent): void {
-    event.stopPropagation();
-  }
-
-  handleSubCategoryEnter(subCategory: SubCategory): void {
-    this.activeSubCategory.set(subCategory);
-  }
-
-  closeMegaMenu(): void {
+  handleMouseLeave(): void {
     this.activeMenu.set(null);
     this.activeSubCategory.set(null);
   }
 
-  ngAfterViewInit() {
-    // Ejecutamos las animaciones fuera de la zona de Angular para optimizar el rendimiento
+  handleSubCategoryEnter(subCategory: SubCategory, event: MouseEvent): void {
+    this.activeSubCategory.set(subCategory);
+    const target = event.currentTarget as HTMLElement;
     this.zone.runOutsideAngular(() => {
-      gsap.from(this.navContainer.nativeElement.closest('.header-pill'), {
-        y: -100, // Empieza 100px por encima de la pantalla
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-        delay: 0.5, // Un pequeño retraso para que la página cargue primero
+      gsap.to(this.subCategoryPill.nativeElement, {
+        top: target.offsetTop,
+        height: target.offsetHeight,
+        opacity: 1,
+        duration: 0.3,
+        ease: 'power2.out',
       });
-      this.navLinks.changes.subscribe(() => this.setupNavAnimations());
-      this.setupNavAnimations();
-
-      this.router.events
-        .pipe(filter((event) => event instanceof NavigationEnd))
-        .subscribe(() => {
-          setTimeout(() => this.updatePillToActiveLink(false), 150);
-        });
     });
+  }
+
+  handleSubCategoryListLeave(): void {
+    this.zone.runOutsideAngular(() => {
+      gsap.to(this.subCategoryPill.nativeElement, {
+        opacity: 0,
+        duration: 0.2,
+      });
+    });
+  }
+
+  closeMegaMenu(): void {
+    this.activeMenu.set(null);
+  }
+
+  // --- Lógica de Animaciones GSAP ---
+  private animateMegaMenuIn(): void {
+    const subCategoryElements = this.subCategoryLinks.map(
+      (el) => el.nativeElement
+    );
+    gsap.fromTo(
+      subCategoryElements,
+      { opacity: 0, x: -20 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        stagger: 0.05,
+        ease: 'power2.out',
+      }
+    );
+    this.animatePreviewCards();
+  }
+
+  private animatePreviewCards(): void {
+    const previewCardElements = this.previewCards.map((el) => el.nativeElement);
+    gsap.fromTo(
+      previewCardElements,
+      { opacity: 0, scale: 0.98 },
+      {
+        opacity: 1,
+        scale: 1,
+        duration: 0.4,
+        stagger: 0.07,
+        ease: 'power2.out',
+      }
+    );
   }
 
   setupNavAnimations(): void {
@@ -186,7 +209,7 @@ export class Header implements AfterViewInit {
           ease: 'power2.inOut',
         });
         gsap.to(splitReveal.chars, {
-          yPercent: -45,
+          yPercent: -60,
           stagger: 0.02,
           duration: 0.3,
           ease: 'power2.inOut',
@@ -195,7 +218,7 @@ export class Header implements AfterViewInit {
         gsap.to(pillEl, {
           x: linkEl.offsetLeft,
           width: linkEl.offsetWidth,
-          opacity: 1, // Solo muestra píldora si es el activo
+          opacity: 1,
           backgroundColor: 'var(--pastel-pink)',
           duration: 0.4,
           ease: 'power3.out',
@@ -234,7 +257,7 @@ export class Header implements AfterViewInit {
         x: linkEl.offsetLeft,
         width: linkEl.offsetWidth,
         opacity: 1,
-        backgroundColor: 'var(--pastel-pink)', // Fondo rosa para el activo
+        backgroundColor: 'var(--pastel-pink)',
         duration: animated ? 0.4 : 0,
         ease: 'power3.out',
       });

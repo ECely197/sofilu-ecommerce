@@ -16,18 +16,71 @@
       <div #navPill class="nav-pill"></div>
 
       @for (item of navItems(); track item.id) {
+      <!-- ¡ESTE ES EL CONTENEDOR CLAVE! -->
       <div
         #navLink
         class="nav-item-wrapper"
         (mouseenter)="handleMouseEnter(item)"
+        (mouseleave)="handleMouseLeave()"
       >
+        <!-- El enlace de navegación -->
         <a
           [routerLink]="item.subCategories.length === 0 ? item.slug : null"
+          [routerLinkActiveOptions]="{ exact: item.slug === '/' }"
+          routerLinkActive="active"
           class="nav-link"
         >
           <span class="nav-text-original">{{ item.name }}</span>
           <span class="nav-text-reveal">{{ item.name }}</span>
         </a>
+
+        <!-- ¡EL MEGA MENÚ AHORA VIVE DENTRO DEL WRAPPER! -->
+        <div
+          class="mega-menu-container"
+          [class.is-active]="activeMenu()?.id === item.id"
+        >
+          @if (activeMenu()?.id === item.id; as menu) {
+          <div class="mega-menu-card">
+            <div
+              class="sub-category-list"
+              (mouseleave)="handleSubCategoryListLeave()"
+            >
+              @for (sub of activeMenu()!.subCategories; track sub.id) {
+              <a
+                #subCategoryLink
+                [routerLink]="['/category', sub.id.split('-')[0]]"
+                (mouseenter)="handleSubCategoryEnter(sub, $event)"
+                [class.active]="activeSubCategory()?.id === sub.id"
+                class="sub-category-link"
+              >
+                {{ sub.name }}
+              </a>
+              }
+            </div>
+            <div class="product-preview-container">
+              @if (activeSubCategory(); as subCat) {
+              <div class="product-preview-grid">
+                @for (product of subCat.products; track product._id) {
+                <a
+                  [routerLink]="['/product', product._id]"
+                  class="preview-product-card"
+                >
+                  <div class="preview-image-wrapper">
+                    @if(product.images.length > 0) {
+                    <img [src]="product.images[0]" [alt]="product.name" />
+                    } @else {
+                    <div class="image-placeholder"></div>
+                    }
+                  </div>
+                  <p>{{ product.name }}</p>
+                </a>
+                }
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
       </div>
       }
     </nav>
@@ -107,48 +160,5 @@
         }
       </div>
     </div>
-  </div>
-
-  <!-- ¡MEGA MENÚ-->
-  <div class="mega-menu-container" [class.is-active]="activeMenu()">
-    @if (activeMenu(); as menu) {
-    <div class="mega-menu-card">
-      <!-- Columna Izquierda: Subcategorías -->
-      <div class="sub-category-list">
-        @for (sub of menu.subCategories; track sub.id) {
-        <a
-          [routerLink]="['/category', sub.id.split('-')[0]]"
-          (mouseenter)="handleSubCategoryEnter(sub)"
-          [class.active]="activeSubCategory()?.id === sub.id"
-          class="sub-category-link"
-        >
-          {{ sub.name }}
-        </a>
-        }
-      </div>
-      <!-- Columna Derecha: Previsualización de Productos -->
-      <div class="product-preview-container">
-        @if (activeSubCategory(); as subCat) {
-        <div class="product-preview-grid">
-          @for (product of subCat.products; track product._id) {
-          <a
-            [routerLink]="['/product', product._id]"
-            class="preview-product-card"
-          >
-            <div class="preview-image-wrapper">
-              @if(product.images.length > 0) {
-              <img [src]="product.images[0]" [alt]="product.name" />
-              } @else {
-              <div class="image-placeholder"></div>
-              }
-            </div>
-            <p>{{ product.name }}</p>
-          </a>
-          }
-        </div>
-        }
-      </div>
-    </div>
-    }
   </div>
 </header>

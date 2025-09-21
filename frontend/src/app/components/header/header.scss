@@ -30,7 +30,7 @@
   height: 60px;
   padding: 0 1rem 0 1.5rem;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 2rem;
   background-color: rgba(255, 255, 255, 0.7);
@@ -75,7 +75,7 @@
 .desktop-nav {
   position: relative;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   padding-left: 140px;
   align-items: center;
   gap: 0.5rem;
@@ -83,6 +83,7 @@
 }
 
 .nav-item-wrapper {
+  position: relative;
   height: 100%;
   display: flex;
   align-items: center;
@@ -296,25 +297,25 @@
 }
 
 /* ==========================================================================
-   6. MEGA MENÚ FLOTANTE
+   6. MEGA MENÚ FLOTANTE (ESTILO PREMIUM MEJORADO)
    ========================================================================== */
 
 .mega-menu-container {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
+  top: 100%;
+  left: 320%;
+  transform: translateX(-50%);
+  width: max-content;
+  padding-top: 1rem;
 
   opacity: 0;
-  transform: translateY(-10px) scale(0.98); // Animación de escala sutil
+  transform: translateX(-50%) translateY(-10px) scale(0.98);
   transition: opacity 0.3s ease-out, transform 0.3s ease-out;
   pointer-events: none;
 
   &.is-active {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(-50%) translateY(0) scale(1);
     pointer-events: auto;
   }
 }
@@ -322,44 +323,64 @@
 .mega-menu-card {
   width: 100%;
   max-width: 900px;
-  background-color: var(--background-card); // Fondo blanco puro
-  // Borde sutil que usa el color de acento
-  border: 1px solid var(--color-border);
+  background-color: var(--background-card, white);
+  border: 1px solid rgba(0, 0, 0, 0.05); // Borde muy sutil
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-  border-radius: 1.5rem; // Bordes bien redondeados
-  padding: 1rem; // Padding reducido, las columnas lo manejarán
+  border-radius: 1.5rem;
+  padding: 1rem;
   display: grid;
-  grid-template-columns: 220px 1fr; // Columna izquierda de ancho fijo
-  gap: 1rem;
+  grid-template-columns: 220px 1fr;
 }
 
+// --- Columna Izquierda: Subcategorías ---
 .sub-category-list {
+  position: relative; // Contexto para la píldora de hover
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+.hover-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: var(--primary-light);
+  border-radius: 0.75rem;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
 
-  a {
-    width: 100%;
-    text-align: left;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem; // Bordes más redondeados
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
+.sub-category-link {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  // Transición suave para el color de fondo
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+  color: var(--text-primary); // Color de texto normal
+  background-color: transparent; // Fondo transparente por defecto
+  border: none;
+  text-decoration: none;
+
+  // Estado activo o al pasar el ratón
+  &.active,
+  &:hover {
+    background-color: var(--pastel-pink); // Fondo rosa suave
     color: var(--text-primary);
-    text-decoration: none;
-
-    &.active,
-    &:hover {
-      background-color: var(--primary-light);
-    }
   }
 }
 
+// --- Columna Derecha: Previsualización ---
 .product-preview-container {
-  background-color: var(--background-page); // Fondo ligeramente diferente
+  background-color: var(--background-page, #faf7f5); // Fondo de color sutil
   border-radius: 1rem;
   padding: 1.5rem;
 }
