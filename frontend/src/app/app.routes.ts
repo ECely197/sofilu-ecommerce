@@ -42,21 +42,50 @@ import { VendorsComponent } from './pages/admin/vendors/vendors';
 
 export const routes: Routes = [
   // --- Rutas del Cliente (Públicas y para usuarios) ---
-  { path: '', component: Home },
-  { path: 'products', component: ProductList },
-  { path: 'category/:slug', component: CategoryView },
-  { path: 'product/:id', component: ProductDetailComponent },
-  { path: 'cart', component: Cart },
-  { path: 'checkout', component: checkout },
-  { path: 'order-confirmation/:id', component: OrderConfirmation },
-  { path: 'login', component: Login },
-  { path: 'register', component: Register },
-  { path: 'search', component: SearchResultsComponent },
+  { path: '', component: Home, data: { animation: 'HomePage' } },
+  {
+    path: 'products',
+    component: ProductList,
+    data: { animation: 'ProductListPage' },
+  },
+  {
+    path: 'category/:slug',
+    component: CategoryView,
+    data: { animation: 'CategoryViewPage' },
+  },
+  {
+    path: 'product/:id',
+    component: ProductDetailComponent,
+    data: { animation: 'ProductDetailPage' },
+  },
+  { path: 'cart', component: Cart, data: { animation: 'CartPage' } },
+  {
+    path: 'checkout',
+    component: checkout,
+    data: { animation: 'CheckoutPage' },
+  },
+  {
+    path: 'order-confirmation/:id',
+    component: OrderConfirmation,
+    data: { animation: 'OrderConfirmationPage' },
+  },
+  { path: 'login', component: Login, data: { animation: 'LoginPage' } },
+  {
+    path: 'register',
+    component: Register,
+    data: { animation: 'RegisterPage' },
+  },
+  {
+    path: 'search',
+    component: SearchResultsComponent,
+    data: { animation: 'SearchResultsPage' },
+  },
 
   // --- Rutas del Área de Cuenta (Protegidas) ---
   {
     path: 'account',
-    component: Account, // La "carcasa" con la barra lateral
+    component: Account,
+    data: { animation: 'AccountPage' },
     canActivate: [LoginGuard],
     children: [
       // ¡Rutas hijas!
@@ -84,6 +113,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
+    data: { animation: 'AdminPage' },
     canActivate: [AuthGuard], // ¡Aplicamos el guardia a la ruta padre!
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

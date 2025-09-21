@@ -3,8 +3,8 @@
   <app-header *ngIf="showGlobalHeaderAndFooter()"></app-header>
 
   <main class="main-content">
-    <div class="page-container">
-      <router-outlet></router-outlet>
+    <div class="page-container" [@routeAnimations]="prepareRoute(outlet)">
+      <router-outlet #outlet="outlet"></router-outlet>
     </div>
   </main>
 

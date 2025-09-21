@@ -16,6 +16,8 @@ import { ProductExplorerModalComponent } from './components/product-explorer-mod
 import { CustomerDetailModalComponent } from './components/customer-detail-modal/customer-detail-modal';
 import { WishlistFlyoutComponent } from './components/wishlist-flyout/wishlist-flyout';
 
+import { routeAnimations } from './route-animations';
+
 // Importamos AOS y su tipo de opciones
 import * as AOS from 'aos';
 import { AosOptions } from 'aos';
@@ -38,6 +40,7 @@ import { AosOptions } from 'aos';
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  animations: [routeAnimations],
 })
 export class App implements OnInit {
   private router = inject(Router);
@@ -87,5 +90,13 @@ export class App implements OnInit {
       searchInput.value = '';
       this.uiState.closeMobileSearch(); // Cierra a través del servicio
     }
+  }
+
+  prepareRoute(outlet: RouterOutlet) {
+    return (
+      outlet &&
+      outlet.activatedRouteData &&
+      outlet.activatedRouteData['animation']
+    );
   }
 }
