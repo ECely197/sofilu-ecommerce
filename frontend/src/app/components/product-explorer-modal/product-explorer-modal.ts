@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Title, Meta } from '@angular/platform-browser';
 import { ProductModalService } from '../../services/product-modal.service';
 import { ProductCard } from '../product-card/product-card';
 import { Product, Variant } from '../../interfaces/product.interface';
@@ -48,6 +49,9 @@ import {
 export class ProductExplorerModalComponent implements OnInit {
   public productModalService = inject(ProductModalService);
   private fb = inject(FormBuilder);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private originalTitle: string = '';
 
   private originalProducts = signal<Product[]>([]);
   availableFilters = signal<Variant[]>([]);
@@ -106,12 +110,36 @@ export class ProductExplorerModalComponent implements OnInit {
   constructor() {
     this.filterForm = this.fb.group({ sortBy: ['relevance,desc'] });
 
+    // --- EFFECT PARA MANEJAR LA APERTURA Y CIERRE DEL MODAL ---
     effect(() => {
       const data = this.productModalService.modalState();
+
       if (data && data.products) {
+        // --- LÓGICA DE SEO AL ABRIR ---
+        this.originalTitle = this.titleService.getTitle(); // Guardamos el título actual
+        const newTitle = `Sofilu | ${data.title}`;
+        this.titleService.setTitle(newTitle);
+        this.metaService.updateTag({
+          name: 'description',
+          content: `Explora nuestra colección de ${data.title} en Sofilu. Calidad y confort para tu hogar.`,
+        });
+
+        // Lógica de datos (sin cambios)
         this.originalProducts.set(data.products);
         this.generateFiltersFromProducts(data.products);
       } else {
+        // --- LÓGICA DE SEO AL CERRAR ---
+        // Si hay un título original guardado, lo restauramos
+        if (this.originalTitle) {
+          this.titleService.setTitle(this.originalTitle);
+          // (Opcional) Restaurar la meta descripción a una genérica
+          this.metaService.updateTag({
+            name: 'description',
+            content: 'Sofilu - Tu universo de confort te espera.',
+          });
+        }
+
+        // Lógica de datos (sin cambios)
         this.originalProducts.set([]);
         this.availableFilters.set([]);
       }
@@ -119,6 +147,12 @@ export class ProductExplorerModalComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    if (this.originalTitle) {
+      this.titleService.setTitle(this.originalTitle);
+    }
+  }
 
   // --- ¡FUNCIÓN 'generateFiltersFromProducts' CORREGIDA! ---
   private generateFiltersFromProducts(products: Product[]): void {

@@ -21,6 +21,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 // Servicios, Tipos y Directivas
 import { ProductServices, Review } from '../../services/product';
+import { JsonLdService } from '../../services/json-ld.service';
 import { Product, Option } from '../../interfaces/product.interface';
 import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
@@ -65,6 +66,7 @@ export class ProductDetailComponent implements OnInit {
   private orderService = inject(OrderService);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private jsonLdService = inject(JsonLdService);
 
   // --- SIGNALS PARA EL ESTADO ---
   product = signal<Product | null>(null);
@@ -155,14 +157,11 @@ export class ProductDetailComponent implements OnInit {
 
   // --- CICLO DE VIDA ---
   ngOnInit() {
-    // Obtenemos el ID del producto de los parámetros de la URL
     const productId = this.route.snapshot.paramMap.get('id');
 
     if (productId) {
-      // Hacemos la llamada a la API para obtener los datos del producto
       this.productService.getProductById(productId).subscribe({
         next: (foundProduct) => {
-          // --- 1. Lógica existente: Actualizamos el estado del componente ---
           this.product.set(foundProduct);
 
           if (foundProduct.images && foundProduct.images.length > 0) {
@@ -171,12 +170,7 @@ export class ProductDetailComponent implements OnInit {
 
           this.initializeVariants(foundProduct);
 
-          // --- 2. ¡NUEVA LÓGICA DE SEO! ---
-          // Construimos el título y la descripción
           const title = `Sofilu | ${foundProduct.name}`;
-
-          // Creamos una descripción corta y limpia (máximo 155 caracteres)
-          // Eliminamos las etiquetas HTML para que no aparezcan en la descripción de Google
           const cleanDescription = foundProduct.description.replace(
             /<[^>]*>?/gm,
             ''
@@ -186,14 +180,12 @@ export class ProductDetailComponent implements OnInit {
             120
           )}... Encuentra el mejor confort y estilo en Sofilu.`;
 
-          // Actualizamos las metaetiquetas de la página
           this.titleService.setTitle(title);
           this.metaService.updateTag({
             name: 'description',
             content: description,
           });
 
-          // (Opcional pero muy recomendado) Etiquetas Open Graph para redes sociales
           this.metaService.updateTag({ property: 'og:title', content: title });
           this.metaService.updateTag({
             property: 'og:description',
@@ -211,19 +203,54 @@ export class ProductDetailComponent implements OnInit {
             property: 'og:site_name',
             content: 'Sofilu',
           });
+          this.setStructuredData(foundProduct);
         },
         error: (err) => {
           console.error('Error al cargar el producto:', err);
           this.product.set(null);
-          // Opcional: Redirigir a una página 404 si el producto no se encuentra
-          // this.router.navigate(['/not-found']);
         },
       });
 
-      // Estas llamadas se mantienen igual
       this.fetchReviews(productId);
       this.fetchUserOrders();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.jsonLdService.removeData();
+  }
+
+  private setStructuredData(product: Product): void {
+    const prices = product.variants.flatMap((v) =>
+      v.options.map((o) => o.price)
+    );
+    const lowPrice = prices.length > 0 ? Math.min(...prices) : product.price;
+
+    const schema = {
+      '@context': 'https://schema.org/',
+      '@type': 'Product',
+      name: product.name,
+      image: product.images[0] || '',
+      description: product.description.replace(/<[^>]*>?/gm, ''),
+      sku: product.sku || product._id,
+      brand: {
+        '@type': 'Brand',
+        name: 'Sofilu',
+      },
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'COP',
+        lowPrice: lowPrice,
+        availability: product.variants.some((v) =>
+          v.options.some((o) => o.stock > 0)
+        )
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        url: `https://www.sofilu.shop/product/${product._id}`,
+      },
+    };
+
+    this.jsonLdService.setData(schema);
   }
 
   // --- MÉTODOS ---
