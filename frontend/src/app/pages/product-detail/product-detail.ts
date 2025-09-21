@@ -1,23 +1,28 @@
-// Contenido Completo, Corregido y Final para: frontend/src/app/pages/product-detail/product-detail.ts
+// En: frontend/src/app/pages/product-detail/product-detail.ts
 
 import {
   Component,
   OnInit,
+  OnDestroy,
   inject,
   signal,
   computed,
   Pipe,
   PipeTransform,
+  ElementRef,
+  NgZone,
+  effect,
+  AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Title, Meta, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 // Servicios, Tipos y Directivas
 import { ProductServices, Review } from '../../services/product';
@@ -29,9 +34,12 @@ import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
 import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
-
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
-import { Title, Meta } from '@angular/platform-browser';
+
+// Importamos Swiper para la galería móvil
+import Swiper from 'swiper';
+import { Pagination } from 'swiper/modules';
+Swiper.use([Pagination]);
 
 // Pipe para renderizar HTML de forma segura
 @Pipe({ name: 'safeHtml', standalone: true })
@@ -55,8 +63,10 @@ export class SafeHtmlPipe implements PipeTransform {
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
 })
-export class ProductDetailComponent implements OnInit {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
+export class ProductDetailComponent
+  implements OnInit, OnDestroy, AfterViewInit
+{
+  // --- INYECCIONES ---
   private route = inject(ActivatedRoute);
   private productService = inject(ProductServices);
   private cartService = inject(CartService);
@@ -67,8 +77,10 @@ export class ProductDetailComponent implements OnInit {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private jsonLdService = inject(JsonLdService);
+  private el = inject(ElementRef);
+  private zone = inject(NgZone);
 
-  // --- SIGNALS PARA EL ESTADO ---
+  // --- SIGNALS ---
   product = signal<Product | null>(null);
   selectedImage = signal<string>('');
   reviews = signal<Review[]>([]);
@@ -77,54 +89,69 @@ export class ProductDetailComponent implements OnInit {
   private userOrders = signal<any[]>([]);
   justAddedToCart = signal(false);
   quantity = signal(1);
+  private swiperInstance: Swiper | undefined;
 
+  constructor() {
+    effect(() => {
+      const currentProduct = this.product();
+
+      if (currentProduct && window.innerWidth < 768) {
+        setTimeout(() => this.initMobileSwiper(), 50);
+      } else if (this.swiperInstance) {
+        this.swiperInstance.destroy(true, true);
+        this.swiperInstance = undefined;
+      }
+    });
+  }
+
+  // --- MÉTODOS DE CANTIDAD ---
   increaseQuantity(): void {
     this.quantity.update((q) => q + 1);
   }
-
   decreaseQuantity(): void {
     this.quantity.update((q) => Math.max(1, q - 1));
   }
 
-  // --- COMPUTED PROPERTIES (Lógica derivada del estado) ---
-
-  // Calcula el precio final sumando los modificadores de las variantes seleccionadas.
+  // --- COMPUTED PROPERTIES ---
   finalPrice = computed(() => {
     const p = this.product();
     if (!p) return 0;
 
-    const basePrice = p.price || 0;
-    const modifier = p.variants.reduce((total, variant) => {
-      const selectedOptionName = this.selectedVariants()[variant.name];
-      if (selectedOptionName) {
-        const option = variant.options.find(
-          (opt) => opt.name === selectedOptionName
-        );
-        return total + (option?.price || 0);
-      }
-      return total;
-    }, 0);
+    // Si no hay variantes, el precio es el base (o el de oferta)
+    if (p.variants.length === 0) {
+      return p.isOnSale && p.salePrice ? p.salePrice : p.price;
+    }
 
-    return basePrice + modifier;
+    // Si hay variantes, el precio es el de la opción seleccionada
+    const selection = this.selectedVariants();
+    if (this.allVariantsSelected()) {
+      const firstVariant = p.variants[0]; // Simplificación: asumimos que el precio está en la primera variante
+      const selectedOptionName = selection[firstVariant.name];
+      const option = firstVariant.options.find(
+        (opt) => opt.name === selectedOptionName
+      );
+      return option?.price || 0;
+    }
+
+    // Si no se han seleccionado todas las variantes, mostramos el precio más bajo
+    const allPrices = p.variants.flatMap((v) => v.options.map((o) => o.price));
+    return allPrices.length > 0 ? Math.min(...allPrices) : p.price;
   });
 
-  // Verifica si se ha seleccionado una opción para CADA una de las variantes del producto.
   allVariantsSelected = computed(() => {
     const p = this.product();
-    if (!p || p.variants.length === 0) return true; // Si no hay variantes, es verdadero.
+    if (!p || p.variants.length === 0) return true;
     return p.variants.every(
       (variant) => !!this.selectedVariants()[variant.name]
     );
   });
 
-  // Verifica si la combinación de variantes seleccionada tiene stock.
   isInStock = computed(() => {
     const p = this.product();
     if (!p) return false;
-    if (!this.allVariantsSelected()) return false; // Si no se ha seleccionado todo, no hay stock.
-    if (p.variants.length === 0) return true; // Si no hay variantes, asumimos stock.
+    if (p.variants.length === 0) return true;
+    if (!this.allVariantsSelected()) return false;
 
-    // Comprueba el stock de cada opción seleccionada. Si alguna es 0, el producto no está en stock.
     return p.variants.every((variant) => {
       const selectedOptionName = this.selectedVariants()[variant.name];
       const option = variant.options.find(
@@ -136,8 +163,9 @@ export class ProductDetailComponent implements OnInit {
 
   isProductInWishlist = computed(() => {
     const p = this.product();
-    if (!p) return false;
-    return this.wishlistService.wishlistProductIds().includes(p._id);
+    return p
+      ? this.wishlistService.wishlistProductIds().includes(p._id)
+      : false;
   });
 
   canWriteReview = computed(() => {
@@ -158,7 +186,6 @@ export class ProductDetailComponent implements OnInit {
   // --- CICLO DE VIDA ---
   ngOnInit() {
     const productId = this.route.snapshot.paramMap.get('id');
-
     if (productId) {
       this.productService.getProductById(productId).subscribe({
         next: (foundProduct) => {
@@ -169,40 +196,7 @@ export class ProductDetailComponent implements OnInit {
           }
 
           this.initializeVariants(foundProduct);
-
-          const title = `Sofilu | ${foundProduct.name}`;
-          const cleanDescription = foundProduct.description.replace(
-            /<[^>]*>?/gm,
-            ''
-          );
-          const description = `${cleanDescription.substring(
-            0,
-            120
-          )}... Encuentra el mejor confort y estilo en Sofilu.`;
-
-          this.titleService.setTitle(title);
-          this.metaService.updateTag({
-            name: 'description',
-            content: description,
-          });
-
-          this.metaService.updateTag({ property: 'og:title', content: title });
-          this.metaService.updateTag({
-            property: 'og:description',
-            content: description,
-          });
-          this.metaService.updateTag({
-            property: 'og:image',
-            content: foundProduct.images[0] || '',
-          });
-          this.metaService.updateTag({
-            property: 'og:url',
-            content: `https://www.sofilu.shop/product/${foundProduct._id}`,
-          });
-          this.metaService.updateTag({
-            property: 'og:site_name',
-            content: 'Sofilu',
-          });
+          this.setupSeo(foundProduct);
           this.setStructuredData(foundProduct);
         },
         error: (err) => {
@@ -210,14 +204,66 @@ export class ProductDetailComponent implements OnInit {
           this.product.set(null);
         },
       });
-
       this.fetchReviews(productId);
       this.fetchUserOrders();
     }
   }
 
+  ngAfterViewInit() {}
+
   ngOnDestroy(): void {
     this.jsonLdService.removeData();
+    if (this.swiperInstance) {
+      this.swiperInstance.destroy(true, true);
+    }
+  }
+
+  // --- MÉTODOS ---
+  private initMobileSwiper(): void {
+    this.zone.runOutsideAngular(() => {
+      if (this.swiperInstance) {
+        this.swiperInstance.update();
+        return;
+      }
+
+      const swiperEl = this.el.nativeElement.querySelector('.mobile-swiper');
+      if (swiperEl) {
+        this.swiperInstance = new Swiper(swiperEl, {
+          slidesPerView: 1,
+          spaceBetween: 16,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+        });
+      }
+    });
+  }
+
+  private setupSeo(product: Product): void {
+    const title = `Sofilu | ${product.name}`;
+    const cleanDescription = product.description.replace(/<[^>]*>?/gm, '');
+    const description = `${cleanDescription.substring(
+      0,
+      120
+    )}... Encuentra el mejor confort y estilo en Sofilu.`;
+
+    this.titleService.setTitle(title);
+    this.metaService.updateTag({ name: 'description', content: description });
+    this.metaService.updateTag({ property: 'og:title', content: title });
+    this.metaService.updateTag({
+      property: 'og:description',
+      content: description,
+    });
+    this.metaService.updateTag({
+      property: 'og:image',
+      content: product.images[0] || '',
+    });
+    this.metaService.updateTag({
+      property: 'og:url',
+      content: `https://www.sofilu.shop/product/${product._id}`,
+    });
+    this.metaService.updateTag({ property: 'og:site_name', content: 'Sofilu' });
   }
 
   private setStructuredData(product: Product): void {
@@ -233,10 +279,7 @@ export class ProductDetailComponent implements OnInit {
       image: product.images[0] || '',
       description: product.description.replace(/<[^>]*>?/gm, ''),
       sku: product.sku || product._id,
-      brand: {
-        '@type': 'Brand',
-        name: 'Sofilu',
-      },
+      brand: { '@type': 'Brand', name: 'Sofilu' },
       offers: {
         '@type': 'AggregateOffer',
         priceCurrency: 'COP',
@@ -249,11 +292,8 @@ export class ProductDetailComponent implements OnInit {
         url: `https://www.sofilu.shop/product/${product._id}`,
       },
     };
-
     this.jsonLdService.setData(schema);
   }
-
-  // --- MÉTODOS ---
 
   initializeVariants(p: Product): void {
     this.selectedVariants.set({});
@@ -277,18 +317,15 @@ export class ProductDetailComponent implements OnInit {
   addToCart(): void {
     const p = this.product();
     if (p && this.allVariantsSelected() && this.isInStock()) {
-      // Pasamos la cantidad actual del signal a nuestro servicio
       this.cartService.addItem(p, this.selectedVariants(), this.quantity());
-
       this.toastService.show(
         `${p.name} (x${this.quantity()}) ha sido añadido al carrito!`,
         'success'
       );
-
       this.justAddedToCart.set(true);
       setTimeout(() => {
         this.justAddedToCart.set(false);
-        this.quantity.set(1); // Reseteamos la cantidad a 1 después de añadir
+        this.quantity.set(1);
       }, 2000);
     } else {
       this.toastService.show(

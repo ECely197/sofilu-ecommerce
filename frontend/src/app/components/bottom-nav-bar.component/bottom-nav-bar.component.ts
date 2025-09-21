@@ -21,6 +21,7 @@ import { filter } from 'rxjs/operators';
 import { CartService } from '../../services/cart';
 import { AuthService } from '../../services/auth';
 import { UiState } from '../../services/ui-state';
+import { WishlistService } from '../../services/wishlist';
 
 @Component({
   selector: 'app-bottom-nav-bar',
@@ -35,6 +36,7 @@ export class BottomNavBarComponent implements AfterViewInit {
   public authService = inject(AuthService);
   public uiStateService = inject(UiState); // Hecho público para el HTML
   private router = inject(Router);
+  public wishlistService = inject(WishlistService);
 
   // --- LÓGICA DE ANIMACIÓN DE LA BURBUJA ---
   @ViewChildren('navItem') navItems!: QueryList<ElementRef<HTMLElement>>;

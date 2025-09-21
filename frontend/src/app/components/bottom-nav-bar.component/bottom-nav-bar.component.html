@@ -48,15 +48,21 @@
         <span class="material-symbols-outlined">home</span>
         <span class="label">Inicio</span>
       </a>
-      <a
+      <button
         #navItem
-        routerLink="/wishlist"
+        (click)="uiStateService.openWishlistFlyout()"
+        class="icon-button"
+        aria-label="Abrir lista de deseos"
         routerLinkActive="active"
-        class="nav-item"
+        [routerLinkActiveOptions]="{ exact: true }"
       >
         <span class="material-symbols-outlined">favorite</span>
-        <span class="label">Deseos</span>
-      </a>
+        @if (wishlistService.wishlistProductIds().length > 0) {
+        <span class="wishlist-badge">{{
+          wishlistService.wishlistProductIds().length
+        }}</span>
+        }
+      </button>
     </div>
 
     <!-- Botón Flotante Central (sin cambios) -->

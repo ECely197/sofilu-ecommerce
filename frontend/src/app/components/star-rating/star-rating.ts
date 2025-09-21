@@ -19,8 +19,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export class StarRatingComponent implements ControlValueAccessor {
   @Input() maxRating = 5;
   stars: number[] = [];
+  @Input() rating: number = 0;
+  @Input() readonly: boolean = false;
 
-  rating = 0;
   hoveredRating = 0;
 
   // --- Métodos requeridos por ControlValueAccessor ---

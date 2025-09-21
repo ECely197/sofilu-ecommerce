@@ -1,5 +1,5 @@
 <!-- ==========================================================================
-   PÁGINA DE DETALLE DE PRODUCTO (VERSIÓN FINAL)
+   PÁGINA DE DETALLE DE PRODUCTO (VERSIÓN FINAL CON GALERÍA RESPONSIVE)
    ========================================================================== -->
 
 @if (product(); as currentProduct) {
@@ -10,33 +10,58 @@
     <!-- COLUMNA 1: GALERÍA -->
     <!-- ======================== -->
     <div class="gallery-card card" data-aos="fade-right">
-      <!-- Miniaturas (Thumbnails) a la izquierda -->
-      @if (currentProduct.images && currentProduct.images.length > 1) {
-      <div class="thumbnail-wrapper">
-        @for (image of currentProduct.images; track image) {
-        <div
-          class="thumbnail"
-          [class.active]="selectedImage() === image"
-          (click)="selectedImage.set(image)"
-        >
-          <img [src]="image" [alt]="'Thumbnail ' + currentProduct.name" />
+      <!-- GALERÍA PARA ESCRITORIO (Se oculta en móvil) -->
+      <div class="desktop-gallery">
+        @if (currentProduct.images && currentProduct.images.length > 1) {
+        <div class="thumbnail-wrapper">
+          @for (image of currentProduct.images; track image) {
+          <div
+            class="thumbnail"
+            [class.active]="selectedImage() === image"
+            (click)="selectedImage.set(image)"
+          >
+            <img
+              [src]="image"
+              [alt]="'Thumbnail ' + currentProduct.name"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          }
         </div>
         }
+        <div class="main-image-wrapper">
+          @if (currentProduct.images && currentProduct.images.length > 0) {
+          <img
+            [src]="selectedImage()"
+            [alt]="currentProduct.name"
+            class="main-image"
+          />
+          } @else {
+          <div class="main-image placeholder-image"></div>
+          }
+        </div>
+      </div>
+
+      <!-- GALERÍA PARA MÓVIL (Se oculta en escritorio) -->
+      @if (currentProduct.images && currentProduct.images.length > 0) {
+      <div class="mobile-swiper">
+        <div class="swiper-wrapper">
+          @for(image of currentProduct.images; track image) {
+          <div class="swiper-slide">
+            <img
+              [src]="image"
+              [alt]="currentProduct.name"
+              class="main-image-mobile"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          }
+        </div>
+        <div class="swiper-pagination"></div>
       </div>
       }
-
-      <!-- Imagen Principal a la derecha -->
-      <div class="main-image-wrapper">
-        @if (currentProduct.images && currentProduct.images.length > 0) {
-        <img
-          [src]="selectedImage()"
-          [alt]="currentProduct.name"
-          class="main-image"
-        />
-        } @else {
-        <div class="main-image placeholder-image"></div>
-        }
-      </div>
     </div>
 
     <!-- ======================== -->
@@ -46,7 +71,11 @@
       <h1 class="product-title">{{ currentProduct.name }}</h1>
       <p class="product-price">
         {{ finalPrice() | currency : "COP" : "symbol" : "1.0-0" }}
+        @if(currentProduct.variants.length > 0 && !allVariantsSelected()) {
+        <span class="price-suffix">Desde</span>
+        }
       </p>
+
       <div class="variants-container">
         @for (variant of currentProduct.variants; track variant.name) {
         <div class="variant-group">
@@ -100,21 +129,21 @@
           }}</span>
           }
         </button>
+        <button
+          class="btn btn-secondary wishlist-btn"
+          (click)="toggleWishlist()"
+          appRipple
+        >
+          <span class="material-symbols-outlined">{{
+            isProductInWishlist() ? "favorite" : "favorite_border"
+          }}</span>
+        </button>
       </div>
-
-      <button class="btn btn-secondary" (click)="toggleWishlist()" appRipple>
-        <span class="material-symbols-outlined">{{
-          isProductInWishlist() ? "favorite" : "favorite_border"
-        }}</span>
-        <span>{{
-          isProductInWishlist() ? "Quitar de tu lista" : "Añadir a la lista"
-        }}</span>
-      </button>
     </div>
   </div>
 
   <!-- ======================== -->
-  <!-- SECCIÓN DE DETALLES ADICIONALES (Descripción y Reseñas) -->
+  <!-- SECCIÓN DE DETALLES ADICIONALES -->
   <!-- ======================== -->
   <div class="details-card card" data-aos="fade-up">
     <div class="tab-header">
@@ -144,7 +173,7 @@
         <div class="reviews-summary">
           <h3 class="reviews-summary-title">Opiniones de nuestros clientes</h3>
           @if(canWriteReview()){
-          <button class="btn-secondary" (click)="scrollToReviewForm()">
+          <button class="btn btn-secondary" (click)="scrollToReviewForm()">
             Escribir una reseña
           </button>
           }
@@ -159,10 +188,10 @@
               }}</span>
             </div>
             <div class="review-rating">
-              @for (star of [].constructor(review.rating); track $index) {
-              <span class="star filled">★</span> } @for (star of
-              [].constructor(5 - review.rating); track $index) {
-              <span class="star">★</span> }
+              <app-star-rating
+                [rating]="review.rating"
+                [readonly]="true"
+              ></app-star-rating>
             </div>
             <h4 class="review-title">{{ review.title }}</h4>
             <p class="review-comment">{{ review.comment }}</p>
@@ -176,17 +205,11 @@
         @if (canWriteReview()) {
         <div class="review-form-container" #reviewFormElement>
           <h3 class="review-form-title">Comparte tu opinión</h3>
-
-          <!-- ¡FORMULARIO ACTUALIZADO CON LAS CLASES CORRECTAS! -->
           <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
-            <!-- Campo Calificación -->
             <div class="form-field rating-field">
               <label>Calificación</label>
-              <!-- Usamos nuestro nuevo componente. 'formControlName' lo enlaza al FormGroup. -->
               <app-star-rating formControlName="rating"></app-star-rating>
             </div>
-
-            <!-- Campo Título -->
             <div class="material-field">
               <input
                 id="title"
@@ -196,11 +219,9 @@
                 class="material-input"
               />
               <label for="title" class="material-label"
-                >Título de tu reseña (ej: ¡Me encantó!)</label
+                >Título de tu reseña</label
               >
             </div>
-
-            <!-- Campo Comentario -->
             <div class="material-field textarea-field">
               <textarea
                 id="comment"
@@ -213,7 +234,6 @@
                 >Cuéntanos más sobre tu experiencia...</label
               >
             </div>
-
             <button
               type="submit"
               [disabled]="reviewForm.invalid"
@@ -234,6 +254,3 @@
   <p>Cargando detalles del producto...</p>
 </div>
 }
-<!-- ==========================================================================
-   FIN PÁGINA DE DETALLE DE PRODUCTO
-   ========================================================================== -->
