@@ -1,79 +1,82 @@
-/**
- * =========================================================================
- * PARCIAL SCSS: BOTONES
- * =========================================================================
- * Define los estilos para los botones reutilizables de la aplicación,
- * siguiendo una estética inspirada en Material Design 3.
- */
-
-// --- Plantilla base para todos los botones de material ---
-// Usar un placeholder (%) es más eficiente que una clase si solo se va a extender.
-%btn-material-base {
+// --- BOTÓN PRINCIPAL (MATERIAL DESIGN) ---
+.btn-material {
+  // Propiedades base del botón
   position: relative;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.875rem 2rem;
-  border-radius: 9999px; // Forma de píldora
+  border-radius: 9999px; // Píldora
   border: none;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
   outline: none;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.28s, transform 0.28s;
 
-  // La "State Layer" de Material Design para feedback visual
+  // Colores (usando nuestras variables)
+  background-color: var(--pastel-pink);
+  color: white;
+
+  // Sombra y transición para el efecto de elevación
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.28s; // Añadimos transición para el color
+
+  // La capa de estado (State Layer)
   &::before {
     content: "";
     position: absolute;
-    inset: 0; // Atajo para top, left, right, bottom = 0
-    background-color: currentColor; // Usa el color del texto actual
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white;
     opacity: 0;
-    transition: opacity 0.28s;
+    transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  // --- ESTADOS ---
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+
     &::before {
       opacity: 0.08;
-    } // 8% de opacidad en hover
+    }
   }
 
   &:active {
     transform: translateY(0);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    &::before {
-      opacity: 0.12;
-    } // 12% de opacidad en active/press
   }
 }
 
-// --- Botón Primario ---
-.btn-material {
-  @extend %btn-material-base;
-  background-color: var(--theme-color-accent);
-  color: white;
-}
-
-// --- Botón Secundario ---
+// --- ¡BOTÓN SECUNDARIO (DEFINICIÓN CORRECTA)! ---
 .btn-secondary {
-  @extend %btn-material-base;
+  @extend .btn-material; // Hereda toda la estructura y comportamiento del botón principal
+
+  // Sobrescribimos solo los colores y bordes
   background-color: transparent;
-  color: var(--theme-text-primary);
-  border: 1px solid var(--theme-color-border);
+  color: var(--text-charcoal);
+  border: 1px solid var(--soft-gray);
   box-shadow: none; // Sin sombra por defecto
 
-  &:hover,
-  &:active {
-    box-shadow: none;
-    transform: none; // Sin efecto de elevación para un look más plano
+  // La capa de estado ahora es oscura para que contraste con el fondo claro
+  &::before {
+    background-color: var(--text-charcoal);
   }
 
+  // Estados sobrescritos para el botón secundario
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04); // Un fondo sutil al pasar el ratón
+    background-color: var(--background-sec);
+    border-color: var(--text-charcoal);
+    box-shadow: none;
+    transform: none; // Sin efecto de elevación para un look más plano
+
+    &::before {
+      opacity: 0.08;
+    }
   }
 }

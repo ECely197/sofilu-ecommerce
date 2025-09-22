@@ -275,8 +275,13 @@ export class ProductForm implements OnInit {
       name: [template.variantName, Validators.required],
       options: this.fb.array(
         template.options.map((opt) =>
-          // ¡AHORA ESTO ES CORRECTO!
-          this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
+          this.newOption(
+            opt.name,
+            opt.price,
+            opt.stock,
+            opt.costPrice,
+            opt.image
+          )
         )
       ),
     });
@@ -306,13 +311,16 @@ export class ProductForm implements OnInit {
     name = '',
     price: number | null = null,
     stock: number | null = null,
-    costPrice: number | null = null
+    costPrice: number | null = null,
+    image: string | null = null
   ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
       price: [price, [Validators.required, Validators.min(0)]],
       stock: [stock, [Validators.required, Validators.min(0)]],
       costPrice: [costPrice, [Validators.min(0)]],
+      image: [image],
+      imageFile: [null],
     });
   }
   addVariantOption(variantIndex: number): void {

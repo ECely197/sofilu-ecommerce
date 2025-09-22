@@ -15,6 +15,7 @@ export interface VariantTemplate {
   variantName: string;
   options: {
     name: string;
+    image?: string;
     price?: number;
     stock?: number;
     costPrice?: number;

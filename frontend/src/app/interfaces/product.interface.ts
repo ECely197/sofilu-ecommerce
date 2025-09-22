@@ -1,14 +1,20 @@
 // Contenido completo y final para: src/app/interfaces/product.interface.ts
 
-// Importamos la interfaz Category para poder usarla como tipo
 import { Category } from '../services/category.service';
 import { Vendor } from '../services/vendor.service';
 
+/**
+ * @interface Option
+ * @description Define la estructura para una opción dentro de una variante.
+ * Se añade el campo de imagen opcional. `price` y `stock` se mantienen como
+ * números para consistencia en la aplicación, con un valor por defecto de 0.
+ */
 export interface Option {
   name: string;
-  price: number;
-  stock: number;
-  costPrice?: number;
+  image?: string; // ¡NUEVO! Campo de imagen opcional
+  price: number; // CORRECCIÓN: Se mantiene como `number`
+  stock: number; // CORRECCIÓN: Se mantiene como `number`
+  costPrice?: number; // Este puede seguir siendo opcional
 }
 
 export interface Variant {
@@ -25,7 +31,6 @@ export interface Product {
   price: number;
   costPrice?: number;
   category: Category;
-
   images: string[];
   isFeatured: boolean;
   isOnSale: boolean;

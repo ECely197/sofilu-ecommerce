@@ -44,6 +44,7 @@
           <!-- Cabecera de la tabla de opciones -->
           <div class="option-row header">
             <span>Valor (ej. S)</span>
+            <span>Imagen (URL)</span>
             <span>Mod. Precio</span>
             <span>Stock</span>
             <span>Costo</span>
@@ -54,12 +55,39 @@
           <!-- Filas de opciones dinámicas -->
           @for (option of options.controls; track option; let i = $index) {
           <div class="option-row" [formGroupName]="i">
+            <!-- Input de Nombre -->
             <input
               type="text"
               formControlName="name"
               class="form-input"
               placeholder="Nombre"
             />
+
+            <!-- ¡NUEVO! Campo para subir la imagen de la opción -->
+            <div class="variant-image-uploader">
+              <label [for]="'option-image-' + i" class="uploader-label">
+                @if (option.get('imagePreview')?.value) {
+                <img
+                  [src]="option.get('imagePreview')?.value"
+                  alt="Vista previa"
+                  class="variant-image-preview"
+                />
+                } @else {
+                <span class="material-symbols-outlined placeholder-icon"
+                  >add_photo_alternate</span
+                >
+                }
+              </label>
+              <input
+                [id]="'option-image-' + i"
+                type="file"
+                class="file-input"
+                (change)="onOptionImageSelected($event, i)"
+                accept="image/*"
+              />
+            </div>
+
+            <!-- Resto de inputs -->
             <input
               type="number"
               formControlName="price"

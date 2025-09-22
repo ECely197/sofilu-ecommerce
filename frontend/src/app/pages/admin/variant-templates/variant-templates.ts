@@ -4,21 +4,20 @@ import { CommonModule } from '@angular/common';
 import {
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-
-// Servicios
 import {
-  VariantTemplateService,
   VariantTemplate,
+  VariantTemplateService,
 } from '../../../services/variant-template.service';
-import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
-
-// Directivas y Componentes
+import { ToastService } from '../../../services/toast.service';
 import { RippleDirective } from '../../../directives/ripple';
+import { StorageService } from '../../../services/storage';
+import { forkJoin, of, switchMap, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-variant-templates',
@@ -33,28 +32,191 @@ export class VariantTemplatesComponent implements OnInit {
   private variantTemplateService = inject(VariantTemplateService);
   private toastService = inject(ToastService);
   private confirmationService = inject(ConfirmationService);
+  private storageService = inject(StorageService);
 
   templates = signal<VariantTemplate[]>([]);
   isLoading = signal(true);
   isSaving = signal(false);
-
-  // ¡NUEVO! Signal para rastrear el ID de la plantilla que se está editando
   editingTemplateId = signal<string | null>(null);
 
   templateForm!: FormGroup;
 
-  ngOnInit(): void {
+  constructor() {
+    // Inicializamos el formulario en el constructor
     this.templateForm = this.fb.group({
       templateName: ['', Validators.required],
       variantName: ['', Validators.required],
-      options: this.fb.array([this.newOption()], Validators.required),
+      options: this.fb.array([this.createOptionGroup()]), // Inicializa con al menos una opción
     });
+  }
+
+  ngOnInit() {
     this.loadTemplates();
   }
 
   get options(): FormArray {
     return this.templateForm.get('options') as FormArray;
   }
+
+  private createOptionGroup(option: any = {}): FormGroup {
+    return this.fb.group({
+      name: [option.name || '', Validators.required],
+      price: [option.price || 0],
+      stock: [option.stock || 0],
+      costPrice: [option.costPrice || null],
+      image: [option.image || null],
+      imageFile: [null],
+      imagePreview: [option.image || null],
+    });
+  }
+
+  addOption() {
+    this.options.push(this.createOptionGroup());
+  }
+
+  removeOption(index: number) {
+    if (this.options.length > 1) {
+      this.options.removeAt(index);
+    }
+  }
+
+  //nueva logica
+  /**
+   * ¡NUEVO! Maneja la selección de un archivo de imagen para una opción específica.
+   * @param event El evento del input de tipo 'file'.
+   * @param optionIndex El índice de la opción.
+   */
+  onOptionImageSelected(event: Event, optionIndex: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const option = this.options.at(optionIndex) as FormGroup;
+
+      option.patchValue({ imageFile: file });
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        option.patchValue({ imagePreview: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  /**
+   * ¡NUEVO! Maneja el envío del formulario, ahora con lógica de subida de imágenes.
+   */
+  handleSubmit() {
+    if (this.templateForm.invalid) {
+      this.toastService.show(
+        'Por favor, completa los campos requeridos.',
+        'error'
+      );
+      return;
+    }
+    this.isSaving.set(true);
+
+    const uploadOperations$: Observable<any>[] = [];
+    this.options.controls.forEach((option, index) => {
+      const imageFile = option.get('imageFile')?.value;
+      if (imageFile instanceof File) {
+        // Si hay un archivo nuevo, crea una operación de subida
+        const upload$ = this.storageService.uploadImage(imageFile).pipe(
+          map((url) => ({ index, url })) // Pasa el índice y la URL resultante
+        );
+        uploadOperations$.push(upload$);
+      }
+    });
+
+    const uploads$ =
+      uploadOperations$.length > 0 ? forkJoin(uploadOperations$) : of([]);
+
+    uploads$.subscribe({
+      next: (uploadResults) => {
+        // Actualiza las URLs en el formulario antes de enviar al backend
+        uploadResults.forEach((result) => {
+          this.options.at(result.index).get('image')?.setValue(result.url);
+        });
+
+        this.saveTemplateData();
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.toastService.show('Error al subir las imágenes.', 'error');
+        console.error(err);
+      },
+    });
+  }
+
+  /**
+   * ¡NUEVO! Contiene la lógica final de guardado de datos.
+   */
+  private saveTemplateData(): void {
+    const formValue = this.templateForm.getRawValue();
+
+    // Limpiamos los campos temporales antes de enviar
+    const templatePayload = {
+      ...formValue,
+      options: formValue.options.map((opt: any) => ({
+        name: opt.name,
+        price: opt.price,
+        stock: opt.stock,
+        costPrice: opt.costPrice,
+        image: opt.image,
+      })),
+    };
+
+    const operation$ = this.editingTemplateId()
+      ? this.variantTemplateService.updateTemplate(
+          this.editingTemplateId()!,
+          templatePayload
+        )
+      : this.variantTemplateService.createTemplate(templatePayload);
+
+    operation$.subscribe({
+      next: () => {
+        this.toastService.show(
+          `Plantilla ${
+            this.editingTemplateId() ? 'actualizada' : 'creada'
+          } con éxito.`,
+          'success'
+        );
+        this.resetForm();
+        this.loadTemplates();
+      },
+      error: (err) => {
+        this.toastService.show(
+          err.error?.details || 'No se pudo guardar la plantilla.',
+          'error'
+        );
+      },
+      complete: () => {
+        this.isSaving.set(false);
+      },
+    });
+  }
+
+  /** Prepara el formulario para editar una plantilla existente. */
+  startEditing(template: VariantTemplate) {
+    this.editingTemplateId.set(template._id);
+    this.templateForm.patchValue({
+      templateName: template.templateName,
+      variantName: template.variantName,
+    });
+    // Reconstruye el FormArray de opciones con los datos de la plantilla
+    this.options.clear();
+    template.options.forEach((opt) =>
+      this.options.push(this.createOptionGroup(opt))
+    );
+  }
+
+  private resetForm() {
+    this.editingTemplateId.set(null);
+    this.templateForm.reset();
+    this.options.clear();
+    this.addOption(); // Asegura que siempre haya al menos una opción
+  }
+
+  //fin de nueva logica
 
   newOption(
     name: string = '',
@@ -68,16 +230,6 @@ export class VariantTemplatesComponent implements OnInit {
       stock: [stock, [Validators.min(0)]],
       costPrice: [costPrice, [Validators.min(0)]],
     });
-  }
-
-  addOption(): void {
-    this.options.push(this.newOption());
-  }
-
-  removeOption(index: number): void {
-    if (this.options.length > 1) {
-      this.options.removeAt(index);
-    }
   }
 
   loadTemplates(): void {
@@ -94,79 +246,11 @@ export class VariantTemplatesComponent implements OnInit {
     });
   }
 
-  // --- ¡NUEVO! Método para empezar a editar ---
-  startEditing(template: VariantTemplate): void {
-    this.editingTemplateId.set(template._id);
-    this.templateForm.patchValue({
-      templateName: template.templateName,
-      variantName: template.variantName,
-    });
-
-    this.options.clear();
-    template.options.forEach((opt) => {
-      this.options.push(
-        this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
-      );
-    });
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
   cancelEditing(): void {
     this.editingTemplateId.set(null);
     this.templateForm.reset();
     this.options.clear();
     this.addOption();
-  }
-
-  handleSubmit(): void {
-    if (this.templateForm.invalid) {
-      this.toastService.show(
-        'Por favor, completa todos los campos requeridos.',
-        'error'
-      );
-      return;
-    }
-    this.isSaving.set(true);
-    const formData = this.templateForm.getRawValue();
-
-    // Decidimos si crear o actualizar basándonos en si estamos en modo edición
-    const operation$ = this.editingTemplateId()
-      ? this.variantTemplateService.updateTemplate(
-          this.editingTemplateId()!,
-          formData
-        )
-      : this.variantTemplateService.createTemplate(formData);
-
-    operation$.subscribe({
-      next: (savedTemplate) => {
-        if (this.editingTemplateId()) {
-          // Si actualizamos, reemplazamos el item en el array
-          this.templates.update((current) =>
-            current.map((t) =>
-              t._id === savedTemplate._id ? savedTemplate : t
-            )
-          );
-        } else {
-          // Si creamos, lo añadimos al final
-          this.templates.update((current) => [...current, savedTemplate]);
-        }
-        this.toastService.show(
-          `Plantilla "${savedTemplate.templateName}" guardada con éxito.`,
-          'success'
-        );
-        this.cancelEditing(); // Resetea el formulario y el estado de edición
-      },
-      error: (err) => {
-        this.toastService.show(
-          err.error?.details || 'No se pudo guardar la plantilla.',
-          'error'
-        );
-      },
-      complete: () => {
-        this.isSaving.set(false);
-      },
-    });
   }
 
   async deleteTemplate(template: VariantTemplate): Promise<void> {
