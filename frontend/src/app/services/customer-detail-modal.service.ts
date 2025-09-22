@@ -1,22 +1,33 @@
-// En: frontend/src/app/services/customer-detail-modal.service.ts
+/**
+ * @fileoverview Servicio del Modal de Detalles del Cliente.
+ * Gestiona la visibilidad de un modal que muestra información detallada
+ * de un cliente específico, usado en el panel de administración.
+ */
 import { Injectable, signal } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CustomerDetailModalService {
-  // El signal contendrá el UID del cliente que queremos ver, o null si está cerrado
+  /**
+   * @property {WritableSignal<string | null>} activeCustomerId
+   * Un signal que almacena el UID del cliente a mostrar.
+   * Si es `null`, el modal está cerrado.
+   */
   activeCustomerId = signal<string | null>(null);
 
-  // Método para abrir el modal para un cliente específico
+  /**
+   * Abre el modal para un cliente específico.
+   * @param uid El UID del cliente cuyos detalles se quieren ver.
+   */
   open(uid: string): void {
-    document.body.style.overflow = '';
+    document.body.style.overflow = 'hidden'; // Previene el scroll del fondo.
     this.activeCustomerId.set(uid);
   }
 
-  // Método para cerrar el modal
+  /** Cierra el modal. */
   close(): void {
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = ''; // Restaura el scroll del fondo.
     this.activeCustomerId.set(null);
   }
 }

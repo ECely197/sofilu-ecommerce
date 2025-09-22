@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Confirmación de Pedido - Sofilu</title>
+    <!-- Los estilos se definen aquí, pero se aplican inline para máxima compatibilidad -->
     <style>
       body {
         font-family: "Manrope", Arial, sans-serif;
@@ -36,10 +37,6 @@
         text-align: left;
         vertical-align: top;
       }
-      .total-row {
-        font-weight: bold;
-        font-size: 1.2em;
-      }
       .text-right {
         text-align: right;
       }
@@ -60,7 +57,7 @@
       <tr>
         <td align="center">
           <div class="container">
-            <!-- HEADER -->
+            <!-- ====== HEADER ====== -->
             <div style="padding: 24px 0; text-align: center">
               <h1
                 style="
@@ -73,7 +70,8 @@
                 Sofilu
               </h1>
             </div>
-            <!-- CUERPO -->
+
+            <!-- ====== CUERPO DEL MENSAJE ====== -->
             <div class="content">
               <h1
                 style="
@@ -98,7 +96,7 @@
                 notificación cuando esté en camino.
               </p>
 
-              <!-- TABLA DE PRODUCTOS -->
+              <!-- ====== TABLA DE PRODUCTOS ====== -->
               <table>
                 <thead>
                   <tr>
@@ -111,10 +109,7 @@
                   <% order.items.forEach(item => { %>
                   <tr>
                     <td style="width: 80px">
-                      <!--
-                                        ¡CORRECCIÓN CLAVE!
-                                        Verificamos si el array de imágenes existe y no está vacío.
-                                      -->
+                      <!-- Verificación robusta para asegurar que la imagen existe -->
                       <% if (item.product && item.product.images &&
                       item.product.images.length > 0) { %>
                       <img
@@ -125,7 +120,7 @@
                         style="border-radius: 8px; object-fit: cover"
                       />
                       <% } else { %>
-                      <!-- Si no hay imagen, mostramos un placeholder. -->
+                      <!-- Placeholder si no hay imagen, para mantener la estructura -->
                       <div
                         style="
                           width: 64px;
@@ -140,6 +135,9 @@
                       <p style="margin: 0; font-weight: 600; color: #1a100e">
                         <%= item.product.name %>
                       </p>
+                      <!-- Muestra las variantes seleccionadas si existen -->
+                      <% if (item.selectedVariants &&
+                      Object.keys(item.selectedVariants).length > 0) { %>
                       <p
                         style="
                           margin: 4px 0 0 0;
@@ -148,11 +146,12 @@
                         "
                       >
                         <% for (const [key, value] of
-                        Object.entries(item.selectedVariants || {})) { %>
+                        Object.entries(item.selectedVariants)) { %>
                         <span><%= key %>: <strong><%= value %></strong></span
                         ><br />
                         <% } %>
                       </p>
+                      <% } %>
                     </td>
                     <td class="text-center" style="color: #945b51">
                       <%= item.quantity %>
@@ -165,9 +164,11 @@
                 </tbody>
               </table>
 
-              <!-- TABLA DE TOTALES -->
-              <% let subtotal = 0; order.items.forEach(item => { subtotal +=
-              item.price * item.quantity; }); const shipping = 10000; %>
+              <!-- ====== TABLA DE TOTALES ====== -->
+              <% const subtotal = order.items.reduce((sum, item) => sum +
+              (item.price * item.quantity), 0); %> <% const shipping =
+              order.totalAmount - subtotal + (order.discountAmount || 0); //
+              Cálculo dinámico del envío %>
               <table style="margin-top: 24px">
                 <tbody>
                   <tr>

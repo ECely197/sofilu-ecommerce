@@ -1,5 +1,8 @@
-// En: frontend/src/app/services/wishlist.ts
-
+/**
+ * @fileoverview Servicio de Gestión de la Lista de Deseos.
+ * Mantiene el estado de la lista de deseos sincronizado con el backend y
+ * lo expone a través de Signals para el resto de la aplicación.
+ */
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../interfaces/product.interface';
@@ -11,54 +14,53 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class WishlistService {
+  // --- Inyección de Dependencias ---
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private apiUrl = `${environment.apiUrl}/wishlist`;
 
-  // --- SIGNALS PÚBLICOS ---
-  // Un signal para los IDs (útil para comprobaciones rápidas)
+  // --- Estado Reactivo con Signals ---
+  /** IDs de los productos en la lista de deseos, para comprobaciones rápidas de pertenencia. */
   public wishlistProductIds = signal<string[]>([]);
-  // Un signal para los objetos de producto completos (para la UI)
+  /** Objetos de producto completos en la lista de deseos, para mostrar en la UI. */
   public wishlistProducts = signal<Product[]>([]);
 
   constructor() {
+    // Sincronización automática: reacciona a los cambios en el estado de autenticación.
     this.authService.currentUser$
       .pipe(
-        switchMap(
-          (user) =>
-            user
-              ? this.http.get<{ products: Product[] }>(
-                  `${this.apiUrl}/${user.uid}`
-                )
-              : of({ products: [] }) // Si no hay usuario, devuelve una wishlist vacía
+        switchMap((user) =>
+          // Si hay un usuario, obtiene su lista de deseos; si no, emite una lista vacía.
+          user
+            ? this.http.get<{ products: Product[] }>(
+                `${this.apiUrl}/${user.uid}`
+              )
+            : of({ products: [] })
         )
       )
       .subscribe({
-        next: (wishlist) => {
-          // Nos aseguramos de manejar el caso en que 'wishlist.products' pueda ser nulo o indefinido
-          this.updateLocalWishlist(wishlist?.products || []);
-        },
+        next: (wishlist) => this.updateLocalWishlist(wishlist?.products || []),
         error: (err) => {
-          console.error('Error cargando wishlist:', err);
-          this.updateLocalWishlist([]); // En caso de error, reseteamos a un array vacío
+          console.error('Error al cargar la lista de deseos:', err);
+          this.updateLocalWishlist([]); // En caso de error, resetea el estado local.
         },
       });
   }
 
-  // Este método ahora es interno. Los componentes usarán el signal directamente.
-  private isInWishlist(productId: string): boolean {
-    return this.wishlistProductIds().includes(productId);
-  }
-
-  // El método público principal para añadir/quitar
+  /**
+   * Alterna la presencia de un producto en la lista de deseos.
+   * Si ya está, lo elimina. Si no está, lo añade.
+   * @param product El producto a añadir o quitar.
+   */
   toggleProduct(product: Product): void {
-    if (this.isInWishlist(product._id)) {
+    if (this.wishlistProductIds().includes(product._id)) {
       this.removeProduct(product);
     } else {
       this.addProduct(product);
     }
   }
 
+  /** Añade un producto a la lista de deseos del usuario actual. @private */
   private addProduct(product: Product): void {
     this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
       if (!user) return;
@@ -73,6 +75,7 @@ export class WishlistService {
     });
   }
 
+  /** Elimina un producto de la lista de deseos del usuario actual. @private */
   private removeProduct(product: Product): void {
     this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
       if (!user) return;
@@ -87,11 +90,15 @@ export class WishlistService {
     });
   }
 
+  /**
+   * Método centralizado para actualizar los signals del estado local.
+   * @param products El array de productos completo recibido del backend.
+   * @private
+   */
   private updateLocalWishlist(products: Product[]): void {
-    const safeProducts = products || []; // Aseguramos que 'products' sea siempre un array
+    const safeProducts = products || [];
     const productIds = safeProducts.map((p) => p._id);
-
     this.wishlistProductIds.set(productIds);
-    this.wishlistProducts.set(safeProducts); // Actualizamos el signal con los productos completos
+    this.wishlistProducts.set(safeProducts);
   }
 }

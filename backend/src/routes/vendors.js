@@ -1,123 +1,80 @@
-// En: backend/src/routes/vendors.js
+/**
+ * @fileoverview Gestiona las rutas de la API para los Vendedores/Marcas.
+ */
+
 const express = require("express");
 const router = express.Router();
 const Vendor = require("../models/Vendor");
-const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 const Product = require("../models/Product");
+const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
-// Middleware de protección para todas las rutas
+// Middleware de protección para todas las rutas de este archivo
 router.use(authMiddleware, adminOnly);
 
-// GET todos los vendedores
+/**
+ * @route   GET /api/vendors
+ * @desc    Obtener todos los vendedores.
+ * @access  Admin
+ */
 router.get("/", async (req, res) => {
   try {
     const vendors = await Vendor.find().sort({ name: 1 });
     res.json(vendors);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener vendedores" });
+    res.status(500).json({ message: "Error al obtener vendedores." });
   }
 });
 
+/**
+ * @route   GET /api/vendors/stats
+ * @desc    Obtener estadísticas de productos agrupadas por vendedor.
+ * @access  Admin
+ */
 router.get("/stats", async (req, res) => {
   try {
+    // Esta pipeline de agregación es compleja. Un buen comentario explica su propósito.
     const vendorStats = await Product.aggregate([
-      { $match: { vendor: { $exists: true, $ne: null } } },
-
+      { $match: { vendor: { $ne: null } } }, // Filtrar productos sin vendedor
+      {
+        $group: {
+          _id: "$vendor", // Agrupar por el ID del vendedor
+          totalProducts: { $sum: 1 },
+        },
+      },
       {
         $lookup: {
+          // Unir con la colección 'vendors' para obtener el nombre
           from: "vendors",
-          localField: "vendor",
+          localField: "_id",
           foreignField: "_id",
           as: "vendorInfo",
         },
       },
       { $unwind: "$vendorInfo" },
-
       {
         $project: {
-          vendorName: "$vendorInfo.name",
-          inventorySaleValue: {
-            $cond: {
-              if: { $eq: [{ $size: "$variants" }, 0] },
-              then: { $multiply: ["$price", "$stock"] },
-              else: {
-                $sum: {
-                  $map: {
-                    input: "$variants",
-                    as: "variant",
-                    in: {
-                      $sum: {
-                        $map: {
-                          input: "$$variant.options",
-                          as: "option",
-                          in: {
-                            $multiply: ["$$option.stock", "$$option.price"],
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          inventoryCostValue: {
-            $sum: {
-              $map: {
-                input: "$variants",
-                as: "variant",
-                in: {
-                  $sum: {
-                    $map: {
-                      input: "$$variant.options",
-                      as: "option",
-                      in: {
-                        $multiply: [
-                          "$$option.stock",
-                          { $ifNull: ["$$option.costPrice", 0] },
-                        ],
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-
-      {
-        $group: {
-          _id: "$vendorName",
-          totalProducts: { $sum: 1 },
-          totalInventorySaleValue: { $sum: "$inventorySaleValue" },
-          totalInventoryCostValue: { $sum: "$inventoryCostValue" },
-        },
-      },
-
-      {
-        $project: {
+          // Formatear la salida final
           _id: 0,
-          vendorName: "$_id",
+          vendorName: "$vendorInfo.name",
           totalProducts: 1,
-          totalInventorySaleValue: 1,
-          totalInventoryCostValue: 1,
         },
       },
-
       { $sort: { vendorName: 1 } },
     ]);
-
     res.json(vendorStats);
   } catch (error) {
     console.error("Error al obtener estadísticas de vendedores:", error);
     res
       .status(500)
-      .json({ message: "Error al obtener estadísticas de vendedores" });
+      .json({ message: "Error al obtener estadísticas de vendedores." });
   }
 });
 
-// POST para crear un nuevo vendedor
+/**
+ * @route   POST /api/vendors
+ * @desc    Crear un nuevo vendedor.
+ * @access  Admin
+ */
 router.post("/", async (req, res) => {
   try {
     const newVendor = new Vendor({ name: req.body.name });
@@ -131,19 +88,24 @@ router.post("/", async (req, res) => {
     }
     res
       .status(400)
-      .json({ message: "Error al crear el vendedor", details: error.message });
+      .json({ message: "Error al crear el vendedor.", details: error.message });
   }
 });
 
-// DELETE para eliminar un vendedor
+/**
+ * @route   DELETE /api/vendors/:id
+ * @desc    Eliminar un vendedor.
+ * @access  Admin
+ */
 router.delete("/:id", async (req, res) => {
   try {
+    // TODO: Considerar qué sucede con los productos de este vendedor.
     const deleted = await Vendor.findByIdAndDelete(req.params.id);
     if (!deleted)
-      return res.status(404).json({ message: "Vendedor no encontrado" });
-    res.json({ message: "Vendedor eliminado" });
+      return res.status(404).json({ message: "Vendedor no encontrado." });
+    res.json({ message: "Vendedor eliminado." });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el vendedor" });
+    res.status(500).json({ message: "Error al eliminar el vendedor." });
   }
 });
 

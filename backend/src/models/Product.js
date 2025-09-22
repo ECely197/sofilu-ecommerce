@@ -1,18 +1,42 @@
-// En: backend/src/models/Product.js
+/**
+ * @fileoverview Define el esquema de Mongoose para la colección 'products'.
+ */
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-// SUB-ESQUEMA PARA LAS OPCIONES
+/**
+ * @schema optionSchema
+ * @description Sub-esquema para las opciones dentro de una variante (ej: "Caja de Regalo", "Bolsa de Dulces").
+ * Todos los campos excepto 'name' son ahora opcionales.
+ */
 const optionSchema = new Schema(
   {
-    name: { type: String, required: true },
-    price: { type: Number, default: 0, required: true },
-    stock: { type: Number, default: 0 },
-    costPrice: { type: Number, default: 0 },
+    name: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    price: {
+      type: Number,
+      default: 0,
+    },
+    stock: {
+      type: Number,
+    },
+    costPrice: {
+      type: Number,
+    },
   },
   { _id: false }
 );
 
+/**
+ * @schema variantSchema
+ * @description Sub-esquema para los tipos de variantes de un producto (ej: "Empaque", "Acompañamiento").
+ */
 const variantSchema = new Schema(
   {
     name: { type: String, required: true },
@@ -21,10 +45,13 @@ const variantSchema = new Schema(
   { _id: false }
 );
 
-// ESQUEMA PRINCIPAL DEL PRODUCTO
+/**
+ * @schema productSchema
+ * @description Esquema principal para un producto.
+ */
 const productSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     price: { type: Number, default: 0 },
     costPrice: { type: Number, default: 0 },
@@ -38,7 +65,9 @@ const productSchema = new Schema(
     salePrice: { type: Number },
     variants: [variantSchema],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 module.exports = mongoose.model("Product", productSchema);

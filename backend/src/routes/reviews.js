@@ -1,10 +1,21 @@
+/**
+ * @fileoverview Gestiona las rutas de la API para las reseñas de productos.
+ */
+
 const express = require("express");
 const router = express.Router();
 const Review = require("../models/Review");
-const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
+const { authMiddleware } = require("../middleware/authMiddleware");
 
-// --- OBTENER RESEÑAS PARA UN PRODUCTO ESPECÍFICO ---
-// GET /api/reviews/:productId
+// ==========================================================================
+// RUTA PÚBLICA
+// ==========================================================================
+
+/**
+ * @route   GET /api/reviews/:productId
+ * @desc    Obtener todas las reseñas para un producto específico.
+ * @access  Public
+ */
 router.get("/:productId", async (req, res) => {
   try {
     const reviews = await Review.find({ productId: req.params.productId }).sort(
@@ -12,27 +23,36 @@ router.get("/:productId", async (req, res) => {
     );
     res.json(reviews);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las reseñas" });
+    res.status(500).json({ message: "Error al obtener las reseñas." });
   }
 });
 
-// --- CREAR UNA NUEVA RESEÑA ---
-// POST /api/reviews/:productId
-router.post("/:productId", [authMiddleware], async (req, res) => {
-  // En un futuro, verificaríamos que el usuario haya comprado el producto
-  const { author, rating, title, comment } = req.body;
-  const newReview = new Review({
-    productId: req.params.productId,
-    author,
-    rating,
-    title,
-    comment,
-  });
+// ==========================================================================
+// RUTA PROTEGIDA
+// ==========================================================================
+
+/**
+ * @route   POST /api/reviews/:productId
+ * @desc    Crear una nueva reseña.
+ * @access  Private (Usuario logueado)
+ */
+router.post("/:productId", authMiddleware, async (req, res) => {
+  // TODO: En el futuro, verificar que el req.user.uid haya comprado este producto.
   try {
+    const { author, rating, title, comment } = req.body;
+    const newReview = new Review({
+      productId: req.params.productId,
+      author, // Podría reemplazarse con datos de req.user
+      rating,
+      title,
+      comment,
+    });
     const savedReview = await newReview.save();
     res.status(201).json(savedReview);
   } catch (error) {
-    res.status(400).json({ message: "Error al guardar la reseña" });
+    res
+      .status(400)
+      .json({ message: "Error al guardar la reseña.", details: error.message });
   }
 });
 

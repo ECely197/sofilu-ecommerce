@@ -1,21 +1,35 @@
-<!-- Usamos la nueva variable para decidir si mostrar el header y el footer -->
+<!-- Este contenedor principal utiliza Flexbox (definido en app.scss)
+     para asegurar que el footer siempre se mantenga al final de la página,
+     incluso si el contenido es corto. -->
 <div class="app-container">
+  <!-- El Header y Footer se muestran condicionalmente basados en la señal
+       `showGlobalHeaderAndFooter` del componente. -->
   <app-header *ngIf="showGlobalHeaderAndFooter()"></app-header>
 
   <main class="main-content">
+    <!-- El div 'page-container' aplica el padding y max-width a la página actual.
+         La directiva `[@routeAnimations]` activa la animación de transición
+         cada vez que el valor de `prepareRoute(outlet)` cambia. -->
     <div class="page-container" [@routeAnimations]="prepareRoute(outlet)">
+      <!-- El <router-outlet> es el marcador de posición donde Angular
+           renderizará el componente de la ruta activa. -->
       <router-outlet #outlet="outlet"></router-outlet>
     </div>
   </main>
 
   <app-footer *ngIf="showGlobalHeaderAndFooter()"></app-footer>
 
+  <!-- =================================================================== -->
+  <!-- COMPONENTES GLOBALES FLOTANTES (MODALES, FLYOUTS, TOASTS)            -->
+  <!-- Estos componentes se colocan aquí, fuera del <main>, para que puedan -->
+  <!-- superponerse a todo el contenido de la página sin ser afectados     -->
+  <!-- por los estilos del contenedor principal.                          -->
+  <!-- =================================================================== -->
   <app-cart-flyout></app-cart-flyout>
+  <app-wishlist-flyout></app-wishlist-flyout>
   <app-bottom-nav-bar *ngIf="showGlobalHeaderAndFooter()"></app-bottom-nav-bar>
   <app-toast-container></app-toast-container>
   <app-confirmation-modal></app-confirmation-modal>
   <app-product-explorer-modal></app-product-explorer-modal>
   <app-customer-detail-modal></app-customer-detail-modal>
-  <app-cart-flyout></app-cart-flyout>
-  <app-wishlist-flyout></app-wishlist-flyout>
 </div>

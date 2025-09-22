@@ -1,21 +1,42 @@
-const mongoose = require('mongoose');
+/**
+ * @fileoverview Define el esquema de Mongoose para la colección 'wishlists'.
+ * Cada documento representa la lista de deseos de un usuario específico.
+ */
+
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-// Esta es la plantilla para una colección de Wishlists.
-const wishlistSchema = new Schema({
-  // Hacemos referencia al _id del usuario en la colección de usuarios de Firebase.
-  // Así sabemos a quién pertenece esta lista de deseos.
-  userId: {
-    type: String,
-    required: true,
-    unique: true // Cada usuario solo puede tener UNA lista de deseos.
-  },
-  // 'products' será un array de IDs de productos.
-  // Hacemos referencia a la colección 'Product'.
-  products: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Product'
-  }]
-});
+/**
+ * @schema wishlistSchema
+ * @description Esquema para la lista de deseos de un usuario.
+ */
+const wishlistSchema = new Schema(
+  {
+    /**
+     * @property {String} userId - El UID del usuario de Firebase.
+     * Vincula esta lista de deseos a una cuenta de usuario única.
+     */
+    userId: {
+      type: String,
+      required: true,
+      unique: true, // Asegura que cada usuario solo tenga una lista de deseos.
+      index: true,
+    },
 
-module.exports = mongoose.model('Wishlist', wishlistSchema);
+    /**
+     * @property {Array<ObjectId>} products - Un array de IDs de productos.
+     * Contiene las referencias a los productos que el usuario ha añadido a su lista.
+     */
+    products: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+  },
+  {
+    timestamps: true, // Agrega createdAt y updatedAt.
+  }
+);
+
+module.exports = mongoose.model("Wishlist", wishlistSchema);

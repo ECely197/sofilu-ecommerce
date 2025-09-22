@@ -1,5 +1,17 @@
 // En: frontend/src/app/pages/product-detail/product-detail.ts
+/**
+ * @fileoverview Componente de la Página de Detalle de Producto.
+ * Este componente es el corazón de la experiencia de compra. Gestiona:
+ * - Carga de datos del producto.
+ * - Galería de imágenes interactiva.
+ * - Selección de variantes de producto.
+ * - Lógica de añadir al carrito y a la lista de deseos.
+ * - Gestión de pestañas para descripción y reseñas.
+ * - Formulario para enviar nuevas reseñas.
+ * - SEO (títulos, metaetiquetas) y datos estructurados (JSON-LD).
+ */
 
+// --- Importaciones de Angular y Módulos ---
 import {
   Component,
   OnInit,
@@ -15,33 +27,37 @@ import {
   AfterViewInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
-  FormControl,
-  FormGroup,
   ReactiveFormsModule,
+  FormGroup,
+  FormControl,
   Validators,
 } from '@angular/forms';
 import { Title, Meta, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-// Servicios, Tipos y Directivas
+// --- Servicios, Tipos y Componentes Personalizados ---
 import { ProductServices, Review } from '../../services/product';
-import { JsonLdService } from '../../services/json-ld.service';
 import { Product, Option } from '../../interfaces/product.interface';
+import { JsonLdService } from '../../services/json-ld.service';
 import { CartService } from '../../services/cart';
 import { WishlistService } from '../../services/wishlist';
 import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
-import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
+
+import { RippleDirective } from '../../directives/ripple';
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
 
-// Importamos Swiper para la galería móvil
+// --- Librerías de Terceros ---
 import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 Swiper.use([Pagination]);
 
-// Pipe para renderizar HTML de forma segura
+/**
+ * Pipe personalizado para renderizar HTML de forma segura,
+ * previniendo ataques XSS. Esencial para descripciones de productos que vienen de un editor de texto enriquecido.
+ */
 @Pipe({ name: 'safeHtml', standalone: true })
 export class SafeHtmlPipe implements PipeTransform {
   constructor(private sanitizer: DomSanitizer) {}
@@ -66,7 +82,7 @@ export class SafeHtmlPipe implements PipeTransform {
 export class ProductDetailComponent
   implements OnInit, OnDestroy, AfterViewInit
 {
-  // --- INYECCIONES ---
+  // --- INYECCIÓN DE DEPENDENCIAS ---
   private route = inject(ActivatedRoute);
   private productService = inject(ProductServices);
   private cartService = inject(CartService);
@@ -80,7 +96,7 @@ export class ProductDetailComponent
   private el = inject(ElementRef);
   private zone = inject(NgZone);
 
-  // --- SIGNALS ---
+  // --- ESTADO DEL COMPONENTE (SIGNALS) ---
   product = signal<Product | null>(null);
   selectedImage = signal<string>('');
   reviews = signal<Review[]>([]);

@@ -1,30 +1,40 @@
-// En: frontend/src/app/app.ts
+/**
+ * =========================================================================
+ * COMPONENTE RAÍZ (APP ROOT)
+ * =========================================================================
+ * Este es el componente principal y el punto de entrada de la vista de la aplicación.
+ * Orquesta componentes globales (Header, Footer, Modals) y gestiona la lógica
+ * de alto nivel, como las animaciones de ruta y la inicialización de librerías.
+ */
 
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
+// --- Componentes Globales de la UI ---
 import { Header } from './components/header/header';
 import { Footer } from './components/footer/footer';
 import { CartFlyout } from './components/cart-flyout/cart-flyout';
 import { BottomNavBarComponent } from './components/bottom-nav-bar.component/bottom-nav-bar.component';
 import { ToastContainerComponent } from './components/toast/toast';
-import { UiState } from './services/ui-state';
 import { ConfirmationModalComponent } from './components/confirmation-modal/confirmation-modal';
 import { ProductExplorerModalComponent } from './components/product-explorer-modal/product-explorer-modal';
 import { CustomerDetailModalComponent } from './components/customer-detail-modal/customer-detail-modal';
-import { WishlistFlyoutComponent } from './components/wishlist-flyout/wishlist-flyout';
+import { WishlistFlyoutComponent } from './components/wishlist-flyout/wishlist-flyout'; // ¡IMPORTACIÓN CORREGIDA!
 
+// --- Servicios y Animaciones ---
+import { UiState } from './services/ui-state';
 import { routeAnimations } from './route-animations';
 
-// Importamos AOS y su tipo de opciones
+// Importación de la librería AOS (Animate On Scroll)
 import * as AOS from 'aos';
 import { AosOptions } from 'aos';
 
 @Component({
   selector: 'app-root',
   standalone: true,
+  // ¡CORRECCIÓN CLAVE! Todos los componentes usados en app.html deben estar aquí.
   imports: [
     CommonModule,
     RouterOutlet,
@@ -34,69 +44,82 @@ import { AosOptions } from 'aos';
     BottomNavBarComponent,
     ToastContainerComponent,
     ConfirmationModalComponent,
-    ProductExplorerModalComponent,
-    CustomerDetailModalComponent,
-    WishlistFlyoutComponent,
+    ProductExplorerModalComponent, // ¡IMPORTACIÓN CORREGIDA!
+    CustomerDetailModalComponent, // ¡IMPORTACIÓN CORREGIDA!
+    WishlistFlyoutComponent, // ¡IMPORTACIÓN CORREGIDA!
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  animations: [routeAnimations],
+  animations: [routeAnimations], // Asocia las animaciones de ruta al componente
 })
 export class App implements OnInit {
+  // --- Inyección de Dependencias ---
   private router = inject(Router);
   public uiState = inject(UiState);
-  showGlobalHeaderAndFooter = signal(true);
-  isSearchVisible = signal(false);
 
+  // --- Estado del Componente con Signals ---
+  showGlobalHeaderAndFooter = signal(true);
+
+  /**
+   * Hook del ciclo de vida de Angular que se ejecuta una vez que el componente se ha inicializado.
+   */
   ngOnInit() {
-    // 1. Configuración inicial de AOS
+    this.initializeAOS();
+    this.subscribeToRouterEvents();
+  }
+
+  /**
+   * Configura e inicializa la librería Animate On Scroll (AOS).
+   */
+  private initializeAOS(): void {
     const aosConfig: AosOptions = {
-      duration: 800, // Duración de la animación
-      easing: 'ease-out-cubic', // Curva de aceleración suave
-      once: true, // La animación solo ocurre una vez
-      offset: 50, // Se dispara un poco antes de que el elemento entre en vista
+      duration: 800,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 50,
     };
     AOS.init(aosConfig);
+  }
 
-    // 2. Suscripción a los eventos de navegación
+  /**
+   * Se suscribe a los eventos de navegación del router para ejecutar lógica
+   * en cada cambio de página.
+   */
+  private subscribeToRouterEvents(): void {
     this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd
+        )
+      )
+      .subscribe((event: NavigationEnd) => {
         const url = event.urlAfterRedirects;
-
-        // Lógica para mostrar/ocultar header y footer
-        if (url.includes('/checkout') || url.startsWith('/admin')) {
-          this.showGlobalHeaderAndFooter.set(false);
-        } else {
-          this.showGlobalHeaderAndFooter.set(true);
-        }
-
-        // Lógica para refrescar AOS después de cada navegación
-        // Usamos un pequeño setTimeout para darle tiempo al DOM de actualizarse
-        setTimeout(() => {
-          AOS.refresh();
-        }, 100);
-
-        // Opcional: Volver al principio de la página en cada navegación
+        const shouldHide =
+          url.includes('/checkout') || url.startsWith('/admin');
+        this.showGlobalHeaderAndFooter.set(!shouldHide);
+        setTimeout(() => AOS.refresh(), 100);
         window.scrollTo(0, 0);
       });
   }
 
+  /**
+   * Prepara la animación de ruta para el <router-outlet>.
+   * Lee el valor de la propiedad `data.animation` de la ruta activa.
+   * @param outlet La directiva RouterOutlet.
+   * @returns El nombre de la animación de la ruta actual.
+   */
+  prepareRoute(outlet: RouterOutlet) {
+    return outlet?.activatedRouteData?.['animation'];
+  }
+
+  // Lógica de búsqueda que estaba en tu componente original, la restauro por si la usas
   handleSearch(event: Event, searchInput: HTMLInputElement): void {
     event.preventDefault();
     const query = searchInput.value.trim();
     if (query) {
       this.router.navigate(['/search'], { queryParams: { q: query } });
       searchInput.value = '';
-      this.uiState.closeMobileSearch(); // Cierra a través del servicio
+      this.uiState.closeMobileSearch();
     }
-  }
-
-  prepareRoute(outlet: RouterOutlet) {
-    return (
-      outlet &&
-      outlet.activatedRouteData &&
-      outlet.activatedRouteData['animation']
-    );
   }
 }

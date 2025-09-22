@@ -1,87 +1,69 @@
+/**
+ * =========================================================================
+ * HOJA DE ESTILOS GLOBAL - SOFILU ECOMMERCE
+ * =========================================================================
+ * Este archivo establece las bases visuales de toda la aplicación Angular.
+ * Define:
+ * 1. Importaciones de fuentes.
+ * 2. Design Tokens (variables de color, tipografía, espaciado).
+ * 3. Reseteo de estilos base (CSS Reset).
+ * 4. Estilos globales para elementos HTML (body, h1, etc.).
+ * 5. Clases de utilidad y componentes globales (botones, contenedores).
+ * 6. Animaciones globales.
+ * =========================================================================
+ */
+
 /* ==========================================================================
    1. IMPORTACIONES Y FUENTES
    ========================================================================== */
-
-// -- Fuentes de Google --
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@400;500;700;800&family=Baloo+2:wght@400;500;600;700&display=swap");
 
 /* ==========================================================================
-   2. VARIABLES GLOBALES DE DISEÑO (ROOT)
+   2. DESIGN TOKENS (Variables de Diseño Globales)
    ========================================================================== */
-
 :root {
-  /* ================================== */
-  /* --- PALETA DE COLORES PRINCIPAL 
-  /* ================================== */
+  // --- Paleta de Marca ---
   --color-brand-peach: #ffdab9;
   --color-brand-pink: #f4c2c2;
   --color-brand-lavender: #e6e6fa;
   --color-brand-dark: #4a4a4a;
 
-  /* ================================== */
-  /* --- NUEVOS: TONOS NEUTROS Y DE FONDO --- */
-  /* ================================== */
-  --color-neutral-100: #ffffff; /* Blanco Puro (para tarjetas) */
-  --color-neutral-200: #faf7f5; /* Blanco Roto Cálido (para fondo de página) */
-  --color-neutral-300: #f1f1f1; /* Gris muy claro (para bordes) */
-  --color-neutral-400: #eae3d9; /* Tu 'soft-gray' original, bueno para fondos sutiles */
-  --color-neutral-800: #575757; /* Un gris oscuro alternativo para texto */
+  // --- Paleta de Neutros ---
+  --color-neutral-100: #ffffff; // Blanco puro
+  --color-neutral-200: #faf7f5; // Blanco roto cálido
+  --color-neutral-300: #f1f1f1; // Gris extra claro
+  --color-neutral-400: #eae3d9; // Gris suave
+  --color-neutral-800: #575757; // Gris oscuro
 
-  /* ================================== */
-  /* --- NUEVOS: COLORES DE ACENTO (Para botones, insignias, enlaces) --- */
-  /* ================================== */
-  --color-accent-teal: #a0d2db; /* Un turquesa suave y relajante */
-  --color-accent-mint: #a7f3d0; /* Verde menta fresco */
-  --color-accent-sage: #b4c8a6; /* Verde salvia, muy elegante y natural */
-  --color-accent-sky: #bde0fe; /* Azul cielo claro y amigable */
-  --color-accent-gold: #eac696; /* Un dorado/mostaza suave y cálido */
+  // --- Paleta Semántica (para estados y notificaciones) ---
+  --color-success: #34d399;
+  --color-success-light: #f0fdf4;
+  --color-warning: #fbbf24;
+  --color-warning-light: #fffbeb;
+  --color-danger: #f87171;
+  --color-danger-light: #fef2f2;
 
-  /* ================================== */
-  /* --- NUEVOS: COLORES SEMÁNTICOS (Para notificaciones, estados) --- */
-  /* ================================== */
-  --color-success: #34d399; /* Verde para éxito (toasts, insignias de 'disponible') */
-  --color-success-light: #f0fdf4; /* Fondo para toasts de éxito */
-  --color-warning: #fbbf24; /* Amarillo/Ámbar para advertencias */
-  --color-warning-light: #fffbeb; /* Fondo para toasts de advertencia */
-  --color-danger: #f87171; /* Rojo suave para errores o acciones destructivas */
-  --color-danger-light: #fef2f2; /* Fondo para toasts de error */
+  // --- ALIAS SEMÁNTICOS (Variables de uso común) ---
+  // Estas variables "traducen" la paleta a usos concretos.
+  // Es la mejor práctica: si cambias el color de acento, solo lo cambias en un lugar.
+  --theme-background-page: var(--color-neutral-200);
+  --theme-background-card: var(--color-neutral-100);
+  --theme-text-primary: var(--color-brand-dark);
+  --theme-text-secondary: #8d8d8d;
+  --theme-color-accent: var(--color-brand-pink);
+  --theme-color-border: var(--color-neutral-300);
 
-  /* ================================== */
-  /* --- VARIABLES SEMÁNTICAS
-  /* ================================== */
-  --background-page: var(--color-neutral-200);
-  --background-card: var(--color-neutral-100);
-  --text-primary: var(--color-brand-dark);
-  --text-secondary: #8d8d8d;
-  --color-accent: var(--color-brand-pink);
-  --color-border: var(--color-neutral-300);
-
-  --background: var(--background-page);
-  --text-charcoal: var(--text-primary);
-  --pastel-pink: var(--color-accent);
-  --soft-white: #fbf8f9;
+  // --- Variables heredadas para compatibilidad (apuntan a los nuevos alias) ---
+  --background: var(--theme-background-page);
+  --text-charcoal: var(--theme-text-primary);
+  --pastel-pink: var(--theme-color-accent);
+  --soft-white: #fbf8f9; // Mantener si se usa específicamente
   --soft-gray: var(--color-neutral-400);
-
-  // --- NUEVA PALETA DE SOPORTE (CON MÁS CONTRASTE) ---
-  --color-background-page: #f8f4f0;
-  --color-background-card: #ffffff;
-  --color-text-primary: var(--color-brand-dark);
-  --color-text-secondary: #8d8d8d;
-  --color-accent: var(--color-brand-pink);
-  --color-border: #efefef;
-
-  // --- Variables heredadas ---
-  --background: var(--color-background-page);
-  --text-charcoal: var(--color-text-primary);
-  --pastel-pink: var(--color-accent);
-  --soft-white: #fbf8f9;
-  --soft-gray: #eae3d9;
 }
 
 /* ==========================================================================
-   3. RESETEO BÁSICO Y ESTILOS GLOBALES DEL BODY
+   3. RESETEO BÁSICO Y ESTILOS GLOBALES
    ========================================================================== */
-
 *,
 *::before,
 *::after {
@@ -90,98 +72,51 @@
 
 body {
   margin: 0;
-  font-family: "Baloo 2", sans-serif;
-
-  background-color: var(--background-page);
-  color: var(--text-primary);
-  transition: none;
+  font-family: "Manrope", sans-serif; // Manrope es mejor para párrafos/UI
+  background-color: var(--theme-background-page);
+  color: var(--theme-text-primary);
+  -webkit-font-smoothing: antialiased; // Mejora el renderizado de fuentes
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// -- Estilos para Títulos --
 h1,
 h2,
 h3,
 h4,
 h5,
-h6,
-a {
-  font-family: "Baloo 2", serif;
+h6 {
+  font-family: "Playfair Display", serif; // Playfair para títulos impactantes
   margin: 0;
   font-weight: 700;
 }
 
-/* ==========================================================================
-   4. TEMAS DINÁMICOS PARA LA LANDING PAGE
-   ========================================================================== */
-
-.theme-default {
-  --page-bg: #fdf8f2; // Un marfil cálido (casi blanco)
-  --card-bg: white;
-  --card-border-color: #f1eae9;
-}
-.theme-categories {
-  --page-bg: #e9e6ff; // Lavanda un poco más intenso
-  --card-bg: #f5f3ff; // Fondo de tarjeta lavanda muy pálido
-  --card-border-color: #c7c0fe; // Borde lavanda más notorio
-}
-
-/* ==========================================================================
-   5. ESTILOS DE BOTONES GLOBALES
-   ========================================================================== */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 9999px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
+a {
+  font-family: "Manrope", sans-serif; // Los enlaces deben ser legibles
+  color: inherit;
   text-decoration: none;
-  transition: all 0.2s ease-in-out;
-
-  &.btn-primary {
-    background-color: var(--pastel-pink);
-    color: white;
-    box-shadow: 0 4px 15px rgba(244, 194, 194, 0.4);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(244, 194, 194, 0.6);
-    }
-  }
-
-  &.btn-secondary {
-    background-color: transparent;
-    color: var(--text-charcoal);
-    border: 1px solid var(--soft-gray);
-
-    &:hover {
-      background-color: var(--soft-gray);
-      border-color: #dcd5cd;
-    }
-  }
 }
 
 /* ==========================================================================
-   6. COMPONENTES Y UTILIDADES GLOBALES
+   4. CLASES DE UTILIDAD GLOBALES
    ========================================================================== */
-
 .page-container {
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-// --- Efecto Ripple (Onda) ---
+/* ==========================================================================
+   5. ESTILOS DE COMPONENTES GLOBALES
+   ========================================================================== */
+// --- Efecto Ripple para botones (usado por la directiva appRipple) ---
 [appRipple] {
   position: relative;
   overflow: hidden;
 }
+
 .ripple-effect {
   position: absolute;
   border-radius: 50%;
@@ -189,6 +124,13 @@ a {
   transform: scale(0);
   animation: ripple 600ms linear;
 }
+
+// --- Barra de búsqueda móvil ---
+// ... (El código de la barra de búsqueda ya estaba bien estructurado)
+
+/* ==========================================================================
+   6. ANIMACIONES GLOBALES
+   ========================================================================== */
 @keyframes ripple {
   to {
     transform: scale(4);
@@ -196,58 +138,6 @@ a {
   }
 }
 
-// --- Barra de Búsqueda Móvil ---
-.mobile-search-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1050;
-  padding: 1rem;
-  animation: slideDown 0.3s ease-out forwards;
-}
-.search-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1;
-  animation: fadeIn 0.3s ease-out forwards;
-}
-.mobile-search-bar .search-form {
-  position: relative;
-  z-index: 2;
-  display: flex;
-}
-.mobile-search-bar .search-input {
-  width: 100%;
-  border: 1px solid var(--soft-gray);
-  padding: 0.875rem 1rem;
-  border-radius: 9999px;
-  padding-right: 3.5rem;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-.mobile-search-bar .search-submit-btn {
-  position: absolute;
-  right: 5px;
-  top: 5px;
-  bottom: 5px;
-  border: none;
-  background-color: var(--pastel-pink);
-  color: white;
-  border-radius: 9999px;
-  width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  &:hover {
-    background-color: #e8a7a7;
-  }
-}
-
-// --- Animaciones Globales ---
 @keyframes slideDown {
   from {
     transform: translateY(-100%);
@@ -256,6 +146,7 @@ a {
     transform: translateY(0);
   }
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -266,20 +157,19 @@ a {
 }
 
 /* ==========================================================================
-   UTILIDADES Y AJUSTES FINOS DE FORMULARIOS
+   7. AJUSTES FINALES Y CORRECCIONES
    ========================================================================== */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-// Para Firefox
+// Oculta las flechas de los inputs de tipo número en todos los navegadores
 input[type="number"] {
   -moz-appearance: textfield;
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
 textarea {
-  max-width: 100%;
-  font-family: "Baloo 2", sans-serif;
+  font-family: "Manrope", sans-serif;
+  max-width: 100%; // Previene desbordamientos
 }

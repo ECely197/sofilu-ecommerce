@@ -1,40 +1,45 @@
+/**
+ * @fileoverview Gestiona las rutas de la API para las Secciones (divisiones principales del sitio).
+ */
+
 const express = require("express");
 const router = express.Router();
 const Section = require("../models/Section");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
 // ==========================================================================
-// RUTAS PÚBLICAS
+// RUTA PÚBLICA
 // ==========================================================================
 
-// --- OBTENER TODAS LAS SECCIONES (Público) ---
+/**
+ * @route   GET /api/sections
+ * @desc    Obtener todas las secciones de navegación.
+ * @access  Public
+ */
 router.get("/", async (req, res) => {
   try {
     const sections = await Section.find().sort({ name: 1 });
     res.json(sections);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las secciones" });
+    res.status(500).json({ message: "Error al obtener las secciones." });
   }
 });
 
 // ==========================================================================
-// RUTAS PROTEGIDAS (Solo para Administradores)
+// RUTAS DE ADMINISTRACIÓN
 // ==========================================================================
 
-// Middleware para proteger todas las rutas de modificación que vienen después
 router.use(authMiddleware, adminOnly);
 
-// --- CREAR UNA NUEVA SECCIÓN (Admin) ---
+/**
+ * @route   POST /api/sections
+ * @desc    Crear una nueva sección.
+ * @access  Admin
+ */
 router.post("/", async (req, res) => {
-  const { name } = req.body;
-  const slug = name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
-
-  const newSection = new Section({ name, slug });
-
   try {
+    // El slug se genera automáticamente por el hook pre-save del modelo.
+    const newSection = new Section({ name: req.body.name });
     const savedSection = await newSection.save();
     res.status(201).json(savedSection);
   } catch (error) {
@@ -45,45 +50,51 @@ router.post("/", async (req, res) => {
     }
     res
       .status(400)
-      .json({ message: "Error al crear la sección", details: error.message });
+      .json({ message: "Error al crear la sección.", details: error.message });
   }
 });
 
-// --- ACTUALIZAR UNA SECCIÓN (Admin) ---
+/**
+ * @route   PUT /api/sections/:id
+ * @desc    Actualizar una sección.
+ * @access  Admin
+ */
 router.put("/:id", async (req, res) => {
-  const { name } = req.body;
-
   try {
-    // El slug se actualizará automáticamente si el nombre cambia
     const updatedSection = await Section.findByIdAndUpdate(
       req.params.id,
-      { name },
+      { name: req.body.name },
       { new: true, runValidators: true }
     );
-
     if (!updatedSection) {
-      return res.status(404).json({ message: "Sección no encontrada" });
+      return res.status(404).json({ message: "Sección no encontrada." });
     }
     res.json(updatedSection);
   } catch (error) {
-    res.status(400).json({
-      message: "Error al actualizar la sección",
-      details: error.message,
-    });
+    res
+      .status(400)
+      .json({
+        message: "Error al actualizar la sección.",
+        details: error.message,
+      });
   }
 });
 
-// --- ELIMINAR UNA SECCIÓN (Admin) ---
+/**
+ * @route   DELETE /api/sections/:id
+ * @desc    Eliminar una sección.
+ * @access  Admin
+ */
 router.delete("/:id", async (req, res) => {
   try {
+    // TODO: Considerar qué sucede con las categorías de esta sección.
     const deletedSection = await Section.findByIdAndDelete(req.params.id);
-
     if (!deletedSection) {
-      return res.status(404).json({ message: "Sección no encontrada" });
+      return res.status(404).json({ message: "Sección no encontrada." });
     }
-    res.json({ message: "Sección eliminada con éxito" });
+    res.json({ message: "Sección eliminada con éxito." });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar la sección" });
+    res.status(500).json({ message: "Error al eliminar la sección." });
   }
 });
 

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Servicio de Productos.
+ * Encapsula todas las llamadas a la API REST relacionadas con la gestión
+ * de productos y sus reseñas.
+ */
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -19,76 +24,82 @@ export interface Review {
 })
 export class ProductServices {
   private http = inject(HttpClient);
-
   private apiUrl = `${environment.apiUrl}/products`;
 
   constructor() {}
 
+  /** Obtiene una lista de todos los productos desde el backend. */
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.apiUrl);
   }
 
+  /** Obtiene un único producto por su ID. */
   getProductById(id: string): Observable<Product> {
     const url = `${this.apiUrl}/${id}`;
-
     return this.http.get<Product>(url);
   }
 
+  /** Obtiene todas las reseñas para un producto específico. */
   getReviewsForProduct(productId: string): Observable<Review[]> {
-    // La URL apunta a nuestra nueva API de reseñas
     return this.http.get<Review[]>(
       `${environment.apiUrl}/reviews/${productId}`
     );
   }
 
+  /** Publica una nueva reseña para un producto. */
   addReview(productId: string, reviewData: any): Observable<Review> {
-    // Hacemos una petición POST a la API para crear la nueva reseña
     return this.http.post<Review>(
       `${environment.apiUrl}/reviews/${productId}`,
       reviewData
     );
   }
 
+  /** Crea un nuevo producto. (Ruta de Admin) */
   createProduct(productData: Partial<Product>): Observable<Product> {
     return this.http.post<Product>(this.apiUrl, productData);
   }
 
+  /** Actualiza un producto existente por su ID. (Ruta de Admin) */
   updateProduct(
     productId: string,
     productData: Partial<Product>
   ): Observable<Product> {
-    // Forma segura: Une la URL base y el ID.
     return this.http.put<Product>(`${this.apiUrl}/${productId}`, productData);
   }
 
+  /** Elimina un producto por su ID. (Ruta de Admin) */
   deleteProduct(productId: string): Observable<any> {
-    // Hacemos una petición DELETE a la URL específica del producto.
     return this.http.delete<any>(`${this.apiUrl}/${productId}`);
   }
 
+  /** Obtiene una lista limitada de productos destacados. */
   getFeaturedProducts(): Observable<Product[]> {
-    // Ahora tenemos dos. Para evitar confusiones, creemos un nuevo método.
     return this.http.get<Product[]>(`${this.apiUrl}/section/featured`);
   }
 
-  // ¡NUEVO MÉTODO!
+  /** Obtiene TODOS los productos destacados. */
   getAllFeaturedProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.apiUrl}/section/featured/all`);
   }
 
-  // --- MÉTODO NUEVO ---
+  /** Obtiene todos los productos que están en oferta. */
   getSaleProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(
       `${environment.apiUrl}/products/section/sale`
     );
   }
 
+  /** Obtiene los productos de una categoría específica por su slug. */
   getProductsByCategory(slug: string): Observable<Product[]> {
-    // Llamamos a la nueva ruta que creamos en el backend
     const url = `${this.apiUrl}/category/${slug}`;
     return this.http.get<Product[]>(url);
   }
 
+  /**
+   * Realiza una búsqueda de productos en el backend.
+   * Construye los parámetros de la URL a partir de un objeto.
+   * @param queryParams Objeto con los parámetros de búsqueda (ej: { search: 'camiseta', category: 'abc' }).
+   */
   searchProducts(queryParams: {
     [param: string]: string | number | boolean;
   }): Observable<Product[]> {

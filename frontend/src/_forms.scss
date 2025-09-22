@@ -1,28 +1,38 @@
-// Contenido para: frontend/src/_forms.scss
+/**
+ * =========================================================================
+ * PARCIAL SCSS: FORMULARIOS
+ * =========================================================================
+ * Define estilos para crear campos de texto con etiquetas flotantes,
+ * inspirados en Material Design.
+ */
 
 .material-field {
   position: relative;
-  margin-bottom: 2rem;
+  margin-bottom: 2rem; // Espacio para el mensaje de error
 }
 
 .material-input {
+  // Estructura y apariencia del input
   width: 100%;
   padding: 1rem 0.5rem 0.5rem;
   border: none;
-  border-bottom: 1px solid var(--soft-gray); // Un borde más sutil
+  border-bottom: 1px solid var(--theme-color-border);
   background-color: transparent;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease;
 
+  // Estado de foco: la línea inferior se vuelve más prominente
   &:focus {
-    border-bottom: 2px solid var(--pastel-pink);
+    border-bottom: 2px solid var(--theme-color-accent);
   }
 
+  // La "magia" de la etiqueta flotante:
+  // Se activa cuando el input está en foco O cuando no está vacío (tiene un placeholder mostrado).
   &:focus + .material-label,
   &:not(:placeholder-shown) + .material-label {
     transform: translateY(-1.25rem) scale(0.8);
-    color: var(--pastel-pink);
+    color: var(--theme-color-accent);
   }
 }
 
@@ -30,14 +40,16 @@
   position: absolute;
   top: 0.75rem;
   left: 0.5rem;
-  color: var(--text-secondary);
-  pointer-events: none;
+  color: var(--theme-text-secondary);
+  pointer-events: none; // Permite hacer clic "a través" de la etiqueta
   transition: all 0.2s ease-in-out;
-  transform-origin: left top;
+  transform-origin: left top; // Asegura que la escala se origine en la esquina superior izquierda
 }
 
+// Estilo para los mensajes de error de validación
 .error-text {
-  color: #e53e3e;
+  display: block; // Asegura que ocupe su propia línea
+  color: var(--color-danger);
   font-size: 0.875rem;
   margin-top: 0.5rem;
   padding-left: 0.5rem;
