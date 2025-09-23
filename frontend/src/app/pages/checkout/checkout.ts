@@ -5,7 +5,7 @@ import { forkJoin, take } from 'rxjs';
 
 // Servicios e Interfaces
 import { CartService } from '../../services/cart';
-import { Customer, Address } from '../../services/customer'; // Solo importamos Address
+import { Customer, Address } from '../../services/customer';
 import { AuthService } from '../../services/auth';
 import { SettingsService } from '../../services/settings.service';
 import { OrderService } from '../../services/order';
@@ -13,6 +13,15 @@ import { Coupon } from '../../services/coupon';
 import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
+import { PaymentService } from '../../services/payment.service';
+import { loadMercadoPago } from '@mercadopago/sdk-js';
+import { environment } from '../../../environments/environment';
+
+declare global {
+  interface Window {
+    MercadoPago: any;
+  }
+}
 
 @Component({
   selector: 'app-checkout',
@@ -31,6 +40,7 @@ export class checkout implements OnInit {
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
+  private paymentService = inject(PaymentService);
 
   // --- Signals para el Estado (Versión Simplificada) ---
   addresses = signal<Address[]>([]);
@@ -115,14 +125,20 @@ export class checkout implements OnInit {
       return;
     }
 
+    // --- ¡VOLVEMOS A CREAR EL PEDIDO DIRECTAMENTE! ---
     this.orderService.createOrder(orderData).subscribe({
       next: (savedOrder) => {
         this.toastService.show('¡Pedido realizado con éxito!', 'success');
         this.cartService.clearCart();
+        // Redirigimos a la página de confirmación con el ID del pedido creado.
         this.router.navigate(['/order-confirmation', savedOrder._id]);
       },
       error: (err) => {
-        this.toastService.show('Hubo un error al crear tu pedido.', 'error');
+        // Mostramos el mensaje de error específico que viene del backend.
+        this.toastService.show(
+          err.error?.message || 'Hubo un error al crear tu pedido.',
+          'error'
+        );
         this.isProcessingOrder.set(false);
         console.error('Error al crear el pedido:', err);
       },

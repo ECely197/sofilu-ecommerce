@@ -158,14 +158,16 @@
       </div>
 
       <!-- Botón Final (ahora fuera de 'summary-details') -->
-      <button
-        class="btn-material pay-button"
-        (click)="placeOrder()"
-        [disabled]="!selectedAddress() || isProcessingOrder()"
-        appRipple
-      >
-        {{ isProcessingOrder() ? "Procesando..." : "Finalizar Compra" }}
-      </button>
+      <div class="pay-button-container">
+        <button
+          class="btn-material pay-button"
+          (click)="placeOrder()"
+          [disabled]="!selectedAddress() || isProcessingOrder()"
+          appRipple
+        >
+          {{ isProcessingOrder() ? "Procesando..." : "Continuar al Pago" }}
+        </button>
+      </div>
     </div>
   </aside>
 </div>

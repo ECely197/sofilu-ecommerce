@@ -9,6 +9,7 @@ import { CartService } from '../../services/cart';
 import { CartItem } from '../../interfaces/cart-item.interface';
 import { RippleDirective } from '../../directives/ripple';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmationService } from '../../services/confirmation.service';
 
 @Component({
   selector: 'app-cart',
@@ -28,6 +29,24 @@ import { ToastService } from '../../services/toast.service';
 export class Cart {
   public cartService = inject(CartService);
   private toastService = inject(ToastService);
+  private confirmationService = inject(ConfirmationService);
+
+  /**
+   * Pide confirmación al usuario antes de vaciar el carrito.
+   */
+  async clearCartWithConfirmation(): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: '¿Vaciar Carrito?',
+      message:
+        '¿Estás seguro de que quieres eliminar todos los productos de tu carrito?',
+      confirmText: 'Sí, vaciar',
+    });
+
+    if (confirmed) {
+      this.cartService.clearCart();
+      this.toastService.show('Tu carrito ha sido vaciado.');
+    }
+  }
 
   public objectKeys(obj: object): string[] {
     if (!obj) {

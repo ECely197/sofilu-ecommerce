@@ -251,9 +251,16 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
  * @desc    Crear un nuevo pedido.
  * @access  Private (Usuario logueado)
  */
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", [authMiddleware], async (req, res) => {
   try {
-    const { items, appliedCoupon } = req.body;
+    const {
+      customerInfo,
+      shippingAddress,
+      items,
+      appliedCoupon,
+      discountAmount,
+      totalAmount,
+    } = req.body;
     const userId = req.user.uid;
 
     if (!items || items.length === 0) {
@@ -262,56 +269,103 @@ router.post("/", authMiddleware, async (req, res) => {
         .json({ message: "El carrito no puede estar vacío." });
     }
 
-    // 1. Procesar items, verificar stock y actualizar inventario en una transacción
-    // (NOTA: Las transacciones requieren un Replica Set en MongoDB)
+    // --- 1. Verificación de Stock y Preparación de Items ---
     for (const item of items) {
       const product = await Product.findById(item.product);
-      if (!product) throw new Error(`Producto ${item.product} no encontrado.`);
-
-      // Lógica de validación de stock para variantes
-      if (item.selectedVariants) {
-        const variantKey = Object.keys(item.selectedVariants)[0];
-        const optionName = item.selectedVariants[variantKey];
-        const variant = product.variants.find((v) => v.name === variantKey);
-        const option = variant?.options.find((o) => o.name === optionName);
-
-        if (!option || option.stock < item.quantity) {
-          throw new Error(
-            `Stock insuficiente para ${product.name} - ${optionName}.`
-          );
-        }
-        // Decrementar stock
-        option.stock -= item.quantity;
-      } else {
-        // Producto sin variantes
-        if (product.stock < item.quantity) {
-          throw new Error(`Stock insuficiente para ${product.name}.`);
-        }
-        product.stock -= item.quantity;
+      if (!product) {
+        return res.status(404).json({ message: `Producto no encontrado.` });
       }
-      await product.save();
+      if (product.status === "Agotado") {
+        return res
+          .status(400)
+          .json({ message: `El producto "${product.name}" está agotado.` });
+      }
+
+      // Validar stock de variantes
+      if (
+        item.selectedVariants &&
+        Object.keys(item.selectedVariants).length > 0
+      ) {
+        for (const variantName in item.selectedVariants) {
+          const variant = product.variants.find((v) => v.name === variantName);
+          const option = variant?.options.find(
+            (o) => o.name === item.selectedVariants[variantName]
+          );
+          if (!option || option.stock < item.quantity) {
+            return res
+              .status(400)
+              .json({
+                message: `Stock insuficiente para ${product.name} - ${option.name}.`,
+              });
+          }
+        }
+      } else {
+        // Validar stock de producto principal (si no hay variantes)
+        if (product.stock < item.quantity) {
+          return res
+            .status(400)
+            .json({ message: `Stock insuficiente para ${product.name}.` });
+        }
+      }
     }
 
-    // 2. Crear y guardar el pedido
-    const newOrder = new Order({ ...req.body, userId });
+    // --- 2. Crear y Guardar el Pedido ---
+    const newOrder = new Order({
+      userId,
+      customerInfo,
+      shippingAddress,
+      items,
+      appliedCoupon,
+      discountAmount,
+      totalAmount,
+    });
     let savedOrder = await newOrder.save();
 
-    // 3. Actualizar uso del cupón si aplica
+    // --- 3. Actualizar el Inventario (¡Paso Crítico!) ---
+    for (const item of items) {
+      if (
+        item.selectedVariants &&
+        Object.keys(item.selectedVariants).length > 0
+      ) {
+        const updateQuery = {};
+        for (const variantName in item.selectedVariants) {
+          // Creamos el path dinámico para actualizar el stock de la opción correcta
+          const fieldPath = `variants.$[v].options.$[o].stock`;
+          updateQuery[fieldPath] = -item.quantity; // Restamos la cantidad
+
+          await Product.updateOne(
+            { _id: item.product },
+            { $inc: updateQuery },
+            {
+              arrayFilters: [
+                { "v.name": variantName },
+                { "o.name": item.selectedVariants[variantName] },
+              ],
+            }
+          );
+        }
+      } else {
+        // Si no hay variantes, actualizamos el stock del producto principal
+        await Product.updateOne(
+          { _id: item.product },
+          { $inc: { stock: -item.quantity } }
+        );
+      }
+    }
+
+    // --- 4. Actualizar Cupón y Enviar Correo ---
     if (appliedCoupon) {
       await Coupon.updateOne(
         { code: appliedCoupon },
         { $inc: { timesUsed: 1 } }
       );
     }
-
-    // 4. Enviar email de confirmación
     savedOrder = await savedOrder.populate("items.product");
-    sendOrderConfirmationEmail(savedOrder);
+    // sendOrderConfirmationEmail(savedOrder); // Puedes habilitar esto cuando configures el email
 
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("Error al crear el pedido:", error);
-    // TODO: Implementar lógica para revertir cambios de stock si el pedido falla después.
     res
       .status(400)
       .json({ message: "Error al crear el pedido.", details: error.message });

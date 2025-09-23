@@ -1,44 +1,42 @@
-<!-- Contenido completo para: src/app/pages/cart/cart.html -->
-
 <div class="cart-container" @listAnimation>
-  <h2 class="cart-title">Carrito de Compras</h2>
+  <div class="cart-header">
+    <h2 class="cart-title">Tu Carrito</h2>
+    @if (cartService.totalItems() > 0) {
+    <button
+      (click)="clearCartWithConfirmation()"
+      class="clear-cart-btn"
+      appRipple
+    >
+      Limpiar Carrito
+    </button>
+    }
+  </div>
 
   @if (cartService.totalItems() > 0) {
   <div class="cart-grid">
     <!-- Columna de Items -->
     <div class="items-column">
       @for (item of cartService.cartItems(); track item.id) {
-      <div class="cart-item">
-        <div class="item-image-container">
-          @if (item.product.images && item.product.images.length > 0) {
-          <img
-            [src]="item.product.images[0]"
-            [alt]="item.product.name"
-            class="item-image"
-          />
-          } @else {
-          <div class="item-image placeholder-image"></div>
-          }
-        </div>
-
+      <div class="cart-item-card">
+        <img
+          [src]="item.product.images[0]"
+          [alt]="item.product.name"
+          class="item-image"
+        />
         <div class="item-info">
           <h3 class="item-name">{{ item.product.name }}</h3>
           <div class="item-variants">
             @for (variantKey of objectKeys(item.selectedVariants); track
             variantKey) {
-            <span
-              >{{ variantKey }}:
-              <strong>{{ item.selectedVariants[variantKey] }}</strong></span
-            >
+            <span>{{ item.selectedVariants[variantKey] }}</span>
             }
           </div>
-          <!-- Mostramos el precio unitario (opcional, pero buena UX) -->
-          <p class="item-price">
-            {{ finalItemPrice(item) | currency : "COP" : "symbol" : "1.0-0" }}
+          <p class="item-price-unit">
+            {{ finalItemPrice(item) | currency : "COP" : "symbol" : "1.0-0" }} /
+            unidad
           </p>
         </div>
-
-        <div class="item-actions">
+        <div class="item-controls">
           <div class="quantity-selector">
             <button
               (click)="cartService.updateQuantity(item.id, item.quantity - 1)"
@@ -54,17 +52,7 @@
               +
             </button>
           </div>
-          <button
-            (click)="cartService.removeItem(item.id)"
-            class="remove-button"
-            appRipple
-          >
-            Eliminar
-          </button>
         </div>
-
-        <!-- ¡CORRECCIÓN CLAVE AQUÍ! -->
-        <!-- Calculamos el total de la línea (precio final del ítem * cantidad) -->
         <p class="item-total">
           {{
             finalItemPrice(item) * item.quantity
@@ -75,42 +63,38 @@
       }
     </div>
 
-    <!-- Columna de Resumen (sin cambios lógicos) -->
+    <!-- Columna de Resumen -->
     <aside class="summary-column">
       <div class="summary-card">
-        <h3 class="summary-title">Resumen del Pedido</h3>
+        <h3 class="summary-title">Resumen</h3>
         <div class="summary-details">
           <div class="summary-row">
-            <span>Subtotal ({{ cartService.totalItems() }} productos)</span>
+            <span>Subtotal</span>
             <span>{{
               cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
             }}</span>
           </div>
           <div class="summary-row">
             <span>Envío</span>
-            <span>Por calcular</span>
-          </div>
-          <hr />
-          <div class="summary-row total">
-            <span>Total</span>
-            <span>{{
-              cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
-            }}</span>
+            <span class="summary-note">Calculado en el siguiente paso</span>
           </div>
         </div>
-        <a routerLink="/checkout" class="btn-material" appRipple
-          >Finalizar Compra</a
+        <div class="summary-total">
+          <span>Total</span>
+          <span>{{
+            cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
+        </div>
+        <a routerLink="/checkout" class="btn-material checkout-button" appRipple
+          >Ir a Pagar</a
         >
       </div>
     </aside>
   </div>
   } @else {
-  <!-- Plantilla para el carrito vacío -->
   <div class="empty-cart-message">
     <p>Tu carrito de sueños está vacío.</p>
-    <a routerLink="/products" class="btn-material" appRipple
-      >Explorar productos</a
-    >
+    <a routerLink="/" class="btn-material" appRipple>Explorar productos</a>
   </div>
   }
 </div>
