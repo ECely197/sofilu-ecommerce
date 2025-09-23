@@ -37,83 +37,94 @@
         </div>
 
         <div class="options-group" formArrayName="options">
-          <label class="options-label"
-            >Valores de la Opción (precio, stock y costo son opcionales)</label
-          >
+          <label class="options-label">Opciones</label>
 
-          <!-- Cabecera de la tabla de opciones -->
+          <!-- Cabecera de la tabla (SOLO VISIBLE EN ESCRITORIO) -->
           <div class="option-row header">
-            <span>Valor (ej. S)</span>
-            <span>Imagen (URL)</span>
+            <span>Valor</span>
+            <span>Imagen</span>
             <span>Mod. Precio</span>
             <span>Stock</span>
             <span>Costo</span>
             <span></span>
-            <!-- Celda vacía para el botón de eliminar -->
           </div>
 
-          <!-- Filas de opciones dinámicas -->
+          <!-- Filas/Tarjetas de opciones dinámicas -->
           @for (option of options.controls; track option; let i = $index) {
+          <!-- ¡CAMBIO CLAVE! Cada opción es ahora una tarjeta con su propio layout interno en móvil -->
           <div class="option-row" [formGroupName]="i">
-            <!-- Input de Nombre -->
-            <input
-              type="text"
-              formControlName="name"
-              class="form-input"
-              placeholder="Nombre"
-            />
-
-            <!-- ¡NUEVO! Campo para subir la imagen de la opción -->
-            <div class="variant-image-uploader">
-              <label [for]="'option-image-' + i" class="uploader-label">
-                @if (option.get('imagePreview')?.value) {
-                <img
-                  [src]="option.get('imagePreview')?.value"
-                  alt="Vista previa"
-                  class="variant-image-preview"
-                />
-                } @else {
-                <span class="material-symbols-outlined placeholder-icon"
-                  >add_photo_alternate</span
-                >
-                }
-              </label>
+            <!-- Cada input ahora tiene su propio label visible en móvil -->
+            <div class="form-cell" data-label="Valor">
               <input
-                [id]="'option-image-' + i"
-                type="file"
-                class="file-input"
-                (change)="onOptionImageSelected($event, i)"
-                accept="image/*"
+                type="text"
+                formControlName="name"
+                class="form-input"
+                placeholder="Nombre"
               />
             </div>
 
-            <!-- Resto de inputs -->
-            <input
-              type="number"
-              formControlName="price"
-              class="form-input"
-              placeholder="+ COP"
-            />
-            <input
-              type="number"
-              formControlName="stock"
-              class="form-input"
-              placeholder="Cantidad"
-            />
-            <input
-              type="number"
-              formControlName="costPrice"
-              class="form-input"
-              placeholder="Costo"
-            />
-            <button
-              type="button"
-              (click)="removeOption(i)"
-              class="delete-button-tiny"
-              [disabled]="options.controls.length <= 1"
-            >
-              ✖
-            </button>
+            <div class="form-cell" data-label="Imagen">
+              <div class="variant-image-uploader">
+                <label [for]="'option-image-' + i" class="uploader-label">
+                  @if (option.get('imagePreview')?.value) {
+                  <img
+                    [src]="option.get('imagePreview')?.value"
+                    alt="Vista previa"
+                    class="variant-image-preview"
+                  />
+                  } @else {
+                  <span class="material-symbols-outlined placeholder-icon"
+                    >add_photo_alternate</span
+                  >
+                  }
+                </label>
+                <input
+                  [id]="'option-image-' + i"
+                  type="file"
+                  class="file-input"
+                  (change)="onOptionImageSelected($event, i)"
+                  accept="image/*"
+                />
+              </div>
+            </div>
+
+            <div class="form-cell" data-label="Mod. Precio">
+              <input
+                type="number"
+                formControlName="price"
+                class="form-input"
+                placeholder="+ COP"
+              />
+            </div>
+
+            <div class="form-cell" data-label="Stock">
+              <input
+                type="number"
+                formControlName="stock"
+                class="form-input"
+                placeholder="Cantidad"
+              />
+            </div>
+
+            <div class="form-cell" data-label="Costo">
+              <input
+                type="number"
+                formControlName="costPrice"
+                class="form-input"
+                placeholder="Costo"
+              />
+            </div>
+
+            <div class="form-cell action-cell">
+              <button
+                type="button"
+                (click)="removeOption(i)"
+                class="delete-button-tiny"
+                [disabled]="options.controls.length <= 1"
+              >
+                ✖
+              </button>
+            </div>
           </div>
           }
 

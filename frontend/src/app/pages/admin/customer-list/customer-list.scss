@@ -75,52 +75,65 @@
 
 // --- MEDIA QUERY PARA MÓVIL (La transformación a tarjetas) ---
 @media (max-width: 767px) {
+  // Ocultamos la cabecera de la tabla, es innecesaria en la vista de tarjetas
   .customer-item.header {
     display: none;
   }
 
+  // Convertimos cada fila en una tarjeta
   .customer-item {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1.5rem;
+    padding: 1rem; // Padding M3
     margin-bottom: 1rem;
-    border: 1px solid var(--soft-gray);
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 1rem; // Bordes redondeados M3
     background-color: white;
+    // Quitamos `box-shadow` para un look más plano y moderno
   }
 
+  // Estilo para cada celda/fila dentro de la tarjeta
   .cell {
     display: flex;
     justify-content: space-between;
+    align-items: center; // Alinea verticalmente label y valor
     width: 100%;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
 
+    &:last-child {
+      border-bottom: none; // Sin borde para la última fila (acciones)
+    }
+
+    // El label ("Nombre", "Fecha")
     &::before {
       content: attr(data-label);
-      font-weight: 600;
+      font-weight: 500; // Un peso más ligero
       color: var(--text-secondary);
       margin-right: 1rem;
     }
   }
 
+  // Hacemos que el email sea el título de la tarjeta
   .customer-email {
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
     padding-bottom: 0.75rem;
     margin-bottom: 0.75rem;
-    border-bottom: 1px solid var(--soft-gray);
-    // Ocultamos el pseudo-título para el email que es el principal
+    color: var(--text-primary);
+
     &::before {
-      display: none;
+      display: none; // No mostramos el label "Email"
     }
   }
 
+  // Ajustamos los botones de acción
   .action-buttons {
     width: 100%;
     margin-top: 1rem;
-    justify-content: flex-end;
+    justify-content: flex-end; // Alineados a la derecha
+    flex-wrap: wrap; // Permite que se apilen si no caben
   }
 }
 

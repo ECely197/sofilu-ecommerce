@@ -7,19 +7,19 @@
   display: grid;
   gap: 1.5rem;
 
-  // Layout de 2 columnas para Escritorio
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  // --- Mobile First: Por defecto es una columna ---
+  grid-template-columns: 1fr;
   grid-template-areas:
-    "main sidebar"
-    "actions actions";
+    "main"
+    "sidebar"
+    "actions";
 
-  // Layout de 1 columna para Móvil
-  @media (max-width: 1023px) {
-    grid-template-columns: 1fr;
+  // --- Layout de 2 columnas para Escritorio (lg y superior) ---
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
     grid-template-areas:
-      "main"
-      "sidebar"
-      "actions";
+      "main sidebar"
+      "actions actions";
   }
 }
 
@@ -56,12 +56,19 @@
 
 .card-header {
   display: flex;
+  flex-wrap: wrap; // ¡CAMBIO CLAVE! Permite que los elementos se envuelvan
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 1rem; // Añade espacio entre los elementos
+
   .template-selector {
     margin-bottom: 0;
-    min-width: 250px;
+    min-width: 200px;
+    flex-grow: 1; // Permite que el selector crezca
+  }
+  .add-button-small {
+    flex-shrink: 0; // Evita que el botón se encoja
   }
 }
 
@@ -108,7 +115,7 @@
 
 .variant-group {
   background-color: var(--soft-white);
-  border: 1px solid var(--soft-gray);
+  border: 1px solid var(--border);
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin-top: 1rem;
@@ -116,14 +123,18 @@
 
 .variant-header {
   display: flex;
-  align-items: baseline;
+  align-items: center; // Alinea verticalmente el input y el botón
   gap: 1rem;
   margin-bottom: 1.25rem;
+
+  .form-input {
+    flex-grow: 1; // Hace que el input de nombre ocupe el espacio
+  }
 }
 
 .options-group {
   padding-left: 1rem;
-  border-left: 2px solid var(--soft-gray);
+  border-left: 2px solid var(--border);
 }
 
 .options-table-wrapper {
@@ -140,6 +151,7 @@
     background: var(--soft-gray);
     border-radius: 3px;
   }
+  overflow-x: hidden;
 }
 
 .options-list {
@@ -148,6 +160,9 @@
   gap: 0.75rem;
   align-items: center;
   min-width: 650px;
+  .grid-header {
+    display: none;
+  }
 }
 
 .grid-header {
@@ -156,10 +171,98 @@
   font-weight: 600;
   padding-bottom: 0.5rem;
   white-space: nowrap;
+  .grid-header {
+    display: none;
+  }
 }
 
 .option-row {
-  display: contents;
+  // En móvil, cada fila es una tarjeta apilada
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  background-color: white;
+
+  // Creamos un layout interno para cada campo
+  > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    // Generamos un label a partir del atributo data-label
+    &::before {
+      content: attr(data-label);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding-right: 1rem;
+    }
+  }
+
+  // Celda para el botón de eliminar
+  .action-cell {
+    justify-content: flex-end;
+    &::before {
+      display: none; // Sin label
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .options-table-wrapper {
+    // Activamos el scroll horizontal solo en pantallas más grandes
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    &::-webkit-scrollbar {
+      height: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: var(--soft-white);
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--soft-gray);
+      border-radius: 3px;
+    }
+  }
+
+  .options-list {
+    display: grid;
+    // Volvemos al layout de tabla con grid
+    grid-template-columns: 3fr 1fr 2fr 2fr 2fr 1fr;
+    gap: 0.75rem;
+    min-width: 800px; // Ancho mínimo para forzar scroll si es necesario
+
+    // Mostramos la cabecera
+    .grid-header {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      padding-bottom: 0.5rem;
+      white-space: nowrap;
+    }
+  }
+
+  .option-row {
+    // Reseteamos los estilos de tarjeta de móvil
+    display: contents; // Los hijos se alinean con el grid padre
+    padding: 0;
+    border: none;
+    margin-bottom: 0;
+    background-color: transparent;
+
+    > div {
+      // Reseteamos los estilos de celda
+      &::before {
+        display: none;
+      }
+    }
+  }
 }
 
 .option-item {

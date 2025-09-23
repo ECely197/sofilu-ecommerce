@@ -330,4 +330,35 @@ export class ProductForm implements OnInit {
   removeVariantOption(variantIndex: number, optionIndex: number): void {
     this.variantOptions(variantIndex).removeAt(optionIndex);
   }
+
+  /**
+   * Maneja la selección de un archivo de imagen para una opción de variante específica.
+   * @param event El evento del input de tipo 'file'.
+   * @param variantIndex El índice de la variante.
+   * @param optionIndex El índice de la opción dentro de la variante.
+   */
+  onVariantImageSelected(
+    event: Event,
+    variantIndex: number,
+    optionIndex: number
+  ): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const option = this.variantOptions(variantIndex).at(
+        optionIndex
+      ) as FormGroup;
+
+      // Guardamos el objeto File en el formulario para subirlo más tarde.
+      option.patchValue({ imageFile: file });
+
+      // Creamos una URL local para la vista previa instantánea.
+      const reader = new FileReader();
+      reader.onload = () => {
+        // La URL de la vista previa se guarda en el campo 'image' para que el <img> la muestre
+        option.patchValue({ image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 }
