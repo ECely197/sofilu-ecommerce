@@ -224,6 +224,7 @@ export class ProductForm implements OnInit {
           price: option.price,
           stock: option.stock,
           costPrice: option.costPrice,
+          image: option.image,
         })),
       })),
     };

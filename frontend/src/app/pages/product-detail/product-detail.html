@@ -10,11 +10,11 @@
     <!-- COLUMNA 1: GALERÍA -->
     <!-- ======================== -->
     <div class="gallery-card card" data-aos="fade-right">
-      <!-- GALERÍA PARA ESCRITORIO (Se oculta en móvil) -->
       <div class="desktop-gallery">
-        @if (currentProduct.images && currentProduct.images.length > 1) {
+        <!-- ¡CAMBIO! La lista de miniaturas ahora itera sobre `galleryImages()` -->
+        @if (galleryImages().length > 1) {
         <div class="thumbnail-wrapper">
-          @for (image of currentProduct.images; track image) {
+          @for (image of galleryImages(); track image) {
           <div
             class="thumbnail"
             [class.active]="selectedImage() === image"
@@ -30,6 +30,7 @@
           }
         </div>
         }
+        <!-- La imagen principal no necesita cambios, ya que `selectedImage` se actualiza solo -->
         <div class="main-image-wrapper">
           @if (currentProduct.images && currentProduct.images.length > 0) {
           <img
@@ -43,11 +44,11 @@
         </div>
       </div>
 
-      <!-- GALERÍA PARA MÓVIL (Se oculta en escritorio) -->
-      @if (currentProduct.images && currentProduct.images.length > 0) {
+      <!-- Galería móvil también debe usar `galleryImages()` -->
+      @if (galleryImages().length > 0) {
       <div class="mobile-swiper">
         <div class="swiper-wrapper">
-          @for(image of currentProduct.images; track image) {
+          @for(image of galleryImages(); track image) {
           <div class="swiper-slide">
             <img
               [src]="image"
@@ -76,25 +77,84 @@
         }
       </p>
 
-      <div class="variants-container">
-        @for (variant of currentProduct.variants; track variant.name) {
-        <div class="variant-group">
-          <p class="variant-name">{{ variant.name }}</p>
-          <div class="variant-options">
-            @for (option of variant.options; track option.name) {
-            <button
-              class="variant-button"
-              [class.active]="isSelected(variant.name, option.name)"
-              [class.unavailable]="!isOptionAvailable(option)"
-              [disabled]="!isOptionAvailable(option)"
-              (click)="selectOption(variant.name, option.name)"
+      <div class="variants-scroll-container">
+        <div class="variants-container accordion">
+          @for (variant of currentProduct.variants; track variant.name) {
+          <div class="variant-group accordion-item">
+            <!-- CABECERA DEL ACORDEÓN (Siempre visible) -->
+            <div class="accordion-header" (click)="toggleVariant(variant.name)">
+              <!-- Vista previa de la imagen de la variante -->
+              @if (variantPreviewImages()[variant.name]) {
+              <img
+                [src]="variantPreviewImages()[variant.name]"
+                alt="{{ variant.name }}"
+                class="accordion-preview-image"
+              />
+              } @else {
+              <div class="accordion-preview-placeholder"></div>
+              }
+
+              <!-- Nombre y selección actual -->
+              <div class="accordion-info">
+                <span class="variant-name">{{ variant.name }}</span>
+                <span class="variant-selection">{{
+                  selectedVariants()[variant.name] || ""
+                }}</span>
+              </div>
+
+              <!-- Icono de despliegue -->
+              <span
+                class="material-symbols-outlined accordion-icon"
+                [class.expanded]="expandedVariant() === variant.name"
+                >expand_more</span
+              >
+            </div>
+
+            <!-- CONTENIDO DEL ACORDEÓN (Desplegable) -->
+            <div
+              class="accordion-content"
+              [@expandCollapse]="
+                expandedVariant() === variant.name ? 'expanded' : 'collapsed'
+              "
             >
-              {{ option.name }}
-            </button>
-            }
+              <div class="variant-options-grid">
+                @for (option of variant.options; track option.name) {
+                <div
+                  class="option-card"
+                  [class.active]="isSelected(variant.name, option.name)"
+                  [class.unavailable]="!isOptionAvailable(option)"
+                  (click)="
+                    !isOptionAvailable(option)
+                      ? null
+                      : selectOption(variant.name, option.name)
+                  "
+                >
+                  @if (option.image) {
+                  <img
+                    [src]="option.image"
+                    alt="{{ option.name }}"
+                    class="option-image"
+                  />
+                  } @else {
+                  <div class="option-image-placeholder"></div>
+                  }
+                  <div class="option-details">
+                    <span class="option-name">{{ option.name }}</span>
+                    @if (option.price > 0) {
+                    <span class="option-price"
+                      >+{{
+                        option.price | currency : "COP" : "symbol" : "1.0-0"
+                      }}</span
+                    >
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
           </div>
+          }
         </div>
-        }
       </div>
 
       <div class="actions">
@@ -110,9 +170,7 @@
         <button
           class="btn btn-primary add-to-cart-btn"
           [class.was-added]="justAddedToCart()"
-          [disabled]="
-            !allVariantsSelected() || !isInStock() || justAddedToCart()
-          "
+          [disabled]="!canAddToCart() || justAddedToCart()"
           (click)="addToCart()"
           appRipple
         >
@@ -121,11 +179,7 @@
           <span>Añadido</span>
           } @else {
           <span>{{
-            !allVariantsSelected()
-              ? "Selecciona una opción"
-              : isInStock()
-              ? "Añadir al carrito"
-              : "Agotado"
+            canAddToCart() ? "Añadir al carrito" : "No disponible"
           }}</span>
           }
         </button>

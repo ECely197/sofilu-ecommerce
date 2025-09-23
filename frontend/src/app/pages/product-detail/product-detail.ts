@@ -48,6 +48,13 @@ import { ToastService } from '../../services/toast.service';
 
 import { RippleDirective } from '../../directives/ripple';
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
 
 // --- Librerías de Terceros ---
 import Swiper from 'swiper';
@@ -78,6 +85,18 @@ export class SafeHtmlPipe implements PipeTransform {
   ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
+  animations: [
+    trigger('expandCollapse', [
+      state(
+        'collapsed',
+        style({ height: '0px', overflow: 'hidden', opacity: 0 })
+      ),
+      state('expanded', style({ height: '*', overflow: 'hidden', opacity: 1 })),
+      transition('expanded <=> collapsed', [
+        animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ]),
+    ]),
+  ],
 })
 export class ProductDetailComponent
   implements OnInit, OnDestroy, AfterViewInit
@@ -105,13 +124,22 @@ export class ProductDetailComponent
   private userOrders = signal<any[]>([]);
   justAddedToCart = signal(false);
   quantity = signal(1);
+  expandedVariant = signal<string | null>(null);
   private swiperInstance: Swiper | undefined;
 
   constructor() {
+    // ¡MODIFICADO! El `effect` ahora reacciona a `galleryImages` para actualizar
+    // la imagen seleccionada si la lista cambia.
     effect(() => {
-      const currentProduct = this.product();
+      const images = this.galleryImages();
+      // Si la imagen actualmente seleccionada ya no está en la galería,
+      // volvemos a la primera imagen disponible.
+      if (images.length > 0 && !images.includes(this.selectedImage())) {
+        this.selectedImage.set(images[0]);
+      }
 
-      if (currentProduct && window.innerWidth < 768) {
+      // Lógica de Swiper sin cambios
+      if (this.product() && window.innerWidth < 768) {
         setTimeout(() => this.initMobileSwiper(), 50);
       } else if (this.swiperInstance) {
         this.swiperInstance.destroy(true, true);
@@ -119,6 +147,81 @@ export class ProductDetailComponent
       }
     });
   }
+
+  //logica de galeria de imagenes
+
+  galleryImages = computed(() => {
+    const p = this.product();
+    if (!p) return [];
+
+    // 1. Empieza con las imágenes originales del producto.
+    const images = [...p.images];
+
+    // 2. Recorre las variantes seleccionadas.
+    const selections = this.selectedVariants();
+    for (const variantName in selections) {
+      const selectedOptionName = selections[variantName];
+      const variant = p.variants.find((v) => v.name === variantName);
+      const option = variant?.options.find(
+        (o) => o.name === selectedOptionName
+      );
+      // 3. Si la opción seleccionada tiene una imagen, la añade a la galería.
+      if (option?.image) {
+        images.push(option.image);
+      }
+    }
+    return images;
+  });
+
+  //Animacion de acordeon para grupo de variantes
+
+  variantPreviewImages = computed(() => {
+    const product = this.product();
+    if (!product) return {};
+
+    const previews: { [key: string]: string } = {};
+    product.variants.forEach((variant) => {
+      // Filtra solo las opciones que tienen una imagen definida.
+      const optionsWithImages = variant.options.filter((opt) => !!opt.image);
+      if (optionsWithImages.length > 0) {
+        // Selecciona una imagen aleatoria de las opciones disponibles.
+        const randomIndex = Math.floor(
+          Math.random() * optionsWithImages.length
+        );
+        previews[variant.name] = optionsWithImages[randomIndex].image!;
+      }
+    });
+    return previews;
+  });
+
+  toggleVariant(variantName: string): void {
+    this.expandedVariant.update((current) =>
+      current === variantName ? null : variantName
+    );
+  }
+
+  canAddToCart = computed(() => {
+    const p = this.product();
+    if (!p) return false;
+
+    // Si no hay variantes, solo importa el stock del producto principal (lógica futura).
+    if (p.variants.length === 0) return true;
+
+    // Si hay variantes, verificamos que las seleccionadas (si las hay) tengan stock.
+    const selections = this.selectedVariants();
+    for (const variantName in selections) {
+      const selectedOptionName = selections[variantName];
+      const variant = p.variants.find((v) => v.name === variantName);
+      const option = variant?.options.find(
+        (o) => o.name === selectedOptionName
+      );
+      if (option && (option.stock || 0) <= 0) {
+        return false; // Si CUALQUIER opción seleccionada está sin stock, deshabilita.
+      }
+    }
+
+    return true; // Si todo lo seleccionado tiene stock, habilita.
+  });
 
   // --- MÉTODOS DE CANTIDAD ---
   increaseQuantity(): void {
@@ -133,25 +236,30 @@ export class ProductDetailComponent
     const p = this.product();
     if (!p) return 0;
 
-    // Si no hay variantes, el precio es el base (o el de oferta)
-    if (p.variants.length === 0) {
-      return p.isOnSale && p.salePrice ? p.salePrice : p.price;
-    }
+    // 1. Empezamos SIEMPRE con el precio base del producto.
+    // Si está en oferta, usamos el precio de oferta.
+    let totalPrice = p.isOnSale && p.salePrice ? p.salePrice : p.price;
 
-    // Si hay variantes, el precio es el de la opción seleccionada
-    const selection = this.selectedVariants();
-    if (this.allVariantsSelected()) {
-      const firstVariant = p.variants[0]; // Simplificación: asumimos que el precio está en la primera variante
-      const selectedOptionName = selection[firstVariant.name];
-      const option = firstVariant.options.find(
-        (opt) => opt.name === selectedOptionName
-      );
-      return option?.price || 0;
-    }
+    // 2. Obtenemos las variantes que el usuario ha seleccionado.
+    const selections = this.selectedVariants();
 
-    // Si no se han seleccionado todas las variantes, mostramos el precio más bajo
-    const allPrices = p.variants.flatMap((v) => v.options.map((o) => o.price));
-    return allPrices.length > 0 ? Math.min(...allPrices) : p.price;
+    // 3. Iteramos sobre cada variante del producto (ej: "Empaque", "Acompañamiento").
+    p.variants.forEach((variant) => {
+      // Verificamos si el usuario ha seleccionado una opción para esta variante.
+      const selectedOptionName = selections[variant.name];
+      if (selectedOptionName) {
+        // Si la seleccionó, buscamos esa opción en los datos del producto.
+        const option = variant.options.find(
+          (opt) => opt.name === selectedOptionName
+        );
+        // Si la opción existe y tiene un precio, lo SUMAMOS al total.
+        if (option && option.price) {
+          totalPrice += option.price;
+        }
+      }
+    });
+
+    return totalPrice;
   });
 
   allVariantsSelected = computed(() => {
@@ -316,10 +424,15 @@ export class ProductDetailComponent
   }
 
   selectOption(variantName: string, optionName: string): void {
-    this.selectedVariants.update((current) => ({
-      ...current,
-      [variantName]: optionName,
-    }));
+    this.selectedVariants.update((current) => {
+      const newSelection = { ...current };
+      if (current[variantName] === optionName) {
+        delete newSelection[variantName];
+      } else {
+        newSelection[variantName] = optionName;
+      }
+      return newSelection;
+    });
   }
 
   isOptionAvailable(option: Option): boolean {
@@ -332,10 +445,11 @@ export class ProductDetailComponent
 
   addToCart(): void {
     const p = this.product();
-    if (p && this.allVariantsSelected() && this.isInStock()) {
+    // ¡MODIFICADO! Usamos el nuevo `canAddToCart` para la validación.
+    if (p && this.canAddToCart()) {
       this.cartService.addItem(p, this.selectedVariants(), this.quantity());
       this.toastService.show(
-        `${p.name} (x${this.quantity()}) ha sido añadido al carrito!`,
+        `${p.name} (x${this.quantity()}) añadido al carrito!`,
         'success'
       );
       this.justAddedToCart.set(true);
@@ -345,7 +459,7 @@ export class ProductDetailComponent
       }, 2000);
     } else {
       this.toastService.show(
-        'Por favor, selecciona una opción disponible.',
+        'Una de las opciones seleccionadas no está disponible.',
         'error'
       );
     }
