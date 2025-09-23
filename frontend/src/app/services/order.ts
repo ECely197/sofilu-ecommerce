@@ -74,8 +74,12 @@ export class OrderService {
   }
 
   /** Obtiene las estadísticas clave para el dashboard de administración. */
-  getDashboardSummary(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/summary/stats`);
+  getDashboardSummary(startDate?: string, endDate?: string): Observable<any> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+
+    return this.http.get<any>(`${this.apiUrl}/dashboard-summary`, { params });
   }
 
   /**

@@ -41,36 +41,170 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 /**
- * @route   GET /api/orders/summary/stats
- * @desc    Obtener estadísticas clave para el dashboard del admin.
+ * @route   GET /api/orders/dashboard-summary
+ * @desc    Obtener un resumen completo de estadísticas para el Dashboard.
  * @access  Admin
+ * @query   startDate - Fecha de inicio (opcional, formato YYYY-MM-DD)
+ * @query   endDate - Fecha de fin (opcional, formato YYYY-MM-DD)
  */
-router.get("/summary/stats", [authMiddleware, adminOnly], async (req, res) => {
-  try {
-    const [totalRevenueData, totalOrders, totalProducts, latestOrders] =
-      await Promise.all([
+router.get(
+  "/dashboard-summary",
+  [authMiddleware, adminOnly],
+  async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+
+      // --- 1. Construir el filtro de fecha ---
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.createdAt = {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)), // Incluir todo el día de fin
+        };
+      }
+
+      // --- 2. Ejecutar todas las consultas en paralelo ---
+      const [
+        // Métricas de Ventas y Pedidos
+        salesData,
+        orderStatusCounts,
+        recentOrders,
+        // Métricas de Productos
+        productStats,
+        // Métricas de Cupones
+        couponPerformance,
+        // Métricas de Vendedores
+        vendorPerformance,
+      ] = await Promise.all([
+        // 1. Total de Ventas
         Order.aggregate([
-          { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+          { $match: dateFilter },
+          {
+            $group: {
+              _id: null,
+              totalRevenue: { $sum: "$totalAmount" },
+              totalOrders: { $sum: 1 },
+            },
+          },
         ]),
-        Order.countDocuments(),
-        Product.countDocuments(),
+        // 2. Conteo de Pedidos por Estado
+        Order.aggregate([
+          { $match: dateFilter },
+          { $group: { _id: "$status", count: { $sum: 1 } } },
+        ]),
+        // 3. Pedidos Recientes (estos no se filtran por fecha)
         Order.find()
           .sort({ createdAt: -1 })
           .limit(5)
           .populate("items.product", "name"),
+
+        // 4. Estadísticas de Productos (no se filtran por fecha de pedido)
+        Product.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalProducts: { $sum: 1 },
+              inventorySaleValue: { $sum: { $multiply: ["$price", "$stock"] } },
+              inventoryCostValue: {
+                $sum: { $multiply: ["$costPrice", "$stock"] },
+              },
+            },
+          },
+        ]),
+
+        // 5. Rendimiento de Cupones
+        Order.aggregate([
+          { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
+          {
+            $group: {
+              _id: "$appliedCoupon",
+              timesUsed: { $sum: 1 },
+              totalDiscount: { $sum: "$discountAmount" },
+              totalRevenueGenerated: { $sum: "$totalAmount" },
+            },
+          },
+          { $sort: { timesUsed: -1 } },
+        ]),
+
+        // 6. Rendimiento de Vendedores
+        Product.aggregate([
+          // Desenrollar productos, sus variantes y opciones para un análisis detallado
+          { $unwind: { path: "$variants", preserveNullAndEmptyArrays: true } },
+          {
+            $unwind: {
+              path: "$variants.options",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $lookup: {
+              from: "vendors",
+              localField: "vendor",
+              foreignField: "_id",
+              as: "vendorInfo",
+            },
+          },
+          {
+            $unwind: { path: "$vendorInfo", preserveNullAndEmptyArrays: true },
+          },
+          {
+            $group: {
+              _id: "$vendorInfo.name",
+              totalProducts: { $addToSet: "$_id" }, // Contar productos únicos
+              inventorySaleValue: {
+                $sum: {
+                  $multiply: [
+                    "$variants.options.price",
+                    "$variants.options.stock",
+                  ],
+                },
+              },
+              inventoryCostValue: {
+                $sum: {
+                  $multiply: [
+                    "$variants.options.costPrice",
+                    "$variants.options.stock",
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              vendorName: "$_id",
+              totalProducts: { $size: "$totalProducts" },
+              inventorySaleValue: 1,
+              inventoryCostValue: 1,
+            },
+          },
+        ]),
       ]);
 
-    res.json({
-      totalRevenue: totalRevenueData[0]?.total || 0,
-      totalOrders,
-      totalProducts,
-      latestOrders,
-    });
-  } catch (error) {
-    console.error("Error al obtener estadísticas del dashboard:", error);
-    res.status(500).json({ message: "Error al obtener las estadísticas." });
+      // --- 3. Formatear la respuesta en un objeto limpio ---
+      res.json({
+        totalRevenue: salesData[0]?.totalRevenue || 0,
+        totalOrders: salesData[0]?.totalOrders || 0,
+        orderStatusCounts: orderStatusCounts.reduce(
+          (acc, status) => {
+            acc[status._id] = status.count;
+            return acc;
+          },
+          { Procesando: 0, Enviado: 0, Entregado: 0, Cancelado: 0 }
+        ), // Asegura que todos los estados existan
+        recentOrders,
+        totalProducts: productStats[0]?.totalProducts || 0,
+        inventorySaleValue: productStats[0]?.inventorySaleValue || 0,
+        inventoryCostValue: productStats[0]?.inventoryCostValue || 0,
+        couponPerformance,
+        vendorPerformance,
+      });
+    } catch (error) {
+      console.error("Error al obtener las estadísticas del dashboard:", error);
+      res.status(500).json({ message: "Error al obtener las estadísticas" });
+    }
   }
-});
+);
 
 /**
  * @route   GET /api/orders/:id
@@ -230,11 +364,9 @@ router.put("/:id/status", authMiddleware, async (req, res) => {
     // Lógica de cancelación del cliente
     if (isOwner && !isAdmin && status === "Cancelado") {
       if (order.status !== "Procesando") {
-        return res
-          .status(400)
-          .json({
-            message: "Solo se pueden cancelar pedidos en estado 'Procesando'.",
-          });
+        return res.status(400).json({
+          message: "Solo se pueden cancelar pedidos en estado 'Procesando'.",
+        });
       }
       // TODO: Devolver stock al cancelar.
     } else if (!isAdmin) {

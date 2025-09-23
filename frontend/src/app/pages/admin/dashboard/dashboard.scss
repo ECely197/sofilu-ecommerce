@@ -1,32 +1,60 @@
-// En: frontend/src/app/pages/admin/dashboard/dashboard.scss
-@use "../../../../../buttons";
-@use "../_admin-shared.scss";
+@use "../_admin-shared.scss"; // Importa variables y estilos compartidos del admin
+@use "../../../../../buttons"; // Importa estilos de botones
 
-.page-header h1 {
-  font-size: 2.25rem;
-  font-family: "Playfair Display", serif;
-  margin-bottom: 2rem;
-}
-
+// --- Contenedor Principal y Grid ---
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
+// --- Tarjeta de Filtros ---
+.filters-card {
+  grid-column: 1 / -1; // Ocupa todo el ancho
+  margin-bottom: 1.5rem;
+}
+
+.date-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 1rem;
+}
+
+.quick-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.quick-filter-btn {
+  @extend .btn-secondary; // Hereda estilos del botón secundario
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  background-color: var(--soft-white);
+}
+
+// --- Tarjetas de Estadísticas Principales ---
 .stat-card {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1rem; // Bordes redondeados
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
 }
 
-.card-icon {
-  width: 56px;
-  height: 56px;
+.stat-icon {
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -34,134 +62,120 @@
   flex-shrink: 0;
 
   .material-symbols-outlined {
-    font-size: 28px;
+    font-size: 24px;
     color: white;
   }
 
-  &.revenue {
-    background: linear-gradient(45deg, #22c55e, #16a34a);
+  // Colores Material
+  &.green {
+    background-color: #e0f2f1;
+    .material-symbols-outlined {
+      color: #00796b;
+    }
   }
-  &.orders {
-    background: linear-gradient(45deg, #3b82f6, #2563eb);
+  &.blue {
+    background-color: #e3f2fd;
+    .material-symbols-outlined {
+      color: #1976d2;
+    }
   }
-  &.products {
-    background: linear-gradient(45deg, #a855f7, #9333ea);
+  &.purple {
+    background-color: #f3e5f5;
+    .material-symbols-outlined {
+      color: #7b1fa2;
+    }
+  }
+  &.orange {
+    background-color: #fff3e0;
+    .material-symbols-outlined {
+      color: #f57c00;
+    }
   }
 }
 
-.stat-title {
-  color: var(--text-secondary);
+.stat-info {
+  min-width: 0; // Previene desbordamiento
+}
+
+.stat-label {
   font-size: 0.875rem;
-  font-weight: 500;
+  color: var(--text-secondary);
   margin: 0 0 0.25rem 0;
 }
 
 .stat-value {
   font-size: 1.75rem;
   font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// --- Tarjetas de Ancho Completo ---
+.full-width {
+  grid-column: 1 / -1; // Ocupa todo el ancho del grid
+}
+
+// --- Grid de Estados de Pedido ---
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.status-item {
+  text-align: center;
+  background-color: var(--soft-white);
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.status-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.status-value {
+  font-size: 2rem;
+  font-weight: 700;
   margin: 0;
 }
 
-.recent-orders {
-  grid-column: 1 / -1; // Ocupa todo el ancho
+// --- Contenedor y Estilos de Tabla ---
+.table-container {
+  overflow-x: auto; // Permite scroll horizontal en tablas grandes
+}
 
-  .order-list {
-    display: flex;
-    flex-direction: column;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+
+  th,
+  td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
   }
 
-  .order-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--soft-gray);
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  .customer-name {
-    font-weight: 600;
-  }
-  .order-id {
+  th {
     font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
     color: var(--text-secondary);
   }
-  .order-details {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .order-total {
-    font-weight: 700;
-  }
-  .details-link {
-    @extend .btn-secondary;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.75rem;
-  }
 }
 
-// --- NUEVOS ESTILOS ---
-.stat-card.inventory-card {
-  grid-column: span 2; // Hacemos que esta tarjeta ocupe 2 columnas
-  @media (max-width: 900px) {
-    grid-column: span 1; // En pantallas más pequeñas, vuelve a 1 columna
-  }
-}
-
-.card-icon.inventory {
-  background: linear-gradient(45deg, #f97316, #ea580c); // Naranja
-}
-
-.stat-subtitle {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-top: -0.25rem;
-}
-
-.coupon-performance {
-  grid-column: 1 / -1; // Ocupa todo el ancho
-}
-
-.coupon-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.coupon-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.coupon-code {
-  font-weight: 700;
-  font-family: monospace;
-  background-color: var(--soft-gray);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.coupon-stats {
-  display: flex;
-  gap: 1.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  strong {
-    color: var(--text-primary);
-  }
-}
-
-.empty-message {
+// --- Estados de Carga y Vacío ---
+.loading-state,
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 1rem;
   color: var(--text-secondary);
   font-style: italic;
 }

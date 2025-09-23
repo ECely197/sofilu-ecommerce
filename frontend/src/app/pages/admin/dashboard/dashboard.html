@@ -1,128 +1,285 @@
-<!-- En: frontend/src/app/pages/admin/dashboard/dashboard.html -->
 <header class="page-header">
   <h1>Dashboard</h1>
 </header>
 
-<!-- Primer bloque: Maneja el estado de carga -->
+<!-- ======================== -->
+<!-- SECCIÓN DE FILTROS -->
+<!-- ======================== -->
+<div class="card filters-card">
+  <form [formGroup]="dateRangeForm" class="date-filters">
+    <div class="date-inputs">
+      <div class="form-field">
+        <label for="startDate">Desde</label>
+        <input
+          id="startDate"
+          type="date"
+          formControlName="startDate"
+          class="form-input"
+        />
+      </div>
+      <div class="form-field">
+        <label for="endDate">Hasta</label>
+        <input
+          id="endDate"
+          type="date"
+          formControlName="endDate"
+          class="form-input"
+        />
+      </div>
+    </div>
+    <div class="quick-filters">
+      <button
+        type="button"
+        class="quick-filter-btn"
+        (click)="applyDateFilter('day')"
+        appRipple
+      >
+        Hoy
+      </button>
+      <button
+        type="button"
+        class="quick-filter-btn"
+        (click)="applyDateFilter('week')"
+        appRipple
+      >
+        Esta Semana
+      </button>
+      <button
+        type="button"
+        class="quick-filter-btn"
+        (click)="applyDateFilter('month')"
+        appRipple
+      >
+        Este Mes
+      </button>
+      <button
+        type="button"
+        class="quick-filter-btn"
+        (click)="applyDateFilter('year')"
+        appRipple
+      >
+        Este Año
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ======================== -->
+<!-- CONTENIDO DEL DASHBOARD -->
+<!-- ======================== -->
 @if (isLoading()) {
-<p>Cargando estadísticas...</p>
+<div class="loading-state">Cargando estadísticas...</div>
 } @else {
-<!-- Segundo bloque: Se muestra cuando la carga ha terminado -->
-<!-- ¡CORRECCIÓN CLAVE! Anidamos otro @if y usamos el alias aquí -->
-@if (summary(); as stats) {
-<div class="dashboard-grid" @fadeInUp>
-  <!-- Tarjetas de Estadísticas -->
+<!-- --- ¡ESTA ES LA CORRECCIÓN! --- -->
+<!-- Primero verificamos si `summary()` tiene datos, y si los tiene, creamos el alias `data`. -->
+@if (summary(); as data) {
+<div class="dashboard-grid">
+  <!-- ======================== -->
+  <!-- MÉTRICAS PRINCIPALES -->
+  <!-- ======================== -->
   <div class="stat-card">
-    <div class="card-icon revenue">
+    <div class="stat-icon green">
       <span class="material-symbols-outlined">payments</span>
     </div>
-    <div class="card-content">
-      <p class="stat-title">Ingresos Totales</p>
+    <div class="stat-info">
+      <p class="stat-label">Ingresos Totales</p>
       <p class="stat-value">
-        {{ stats.totalRevenue | currency : "COP" : "symbol" : "1.0-0" }}
+        {{ data.totalRevenue | currency : "COP" : "symbol" : "1.0-0" }}
       </p>
     </div>
   </div>
   <div class="stat-card">
-    <div class="card-icon orders">
+    <div class="stat-icon blue">
       <span class="material-symbols-outlined">shopping_bag</span>
     </div>
-    <div class="card-content">
-      <p class="stat-title">Pedidos Totales</p>
-      <p class="stat-value">{{ stats.totalOrders }}</p>
+    <div class="stat-info">
+      <p class="stat-label">Pedidos Totales</p>
+      <p class="stat-value">{{ data.totalOrders }}</p>
     </div>
   </div>
   <div class="stat-card">
-    <div class="card-icon products">
+    <div class="stat-icon purple">
       <span class="material-symbols-outlined">inventory_2</span>
     </div>
-    <div class="card-content">
-      <p class="stat-title">Productos Totales</p>
-      <p class="stat-value">{{ stats.totalProducts }}</p>
+    <div class="stat-info">
+      <p class="stat-label">Productos Totales</p>
+      <p class="stat-value">{{ data.totalProducts }}</p>
     </div>
   </div>
-
-  <!-- ¡NUEVA TARJETA: VALOR DE INVENTARIO! -->
-  <div class="stat-card inventory-card">
-    <div class="card-icon inventory">
-      <span class="material-symbols-outlined">inventory</span>
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <span class="material-symbols-outlined">sell</span>
     </div>
-    <div class="card-content">
-      <p class="stat-title">Valor de Inventario (Venta)</p>
+    <div class="stat-info">
+      <p class="stat-label">Valor de Inventario (Venta)</p>
       <p class="stat-value">
-        {{
-          stats.inventoryValue.totalSaleValue
-            | currency : "COP" : "symbol" : "1.0-0"
-        }}
-      </p>
-      <p class="stat-subtitle">
-        Costo:
-        {{
-          stats.inventoryValue.totalCostValue
-            | currency : "COP" : "symbol" : "1.0-0"
-        }}
+        {{ data.inventorySaleValue | currency : "COP" : "symbol" : "1.0-0" }}
       </p>
     </div>
   </div>
 
-  <!-- ¡NUEVA TARJETA: CUPONES! -->
-  <div class="card coupon-performance">
+  <!-- ======================== -->
+  <!-- PEDIDOS POR ESTADO -->
+  <!-- ======================== -->
+  <div class="card full-width">
+    <h2 class="card-title">Pedidos por Estado</h2>
+    <div class="status-grid">
+      <div class="status-item">
+        <p class="status-label">Procesando</p>
+        <!-- CORRECCIÓN: Usamos data.orderStatusCounts['Procesando'] -->
+        <p class="status-value">
+          {{ data.orderStatusCounts["Procesando"] || 0 }}
+        </p>
+      </div>
+      <div class="status-item">
+        <p class="status-label">Enviado</p>
+        <!-- CORRECCIÓN: Usamos data.orderStatusCounts['Enviado'] -->
+        <p class="status-value">{{ data.orderStatusCounts["Enviado"] || 0 }}</p>
+      </div>
+      <div class="status-item">
+        <p class="status-label">Entregado</p>
+        <!-- CORRECCIÓN: Usamos data.orderStatusCounts['Entregado'] -->
+        <p class="status-value">
+          {{ data.orderStatusCounts["Entregado"] || 0 }}
+        </p>
+      </div>
+      <div class="status-item">
+        <p class="status-label">Cancelado</p>
+        <!-- CORRECCIÓN: Usamos data.orderStatusCounts['Cancelado'] -->
+        <p class="status-value">
+          {{ data.orderStatusCounts["Cancelado"] || 0 }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== -->
+  <!-- RENDIMIENTO POR VENDEDOR -->
+  <!-- ======================== -->
+  <div class="card full-width">
+    <h2 class="card-title">Rendimiento por Vendedor</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Vendedor</th>
+            <th>Productos</th>
+            <th>Valor Inventario (Venta)</th>
+            <th>Valor Inventario (Costo)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vendor of data.vendorPerformance; track vendor.vendorName) {
+          <tr>
+            <td>{{ vendor.vendorName }}</td>
+            <td>{{ vendor.totalProducts }}</td>
+            <td>
+              {{
+                vendor.inventorySaleValue
+                  | currency : "COP" : "symbol" : "1.0-0"
+              }}
+            </td>
+            <td>
+              {{
+                vendor.inventoryCostValue
+                  | currency : "COP" : "symbol" : "1.0-0"
+              }}
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="4">No hay datos de vendedores.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================== -->
+  <!-- RENDIMIENTO DE CUPONES -->
+  <!-- ======================== -->
+  <div class="card full-width">
     <h2 class="card-title">Rendimiento de Cupones</h2>
-    <div class="coupon-list">
-      @for(coupon of stats.couponPerformance; track coupon._id){
-      <div class="coupon-item">
-        <span class="coupon-code">{{ coupon._id }}</span>
-        <div class="coupon-stats">
-          <span
-            >Usos: <strong>{{ coupon.timesUsed }}</strong></span
-          >
-          <span
-            >Descuento Total:
-            <strong>{{
-              coupon.totalDiscount | currency : "COP" : "symbol" : "1.0-0"
-            }}</strong></span
-          >
-        </div>
-      </div>
-      } @empty {
-      <p class="empty-message">Aún no se han usado cupones.</p>
-      }
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Código de Cupón</th>
+            <th>Usos</th>
+            <th>Descuento Total</th>
+            <th>Ingresos Generados</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (coupon of data.couponPerformance; track coupon._id) {
+          <tr>
+            <td>
+              <strong>{{ coupon._id }}</strong>
+            </td>
+            <td>{{ coupon.timesUsed }}</td>
+            <td>
+              {{ coupon.totalDiscount | currency : "COP" : "symbol" : "1.0-0" }}
+            </td>
+            <td>
+              {{
+                coupon.totalRevenueGenerated
+                  | currency : "COP" : "symbol" : "1.0-0"
+              }}
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="4">No se han usado cupones en este periodo.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="performance-section" @fadeInUp>
-    <app-vendor-performance></app-vendor-performance>
-  </div>
-
-  <!-- Tarjeta de Pedidos Recientes -->
-  <div class="card recent-orders">
+  <!-- ======================== -->
+  <!-- PEDIDOS RECIENTES -->
+  <!-- ======================== -->
+  <div class="card full-width">
     <h2 class="card-title">Pedidos Recientes</h2>
-    <div class="order-list">
-      @for(order of stats.latestOrders; track order._id){
-      <div class="order-item">
-        <div class="order-info">
-          <p class="customer-name">{{ order.customerInfo.name }}</p>
-          <p class="order-id">#{{ order._id.slice(-6).toUpperCase() }}</p>
-        </div>
-        <div class="order-details">
-          <span class="order-total">{{
-            order.totalAmount | currency : "COP" : "symbol" : "1.0-0"
-          }}</span>
-          <a
-            [routerLink]="['/admin/orders', order._id]"
-            class="details-link"
-            appRipple
-            >Ver</a
-          >
-        </div>
-      </div>
-      } @empty {
-      <p>No hay pedidos recientes.</p>
-      }
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Pedido</th>
+            <th>Cliente</th>
+            <th>Monto</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of data.recentOrders; track order._id) {
+          <tr>
+            <td>#{{ order._id.slice(-6).toUpperCase() }}</td>
+            <td>{{ order.customerInfo.name }}</td>
+            <td>
+              {{ order.totalAmount | currency : "COP" : "symbol" : "1.0-0" }}
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="order.status">{{
+                order.status
+              }}</span>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="4">No hay pedidos recientes.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 } @else {
-<!-- Se muestra si la carga terminó pero no hay datos de resumen -->
-<p>No se pudieron cargar las estadísticas.</p>
+<!-- Esto se mostrará si no está cargando PERO summary() es nulo o está vacío -->
+<div class="empty-state">
+  No se encontraron datos para el periodo seleccionado.
+</div>
 } }
