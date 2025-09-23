@@ -196,6 +196,37 @@ router.put("/:id", async (req, res) => {
 });
 
 /**
+ * Ruta Patch PAra actualizar el estado de un pedido
+ ***/
+
+router.patch("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["Activo", "Agotado"].includes(status)) {
+      return res.status(400).json({ message: "Estado no válido." });
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { status: status } },
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Producto no encontrado." });
+    }
+    res.json(updatedProduct);
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Error al actualizar el estado del producto.",
+        details: error.message,
+      });
+  }
+});
+
+/**
  * @route   DELETE /api/products/:id
  * @desc    Eliminar un producto.
  * @access  Admin

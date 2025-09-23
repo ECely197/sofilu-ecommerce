@@ -63,6 +63,7 @@ const productSchema = new Schema(
     isFeatured: { type: Boolean, default: false },
     isOnSale: { type: Boolean, default: false },
     salePrice: { type: Number },
+    status: { type: String, enum: ["Activo", "Agotado"], default: "Activo" },
     variants: [variantSchema],
   },
   {

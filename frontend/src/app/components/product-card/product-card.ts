@@ -50,6 +50,9 @@ export class ProductCard {
     this.wishlistService.toggleProduct(this.product);
   }
 
+  /** Devuelve `true` si el producto está marcado como 'Agotado'. */
+  isOutOfStock = computed(() => this.product?.status === 'Agotado');
+
   addToCart(event: Event): void {
     event.preventDefault();
     event.stopPropagation();

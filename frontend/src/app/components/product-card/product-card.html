@@ -1,9 +1,15 @@
 @if (product) {
 <!-- El enlace ahora es el contenedor principal de la tarjeta -->
-<a [routerLink]="['/product', product._id]" class="product-card">
+<a
+  [routerLink]="isOutOfStock() ? null : ['/product', product._id]"
+  class="product-card"
+  [class.out-of-stock]="isOutOfStock()"
+>
   <!-- Contenedor de la Imagen con las burbujas de acción -->
   <div class="image-container">
-    @if (product.images && product.images.length > 0) {
+    @if (isOutOfStock()) {
+    <div class="stock-badge">Agotado</div>
+    } @if (product.images && product.images.length > 0) {
     <img
       [src]="product.images[0]"
       [alt]="product.name"

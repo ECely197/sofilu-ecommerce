@@ -82,13 +82,17 @@
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .action-button {
-  @extend .btn-secondary; // Usamos el botón secundario
+  @extend .btn-secondary;
   padding: 0.4rem 1rem;
   font-size: 0.75rem;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 
   &.edit {
     background-color: var(--soft-gray);
@@ -96,6 +100,21 @@
   &.delete {
     background-color: #fee2e2;
     color: #b91c1c;
+  }
+  &.status {
+    background-color: var(--soft-gray);
+    color: var(--text-secondary);
+    min-width: 110px; // Ancho mínimo para que no salte el texto
+    justify-content: center;
+
+    .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    &.active {
+      background-color: #dcfce7; // Verde claro (Material)
+      color: #166534; // Verde oscuro (Material)
+    }
   }
 }
 

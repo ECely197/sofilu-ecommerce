@@ -96,6 +96,20 @@ export class ProductServices {
   }
 
   /**
+   * Actualiza el estado de un producto (Activo/Agotado).
+   * @param productId El ID del producto.
+   * @param status El nuevo estado.
+   */
+  updateProductStatus(
+    productId: string,
+    status: 'Activo' | 'Agotado'
+  ): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${productId}/status`, {
+      status,
+    });
+  }
+
+  /**
    * Realiza una búsqueda de productos en el backend.
    * Construye los parámetros de la URL a partir de un objeto.
    * @param queryParams Objeto con los parámetros de búsqueda (ej: { search: 'camiseta', category: 'abc' }).

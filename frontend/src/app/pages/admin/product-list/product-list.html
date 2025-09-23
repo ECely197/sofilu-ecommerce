@@ -75,6 +75,17 @@
 
       <div class="cell" data-label="Acciones">
         <div class="action-buttons">
+          <button
+            (click)="toggleStatus(product)"
+            class="action-button status"
+            [class.active]="product.status === 'Activo'"
+            appRipple
+          >
+            <span class="material-symbols-outlined">
+              {{ product.status === "Activo" ? "toggle_on" : "toggle_off" }}
+            </span>
+            {{ product.status }}
+          </button>
           <a
             [routerLink]="['/admin/products/edit', product._id]"
             class="action-button edit"

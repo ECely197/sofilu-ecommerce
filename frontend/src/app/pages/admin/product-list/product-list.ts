@@ -97,6 +97,27 @@ export class ProductList implements OnInit {
     });
   }
 
+  /**
+   * Alterna el estado de un producto entre 'Activo' y 'Agotado'.
+   * @param product El objeto de producto completo.
+   */
+  toggleStatus(product: Product): void {
+    const newStatus = product.status === 'Activo' ? 'Agotado' : 'Activo';
+
+    this.productService.updateProductStatus(product._id, newStatus).subscribe({
+      next: (updatedProduct) => {
+        // Actualizamos el signal para que la UI reaccione instantáneamente
+        this.products.update((currentProducts) =>
+          currentProducts.map((p) =>
+            p._id === product._id ? updatedProduct : p
+          )
+        );
+        // this.toastService.show(`Producto marcado como ${newStatus}.`); // Opcional: añadir feedback
+      },
+      error: (err) => console.error('Error al cambiar el estado:', err),
+    });
+  }
+
   deleteProduct(productId: string): void {
     if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       this.productService.deleteProduct(productId).subscribe({

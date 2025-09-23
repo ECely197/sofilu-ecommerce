@@ -35,5 +35,6 @@ export interface Product {
   isFeatured: boolean;
   isOnSale: boolean;
   salePrice?: number;
+  status: 'Activo' | 'Agotado';
   variants: Variant[];
 }
