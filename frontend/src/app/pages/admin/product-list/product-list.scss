@@ -35,11 +35,11 @@
 
 .product-item {
   display: grid;
-  grid-template-columns: 60px 2fr 1fr 1fr 1.5fr;
+  grid-template-columns: 60px minmax(0, 3fr) minmax(0, 1.5fr) minmax(0, 2fr);
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
+  border-bottom: 1px solid var(--border);
   transition: background-color 0.2s ease-in-out;
 
   &:last-child {
@@ -47,7 +47,7 @@
   }
 
   &:not(.header):hover {
-    background-color: var(--background-sec);
+    background-color: var(--soft-white);
   }
 }
 
@@ -58,11 +58,15 @@
   color: var(--text-secondary);
   font-weight: 600;
   padding-bottom: 1rem;
+  &:hover {
+    background-color: transparent;
+  }
 }
 
 // Celdas
 .cell {
   padding: 0 0.5rem;
+  text-align: left;
 }
 
 .product-thumbnail {
@@ -77,12 +81,29 @@
 
 .product-name {
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-price-stock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .price {
+    font-weight: 500;
+  }
+  .stock {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
 }
 
 .action-buttons {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
+  justify-content: flex-end;
 }
 
 .action-button {
