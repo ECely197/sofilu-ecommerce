@@ -5,28 +5,32 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
-import { environment } from '../../environments/environment.prod';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+
+export interface AppSettings {
+  _id?: string;
+  storeName: string;
+  storeLogoUrl: string;
+  contactEmail: string;
+  shippingCostBogota: number;
+  shippingCostNational: number;
+  serviceFeePercentage: number;
+  socialLinks: { platform: string; url: string }[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/settings`;
 
-  /** Obtiene el costo de envío actual desde el backend. */
-  getShippingCost(): Observable<number> {
-    return this.http
-      .get<{ value: number }>(`${this.apiUrl}/shippingCost`)
-      .pipe(map((response) => response.value)); // Extrae solo el valor numérico de la respuesta.
+  /** Obtiene todas las configuraciones de la tienda. */
+  getSettings(): Observable<AppSettings> {
+    return this.http.get<AppSettings>(this.apiUrl);
   }
 
-  /**
-   * Actualiza el costo de envío en el backend.
-   * @param cost El nuevo costo de envío.
-   */
-  updateShippingCost(cost: number): Observable<any> {
-    const url = `${this.apiUrl}/shippingCost`;
-    // Envía una petición PUT con el nuevo valor en el cuerpo del request.
-    return this.http.put(url, { value: cost });
+  /** Actualiza todas las configuraciones de la tienda. */
+  updateSettings(settingsData: Partial<AppSettings>): Observable<AppSettings> {
+    return this.http.put<AppSettings>(this.apiUrl, settingsData);
   }
 }

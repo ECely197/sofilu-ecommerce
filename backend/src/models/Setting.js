@@ -1,34 +1,36 @@
 /**
- * @fileoverview Define el esquema de Mongoose para la colección 'settings'.
- * Funciona como un almacén clave-valor para configuraciones globales de la aplicación.
+ * @fileoverview Define un esquema único para almacenar todas las configuraciones de la tienda.
  */
-
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-/**
- * @schema settingSchema
- * @description Esquema para una configuración global.
- */
-const settingSchema = new Schema({
-  /**
-   * @property {String} key - El identificador único de la configuración (ej: 'costo-envio', 'impuesto-iva').
-   */
-  key: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
+// Sub-esquema para las redes sociales
+const socialLinkSchema = new Schema(
+  {
+    platform: { type: String, required: true }, // ej: 'instagram', 'facebook', 'telegram'
+    url: { type: String, required: true },
   },
+  { _id: false }
+);
 
-  /**
-   * @property {Schema.Types.Mixed} value - El valor de la configuración.
-   * Puede ser de cualquier tipo (Número, String, Objeto, etc.).
-   */
-  value: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
+const settingSchema = new Schema({
+  // Usamos una clave fija para encontrar siempre este único documento
+  uniqueId: { type: String, default: "global-settings", unique: true },
+
+  // --- Información de la Tienda (Mi Sugerencia) ---
+  storeName: { type: String, default: "Sofilu Store" },
+  storeLogoUrl: { type: String, default: "" },
+  contactEmail: { type: String, default: "" },
+
+  // --- Envíos ---
+  shippingCostBogota: { type: Number, default: 0 },
+  shippingCostNational: { type: Number, default: 0 },
+
+  // --- Tarifas ---
+  serviceFeePercentage: { type: Number, default: 0, min: 0, max: 100 },
+
+  // --- Redes Sociales ---
+  socialLinks: [socialLinkSchema],
 });
 
 module.exports = mongoose.model("Setting", settingSchema);

@@ -149,6 +149,16 @@
             shippingCost() | currency : "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
+
+        @if(serviceFee() > 0) {
+        <div class="summary-row">
+          <span>Tarifa de Servicio</span>
+          <span>{{
+            serviceFee() | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
+        </div>
+        }
+
         <div class="summary-row total">
           <span>Total</span>
           <span>{{

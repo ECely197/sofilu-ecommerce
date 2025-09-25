@@ -16,6 +16,7 @@ import { CartItem } from '../../interfaces/cart-item.interface';
 import { PaymentService } from '../../services/payment.service';
 import { loadMercadoPago } from '@mercadopago/sdk-js';
 import { environment } from '../../../environments/environment';
+import { AppSettings } from '../../services/settings.service';
 
 declare global {
   interface Window {
@@ -54,45 +55,75 @@ export class checkout implements OnInit {
   discountAmount = signal<number>(0);
   couponMessage = signal<string>('');
   couponError = signal<boolean>(false);
+  serviceFee = signal(0);
 
   grandTotal = computed(() => {
     const subtotal = this.cartService.subTotal();
     const shipping = this.shippingCost();
     const discount = this.discountAmount();
-    return Math.max(0, subtotal + shipping - discount);
+    const fee = this.serviceFee();
+    return Math.max(0, subtotal + shipping - discount + fee);
   });
+
+  private appSettings: AppSettings | null = null;
 
   constructor() {}
 
   ngOnInit(): void {
+    // 1. Guarda de seguridad: si el carrito está vacío, no tiene sentido estar aquí.
+    // Redirigimos al usuario de vuelta a la página del carrito.
     if (this.cartService.totalItems() === 0) {
       this.router.navigate(['/cart']);
       return;
     }
 
+    // 2. Activamos el estado de carga para mostrar el esqueleto (skeleton) en la UI.
     this.isLoading.set(true);
-    // Ahora solo cargamos dos piezas de información en paralelo
+
+    // 3. Usamos `forkJoin` de RxJS para realizar dos llamadas a la API en paralelo.
+    // Esto es más eficiente que hacer una llamada después de la otra.
     forkJoin({
-      shippingCost: this.settingsService.getShippingCost(),
+      settings: this.settingsService.getSettings(),
       addresses: this.customerService.getAddresses(),
     }).subscribe({
-      next: ({ shippingCost, addresses }) => {
-        this.shippingCost.set(shippingCost);
+      // `next` se ejecuta solo si AMBAS llamadas a la API son exitosas.
+      next: ({ settings, addresses }) => {
+        // Guardamos los ajustes globales en una propiedad de la clase para usarlos después.
+        this.appSettings = settings;
 
+        // Actualizamos el signal con la lista de direcciones del usuario.
         this.addresses.set(addresses);
-        const preferredAddress = addresses.find((a) => a.isPreferred);
-        this.selectedAddress.set(
-          preferredAddress || (addresses.length > 0 ? addresses[0] : null)
-        );
 
+        // Buscamos si el usuario tiene una dirección marcada como "Preferida".
+        const preferredAddress = addresses.find((a) => a.isPreferred);
+
+        // Determinamos la dirección por defecto: la preferida, o la primera de la lista si no hay preferida.
+        const defaultAddress =
+          preferredAddress || (addresses.length > 0 ? addresses[0] : null);
+
+        // Si se encontró una dirección por defecto, la seleccionamos.
+        if (defaultAddress) {
+          // Llamamos a `selectAddress` que ya contiene la lógica para calcular el costo de envío.
+          this.selectAddress(defaultAddress);
+        }
+
+        // Calculamos la tarifa de servicio basándonos en el subtotal y el porcentaje de los ajustes.
+        if (settings.serviceFeePercentage > 0) {
+          const fee =
+            this.cartService.subTotal() * (settings.serviceFeePercentage / 100);
+          this.serviceFee.set(fee);
+        }
+
+        // 4. Desactivamos el estado de carga una vez que todos los datos están listos.
         this.isLoading.set(false);
       },
+      // `error` se ejecuta si CUALQUIERA de las dos llamadas a la API falla.
       error: (err) => {
         this.toastService.show(
           'Error al cargar los datos del checkout.',
           'error'
         );
-        this.isLoading.set(false);
+        this.isLoading.set(false); // Es importante desactivar la carga también en caso de error.
         console.error('Error en forkJoin de checkout:', err);
       },
     });
@@ -102,6 +133,14 @@ export class checkout implements OnInit {
 
   selectAddress(address: Address): void {
     this.selectedAddress.set(address);
+
+    if (this.appSettings) {
+      const isBogota = address.city.toLowerCase().includes('bogota');
+      const newShippingCost = isBogota
+        ? this.appSettings.shippingCostBogota
+        : this.appSettings.shippingCostNational;
+      this.shippingCost.set(newShippingCost);
+    }
   }
 
   placeOrder(): void {

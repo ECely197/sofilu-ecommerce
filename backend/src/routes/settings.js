@@ -1,61 +1,45 @@
-/**
- * @fileoverview Gestiona las rutas para las configuraciones globales de la aplicación.
- * Funciona como un almacén clave-valor (ej: 'costo-envio', 'impuesto-iva').
- */
-
 const express = require("express");
 const router = express.Router();
 const Setting = require("../models/Setting");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
-// ==========================================================================
-// RUTA PÚBLICA
-// ==========================================================================
-
 /**
- * @route   GET /api/settings/:key
- * @desc    Obtener el valor de una configuración específica por su clave.
+ * @route   GET /api/settings
+ * @desc    Obtener el documento único de configuración de la tienda.
+ *          Si no existe, lo crea con los valores por defecto.
  * @access  Public
  */
-router.get("/:key", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const setting = await Setting.findOne({ key: req.params.key });
-
-    if (!setting) {
-      // Lógica de fallback para evitar errores en el frontend si un ajuste no está configurado.
-      if (req.params.key === "shippingCost") {
-        return res.json({ key: "shippingCost", value: 10000 }); // Valor por defecto
-      }
-      return res.status(404).json({ message: "Ajuste no encontrado." });
+    let settings = await Setting.findOne({ uniqueId: "global-settings" });
+    if (!settings) {
+      settings = new Setting();
+      await settings.save();
     }
-    res.json(setting);
+    res.json(settings);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el ajuste." });
+    res.status(500).json({ message: "Error al obtener los ajustes." });
   }
 });
 
-// ==========================================================================
-// RUTA DE ADMINISTRACIÓN
-// ==========================================================================
-
 /**
- * @route   PUT /api/settings/:key
- * @desc    Crear o actualizar una configuración.
+ * @route   PUT /api/settings
+ * @desc    Actualizar el documento de configuración de la tienda.
  * @access  Admin
  */
-router.put("/:key", [authMiddleware, adminOnly], async (req, res) => {
+router.put("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
-    const updatedSetting = await Setting.findOneAndUpdate(
-      { key: req.params.key },
-      { value: req.body.value },
-      { new: true, upsert: true, runValidators: true } // 'upsert' crea el documento si no existe.
+    const updatedSettings = await Setting.findOneAndUpdate(
+      { uniqueId: "global-settings" },
+      { $set: req.body },
+      { new: true, upsert: true, runValidators: true }
     );
-    res.json(updatedSetting);
+    res.json(updatedSettings);
   } catch (error) {
     res
       .status(400)
       .json({
-        message: "Error al actualizar el ajuste.",
+        message: "Error al actualizar los ajustes.",
         details: error.message,
       });
   }
