@@ -24,8 +24,7 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 router.get("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const { search } = req.query;
-    const listUsersResult = await admin.auth().listUsers(1000); // Límite por página
-
+    const listUsersResult = await admin.auth().listUsers(1000);
     let users = listUsersResult.users;
 
     if (search) {
@@ -43,6 +42,7 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
       displayName: user.displayName,
       creationTime: user.metadata.creationTime,
       disabled: user.disabled,
+      isAdmin: user.customClaims?.admin === true,
     }));
 
     res.json(formattedUsers);
@@ -102,12 +102,10 @@ router.get("/:uid/details", [authMiddleware, adminOnly], async (req, res) => {
     res.json(userDetails);
   } catch (error) {
     console.error("Error al obtener detalles del cliente:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los detalles del cliente.",
-        details: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener los detalles del cliente.",
+      details: error.message,
+    });
   }
 });
 
@@ -133,12 +131,10 @@ router.post(
         message: `Rol de admin actualizado a: ${!currentAdminStatus}`,
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          message: "Error al cambiar el rol de admin.",
-          details: error.message,
-        });
+      res.status(500).json({
+        message: "Error al cambiar el rol de admin.",
+        details: error.message,
+      });
     }
   }
 );
@@ -165,12 +161,10 @@ router.post(
         }.`,
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          message: "Error al cambiar el estado del usuario.",
-          details: error.message,
-        });
+      res.status(500).json({
+        message: "Error al cambiar el estado del usuario.",
+        details: error.message,
+      });
     }
   }
 );
@@ -218,12 +212,10 @@ router.put("/profile", authMiddleware, async (req, res) => {
 
     res.json(updatedProfile);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar el perfil.",
-        details: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar el perfil.",
+      details: error.message,
+    });
   }
 });
 
@@ -262,12 +254,10 @@ router.post("/addresses", authMiddleware, async (req, res) => {
     );
     res.status(201).json(user.addresses);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al añadir la dirección.",
-        details: error.message,
-      });
+    res.status(500).json({
+      message: "Error al añadir la dirección.",
+      details: error.message,
+    });
   }
 });
 
