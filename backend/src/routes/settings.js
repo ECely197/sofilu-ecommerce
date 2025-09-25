@@ -9,15 +9,18 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
  *          Si no existe, lo crea con los valores por defecto.
  * @access  Public
  */
+// --- ¡CORRECCIÓN! Ahora escucha en la ruta raíz '/' ---
 router.get("/", async (req, res) => {
   try {
     let settings = await Setting.findOne({ uniqueId: "global-settings" });
     if (!settings) {
+      console.log("No se encontraron ajustes, creando uno nuevo por defecto.");
       settings = new Setting();
       await settings.save();
     }
     res.json(settings);
   } catch (error) {
+    console.error("Error al obtener los ajustes:", error);
     res.status(500).json({ message: "Error al obtener los ajustes." });
   }
 });
@@ -27,6 +30,7 @@ router.get("/", async (req, res) => {
  * @desc    Actualizar el documento de configuración de la tienda.
  * @access  Admin
  */
+// --- ¡CORRECCIÓN! Ahora escucha en la ruta raíz '/' ---
 router.put("/", [authMiddleware, adminOnly], async (req, res) => {
   try {
     const updatedSettings = await Setting.findOneAndUpdate(
@@ -36,12 +40,11 @@ router.put("/", [authMiddleware, adminOnly], async (req, res) => {
     );
     res.json(updatedSettings);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar los ajustes.",
-        details: error.message,
-      });
+    console.error("Error al actualizar los ajustes:", error);
+    res.status(400).json({
+      message: "Error al actualizar los ajustes.",
+      details: error.message,
+    });
   }
 });
 
