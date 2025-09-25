@@ -1,13 +1,17 @@
-<!-- Contenido completo y final para: src/app/pages/admin/order-detail/order-detail.html -->
-
 @if (isLoading()) {
 <div class="loading-container">Cargando detalles del pedido...</div>
 } @if (order(); as currentOrder) {
 <div class="order-detail-container" @fadeInOut>
   <header class="page-header">
-    <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
+    <!-- ¡NUEVO! Contenedor para el Título y el Botón de Volver -->
+    <div class="header-title-wrapper">
+      <a routerLink="/admin/orders" class="back-button" appRipple>
+        <span class="material-symbols-outlined">arrow_back</span>
+      </a>
+      <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
+    </div>
+
     <div class="header-actions">
-      <!-- Enlace corregido para abrir la factura en una nueva pestaña -->
       <a
         [routerLink]="['/invoice', currentOrder._id]"
         target="_blank"
@@ -16,11 +20,11 @@
       >
         Ver Factura
       </a>
-      <button class="btn-material" appRipple>Contactar Cliente</button>
     </div>
   </header>
 
   <div class="details-grid">
+    <!-- COLUMNA PRINCIPAL -->
     <div class="main-content">
       <div class="card">
         <h2 class="card-title">
@@ -28,35 +32,38 @@
         </h2>
         @for (item of currentOrder.items; track item._id) {
         <div class="order-item">
-          <div class="item-image-wrapper">
-            @if(item.product?.images && item.product.images.length > 0) {
-            <img
-              [src]="item.product.images[0]"
-              [alt]="item.product.name"
-              class="item-image"
-            />
-            } @else {
-            <div class="item-image placeholder"></div>
-            }
-          </div>
+          <!-- Imagen Principal del Producto -->
+          <img
+            [src]="item.product?.images[0]"
+            [alt]="item.product?.name"
+            class="item-image"
+          />
+
+          <!-- Información del Producto -->
           <div class="item-info">
             <p class="item-name">
               {{ item.product?.name || "Producto no disponible" }}
             </p>
-            <!-- ¡AQUÍ MOSTRAMOS LAS VARIANTES! -->
-            <div class="item-variants">
-              @for(variant of objectKeys(item.selectedVariants); track variant){
-              <span
-                >{{ variant }}:
-                <strong>{{ item.selectedVariants[variant] }}</strong></span
-              >
-              }
-            </div>
+            <p class="item-sku">SKU: {{ item.product?.sku || "N/A" }}</p>
+            <p class="item-price-quantity">
+              {{ item.quantity }} x
+              {{ item.price | currency : "COP" : "symbol" : "1.0-0" }}
+            </p>
           </div>
-          <p class="item-price-quantity">
-            {{ item.quantity }} x
-            {{ item.price | currency : "COP" : "symbol" : "1.0-0" }}
-          </p>
+
+          <!-- Imágenes de las Variantes Seleccionadas -->
+          <div class="item-variants-images">
+            @for(variantName of objectKeys(item.selectedVariants); track
+            variantName) { @if (getVariantOptionImage(item, variantName); as
+            variantImage) {
+            <img
+              [src]="variantImage"
+              [alt]="item.selectedVariants[variantName]"
+              class="variant-image"
+            />
+            } }
+          </div>
+
           <p class="item-total">
             {{
               item.quantity * item.price | currency : "COP" : "symbol" : "1.0-0"
@@ -64,18 +71,20 @@
           </p>
         </div>
         }
+      </div>
+
+      <!-- Resumen de Costos -->
+      <div class="card">
+        <h2 class="card-title">Resumen Financiero</h2>
         <div class="totals-summary">
-          <!-- Mostramos el Subtotal -->
           <div class="total-row">
             <span>Subtotal</span>
             <span>{{
-              currentOrder.totalAmount -
-                10000 +
-                (currentOrder.discountAmount || 0)
-                | currency : "COP" : "symbol" : "1.0-0"
+              currentOrder.totalAmount +
+                (currentOrder.discountAmount || 0) -
+                10000 | currency : "COP" : "symbol" : "1.0-0"
             }}</span>
           </div>
-          <!-- Mostramos el Descuento si existe -->
           @if(currentOrder.discountAmount > 0) {
           <div class="total-row discount">
             <span>Descuento ({{ currentOrder.appliedCoupon }})</span>
@@ -88,15 +97,13 @@
             >
           </div>
           }
-          <!-- Mostramos el Envío -->
           <div class="total-row">
             <span>Envío</span>
             <span>{{ 10000 | currency : "COP" : "symbol" : "1.0-0" }}</span>
           </div>
           <hr />
-          <!-- Mostramos el Total Final -->
           <div class="total-row grand-total">
-            <strong>Total</strong>
+            <strong>Total Pagado</strong>
             <strong>{{
               currentOrder.totalAmount | currency : "COP" : "symbol" : "1.0-0"
             }}</strong>
@@ -105,38 +112,82 @@
       </div>
     </div>
 
-    <!-- Columna Lateral (sin cambios) -->
+    <!-- COLUMNA LATERAL -->
     <aside class="sidebar-content">
       <div class="card">
-        <h2 class="card-title">Información del Cliente</h2>
-        <p class="customer-name">{{ currentOrder.customerInfo.name }}</p>
-        <p class="customer-email">{{ currentOrder.customerInfo.email }}</p>
-      </div>
-      <div class="card">
         <h2 class="card-title">Estado del Pedido</h2>
-        <form [formGroup]="statusForm" (ngSubmit)="updateStatus()">
+        @if (isEditingStatus()) {
+        <!-- VISTA DE EDICIÓN -->
+        <form
+          [formGroup]="statusForm"
+          (ngSubmit)="updateStatus()"
+          class="status-form"
+        >
           <div class="form-field has-arrow">
             <label for="status">Cambiar Estado</label>
-            <select
-              id="status"
-              formControlName="status"
-              class="form-input"
-              as="select"
-            >
+            <select id="status" formControlName="status" class="form-input">
               @for(status of orderStatuses; track status){
               <option [value]="status">{{ status }}</option>
               }
             </select>
           </div>
-          <button
-            type="submit"
-            class="btn-material"
-            [disabled]="statusForm.invalid || statusForm.pristine"
-            appRipple
-          >
-            Guardar Cambios
-          </button>
+          <div class="form-actions">
+            <button
+              type="button"
+              (click)="cancelEditMode()"
+              class="btn-secondary"
+              appRipple
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn-material"
+              [disabled]="statusForm.invalid || statusForm.pristine"
+              appRipple
+            >
+              Guardar
+            </button>
+          </div>
         </form>
+        } @else {
+        <!-- VISTA DE LECTURA -->
+        <div class="status-display">
+          <span class="status-badge" [ngClass]="currentOrder.status">{{
+            currentOrder.status
+          }}</span>
+          <button (click)="enableEditMode()" class="edit-status-btn">
+            <span class="material-symbols-outlined">edit</span>
+          </button>
+        </div>
+        }
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Información de Envío</h2>
+        <div class="address-details">
+          <p>
+            <strong>{{ currentOrder.shippingAddress.fullName }}</strong>
+          </p>
+          <p>{{ currentOrder.shippingAddress.streetAddress }}</p>
+          @if(currentOrder.shippingAddress.addressDetails){
+          <p>{{ currentOrder.shippingAddress.addressDetails }}</p>
+          }
+          <p>
+            {{ currentOrder.shippingAddress.city }},
+            {{ currentOrder.shippingAddress.department }}
+          </p>
+          <p>Código Postal: {{ currentOrder.shippingAddress.postalCode }}</p>
+          <hr />
+          <p>
+            <span class="material-symbols-outlined">mail</span>
+            {{ currentOrder.shippingAddress.email }}
+          </p>
+          <p>
+            <span class="material-symbols-outlined">phone</span>
+            {{ currentOrder.shippingAddress.phone }}
+          </p>
+        </div>
       </div>
     </aside>
   </div>

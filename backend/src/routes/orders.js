@@ -211,15 +211,20 @@ router.get(
  * @desc    Obtener un pedido único por su ID (vista de admin).
  * @access  Admin
  */
-router.get("/:id", [authMiddleware, adminOnly], async (req, res) => {
+router.get("/:id", [authMiddleware], async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate("items.product");
+    const order = await Order.findById(req.params.id).populate({
+      path: "items.product",
+      model: "Product",
+      select: "name sku images variants",
+    });
+
     if (!order) {
-      return res.status(404).json({ message: "Pedido no encontrado." });
+      return res.status(404).json({ message: "Pedido no encontrado" });
     }
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el pedido." });
+    res.status(500).json({ message: "Error al obtener el pedido" });
   }
 });
 
@@ -292,11 +297,9 @@ router.post("/", [authMiddleware], async (req, res) => {
             (o) => o.name === item.selectedVariants[variantName]
           );
           if (!option || option.stock < item.quantity) {
-            return res
-              .status(400)
-              .json({
-                message: `Stock insuficiente para ${product.name} - ${option.name}.`,
-              });
+            return res.status(400).json({
+              message: `Stock insuficiente para ${product.name} - ${option.name}.`,
+            });
           }
         }
       } else {

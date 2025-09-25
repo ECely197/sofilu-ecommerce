@@ -49,6 +49,7 @@ export class OrderDetail implements OnInit {
 
   statusForm!: FormGroup;
   orderStatuses = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
+  isEditingStatus = signal<boolean>(false);
 
   ngOnInit() {
     // Inicializamos el formulario vacío para evitar errores
@@ -106,6 +107,43 @@ export class OrderDetail implements OnInit {
           },
         });
     }
+  }
+
+  /** Activa el modo de edición para cambiar el estado. */
+  enableEditMode(): void {
+    this.isEditingStatus.set(true);
+  }
+
+  /**
+   * Cancela la edición, resetea el formulario al estado original del pedido
+   * y sale del modo de edición.
+   */
+  cancelEditMode(): void {
+    const currentStatus = this.order()?.status;
+    if (currentStatus) {
+      this.statusForm.patchValue({ status: currentStatus });
+    }
+    this.isEditingStatus.set(false);
+  }
+
+  /**
+   * ¡NUEVO! Helper para encontrar la imagen de una variante seleccionada.
+   * @param item El artículo del pedido.
+   * @param variantName El nombre de la variante (ej: "Empaque").
+   * @returns La URL de la imagen de la opción seleccionada, o undefined.
+   */
+  getVariantOptionImage(item: any, variantName: string): string | undefined {
+    const selectedOptionName = item.selectedVariants[variantName];
+    if (!item.product || !item.product.variants || !selectedOptionName) {
+      return undefined;
+    }
+    const variant = item.product.variants.find(
+      (v: any) => v.name === variantName
+    );
+    const option = variant?.options.find(
+      (o: any) => o.name === selectedOptionName
+    );
+    return option?.image;
   }
 
   public objectKeys(obj: object): string[] {
