@@ -33,6 +33,7 @@ export class settings implements OnInit {
   settingsForm!: FormGroup;
   isLoading = signal(true);
   isSaving = signal(false);
+  isEditing = signal(false);
 
   // Lista de redes sociales predefinidas con sus iconos
   socialPlatforms = [
@@ -42,6 +43,19 @@ export class settings implements OnInit {
     { id: 'whatsapp', name: 'WhatsApp', icon: 'whatsapp' },
     { id: 'tiktok', name: 'TikTok', icon: 'music_note' },
   ];
+
+  /** Activa el modo de edición y habilita el formulario. */
+  enableEditing(): void {
+    this.isEditing.set(true);
+    this.settingsForm.enable(); // Habilita todos los campos del formulario
+  }
+
+  /** Cancela la edición, revierte los cambios y deshabilita el formulario. */
+  cancelEditing(): void {
+    this.isEditing.set(false);
+    this.loadSettings(); // Recarga los datos originales desde el servicio
+    this.settingsForm.disable(); // Deshabilita el formulario
+  }
 
   ngOnInit(): void {
     // Inicializamos el formulario con todos los nuevos campos.
@@ -83,12 +97,14 @@ export class settings implements OnInit {
   loadSettings(): void {
     this.isLoading.set(true);
     this.settingsService.getSettings().subscribe((settings) => {
-      // Rellenamos el formulario con los datos cargados.
       this.settingsForm.patchValue(settings);
-      // Rellenamos el FormArray de redes sociales
+
+      this.socialLinks.clear(); // Limpiamos antes de rellenar
       settings.socialLinks.forEach((link) =>
         this.socialLinks.push(this.createSocialLink(link.platform, link.url))
       );
+
+      this.settingsForm.disable(); // ¡NUEVO! El formulario empieza deshabilitado
       this.isLoading.set(false);
     });
   }
@@ -106,6 +122,8 @@ export class settings implements OnInit {
     this.settingsService.updateSettings(this.settingsForm.value).subscribe({
       next: () => {
         this.isSaving.set(false);
+        this.isEditing.set(false);
+        this.settingsForm.disable();
         this.toastService.show('¡Ajustes guardados con éxito!', 'success');
         this.settingsForm.markAsPristine();
       },

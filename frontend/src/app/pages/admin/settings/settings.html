@@ -1,147 +1,169 @@
 <header class="page-header">
   <h1>Ajustes de la Tienda</h1>
+  <!-- ¡NUEVO! Botón de Editar que aparece solo en modo lectura -->
+  @if (!isEditing() && !isLoading()) {
+  <button (click)="enableEditing()" class="btn-material edit-button">
+    <span class="material-symbols-outlined">edit</span>
+    Editar Ajustes
+  </button>
+  }
 </header>
 
 @if (!isLoading()) {
 <form [formGroup]="settingsForm" (ngSubmit)="handleSubmit()" @fadeIn>
-  <div class="settings-grid">
-    <!-- TARJETA: Información de la Tienda -->
-    <div class="card">
-      <h2 class="card-title">Información de la Tienda</h2>
-      <div class="material-field">
-        <input
-          id="storeName"
-          type="text"
-          formControlName="storeName"
-          class="material-input"
-          placeholder=" "
-        />
-        <label for="storeName" class="material-label"
-          >Nombre de la Tienda</label
-        >
-      </div>
-      <div class="material-field">
-        <input
-          id="contactEmail"
-          type="email"
-          formControlName="contactEmail"
-          class="material-input"
-          placeholder=" "
-        />
-        <label for="contactEmail" class="material-label"
-          >Email de Contacto Público</label
-        >
-      </div>
-    </div>
-
-    <!-- TARJETA: Envíos -->
-    <div class="card">
-      <h2 class="card-title">Costos de Envío</h2>
-      <div class="form-grid">
+  <div [class.readonly-mode]="!isEditing()">
+    <div class="settings-grid">
+      <!-- TARJETA: Información de la Tienda -->
+      <div class="card">
+        <h2 class="card-title">Información de la Tienda</h2>
+        <!-- ¡CORRECCIÓN! Usamos la estructura `material-field` -->
         <div class="material-field">
           <input
-            id="shippingCostBogota"
+            id="storeName"
             type="text"
-            appNumericFormat
-            formControlName="shippingCostBogota"
+            formControlName="storeName"
             class="material-input"
             placeholder=" "
           />
-          <label for="shippingCostBogota" class="material-label"
-            >Costo en Bogotá (COP)</label
+          <label for="storeName" class="material-label"
+            >Nombre de la Tienda</label
           >
         </div>
         <div class="material-field">
           <input
-            id="shippingCostNational"
-            type="text"
-            appNumericFormat
-            formControlName="shippingCostNational"
+            id="contactEmail"
+            type="email"
+            formControlName="contactEmail"
             class="material-input"
             placeholder=" "
           />
-          <label for="shippingCostNational" class="material-label"
-            >Costo Nacional (COP)</label
+          <label for="contactEmail" class="material-label"
+            >Email de Contacto Público</label
           >
         </div>
       </div>
-    </div>
 
-    <!-- TARJETA: Tarifas -->
-    <div class="card">
-      <h2 class="card-title">Tarifas Adicionales</h2>
-      <div class="material-field">
-        <input
-          id="serviceFeePercentage"
-          type="number"
-          formControlName="serviceFeePercentage"
-          class="material-input"
-          placeholder=" "
-        />
-        <label for="serviceFeePercentage" class="material-label"
-          >Tarifa de Servicio (%)</label
-        >
-        <p class="field-description">
-          Un porcentaje que se sumará al total de cada pedido. Ingresa solo el
-          número (ej: 5 para 5%).
-        </p>
-      </div>
-    </div>
-
-    <!-- TARJETA: Redes Sociales -->
-    <div class="card">
-      <h2 class="card-title">Redes Sociales</h2>
-      <div formArrayName="socialLinks" class="social-links-container">
-        @for (link of socialLinks.controls; track link; let i = $index) {
-        <div [formGroupName]="i" class="social-link-row">
-          <div class="form-field has-arrow">
-            <select formControlName="platform" class="form-input">
-              @for(platform of socialPlatforms; track platform.id) {
-              <option [value]="platform.id">{{ platform.name }}</option>
-              }
-            </select>
-          </div>
+      <!-- TARJETA: Envíos -->
+      <div class="card">
+        <h2 class="card-title">Costos de Envío</h2>
+        <div class="form-grid">
+          <!-- ¡CORRECCIÓN! Usamos la estructura `material-field` -->
           <div class="material-field">
             <input
-              type="url"
-              formControlName="url"
+              id="shippingCostBogota"
+              type="text"
+              appNumericFormat
+              formControlName="shippingCostBogota"
               class="material-input"
               placeholder=" "
             />
-            <label class="material-label">URL Completa (https://...)</label>
+            <label for="shippingCostBogota" class="material-label"
+              >Costo en Bogotá (COP)</label
+            >
           </div>
+          <div class="material-field">
+            <input
+              id="shippingCostNational"
+              type="text"
+              appNumericFormat
+              formControlName="shippingCostNational"
+              class="material-input"
+              placeholder=" "
+            />
+            <label for="shippingCostNational" class="material-label"
+              >Costo Nacional (COP)</label
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- TARJETA: Tarifas -->
+      <div class="card">
+        <h2 class="card-title">Tarifas Adicionales</h2>
+        <!-- ¡CORRECCIÓN! Usamos la estructura `material-field` -->
+        <div class="material-field">
+          <input
+            id="serviceFeePercentage"
+            type="number"
+            formControlName="serviceFeePercentage"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="serviceFeePercentage" class="material-label"
+            >Tarifa de Servicio (%)</label
+          >
+          <p class="field-description">
+            Un porcentaje que se sumará al total de cada pedido. Ingresa solo el
+            número (ej: 5 para 5%).
+          </p>
+        </div>
+      </div>
+
+      <!-- TARJETA: Redes Sociales -->
+      <div class="card">
+        <h2 class="card-title">Redes Sociales</h2>
+        <div formArrayName="socialLinks" class="social-links-container">
+          @for (link of socialLinks.controls; track link; let i = $index) {
+          <div [formGroupName]="i" class="social-link-row">
+            <div class="form-field has-arrow">
+              <select formControlName="platform" class="form-input">
+                @for(platform of socialPlatforms; track platform.id) {
+                <option [value]="platform.id">{{ platform.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="material-field">
+              <input
+                type="url"
+                formControlName="url"
+                class="material-input"
+                placeholder=" "
+              />
+              <label class="material-label">URL Completa (https://...)</label>
+            </div>
+            <button
+              type="button"
+              (click)="removeSocialLink(i)"
+              class="delete-button-tiny"
+            >
+              ✖
+            </button>
+          </div>
+          }
           <button
             type="button"
-            (click)="removeSocialLink(i)"
-            class="delete-button-tiny"
+            (click)="addSocialLink()"
+            class="add-button-tiny"
+            appRipple
           >
-            ✖
+            + Añadir Red Social
           </button>
         </div>
-        }
-        <button
-          type="button"
-          (click)="addSocialLink()"
-          class="add-button-tiny"
-          appRipple
-        >
-          + Añadir Red Social
-        </button>
       </div>
     </div>
   </div>
 
-  <!-- Acciones Flotantes -->
+  <!-- ¡NUEVO! Acciones que aparecen solo en modo de edición -->
+  @if(isEditing()){
   <div class="form-actions">
+    <button
+      type="button"
+      (click)="cancelEditing()"
+      class="btn-secondary"
+      appRipple
+    >
+      Cancelar
+    </button>
     <button
       type="submit"
       class="btn-material"
       [disabled]="settingsForm.invalid || settingsForm.pristine || isSaving()"
       appRipple
     >
-      {{ isSaving() ? "Guardando..." : "Guardar Todos los Cambios" }}
+      {{ isSaving() ? "Guardando..." : "Guardar Cambios" }}
     </button>
   </div>
+  }
 </form>
 } @else {
 <p>Cargando ajustes...</p>

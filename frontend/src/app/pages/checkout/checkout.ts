@@ -70,61 +70,54 @@ export class checkout implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    // 1. Guarda de seguridad: si el carrito está vacío, no tiene sentido estar aquí.
-    // Redirigimos al usuario de vuelta a la página del carrito.
     if (this.cartService.totalItems() === 0) {
       this.router.navigate(['/cart']);
       return;
     }
-
-    // 2. Activamos el estado de carga para mostrar el esqueleto (skeleton) en la UI.
     this.isLoading.set(true);
 
-    // 3. Usamos `forkJoin` de RxJS para realizar dos llamadas a la API en paralelo.
-    // Esto es más eficiente que hacer una llamada después de la otra.
-    forkJoin({
-      settings: this.settingsService.getSettings(),
-      addresses: this.customerService.getAddresses(),
-    }).subscribe({
-      // `next` se ejecuta solo si AMBAS llamadas a la API son exitosas.
-      next: ({ settings, addresses }) => {
-        // Guardamos los ajustes globales en una propiedad de la clase para usarlos después.
-        this.appSettings = settings;
+    // --- ¡CAMBIO! Hacemos las llamadas por separado ---
 
-        // Actualizamos el signal con la lista de direcciones del usuario.
+    // 1. Cargar Direcciones (la más importante)
+    this.customerService.getAddresses().subscribe({
+      next: (addresses) => {
         this.addresses.set(addresses);
-
-        // Buscamos si el usuario tiene una dirección marcada como "Preferida".
         const preferredAddress = addresses.find((a) => a.isPreferred);
-
-        // Determinamos la dirección por defecto: la preferida, o la primera de la lista si no hay preferida.
         const defaultAddress =
           preferredAddress || (addresses.length > 0 ? addresses[0] : null);
-
-        // Si se encontró una dirección por defecto, la seleccionamos.
         if (defaultAddress) {
-          // Llamamos a `selectAddress` que ya contiene la lógica para calcular el costo de envío.
-          this.selectAddress(defaultAddress);
+          this.selectAddress(defaultAddress); // Esto llamará a la lógica de envío
         }
+      },
+      error: (err) => {
+        this.toastService.show('Error al cargar tus direcciones.', 'error');
+        console.error('Error cargando direcciones:', err);
+      },
+    });
 
-        // Calculamos la tarifa de servicio basándonos en el subtotal y el porcentaje de los ajustes.
+    // 2. Cargar Ajustes (ahora es independiente)
+    this.settingsService.getSettings().subscribe({
+      next: (settings) => {
+        this.appSettings = settings;
+        // Volvemos a calcular el envío por si las direcciones cargaron antes
+        if (this.selectedAddress()) {
+          this.selectAddress(this.selectedAddress()!);
+        }
+        // Calculamos la tarifa de servicio
         if (settings.serviceFeePercentage > 0) {
           const fee =
             this.cartService.subTotal() * (settings.serviceFeePercentage / 100);
           this.serviceFee.set(fee);
         }
-
-        // 4. Desactivamos el estado de carga una vez que todos los datos están listos.
-        this.isLoading.set(false);
+        this.isLoading.set(false); // Ponemos el loading en false aquí
       },
-      // `error` se ejecuta si CUALQUIERA de las dos llamadas a la API falla.
       error: (err) => {
+        console.error('Error cargando los ajustes de la tienda:', err);
         this.toastService.show(
-          'Error al cargar los datos del checkout.',
+          'No se pudieron cargar los ajustes de la tienda.',
           'error'
         );
-        this.isLoading.set(false); // Es importante desactivar la carga también en caso de error.
-        console.error('Error en forkJoin de checkout:', err);
+        this.isLoading.set(false); // También aquí
       },
     });
   }
