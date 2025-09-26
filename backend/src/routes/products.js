@@ -70,23 +70,6 @@ router.get("/section/featured/all", async (req, res) => {
       .json({ message: "Error al obtener todos los productos destacados" });
   }
 });
-
-/**
- * @route   GET /api/products/section/featured/all
- * @desc    Obtener TODOS los productos destacados.
- * @access  Public
- */
-router.get("/section/featured/all", async (req, res) => {
-  try {
-    const allFeaturedProducts = await Product.find({ isFeatured: true });
-    res.json(allFeaturedProducts);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al obtener todos los productos destacados." });
-  }
-});
-
 /**
  * @route   GET /api/products/section/sale
  * @desc    Obtener todos los productos en oferta.
