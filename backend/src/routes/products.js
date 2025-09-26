@@ -60,12 +60,14 @@ router.get("/", async (req, res) => {
  * @desc    Obtener una cantidad limitada de productos destacados para el home.
  * @access  Public
  */
-router.get("/section/featured", async (req, res) => {
+router.get("/section/featured/all", async (req, res) => {
   try {
-    const featuredProducts = await Product.find({ isFeatured: true });
-    res.json(featuredProducts);
+    const allFeaturedProducts = await Product.find({ isFeatured: true });
+    res.json(allFeaturedProducts);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener productos destacados." });
+    res
+      .status(500)
+      .json({ message: "Error al obtener todos los productos destacados" });
   }
 });
 

@@ -1,23 +1,49 @@
-<!-- En: frontend/src/app/components/featured-products/featured-products.html -->
+@if (products.length > 0) {
+<div class="carousel-wrapper">
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Nuestros Favoritos</h2>
+      <button (click)="toggleExplorer()" class="btn btn-secondary">
+        {{ isExpanded() ? "Ver menos" : "Ver todo" }}
+      </button>
+    </div>
 
-@if (productsSignal().length > 0) {
-<section class="card">
-  <div class="card-header">
-    <h2 class="card-title">Nuestros Favoritos</h2>
-    <button (click)="openExplorer()" class="btn btn-secondary">Ver todo</button>
-  </div>
-
-  <div class="content-wrapper">
-    <div class="swiper featured-grid">
-      <div class="swiper-wrapper">
-        <!-- Iteramos sobre TODOS los productos -->
-        @for (product of productsSignal(); track product._id) {
-        <div class="swiper-slide">
-          <app-product-card [product]="product"></app-product-card>
+    <div class="carousel-container">
+      <div class="swiper">
+        <div class="swiper-wrapper">
+          @for (product of products | slice:0:4; track product._id) {
+          <div class="swiper-slide">
+            <app-product-card [product]="product"></app-product-card>
+          </div>
+          }
         </div>
+      </div>
+      <div class="swiper-button-prev" [class]="uniqueId"></div>
+      <div class="swiper-button-next" [class]="uniqueId"></div>
+    </div>
+
+    <div
+      class="expanded-content"
+      [@expandCollapse]="isExpanded() ? 'expanded' : 'collapsed'"
+    >
+      <div class="products-grid">
+        @for (product of products | slice:4; track product._id) {
+        <app-product-card [product]="product"></app-product-card>
         }
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  @if (isExpanded()) {
+  <button
+    (click)="toggleExplorer()"
+    class="floating-close-btn"
+    [class.is-floating]="isFloating()"
+    [@fadeInOut]
+  >
+    <span class="material-symbols-outlined">expand_less</span>
+    <span>Ver menos</span>
+  </button>
+  }
+</div>
 }
