@@ -62,7 +62,7 @@ router.get("/", async (req, res) => {
  */
 router.get("/section/featured", async (req, res) => {
   try {
-    const featuredProducts = await Product.find({ isFeatured: true }).limit(4);
+    const featuredProducts = await Product.find({ isFeatured: true });
     res.json(featuredProducts);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener productos destacados." });
@@ -217,12 +217,10 @@ router.patch("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
     }
     res.json(updatedProduct);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al actualizar el estado del producto.",
-        details: error.message,
-      });
+    res.status(500).json({
+      message: "Error al actualizar el estado del producto.",
+      details: error.message,
+    });
   }
 });
 
