@@ -53,7 +53,6 @@ router.get(
   async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
-
       const dateFilter = {};
       if (startDate && endDate) {
         dateFilter.createdAt = {
@@ -62,17 +61,16 @@ router.get(
         };
       }
 
-      // --- ¡CORRECCIÓN! El `Promise.all` envuelve todas las consultas en un array `[]` ---
       const [
         salesData,
         orderStatusCounts,
         recentOrders,
         productStats,
         couponPerformance,
-        vendorPerformance,
+        vendorInventory,
+        vendorSales,
       ] = await Promise.all([
-        // <--- El [ de apertura está aquí
-
+        // 1. Datos de Ventas
         Order.aggregate([
           { $match: dateFilter },
           {
@@ -84,18 +82,100 @@ router.get(
           },
         ]),
 
+        // 2. Conteo de Pedidos por Estado
         Order.aggregate([
           { $match: dateFilter },
           { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
 
+        // 3. Pedidos Recientes
         Order.find()
           .sort({ createdAt: -1 })
           .limit(5)
           .populate("items.product", "name"),
-        //inicio de la edicion
+
+        // 4. Estadísticas de Productos (Inventario Total)
         Product.aggregate([
-          // Paso 1: Obtener la información del vendedor para cada producto.
+          {
+            $project: {
+              inventorySaleValue: {
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  then: {
+                    $sum: {
+                      $map: {
+                        input: "$variants.options",
+                        as: "o",
+                        in: {
+                          $multiply: [
+                            { $ifNull: ["$$o.price", 0] },
+                            { $ifNull: ["$$o.stock", 0] },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  else: {
+                    $multiply: [
+                      { $ifNull: ["$price", 0] },
+                      { $ifNull: ["$stock", 0] },
+                    ],
+                  },
+                },
+              },
+              inventoryCostValue: {
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  then: {
+                    $sum: {
+                      $map: {
+                        input: "$variants.options",
+                        as: "o",
+                        in: {
+                          $multiply: [
+                            { $ifNull: ["$$o.costPrice", 0] },
+                            { $ifNull: ["$$o.stock", 0] },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                  else: {
+                    $multiply: [
+                      { $ifNull: ["$costPrice", 0] },
+                      { $ifNull: ["$stock", 0] },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalProducts: { $sum: 1 },
+              totalInventorySaleValue: { $sum: "$inventorySaleValue" },
+              totalInventoryCostValue: { $sum: "$inventoryCostValue" },
+            },
+          },
+        ]),
+
+        // 5. Rendimiento de Cupones
+        Order.aggregate([
+          { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
+          {
+            $group: {
+              _id: "$appliedCoupon",
+              timesUsed: { $sum: 1 },
+              totalDiscount: { $sum: "$discountAmount" },
+              totalRevenueGenerated: { $sum: "$totalAmount" },
+            },
+          },
+          { $sort: { timesUsed: -1 } },
+        ]),
+
+        // 6. VALOR DE INVENTARIO POR VENDEDOR
+        Product.aggregate([
           {
             $lookup: {
               from: "vendors",
@@ -107,17 +187,12 @@ router.get(
           {
             $unwind: { path: "$vendorInfo", preserveNullAndEmptyArrays: true },
           },
-
-          // Paso 2: Calcular el valor de inventario para cada producto individualmente.
           {
             $project: {
               vendorName: { $ifNull: ["$vendorInfo.name", "Sin Vendedor"] },
-
-              // Lógica Condicional para el Valor de Venta
               inventorySaleValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
-                  // SI tiene variantes, suma (precio de opción * stock de opción) para todas las opciones.
                   then: {
                     $sum: {
                       $map: {
@@ -140,7 +215,6 @@ router.get(
                       },
                     },
                   },
-                  // SI NO tiene variantes, multiplica el precio principal por el stock principal.
                   else: {
                     $multiply: [
                       { $ifNull: ["$price", 0] },
@@ -149,12 +223,9 @@ router.get(
                   },
                 },
               },
-
-              // Lógica Condicional para el Valor de Costo
               inventoryCostValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
-                  // SI tiene variantes, suma (costo de opción * stock de opción) para todas las opciones.
                   then: {
                     $sum: {
                       $map: {
@@ -177,7 +248,6 @@ router.get(
                       },
                     },
                   },
-                  // SI NO tiene variantes, multiplica el costo principal por el stock principal.
                   else: {
                     $multiply: [
                       { $ifNull: ["$costPrice", 0] },
@@ -188,8 +258,6 @@ router.get(
               },
             },
           },
-
-          // Paso 3: Agrupar los valores ya calculados por vendedor.
           {
             $group: {
               _id: "$vendorName",
@@ -198,8 +266,6 @@ router.get(
               totalInventoryCostValue: { $sum: "$inventoryCostValue" },
             },
           },
-
-          // Paso 4: Formatear la salida final.
           {
             $project: {
               _id: 0,
@@ -211,9 +277,62 @@ router.get(
           },
           { $sort: { vendorName: 1 } },
         ]),
-      ]); // <--- El ] de cierre del `Promise.all` va aquí.
 
-      // --- Formatear la respuesta en un objeto JSON limpio y predecible ---
+        // 7. VENTAS POR VENDEDOR
+        Order.aggregate([
+          { $match: { ...dateFilter, status: "Entregado" } },
+          { $unwind: "$items" },
+          {
+            $lookup: {
+              from: "products",
+              localField: "items.product",
+              foreignField: "_id",
+              as: "productInfo",
+            },
+          },
+          { $unwind: "$productInfo" },
+          {
+            $lookup: {
+              from: "vendors",
+              localField: "productInfo.vendor",
+              foreignField: "_id",
+              as: "vendorInfo",
+            },
+          },
+          {
+            $unwind: { path: "$vendorInfo", preserveNullAndEmptyArrays: true },
+          },
+          {
+            $group: {
+              _id: "$vendorInfo.name",
+              totalProductsSold: { $sum: "$items.quantity" },
+              totalSalesValue: {
+                $sum: { $multiply: ["$items.price", "$items.quantity"] },
+              },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              vendorName: { $ifNull: ["$_id", "Sin Vendedor"] },
+              totalProductsSold: 1,
+              totalSalesValue: 1,
+            },
+          },
+        ]),
+      ]);
+
+      const vendorPerformance = vendorInventory.map((inventoryData) => {
+        const salesData = vendorSales.find(
+          (sale) => sale.vendorName === inventoryData.vendorName
+        );
+        return {
+          ...inventoryData,
+          totalProductsSold: salesData?.totalProductsSold || 0,
+          totalSalesValue: salesData?.totalSalesValue || 0,
+        };
+      });
+
       res.json({
         totalRevenue: salesData[0]?.totalRevenue || 0,
         totalOrders: salesData[0]?.totalOrders || 0,
@@ -226,8 +345,8 @@ router.get(
         ),
         recentOrders,
         totalProducts: productStats[0]?.totalProducts || 0,
-        inventorySaleValue: productStats[0]?.inventorySaleValue || 0,
-        inventoryCostValue: productStats[0]?.inventoryCostValue || 0,
+        inventorySaleValue: productStats[0]?.totalInventorySaleValue || 0,
+        inventoryCostValue: productStats[0]?.totalInventoryCostValue || 0,
         couponPerformance,
         vendorPerformance,
       });
