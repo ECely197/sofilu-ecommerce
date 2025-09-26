@@ -44,7 +44,7 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
  * @route   GET /api/orders/dashboard-summary
  * @desc    Obtener un resumen completo de estadísticas para el Dashboard.
  * @access  Admin
- * @query   startDate - Fecha de inicio (opcional, formato YYYY-MM-DD)
+ * @query   startDate - Fecha de inicio (opcional, formato YYYY--MM-DD)
  * @query   endDate - Fecha de fin (opcional, formato YYYY-MM-DD)
  */
 router.get(
@@ -54,17 +54,15 @@ router.get(
     try {
       const { startDate, endDate } = req.query;
 
-      // --- 1. Construir el filtro de fecha para los pedidos ---
       const dateFilter = {};
       if (startDate && endDate) {
-        // Aseguramos que el filtro incluya el día de fin completo
         dateFilter.createdAt = {
           $gte: new Date(startDate),
           $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
         };
       }
 
-      // --- 2. Ejecutar todas las consultas a la base de datos en paralelo ---
+      // --- ¡CORRECCIÓN! El `Promise.all` envuelve todas las consultas en un array `[]` ---
       const [
         salesData,
         orderStatusCounts,
@@ -73,7 +71,8 @@ router.get(
         couponPerformance,
         vendorPerformance,
       ] = await Promise.all([
-        // Consulta 1: Datos de Ventas (Total Ingresos y Pedidos)
+        // <--- El [ de apertura está aquí
+
         Order.aggregate([
           { $match: dateFilter },
           {
@@ -85,25 +84,21 @@ router.get(
           },
         ]),
 
-        // Consulta 2: Conteo de Pedidos por Estado
         Order.aggregate([
           { $match: dateFilter },
           { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
 
-        // Consulta 3: Últimos 5 Pedidos Recientes (sin filtro de fecha)
         Order.find()
           .sort({ createdAt: -1 })
           .limit(5)
           .populate("items.product", "name"),
 
-        // Consulta 4: Estadísticas Globales de Productos (sin filtro de fecha)
         Product.aggregate([
           {
             $group: {
               _id: null,
               totalProducts: { $sum: 1 },
-              // Suma del valor de stock de productos simples (sin variantes)
               inventorySaleValue: { $sum: { $multiply: ["$price", "$stock"] } },
               inventoryCostValue: {
                 $sum: { $multiply: ["$costPrice", "$stock"] },
@@ -112,7 +107,6 @@ router.get(
           },
         ]),
 
-        // Consulta 5: Rendimiento de Cupones
         Order.aggregate([
           { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
           {
@@ -126,7 +120,6 @@ router.get(
           { $sort: { timesUsed: -1 } },
         ]),
 
-        // Consulta 6: Rendimiento por Vendedor (Lógica Corregida y Completa)
         Product.aggregate([
           {
             $lookup: {
@@ -145,7 +138,28 @@ router.get(
               inventorySaleValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
-                  then: { $sum: "$variants.options.price" }, // Simplificación para Mongoose 5+
+                  then: {
+                    $sum: {
+                      $map: {
+                        input: "$variants",
+                        as: "variant",
+                        in: {
+                          $sum: {
+                            $map: {
+                              input: "$$variant.options",
+                              as: "option",
+                              in: {
+                                $multiply: [
+                                  { $ifNull: ["$$option.price", 0] },
+                                  { $ifNull: ["$$option.stock", 0] },
+                                ],
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
                   else: {
                     $multiply: [
                       { $ifNull: ["$price", 0] },
@@ -157,7 +171,28 @@ router.get(
               inventoryCostValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
-                  then: { $sum: "$variants.options.costPrice" },
+                  then: {
+                    $sum: {
+                      $map: {
+                        input: "$variants",
+                        as: "variant",
+                        in: {
+                          $sum: {
+                            $map: {
+                              input: "$$variant.options",
+                              as: "option",
+                              in: {
+                                $multiply: [
+                                  { $ifNull: ["$$option.costPrice", 0] },
+                                  { $ifNull: ["$$option.stock", 0] },
+                                ],
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
                   else: {
                     $multiply: [
                       { $ifNull: ["$costPrice", 0] },
@@ -187,9 +222,9 @@ router.get(
           },
           { $sort: { vendorName: 1 } },
         ]),
-      ]);
+      ]); // <--- El ] de cierre del `Promise.all` va aquí.
 
-      // --- 3. Formatear la respuesta en un objeto JSON limpio y predecible ---
+      // --- Formatear la respuesta en un objeto JSON limpio y predecible ---
       res.json({
         totalRevenue: salesData[0]?.totalRevenue || 0,
         totalOrders: salesData[0]?.totalOrders || 0,
