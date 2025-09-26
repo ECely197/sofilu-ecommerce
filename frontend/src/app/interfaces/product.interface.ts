@@ -30,6 +30,7 @@ export interface Product {
   vendor?: Vendor;
   price: number;
   costPrice?: number;
+  stock: number;
   category: Category;
   images: string[];
   isFeatured: boolean;

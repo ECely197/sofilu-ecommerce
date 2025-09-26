@@ -131,4 +131,43 @@ export class ProductList implements OnInit {
       });
     }
   }
+
+  /**
+   * Calcula el stock total de un producto, sumando el de todas sus variantes si las tiene.
+   * @param product El producto a calcular.
+   * @returns El stock total numérico.
+   */
+  calculateTotalStock(product: Product): number {
+    // Si el producto no tiene variantes, devolvemos su stock principal.
+    if (!product.variants || product.variants.length === 0) {
+      return product.stock || 0;
+    }
+    // Si tiene variantes, sumamos el stock de todas las opciones.
+    return product.variants.reduce(
+      (total, variant) =>
+        total +
+        variant.options.reduce(
+          (subTotal, option) => subTotal + (option.stock || 0),
+          0
+        ),
+      0
+    );
+  }
+
+  // --- ¡NUEVO MÉTODO PARA LA PLANTILLA! ---
+  /**
+   * Determina el estado "efectivo" de un producto para mostrar en la UI.
+   * @param product El producto a evaluar.
+   * @returns 'Agotado' o 'Activo'.
+   */
+  getEffectiveStatus(product: Product): 'Activo' | 'Agotado' {
+    // El estado manual 'Agotado' siempre tiene prioridad.
+    if (product.status === 'Agotado') {
+      return 'Agotado';
+    }
+
+    // Si está 'Activo', verificamos el stock real.
+    const totalStock = this.calculateTotalStock(product);
+    return totalStock > 0 ? 'Activo' : 'Agotado';
+  }
 }

@@ -79,6 +79,7 @@
             (click)="toggleStatus(product)"
             class="action-button status"
             [class.active]="product.status === 'Activo'"
+            [class.active]="getEffectiveStatus(product) === 'Activo'"
             appRipple
           >
             <span class="material-symbols-outlined">

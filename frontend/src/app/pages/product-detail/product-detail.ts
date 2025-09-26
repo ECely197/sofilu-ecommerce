@@ -273,17 +273,28 @@ export class ProductDetailComponent
   isInStock = computed(() => {
     const p = this.product();
     if (!p) return false;
-    if (p.variants.length === 0) return true;
-    if (!this.allVariantsSelected()) return false;
+    if (p.status === 'Agotado') return false;
 
-    return p.variants.every((variant) => {
-      const selectedOptionName = this.selectedVariants()[variant.name];
-      const option = variant.options.find(
-        (opt) => opt.name === selectedOptionName
-      );
-      return (option?.stock || 0) > 0;
-    });
+    if (p.variants && p.variants.length > 0) {
+      // ¡CORRECCIÓN! Usamos el nombre correcto aquí también
+      if (!this.allVariantsSelected()) return false;
+
+      return p.variants.every((variant) => {
+        const selectedOptionName = this.selectedVariants()[variant.name];
+        const option = variant.options.find(
+          (opt) => opt.name === selectedOptionName
+        );
+        return (option?.stock || 0) > 0;
+      });
+    }
+    return (p.stock || 0) > 0;
   });
+
+  // --- MÉTODO isOptionAvailable (sin cambios, ya era correcto) ---
+
+  isOptionAvailable(option: Option): boolean {
+    return (option.stock || 0) > 0;
+  }
 
   isProductInWishlist = computed(() => {
     const p = this.product();
@@ -433,10 +444,6 @@ export class ProductDetailComponent
       }
       return newSelection;
     });
-  }
-
-  isOptionAvailable(option: Option): boolean {
-    return option.stock > 0;
   }
 
   isSelected(variantName: string, optionName: string): boolean {

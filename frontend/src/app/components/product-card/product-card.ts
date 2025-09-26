@@ -50,12 +50,38 @@ export class ProductCard {
     this.wishlistService.toggleProduct(this.product);
   }
 
-  /** Devuelve `true` si el producto está marcado como 'Agotado'. */
-  isOutOfStock = computed(() => this.product?.status === 'Agotado');
+  isOutOfStock = computed(() => {
+    const p = this.product;
+    if (!p) return true;
+
+    if (p.status === 'Agotado') {
+      return true;
+    }
+
+    if (p.variants && p.variants.length > 0) {
+      const totalVariantStock = p.variants.reduce(
+        (total, variant) =>
+          total +
+          variant.options.reduce(
+            (subTotal, option) => subTotal + (option.stock || 0),
+            0
+          ),
+        0
+      );
+      return totalVariantStock <= 0;
+    } else {
+      return (p.stock || 0) <= 0;
+    }
+  });
 
   addToCart(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+
+    if (this.isOutOfStock()) {
+      this.toastService.show('Este producto está agotado.', 'error');
+      return;
+    }
 
     if (this.product) {
       // Para añadir desde la tarjeta, siempre asumimos la primera variante por defecto
