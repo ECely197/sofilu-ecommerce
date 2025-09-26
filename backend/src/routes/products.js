@@ -56,8 +56,8 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * @route   GET /api/products/section/featured
- * @desc    Obtener una cantidad limitada de productos destacados para el home.
+ * @route   GET /api/products/section/featured/all
+ * @desc    Obtener TODOS los productos destacados.
  * @access  Public
  */
 router.get("/section/featured/all", async (req, res) => {
