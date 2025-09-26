@@ -19,7 +19,6 @@ const sectionSchema = new Schema(
     },
     slug: {
       type: String,
-      required: true,
       unique: true,
     },
   },
@@ -33,8 +32,11 @@ const sectionSchema = new Schema(
  * Genera un 'slug' amigable para URL a partir del campo 'name'.
  */
 sectionSchema.pre("save", function (next) {
-  if (this.isModified("name")) {
-    this.slug = this.name.toLowerCase().replace(/\s+/g, "-");
+  if (this.isModified("name") || this.isNew) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-");
   }
   next();
 });
