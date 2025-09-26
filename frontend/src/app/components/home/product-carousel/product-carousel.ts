@@ -1,12 +1,26 @@
-import { Component, Input, ElementRef, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  ElementRef,
+  AfterViewInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Product } from '../../../interfaces/product.interface';
 import { ProductCard } from '../../product-card/product-card';
 import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
-import { ProductModalService } from '../../../services/product-modal.service';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
+import { HostListener } from '@angular/core';
 
-Swiper.use([Navigation]); // Activamos el módulo
+Swiper.use([Navigation]);
 
 @Component({
   selector: 'app-product-carousel',
@@ -14,22 +28,55 @@ Swiper.use([Navigation]); // Activamos el módulo
   imports: [CommonModule, ProductCard],
   templateUrl: './product-carousel.html',
   styleUrl: './product-carousel.scss',
+  animations: [
+    trigger('expandCollapse', [
+      state(
+        'collapsed',
+        style({
+          height: '0px',
+          overflow: 'hidden',
+          opacity: 0,
+          paddingTop: '0',
+          paddingBottom: '0',
+        })
+      ),
+      state('expanded', style({ height: '*', overflow: 'hidden', opacity: 1 })), // Altura automática
+      transition('expanded <=> collapsed', [
+        animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+      ]),
+    ]),
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.8)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+      transition(':leave', [
+        animate(
+          '200ms ease-in',
+          style({ opacity: 0, transform: 'scale(0.8)' })
+        ),
+      ]),
+    ]),
+  ],
 })
 export class ProductCarousel implements AfterViewInit {
-  // --- @Inputs (sin cambios) ---
+  // --- @Inputs ---
   @Input() title: string = '';
-  @Input() products: Product[] = []; // Recibimos la lista COMPLETA de productos
+  @Input() products: Product[] = [];
   @Input() categorySlug: string = '';
 
+  // --- Estado Interno ---
+  private el = inject(ElementRef);
   uniqueId = `carousel-${Math.random().toString(36).substring(2, 9)}`;
 
-  // ¡Inyectamos el servicio del modal!
-  constructor(
-    private el: ElementRef,
-    private productModalService: ProductModalService
-  ) {}
+  // --- ¡SIGNAL's! ---
+  isExpanded = signal(false);
+  isFloating = signal(false);
+  private scrollContainer: HTMLElement | null = null;
+  private timeoutId: any;
 
   ngAfterViewInit() {
+    // La inicialización de Swiper no cambia
     new Swiper(this.el.nativeElement.querySelector('.swiper'), {
       slidesPerView: 2,
       spaceBetween: 16,
@@ -45,12 +92,21 @@ export class ProductCarousel implements AfterViewInit {
     });
   }
 
-  openExplorer(): void {
-    if (this.products && this.products.length > 0) {
-      this.productModalService.open({
-        title: this.title,
-        products: this.products, // Pasamos la lista completa de productos al modal
-      });
+  toggleExplorer(): void {
+    this.isExpanded.update((expanded) => !expanded);
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll(event: Event): void {
+    if (!this.isExpanded()) {
+      return;
     }
+
+    this.isFloating.set(true);
+
+    clearTimeout(this.timeoutId);
+    this.timeoutId = setTimeout(() => {
+      this.isFloating.set(false);
+    }, 150);
   }
 }

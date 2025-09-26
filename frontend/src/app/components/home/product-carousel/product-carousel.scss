@@ -1,20 +1,23 @@
 :host {
   display: block;
+  position: relative;
 }
-
+.carousel-wrapper {
+  position: relative;
+}
 .card {
   background-color: var(--background-card);
   border: 1px solid var(--color-border);
 
   border-radius: 1.5rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  overflow: visible;
 
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -2px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -106,4 +109,85 @@
 }
 .swiper-button-next {
   right: 0.5rem;
+}
+
+// Estilos para el menu expandible
+.expanded-content {
+  background-color: var(--soft-white);
+  border-top: 1px solid var(--border);
+  border-radius: 1.5rem;
+}
+
+.products-grid {
+  display: grid;
+  // Un grid responsive para los productos
+  grid-template-columns: repeat(2, 1fr); // 2 columnas en móvil
+  gap: 1.5rem;
+  padding: 2.5rem; // Espaciado interno generoso
+
+  // Ajustes para pantallas más grandes
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Estilos para boton flotante
+
+.floating-close-btn {
+  // Posicionamiento
+  position: absolute;
+  // Se posiciona en la esquina inferior derecha del componente completo
+  bottom: -24px; // Mitad del botón hacia afuera
+  right: 2.5rem;
+  z-index: 10;
+
+  // Estilo M3 FAB Extendido
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 48px;
+  padding: 0 1.5rem;
+  border-radius: 1rem; // Borde redondeado M3
+  background-color: var(--soft-white);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  // Transiciones
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Oculto en móvil por defecto
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: flex;
+  }
+
+  // Hover
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  // Animación de "flotar"
+  &.is-floating {
+    animation: float-animation 0.6s ease-in-out alternate;
+  }
+}
+
+// Keyframes (sin cambios)
+@keyframes float-animation {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-5px);
+  }
 }
