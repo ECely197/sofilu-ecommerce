@@ -93,34 +93,9 @@ router.get(
           .sort({ createdAt: -1 })
           .limit(5)
           .populate("items.product", "name"),
-
+        //inicio de la edicion
         Product.aggregate([
-          {
-            $group: {
-              _id: null,
-              totalProducts: { $sum: 1 },
-              inventorySaleValue: { $sum: { $multiply: ["$price", "$stock"] } },
-              inventoryCostValue: {
-                $sum: { $multiply: ["$costPrice", "$stock"] },
-              },
-            },
-          },
-        ]),
-
-        Order.aggregate([
-          { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
-          {
-            $group: {
-              _id: "$appliedCoupon",
-              timesUsed: { $sum: 1 },
-              totalDiscount: { $sum: "$discountAmount" },
-              totalRevenueGenerated: { $sum: "$totalAmount" },
-            },
-          },
-          { $sort: { timesUsed: -1 } },
-        ]),
-
-        Product.aggregate([
+          // Paso 1: Obtener la información del vendedor para cada producto.
           {
             $lookup: {
               from: "vendors",
@@ -132,12 +107,17 @@ router.get(
           {
             $unwind: { path: "$vendorInfo", preserveNullAndEmptyArrays: true },
           },
+
+          // Paso 2: Calcular el valor de inventario para cada producto individualmente.
           {
             $project: {
               vendorName: { $ifNull: ["$vendorInfo.name", "Sin Vendedor"] },
+
+              // Lógica Condicional para el Valor de Venta
               inventorySaleValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  // SI tiene variantes, suma (precio de opción * stock de opción) para todas las opciones.
                   then: {
                     $sum: {
                       $map: {
@@ -160,6 +140,7 @@ router.get(
                       },
                     },
                   },
+                  // SI NO tiene variantes, multiplica el precio principal por el stock principal.
                   else: {
                     $multiply: [
                       { $ifNull: ["$price", 0] },
@@ -168,9 +149,12 @@ router.get(
                   },
                 },
               },
+
+              // Lógica Condicional para el Valor de Costo
               inventoryCostValue: {
                 $cond: {
                   if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  // SI tiene variantes, suma (costo de opción * stock de opción) para todas las opciones.
                   then: {
                     $sum: {
                       $map: {
@@ -193,6 +177,7 @@ router.get(
                       },
                     },
                   },
+                  // SI NO tiene variantes, multiplica el costo principal por el stock principal.
                   else: {
                     $multiply: [
                       { $ifNull: ["$costPrice", 0] },
@@ -203,6 +188,8 @@ router.get(
               },
             },
           },
+
+          // Paso 3: Agrupar los valores ya calculados por vendedor.
           {
             $group: {
               _id: "$vendorName",
@@ -211,6 +198,8 @@ router.get(
               totalInventoryCostValue: { $sum: "$inventoryCostValue" },
             },
           },
+
+          // Paso 4: Formatear la salida final.
           {
             $project: {
               _id: 0,
