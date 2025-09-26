@@ -163,9 +163,11 @@
         <thead>
           <tr>
             <th>Vendedor</th>
-            <th>Productos</th>
+            <th>Productos (Stock)</th>
             <th>Valor Inventario (Venta)</th>
             <th>Valor Inventario (Costo)</th>
+            <th>Productos Vendidos</th>
+            <th>Total Ventas</th>
           </tr>
         </thead>
         <tbody>
@@ -175,20 +177,26 @@
             <td>{{ vendor.totalProducts }}</td>
             <td>
               {{
-                vendor.inventorySaleValue
+                vendor.totalInventorySaleValue
                   | currency : "COP" : "symbol" : "1.0-0"
               }}
             </td>
             <td>
               {{
-                vendor.inventoryCostValue
+                vendor.totalInventoryCostValue
                   | currency : "COP" : "symbol" : "1.0-0"
+              }}
+            </td>
+            <td>{{ vendor.totalProductsSold }}</td>
+            <td>
+              {{
+                vendor.totalSalesValue | currency : "COP" : "symbol" : "1.0-0"
               }}
             </td>
           </tr>
           } @empty {
           <tr>
-            <td colspan="4">No hay datos de vendedores.</td>
+            <td colspan="6">No hay datos de vendedores.</td>
           </tr>
           }
         </tbody>
