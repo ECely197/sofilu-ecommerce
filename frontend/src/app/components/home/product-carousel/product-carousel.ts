@@ -5,6 +5,7 @@ import {
   AfterViewInit,
   inject,
   signal,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Product } from '../../../interfaces/product.interface';
@@ -19,6 +20,7 @@ import {
   animate,
 } from '@angular/animations';
 import { HostListener } from '@angular/core';
+import { ScrollManagerService } from '../../../services/scroll-manager.service';
 
 Swiper.use([Navigation]);
 
@@ -59,7 +61,7 @@ Swiper.use([Navigation]);
     ]),
   ],
 })
-export class ProductCarousel implements AfterViewInit {
+export class ProductCarousel implements OnInit, AfterViewInit {
   // --- @Inputs ---
   @Input() title: string = '';
   @Input() products: Product[] = [];
@@ -68,6 +70,7 @@ export class ProductCarousel implements AfterViewInit {
   // --- Estado Interno ---
   private el = inject(ElementRef);
   uniqueId = `carousel-${Math.random().toString(36).substring(2, 9)}`;
+  private scrollManager = inject(ScrollManagerService);
 
   // --- ¡SIGNAL's! ---
   isExpanded = signal(false);
@@ -90,6 +93,34 @@ export class ProductCarousel implements AfterViewInit {
         1024: { slidesPerView: 4, spaceBetween: 24 },
       },
     });
+  }
+
+  ngOnInit(): void {
+    // ¡NUEVO! Nos suscribimos a los eventos de scroll.
+    this.scrollManager.categoryScrollRequest$.subscribe((slug) => {
+      // Si el slug del evento coincide con el slug de ESTE carrusel...
+      if (this.categorySlug === slug) {
+        // ...hacemos scroll hasta este componente y lo expandimos.
+        this.scrollToAndExpand();
+      }
+    });
+  }
+
+  /**
+   * ¡NUEVO MÉTODO!
+   * Se encarga de hacer el scroll suave HASTA este componente y luego expandirlo.
+   */
+  private scrollToAndExpand(): void {
+    const element = this.el.nativeElement as HTMLElement;
+
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+
+    setTimeout(() => {
+      this.isExpanded.set(true);
+    }, 500);
   }
 
   toggleExplorer(): void {

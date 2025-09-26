@@ -36,6 +36,7 @@ import {
 } from '../../services/navigation.service';
 import { ProductModalService } from '../../services/product-modal.service';
 import { ViewportScroller } from '@angular/common';
+import { ScrollManagerService } from '../../services/scroll-manager.service';
 
 gsap.registerPlugin(SplitText);
 
@@ -56,8 +57,8 @@ export class Header implements OnInit, AfterViewInit {
   private zone = inject(NgZone);
   private navigationService = inject(NavigationService);
   private elementRef = inject(ElementRef);
-  private productModalService = inject(ProductModalService);
   private viewportScroller = inject(ViewportScroller);
+  private scrollManager = inject(ScrollManagerService);
 
   // --- Signals ---
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
@@ -77,6 +78,62 @@ export class Header implements OnInit, AfterViewInit {
   @ViewChild('subCategoryPill') subCategoryPill!: ElementRef<HTMLElement>;
 
   private lastScrollY = 0;
+
+  /**
+   * ¡MÉTODO MODIFICADO!
+   * Ahora maneja la navegación con scroll suave en la página de inicio.
+   * @param event El evento de clic.
+   * @param subCategory La subcategoría en la que se hizo clic.
+   */
+  handleSubCategoryClick(event: MouseEvent, subCategory: SubCategory): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.closeMegaMenu();
+
+    if (this.router.url === '/') {
+      // Si ya estamos en la home, simplemente emitimos el evento.
+      this.scrollManager.requestScrollToCategory(subCategory.id);
+    } else {
+      // Si estamos en otra página, navegamos y LUEGO emitimos el evento.
+      this.router.navigate(['/']).then(() => {
+        setTimeout(
+          () => this.scrollManager.requestScrollToCategory(subCategory.id),
+          100
+        );
+      });
+    }
+  }
+
+  /**
+   * ¡NUEVO MÉTODO!
+   * Realiza el scroll suave a un elemento del DOM por su ID.
+   * Ahora usa `scrollIntoView` para un control más fino sobre el comportamiento.
+   * @param elementId El ID del elemento al que se hará scroll.
+   */
+  private scrollToCategory(elementId: string): void {
+    const element = document.getElementById(elementId);
+    if (element) {
+      // Usamos el método nativo `scrollIntoView` que nos da la opción 'smooth'.
+      element.scrollIntoView({
+        behavior: 'smooth', // ¡ESTA ES LA CLAVE PARA EL SCROLL SUAVE!
+        block: 'start', // Alinea la parte superior del elemento con la parte superior de la ventana.
+        inline: 'nearest',
+      });
+
+      // La animación de resaltado que ya teníamos.
+      gsap.fromTo(
+        element,
+        { boxShadow: '0 0 0 0px rgba(244, 194, 194, 0.7)' },
+        {
+          boxShadow: '0 0 0 5px rgba(244, 194, 194, 0.7)',
+          repeat: 1,
+          yoyo: true,
+          duration: 0.5,
+          ease: 'power2.inOut',
+        }
+      );
+    }
+  }
 
   @HostListener('window:scroll')
   onWindowScroll() {
@@ -318,18 +375,5 @@ export class Header implements OnInit, AfterViewInit {
       .logout()
       .then(() => this.router.navigate(['/']))
       .catch((error) => console.error('Error al cerrar sesión:', error));
-  }
-
-  openSubCategoryModal(event: MouseEvent, subCategory: SubCategory): void {
-    event.preventDefault(); // Previene la navegación
-    event.stopPropagation(); // Detiene otros clics
-
-    // Abre el modal con los datos de la subcategoría actual
-    this.productModalService.open({
-      title: subCategory.name,
-      products: subCategory.products,
-    });
-
-    this.closeMegaMenu(); // Cierra el mega menú
   }
 }
