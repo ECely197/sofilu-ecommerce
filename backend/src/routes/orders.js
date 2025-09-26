@@ -54,29 +54,26 @@ router.get(
     try {
       const { startDate, endDate } = req.query;
 
-      // --- 1. Construir el filtro de fecha ---
+      // --- 1. Construir el filtro de fecha para los pedidos ---
       const dateFilter = {};
       if (startDate && endDate) {
+        // Aseguramos que el filtro incluya el día de fin completo
         dateFilter.createdAt = {
           $gte: new Date(startDate),
-          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)), // Incluir todo el día de fin
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
         };
       }
 
-      // --- 2. Ejecutar todas las consultas en paralelo ---
+      // --- 2. Ejecutar todas las consultas a la base de datos en paralelo ---
       const [
-        // Métricas de Ventas y Pedidos
         salesData,
         orderStatusCounts,
         recentOrders,
-        // Métricas de Productos
         productStats,
-        // Métricas de Cupones
         couponPerformance,
-        // Métricas de Vendedores
         vendorPerformance,
       ] = await Promise.all([
-        // 1. Total de Ventas
+        // Consulta 1: Datos de Ventas (Total Ingresos y Pedidos)
         Order.aggregate([
           { $match: dateFilter },
           {
@@ -87,23 +84,26 @@ router.get(
             },
           },
         ]),
-        // 2. Conteo de Pedidos por Estado
+
+        // Consulta 2: Conteo de Pedidos por Estado
         Order.aggregate([
           { $match: dateFilter },
           { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
-        // 3. Pedidos Recientes (estos no se filtran por fecha)
+
+        // Consulta 3: Últimos 5 Pedidos Recientes (sin filtro de fecha)
         Order.find()
           .sort({ createdAt: -1 })
           .limit(5)
           .populate("items.product", "name"),
 
-        // 4. Estadísticas de Productos (no se filtran por fecha de pedido)
+        // Consulta 4: Estadísticas Globales de Productos (sin filtro de fecha)
         Product.aggregate([
           {
             $group: {
               _id: null,
               totalProducts: { $sum: 1 },
+              // Suma del valor de stock de productos simples (sin variantes)
               inventorySaleValue: { $sum: { $multiply: ["$price", "$stock"] } },
               inventoryCostValue: {
                 $sum: { $multiply: ["$costPrice", "$stock"] },
@@ -112,7 +112,7 @@ router.get(
           },
         ]),
 
-        // 5. Rendimiento de Cupones
+        // Consulta 5: Rendimiento de Cupones
         Order.aggregate([
           { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
           {
@@ -126,16 +126,8 @@ router.get(
           { $sort: { timesUsed: -1 } },
         ]),
 
-        // 6. Rendimiento de Vendedores
+        // Consulta 6: Rendimiento por Vendedor (Lógica Corregida y Completa)
         Product.aggregate([
-          // Desenrollar productos, sus variantes y opciones para un análisis detallado
-          { $unwind: { path: "$variants", preserveNullAndEmptyArrays: true } },
-          {
-            $unwind: {
-              path: "$variants.options",
-              preserveNullAndEmptyArrays: true,
-            },
-          },
           {
             $lookup: {
               from: "vendors",
@@ -148,40 +140,56 @@ router.get(
             $unwind: { path: "$vendorInfo", preserveNullAndEmptyArrays: true },
           },
           {
-            $group: {
-              _id: "$vendorInfo.name",
-              totalProducts: { $addToSet: "$_id" }, // Contar productos únicos
+            $project: {
+              vendorName: { $ifNull: ["$vendorInfo.name", "Sin Vendedor"] },
               inventorySaleValue: {
-                $sum: {
-                  $multiply: [
-                    "$variants.options.price",
-                    "$variants.options.stock",
-                  ],
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  then: { $sum: "$variants.options.price" }, // Simplificación para Mongoose 5+
+                  else: {
+                    $multiply: [
+                      { $ifNull: ["$price", 0] },
+                      { $ifNull: ["$stock", 0] },
+                    ],
+                  },
                 },
               },
               inventoryCostValue: {
-                $sum: {
-                  $multiply: [
-                    "$variants.options.costPrice",
-                    "$variants.options.stock",
-                  ],
+                $cond: {
+                  if: { $gt: [{ $size: { $ifNull: ["$variants", []] } }, 0] },
+                  then: { $sum: "$variants.options.costPrice" },
+                  else: {
+                    $multiply: [
+                      { $ifNull: ["$costPrice", 0] },
+                      { $ifNull: ["$stock", 0] },
+                    ],
+                  },
                 },
               },
+            },
+          },
+          {
+            $group: {
+              _id: "$vendorName",
+              totalProducts: { $sum: 1 },
+              totalInventorySaleValue: { $sum: "$inventorySaleValue" },
+              totalInventoryCostValue: { $sum: "$inventoryCostValue" },
             },
           },
           {
             $project: {
               _id: 0,
               vendorName: "$_id",
-              totalProducts: { $size: "$totalProducts" },
-              inventorySaleValue: 1,
-              inventoryCostValue: 1,
+              totalProducts: 1,
+              totalInventorySaleValue: 1,
+              totalInventoryCostValue: 1,
             },
           },
+          { $sort: { vendorName: 1 } },
         ]),
       ]);
 
-      // --- 3. Formatear la respuesta en un objeto limpio ---
+      // --- 3. Formatear la respuesta en un objeto JSON limpio y predecible ---
       res.json({
         totalRevenue: salesData[0]?.totalRevenue || 0,
         totalOrders: salesData[0]?.totalOrders || 0,
@@ -191,7 +199,7 @@ router.get(
             return acc;
           },
           { Procesando: 0, Enviado: 0, Entregado: 0, Cancelado: 0 }
-        ), // Asegura que todos los estados existan
+        ),
         recentOrders,
         totalProducts: productStats[0]?.totalProducts || 0,
         inventorySaleValue: productStats[0]?.inventorySaleValue || 0,
