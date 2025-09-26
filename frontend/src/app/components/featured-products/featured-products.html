@@ -8,6 +8,7 @@
       </button>
     </div>
 
+    <!-- Contenedor del Carrusel (mostrando solo los primeros 4) -->
     <div class="carousel-container">
       <div class="swiper">
         <div class="swiper-wrapper">
@@ -18,10 +19,12 @@
           }
         </div>
       </div>
+      <!-- Botones de navegación con ID único -->
       <div class="swiper-button-prev" [class]="uniqueId"></div>
       <div class="swiper-button-next" [class]="uniqueId"></div>
     </div>
 
+    <!-- Contenido del Acordeón (con el resto de los productos) -->
     <div
       class="expanded-content"
       [@expandCollapse]="isExpanded() ? 'expanded' : 'collapsed'"
@@ -34,6 +37,7 @@
     </div>
   </section>
 
+  <!-- Botón Flotante de Cierre -->
   @if (isExpanded()) {
   <button
     (click)="toggleExplorer()"

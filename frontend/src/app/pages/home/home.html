@@ -28,7 +28,7 @@
 
   <!-- 4. Carruseles de Productos por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <div data-aos="fade-up" data-aos-delay="100">
+  <div data-aos="fade-up" data-aos-delay="100" [id]="categoryGroup.slug">
     <app-product-carousel
       [title]="categoryGroup.name"
       [products]="categoryGroup.products"

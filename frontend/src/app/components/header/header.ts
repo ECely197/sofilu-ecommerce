@@ -35,6 +35,7 @@ import {
   SubCategory,
 } from '../../services/navigation.service';
 import { ProductModalService } from '../../services/product-modal.service';
+import { ViewportScroller } from '@angular/common';
 
 gsap.registerPlugin(SplitText);
 
@@ -56,6 +57,7 @@ export class Header implements OnInit, AfterViewInit {
   private navigationService = inject(NavigationService);
   private elementRef = inject(ElementRef);
   private productModalService = inject(ProductModalService);
+  private viewportScroller = inject(ViewportScroller);
 
   // --- Signals ---
   public currentUser$: Observable<User | null> = this.authService.currentUser$;

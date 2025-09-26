@@ -18,9 +18,9 @@ import {
 import { Product } from '../../interfaces/product.interface';
 import { ProductCard } from '../product-card/product-card';
 import Swiper from 'swiper';
-import { Navigation } from 'swiper/modules'; // Importamos Navigation para las flechas
+import { Navigation } from 'swiper/modules';
 
-Swiper.use([Navigation]); // Activamos el módulo
+Swiper.use([Navigation]);
 
 @Component({
   selector: 'app-featured-products',
@@ -46,7 +46,7 @@ Swiper.use([Navigation]); // Activamos el módulo
         animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
       ]),
     ]),
-    // Animación de Aparición para el botón flotante
+    // Animación para el botón flotante
     trigger('fadeInOut', [
       transition(':enter', [
         style({ opacity: 0, transform: 'scale(0.8)' }),
@@ -72,6 +72,7 @@ export class FeaturedProductsComponent implements AfterViewInit {
   private timeoutId: any;
 
   ngAfterViewInit() {
+    // Inicializamos Swiper para el carrusel
     new Swiper(this.el.nativeElement.querySelector('.swiper'), {
       slidesPerView: 2,
       spaceBetween: 16,

@@ -50,7 +50,7 @@ export class Home implements OnInit {
       .getCategories()
       .subscribe((cats) => this.categories.set(cats));
     this.productService
-      .getFeaturedProducts()
+      .getAllFeaturedProducts()
       .subscribe((prods) => this.featuredProducts.set(prods));
 
     // Obtenemos los productos para cada categoría
