@@ -1,46 +1,215 @@
 <footer class="sofilu-footer">
-  <div class="footer-container">
-    <!-- Columna 1: Marca -->
-    <div class="footer-column">
-      <h4 class="column-title">Sofilu</h4>
-      <p class="column-text">Confort y estilo para tu hogar.</p>
+  <div class="stars-bg" id="stars1"></div>
+  <div class="stars-bg" id="stars2"></div>
+  <div class="stars-bg" id="stars3"></div>
+
+  <div class="footer-content">
+    <div class="footer-logo">
+      <a routerLink="/">
+        <img src="/sofilu-logo.svg" alt="Sofilu Logo" />
+      </a>
     </div>
 
-    <!-- Columna 2: Tienda -->
-    <div class="footer-column">
-      <h4 class="column-title">Tienda</h4>
-      <ul class="link-list">
-        <li><a routerLink="/sabanas">Sábanas</a></li>
-        <li><a routerLink="/pijamas">Pijamas</a></li>
-        <li><a routerLink="/toallas">Toallas</a></li>
-        <li><a routerLink="/batas">Batas</a></li>
-      </ul>
-    </div>
+    <div class="footer-info-wrapper">
+      <div class="footer-info-grid">
+        <!-- Columna 1: Marca -->
+        <div class="footer-column column-sofilu">
+          <h4 class="column-title">{{ settings()?.storeName || "Sofilu" }}</h4>
+          <p class="column-text">Confort y estilo para tu hogar.</p>
+        </div>
 
-    <!-- Columna 3: Ayuda -->
-    <div class="footer-column">
-      <h4 class="column-title">Ayuda</h4>
-      <ul class="link-list">
-        <li><a routerLink="/faq">Preguntas Frecuentes</a></li>
-        <li><a routerLink="/shipping">Envíos y Devoluciones</a></li>
-        <li><a routerLink="/privacy">Política de Privacidad</a></li>
-        <li><a routerLink="/terms">Términos y Condiciones</a></li>
-      </ul>
-    </div>
+        <!-- Columna 2: Tienda -->
+        <div class="footer-column column-tienda">
+          <h4 class="column-title">Tienda</h4>
+          <ul class="link-list">
+            <li><a routerLink="#">Peluches</a></li>
+            <li><a routerLink="#">Cajas Sorpresa</a></li>
+          </ul>
+        </div>
 
-    <!-- Columna 4: Síguenos -->
-    <div class="footer-column">
-      <h4 class="column-title">Síguenos</h4>
-      <div class="social-links">
-        <!-- Los SVGs de las redes sociales irían aquí. Por ahora, ponemos placeholders. -->
-        <a href="#">Instagram</a>
-        <a href="#">Facebook</a>
-        <a href="#">Twitter</a>
+        <!-- Columna 3: Ayuda -->
+        <div class="footer-column column-ayuda">
+          <h4 class="column-title">Ayuda</h4>
+          <ul class="link-list">
+            <li><a routerLink="#">Preguntas Frecuentes</a></li>
+            <li><a routerLink="#">Envíos y Devoluciones</a></li>
+            <li><a routerLink="#">Política de Privacidad</a></li>
+          </ul>
+        </div>
+
+        <!-- Columna 4: Síguenos (Dinámica) -->
+        @if (settings()?.socialLinks && settings()!.socialLinks.length > 0) {
+        <div class="footer-column">
+          <h4 class="column-title">Síguenos</h4>
+          <div class="social-links">
+            @for(link of settings()!.socialLinks; track link.platform) {
+            <a [href]="link.url" target="_blank" rel="noopener noreferrer">
+              {{ link.platform | titlecase }}
+            </a>
+            }
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="footer-brand-logo">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          version="1.1"
+          viewBox="0.00 0.00 283.00 78.00"
+          class="logo-svg"
+        >
+          <path
+            id="logo-s"
+            fill="#b384bb"
+            d="
+  M 6.40 58.91
+  C 11.31 61.98 14.37 63.52 21.18 65.14
+  C 25.53 66.18 34.55 64.70 37.28 60.53
+  C 39.69 56.85 39.33 51.86 35.33 49.33
+  C 31.46 46.88 27.89 46.13 22.12 44.41
+  C 15.54 42.45 5.82 37.81 3.49 30.89
+  C -1.41 16.36 8.38 4.71 22.75 3.26
+  C 31.81 2.34 40.91 3.56 48.68 8.27
+  A 3.33 3.32 -69.9 0 1 50.24 11.65
+  C 49.77 14.52 49.31 17.43 48.29 18.60
+  A 2.30 2.21 36.0 0 1 45.42 18.99
+  Q 37.45 14.17 28.69 14.68
+  Q 28.61 14.69 26.32 14.69
+  C 18.65 14.70 13.02 24.63 21.45 28.64
+  Q 26.64 31.11 34.20 33.55
+  Q 42.66 36.29 48.47 41.99
+  C 54.56 47.98 54.98 59.55 50.58 66.32
+  C 44.80 75.23 31.41 78.27 21.27 76.88
+  C 15.51 76.09 7.28 74.18 2.51 70.45
+  A 3.33 3.32 -61.1 0 1 1.43 66.70
+  L 3.95 59.75
+  A 1.66 1.66 0.0 0 1 6.40 58.91
+  Z"
+          />
+          <path
+            id="logo-f"
+            fill="#b384bb"
+            d="
+  M 146.82 36.91
+  Q 146.84 69.99 146.85 72.75
+  Q 146.86 75.60 144.01 75.75
+  Q 138.93 76.03 135.01 75.75
+  A 1.88 1.86 2.2 0 1 133.27 73.89
+  L 133.27 36.94
+  A 1.25 1.24 90.0 0 0 132.03 35.69
+  L 126.53 35.69
+  A 2.38 2.38 0.0 0 1 124.15 33.31
+  L 124.15 27.42
+  A 2.39 2.38 -1.5 0 1 126.41 25.04
+  L 132.31 24.74
+  A 1.00 0.99 88.8 0 0 133.26 23.74
+  C 133.24 20.28 133.44 16.20 134.72 13.04
+  C 138.66 3.33 151.47 1.75 160.35 3.88
+  A 2.66 2.63 0.6 0 1 162.31 5.86
+  Q 162.83 8.12 162.21 11.71
+  A 2.02 2.02 0.0 0 1 160.72 13.31
+  C 158.41 13.90 154.86 13.85 152.77 14.74
+  Q 146.78 17.27 146.89 24.10
+  A 0.97 0.96 -0.6 0 0 147.86 25.04
+  L 161.18 25.04
+  A 1.95 1.94 -90.0 0 1 163.12 26.99
+  L 163.12 34.02
+  A 1.54 1.53 -1.6 0 1 161.66 35.55
+  L 147.43 36.27
+  A 0.64 0.64 0.0 0 0 146.82 36.91
+  Z"
+          />
+          <rect
+            fill="#b384bb"
+            x="-6.82"
+            y="-35.96"
+            transform="translate(211.04,40.09) rotate(0.2)"
+            width="13.64"
+            height="71.92"
+            rx="3.23"
+          />
+          <path
+            id="logo-l"
+            id="logo-heart"
+            fill="#b384bb"
+            d="
+  M 181.38 6.93
+  Q 181.49 6.93 181.58 6.92
+  Q 181.71 6.89 181.76 6.85
+  C 184.10 4.98 186.09 3.54 188.86 4.13
+  C 192.30 4.86 193.68 8.18 192.87 11.27
+  C 191.64 15.91 187.76 18.61 183.39 21.67
+  Q 182.30 22.44 181.53 22.45
+  Q 180.76 22.45 179.65 21.71
+  C 175.22 18.73 171.29 16.10 169.98 11.48
+  C 169.11 8.41 170.43 5.06 173.85 4.27
+  C 176.61 3.63 178.63 5.03 181.00 6.86
+  Q 181.05 6.90 181.18 6.92
+  Q 181.28 6.94 181.38 6.93
+  Z"
+          />
+          <path
+            id="logo-o"
+            fill="#b384bb"
+            d="
+  M 119.3936 49.8429
+  A 28.99 27.14 -1.2 0 1 90.9784 77.5840
+  A 28.99 27.14 -1.2 0 1 61.4264 51.0571
+  A 28.99 27.14 -1.2 0 1 89.8416 23.3160
+  A 28.99 27.14 -1.2 0 1 119.3936 49.8429
+  Z
+  M 90.1678 34.9808
+  A 15.49 14.68 -90.6 0 0 75.6508 50.6237
+  A 15.49 14.68 -90.6 0 0 90.4922 65.9592
+  A 15.49 14.68 -90.6 0 0 105.0092 50.3163
+  A 15.49 14.68 -90.6 0 0 90.1678 34.9808
+  Z"
+          />
+          <path
+            id="logo-u"
+            fill="#b384bb"
+            d="
+  M 268.49 70.74
+  A 0.66 0.65 -18.5 0 0 267.44 70.22
+  C 259.87 75.97 252.57 78.89 243.36 76.52
+  C 233.69 74.02 230.16 66.97 229.74 57.47
+  Q 229.04 41.66 230.50 26.98
+  A 2.37 2.37 0.0 0 1 232.38 24.89
+  C 234.45 24.48 240.68 24.01 243.16 25.31
+  A 2.35 2.35 0.0 0 1 244.42 27.39
+  Q 244.43 43.30 244.51 58.25
+  C 244.54 63.95 249.44 66.80 254.76 66.24
+  C 265.02 65.16 266.88 58.51 266.78 48.81
+  Q 266.74 45.17 266.83 31.84
+  C 266.85 28.47 266.49 24.92 270.65 24.66
+  Q 273.90 24.45 277.08 24.72
+  C 281.54 25.09 280.92 28.90 280.93 32.50
+  Q 280.98 57.44 280.97 73.81
+  A 2.06 2.05 -0.0 0 1 278.91 75.86
+  L 270.25 75.87
+  A 1.76 1.76 0.0 0 1 268.49 74.11
+  L 268.49 70.74
+  Z"
+          />
+          <rect
+            fill="#b384bb"
+            x="-7.10"
+            y="-25.00"
+            transform="translate(182.04,50.81) rotate(-0.2)"
+            width="14.20"
+            height="50.00"
+            rx="3.56"
+          />
+        </svg>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          © 2025 {{ settings()?.storeName || "Sofilu" }}. Todos los derechos
+          reservados.
+        </p>
       </div>
     </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2025 Sofilu. Todos los derechos reservados.</p>
   </div>
 </footer>

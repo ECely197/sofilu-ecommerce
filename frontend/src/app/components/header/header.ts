@@ -144,12 +144,7 @@ export class Header implements OnInit, AfterViewInit {
 
     const currentScrollY = window.scrollY;
     if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      gsap.to(headerPill, { y: -97.5, duration: 0.3, ease: 'power2.inOut' });
-      gsap.to(headerPill.querySelector('.logo-wrapper'), {
-        y: 80,
-        duration: 0.3,
-        ease: 'power2.inOut',
-      });
+      gsap.to(headerPill, { y: -200, duration: 0.3, ease: 'power2.inOut' });
     } else {
       gsap.to(headerPill, { y: 0, duration: 0.3, ease: 'power2.inOut' });
       gsap.to(headerPill.querySelector('.logo-wrapper'), {

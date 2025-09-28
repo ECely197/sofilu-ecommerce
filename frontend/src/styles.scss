@@ -283,3 +283,7 @@ textarea {
   max-width: 100%;
   font-family: "Baloo 2", sans-serif;
 }
+
+body.footer-is-active {
+  overflow: hidden;
+}
