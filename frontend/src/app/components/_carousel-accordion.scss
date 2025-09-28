@@ -63,6 +63,12 @@
 
 .swiper {
   padding: 0 1rem 1rem;
+  .swiper-slide {
+    width: 11rem;
+    @media (min-width: 480px) {
+      width: 17rem;
+    }
+  }
 }
 
 // --- ESTILOS UNIFICADOS PARA LAS FLECHAS ---

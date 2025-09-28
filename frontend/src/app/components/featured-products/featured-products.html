@@ -2,16 +2,18 @@
 <div class="carousel-wrapper">
   <section class="card">
     <div class="card-header">
+      <!-- ¡ÚNICO CAMBIO! El título es fijo -->
       <h2 class="card-title">Nuestros Favoritos</h2>
       <button (click)="toggleExplorer()" class="btn btn-secondary">
         {{ isExpanded() ? "Ver menos" : "Ver todo" }}
       </button>
     </div>
 
-    <!-- Contenedor del Carrusel (mostrando solo los primeros 4) -->
+    <!-- Contenido del Carrusel (mostrando solo los primeros 4) -->
     <div class="carousel-container">
       <div class="swiper">
         <div class="swiper-wrapper">
+          <!-- Usamos el slice para limitar la vista inicial -->
           @for (product of products | slice:0:4; track product._id) {
           <div class="swiper-slide">
             <app-product-card [product]="product"></app-product-card>
@@ -19,7 +21,6 @@
           }
         </div>
       </div>
-      <!-- Botones de navegación con ID único -->
       <div class="swiper-button-prev" [class]="uniqueId"></div>
       <div class="swiper-button-next" [class]="uniqueId"></div>
     </div>

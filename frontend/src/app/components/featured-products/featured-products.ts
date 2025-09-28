@@ -5,9 +5,15 @@ import {
   AfterViewInit,
   inject,
   signal,
+  OnInit,
   HostListener,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Product } from '../../interfaces/product.interface';
+import { ProductCard } from '../product-card/product-card';
+import Swiper from 'swiper';
+import { Navigation } from 'swiper/modules';
 import {
   trigger,
   state,
@@ -15,21 +21,16 @@ import {
   transition,
   animate,
 } from '@angular/animations';
-import { Product } from '../../interfaces/product.interface';
-import { ProductCard } from '../product-card/product-card';
-import Swiper from 'swiper';
-import { Navigation } from 'swiper/modules';
 
 Swiper.use([Navigation]);
 
 @Component({
-  selector: 'app-featured-products',
+  selector: 'app-featured-products', // <-- El único cambio real es este selector
   standalone: true,
   imports: [CommonModule, ProductCard],
   templateUrl: './featured-products.html',
   styleUrls: ['./featured-products.scss'],
   animations: [
-    // Animación de Acordeón
     trigger('expandCollapse', [
       state(
         'collapsed',
@@ -46,7 +47,6 @@ Swiper.use([Navigation]);
         animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
       ]),
     ]),
-    // Animación para el botón flotante
     trigger('fadeInOut', [
       transition(':enter', [
         style({ opacity: 0, transform: 'scale(0.8)' }),
@@ -62,6 +62,7 @@ Swiper.use([Navigation]);
   ],
 })
 export class FeaturedProductsComponent implements AfterViewInit {
+  // --- @Inputs ---
   @Input() products: Product[] = [];
 
   // --- Estado Interno ---
@@ -70,10 +71,28 @@ export class FeaturedProductsComponent implements AfterViewInit {
   isExpanded = signal(false);
   isFloating = signal(false);
   private timeoutId: any;
+  private swiperInstance: Swiper | undefined;
 
-  ngAfterViewInit() {
-    // Inicializamos Swiper para el carrusel
-    new Swiper(this.el.nativeElement.querySelector('.swiper'), {
+  constructor() {
+    effect(() => {
+      if (this.products.length > 0) {
+        setTimeout(() => this.initOrUpdateSwiper(), 0);
+      }
+    });
+  }
+
+  ngAfterViewInit() {}
+
+  private initOrUpdateSwiper(): void {
+    const swiperContainer = this.el.nativeElement.querySelector('.swiper');
+    if (!swiperContainer) return;
+
+    if (this.swiperInstance) {
+      this.swiperInstance.update();
+      return;
+    }
+
+    this.swiperInstance = new Swiper(swiperContainer, {
       slidesPerView: 2,
       spaceBetween: 16,
       navigation: {
