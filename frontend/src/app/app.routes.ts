@@ -25,7 +25,6 @@ import { checkout } from './pages/checkout/checkout';
 import { OrderConfirmation } from './pages/order-confirmation/order-confirmation';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
-import { CategoryView } from './pages/category-view/category-view';
 import { SearchResultsComponent } from './pages/search-results/search-results';
 
 // Páginas de la Cuenta del Usuario (Rutas Hijas de 'Account')
@@ -55,11 +54,6 @@ export const routes: Routes = [
   // --- Rutas de la Tienda (Cliente) ---
   // ===================================
   { path: '', component: Home, data: { animation: 'HomePage' } },
-  {
-    path: 'category/:slug',
-    component: CategoryView,
-    data: { animation: 'CategoryPage' },
-  },
   {
     path: 'product/:id',
     component: ProductDetailComponent,

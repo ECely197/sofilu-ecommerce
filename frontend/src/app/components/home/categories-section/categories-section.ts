@@ -4,28 +4,31 @@ import {
   signal,
   AfterViewInit,
   ElementRef,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { Category } from '../../../services/category.service';
-import Swiper from 'swiper'; // ¡Importamos Swiper!
+import Swiper from 'swiper';
 import { Navigation } from 'swiper/modules';
+import { ScrollManagerService } from '../../../services/scroll-manager.service';
 
 Swiper.use([Navigation]);
 
 @Component({
   selector: 'app-categories-section',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './categories-section.html',
   styleUrl: './categories-section.scss',
 })
 export class CategoriesSection implements AfterViewInit {
   @Input() categories: Category[] = [];
+  private el = inject(ElementRef);
+  private router = inject(Router);
+  private scrollManager = inject(ScrollManagerService);
 
   uniqueId = `carousel-cat-${Math.random().toString(36).substring(2, 9)}`;
-
-  constructor(private el: ElementRef) {}
 
   ngAfterViewInit() {
     new Swiper(this.el.nativeElement.querySelector('.swiper'), {
@@ -38,5 +41,20 @@ export class CategoriesSection implements AfterViewInit {
         prevEl: `.swiper-button-prev.${this.uniqueId}`,
       },
     });
+  }
+
+  handleCategoryClick(event: MouseEvent, category: Category): void {
+    event.preventDefault();
+
+    if (this.router.url === '/') {
+      this.scrollManager.requestScrollToCategory(category.slug);
+    } else {
+      this.router.navigate(['/']).then(() => {
+        setTimeout(
+          () => this.scrollManager.requestScrollToCategory(category.slug),
+          100
+        );
+      });
+    }
   }
 }

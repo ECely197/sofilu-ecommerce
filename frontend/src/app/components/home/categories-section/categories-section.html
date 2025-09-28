@@ -11,9 +11,9 @@
       <div class="swiper-wrapper">
         @for (category of categories; track category._id) {
         <div class="swiper-slide">
-          <!-- ¡AÑADIMOS [class]="category.slug"! -->
           <a
-            [routerLink]="['/category', category.slug]"
+            href="#"
+            (click)="handleCategoryClick($event, category)"
             class="category-card"
             [class]="category.slug"
           >
