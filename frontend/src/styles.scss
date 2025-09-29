@@ -9,6 +9,10 @@
    2. VARIABLES GLOBALES DE DISEÑO (ROOT)
    ========================================================================== */
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* ================================== */
   /* --- PALETA DE COLORES PRINCIPAL 
@@ -286,4 +290,54 @@ textarea {
 
 body.footer-is-active {
   overflow: hidden;
+}
+
+// ---Estilos Globales para Lenis ---
+html.lenis {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important; // Dejamos que la librería controle el smooth
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   PRELOADER STYLES
+   ========================================================================== */
+#preloader {
+  position: fixed;
+  inset: 0; /* Cubre toda la pantalla (top, right, bottom, left = 0) */
+  z-index: 9999;
+  background-color: var(
+    --background-page
+  ); // El mismo color de fondo de tu página
+  display: grid;
+  place-items: center; // La forma más fácil de centrar perfectamente
+  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+#preloader img {
+  width: 100px; // Ajusta el tamaño de tu logo
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+// Clase que añadiremos con JavaScript para ocultar el preloader
+body.loaded #preloader {
+  opacity: 0;
+  visibility: hidden; // Oculta el elemento después de la transición
+}
+
+// Animación de pulso para el logo
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
 }

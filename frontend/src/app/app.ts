@@ -26,6 +26,8 @@ import { WishlistFlyoutComponent } from './components/wishlist-flyout/wishlist-f
 // --- Servicios y Animaciones ---
 import { UiState } from './services/ui-state';
 import { routeAnimations } from './route-animations';
+import { ScrollService } from './services/scroll.service';
+import { OnDestroy } from '@angular/core';
 
 // Importación de la librería AOS (Animate On Scroll)
 import * as AOS from 'aos';
@@ -56,6 +58,7 @@ export class App implements OnInit {
   // --- Inyección de Dependencias ---
   private router = inject(Router);
   public uiState = inject(UiState);
+  private scrollService = inject(ScrollService);
 
   // --- Estado del Componente con Signals ---
   showGlobalHeaderAndFooter = signal(true);
@@ -64,8 +67,12 @@ export class App implements OnInit {
    * Hook del ciclo de vida de Angular que se ejecuta una vez que el componente se ha inicializado.
    */
   ngOnInit() {
+    this.scrollService.init();
     this.initializeAOS();
     this.subscribeToRouterEvents();
+  }
+  ngOnDestroy() {
+    this.scrollService.destroy();
   }
 
   /**

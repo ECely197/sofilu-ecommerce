@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  AfterViewInit,
+  NgZone,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -15,7 +22,11 @@ import { Product } from '../../interfaces/product.interface';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-// Estructura para agrupar productos por categoría (sin 'theme')
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
+
 interface ProductsByCategory {
   name: string;
   slug: string;
@@ -38,6 +49,7 @@ interface ProductsByCategory {
 export class Home implements OnInit {
   private productService = inject(ProductServices);
   private categoryService = inject(CategoryService);
+  private zone = inject(NgZone);
 
   // Signals para los datos
   categories = signal<Category[]>([]);
@@ -90,5 +102,77 @@ export class Home implements OnInit {
         });
         this.productsByCategory.set(groupedProducts);
       });
+  }
+
+  ngAfterViewInit(): void {
+    // Esperamos un momento para que todos los componentes hijos se rendericen
+    setTimeout(() => {
+      this.initScrollAnimations();
+    }, 200);
+  }
+
+  /**
+   * Inicializa las animaciones de scroll para las secciones de la página.
+   */
+  private initScrollAnimations(): void {
+    this.zone.runOutsideAngular(() => {
+      // --- Animación para las tarjetas de secciones ---
+      const sectionCards = gsap.utils.toArray(
+        'app-categories-section .card, app-featured-products .card, app-product-carousel .card, app-how-to-buy .card'
+      ) as HTMLElement[];
+
+      sectionCards.forEach((card) => {
+        gsap.fromTo(
+          card,
+          {
+            y: 100, // Empieza 100px más abajo
+            opacity: 0,
+          },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1, // Una duración más larga para un efecto más suave
+            ease: 'power4.out', // Un "easing" más expresivo
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 90%', // Se activa un poco más tarde para que se note más
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
+
+      // --- ¡NUEVO! Animación Parallax para la imagen del Hero ---
+      const heroImage = document.querySelector(
+        '.hero-background img'
+      ) as HTMLElement;
+      if (heroImage) {
+        gsap.to(heroImage, {
+          yPercent: 0, // Mueve la imagen hacia abajo un 30% de su propia altura
+          ease: 'none', // Sin "easing" para que el movimiento sea lineal con el scroll
+          scrollTrigger: {
+            trigger: '.hero-card', // El trigger es la tarjeta completa del Hero
+            start: 'top top', // Empieza cuando la parte superior de la tarjeta toca la parte superior de la ventana
+            end: 'bottom top', // Termina cuando la parte inferior de la tarjeta toca la parte superior de la ventana
+            scrub: true, // ¡ESTA ES LA CLAVE DEL PARALLAX! "Friega" la animación al scroll
+          },
+        });
+      }
+
+      // --- ¡NUEVO! Animación para el título del Hero ---
+      const heroTitle = document.querySelector('.hero-title') as HTMLElement;
+      if (heroTitle) {
+        // Usamos SplitText para animar letra por letra
+        const split = new SplitText(heroTitle, { type: 'chars' });
+
+        gsap.from(split.chars, {
+          y: 0,
+          opacity: 0,
+          stagger: 0.03, // Un pequeño retraso entre cada letra
+          duration: 1,
+          ease: 'power4.out',
+        });
+      }
+    });
   }
 }
