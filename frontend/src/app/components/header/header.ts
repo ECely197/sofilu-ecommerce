@@ -67,6 +67,7 @@ export class Header implements OnInit, AfterViewInit {
   navItems = signal<NavItem[]>([]);
   activeMenu = signal<NavItem | null>(null);
   activeSubCategory = signal<SubCategory | null>(null);
+  isScrolledMenuOpen = signal(false);
 
   // --- Referencias al DOM ---
   @ViewChildren('navLink') navLinks!: QueryList<ElementRef<HTMLDivElement>>;
@@ -76,8 +77,6 @@ export class Header implements OnInit, AfterViewInit {
   @ViewChildren('subCategoryLink') subCategoryLinks!: QueryList<ElementRef>;
   @ViewChildren('previewCard') previewCards!: QueryList<ElementRef>;
   @ViewChild('subCategoryPill') subCategoryPill!: ElementRef<HTMLElement>;
-
-  private lastScrollY = 0;
 
   /**
    * ¡MÉTODO MODIFICADO!
@@ -137,24 +136,47 @@ export class Header implements OnInit, AfterViewInit {
 
   @HostListener('window:scroll')
   onWindowScroll() {
-    const headerPill = this.navContainer?.nativeElement.closest(
-      '.header-pill, .logo-wrapper'
+    const initialPill = this.elementRef.nativeElement.querySelector(
+      '.header-pill-initial'
     );
-    if (!headerPill) return;
+    const scrolledPills = this.elementRef.nativeElement.querySelector(
+      '.header-pills-scrolled'
+    );
 
-    const currentScrollY = window.scrollY;
-    if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
-      gsap.to(headerPill, { y: -200, duration: 0.3, ease: 'power2.inOut' });
-    } else {
-      gsap.to(headerPill, { y: 0, duration: 0.3, ease: 'power2.inOut' });
-      gsap.to(headerPill.querySelector('.logo-wrapper'), {
+    if (!initialPill || !scrolledPills) return;
+
+    const scrollY = window.scrollY;
+
+    // Usamos una clase en el contenedor principal para controlar el estado.
+    // Es más limpio y permite que GSAP no tenga conflictos.
+    if (scrollY > 100) {
+      gsap.to(initialPill, {
+        y: -120,
+        autoAlpha: 0,
+        duration: 0.5,
+        ease: 'power3.inOut',
+      });
+      gsap.to(scrolledPills, {
         y: 0,
-        duration: 0.3,
-        ease: 'power2.inOut',
-        backgroundColor: 'transparent',
+        autoAlpha: 1,
+        duration: 0.5,
+        ease: 'power3.out',
+        delay: 0.1,
+      });
+    } else {
+      gsap.to(initialPill, {
+        y: 0,
+        autoAlpha: 1,
+        duration: 0.5,
+        ease: 'power3.out',
+      });
+      gsap.to(scrolledPills, {
+        y: -120,
+        autoAlpha: 0,
+        duration: 0.5,
+        ease: 'power3.inOut',
       });
     }
-    this.lastScrollY = currentScrollY;
   }
 
   constructor() {}
@@ -370,5 +392,19 @@ export class Header implements OnInit, AfterViewInit {
       .logout()
       .then(() => this.router.navigate(['/']))
       .catch((error) => console.error('Error al cerrar sesión:', error));
+  }
+
+  /**
+   * Alterna la visibilidad del mega menú cuando el header está en estado "scrolled".
+   * @param event El evento de clic, para detener la propagación.
+   */
+  toggleScrolledMenu(event: MouseEvent): void {
+    event.stopPropagation(); // Evita que otros clics se disparen
+    this.isScrolledMenuOpen.update((isOpen) => !isOpen);
+
+    // Si abrimos este menú, nos aseguramos de que el de perfil esté cerrado.
+    if (this.isScrolledMenuOpen()) {
+      this.isProfileMenuOpen.set(false);
+    }
   }
 }

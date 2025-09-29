@@ -1,13 +1,11 @@
 <header class="sofilu-header" data-lenis-prevent>
-  <div class="header-pill">
-    <!-- LOGO (IZQUIERDA) -->
+  <!-- ESTADO INICIAL: La píldora grande que ya conoces -->
+  <div class="header-pill-initial">
     <div class="logo-wrapper">
       <a routerLink="/" class="logo-link">
         <img src="/sofilu-logo.svg" alt="Logo de Sofilu" class="logo-image" />
       </a>
     </div>
-
-    <!-- NAVEGACIÓN (CENTRO) -->
     <nav #navContainer class="desktop-nav">
       <div #navPill class="nav-pill"></div>
 
@@ -156,6 +154,128 @@
         >
         }
       </div>
+    </div>
+  </div>
+
+  <!-- Header Secundario -->
+
+  <!-- Píldora Izquierda: Navegación -->
+  <div class="header-pills-scrolled">
+    <!-- Píldora Izquierda: Navegación -->
+    <div class="nav-pill-scrolled">
+      <!-- ¡CAMBIOS CLAVE! Añadimos (click) y un contenedor para el menú -->
+      <button class="menu-button" (click)="toggleScrolledMenu($event)">
+        <span class="material-symbols-outlined">menu</span>
+        <span>Productos</span>
+      </button>
+
+      <!-- ¡REUTILIZAMOS EL MEGA MENÚ AQUÍ! -->
+      <!-- Se muestra condicionalmente basado en el nuevo signal `isScrolledMenuOpen` -->
+      @if (isScrolledMenuOpen()) {
+      <div class="mega-menu-container scrolled-version">
+        <div class="mega-menu-card">
+          <!-- Usamos el PRIMER item de tu navegación (que asumimos es "Productos") -->
+          @if (navItems().length > 0) {
+          <div
+            class="sub-category-list"
+            (mouseleave)="handleSubCategoryListLeave()"
+          >
+            @for (sub of navItems()[0].subCategories; track sub.id) {
+            <a
+              href="#"
+              (click)="handleSubCategoryClick($event, sub)"
+              #subCategoryLink
+              (mouseenter)="handleSubCategoryEnter(sub, $event)"
+              [class.active]="activeSubCategory()?.id === sub.id"
+              class="sub-category-link"
+            >
+              {{ sub.name }}
+            </a>
+            }
+          </div>
+          <div class="product-preview-container">
+            @if (activeSubCategory(); as subCat) {
+            <div class="product-preview-grid">
+              @for (product of subCat.products; track product._id) {
+              <a
+                [routerLink]="['/product', product._id]"
+                class="preview-product-card"
+              >
+                <div class="preview-image-wrapper">
+                  @if(product.images.length > 0) {
+                  <img [src]="product.images[0]" [alt]="product.name" />
+                  } @else {
+                  <div class="image-placeholder"></div>
+                  }
+                </div>
+                <p>{{ product.name }}</p>
+              </a>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Píldora Central: Logo de Texto -->
+    <a routerLink="/" class="logo-pill-scrolled">
+      <img src="/sofilu-text.svg" alt="Sofilu" />
+    </a>
+
+    <!-- Píldora Derecha: Acciones -->
+    <div class="actions-pill-scrolled">
+      <!-- Reutilizamos los mismos botones de acción -->
+      <button (click)="uiStateService.openWishlistFlyout()" class="icon-button">
+        <span class="material-symbols-outlined">favorite</span>
+        @if (wishlistService.wishlistProductIds().length > 0) {
+        <span class="wishlist-badge">{{
+          wishlistService.wishlistProductIds().length
+        }}</span>
+        }
+      </button>
+      <button (click)="uiStateService.openCartFlyout()" class="icon-button">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        @if (cartService.totalItems() > 0) {
+        <span class="cart-badge">{{ cartService.totalItems() }}</span>
+        }
+      </button>
+      @if (currentUser$ | async; as user) {
+      <div class="profile-container">
+        <button (click)="toggleProfileMenu($event)" class="profile-button">
+          <span>{{ user.email?.charAt(0)?.toUpperCase() }}</span>
+        </button>
+        @if (isProfileMenuOpen()) {
+        <div #profileMenu class="profile-menu">
+          <!-- Quitamos la animación @flyInOut de aquí -->
+          <div class="menu-header">
+            @if(user.email) {
+            <p class="user-email">{{ user.email }}</p>
+            }
+          </div>
+          <div class="menu-links">
+            <a routerLink="/account" (click)="toggleProfileMenu()">Mi Cuenta</a>
+            @if(isAdmin$ | async) {
+            <a routerLink="/admin" (click)="toggleProfileMenu()"
+              >Panel de Admin</a
+            >
+            }
+          </div>
+          <div class="menu-footer">
+            <button (click)="logout()" class="logout-button">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+      <a routerLink="/login" class="login-button btn btn-primary"
+        >Iniciar Sesión</a
+      >
+      }
     </div>
   </div>
 </header>

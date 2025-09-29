@@ -6,6 +6,7 @@
 
 :host {
   display: block;
+  height: 84px;
   @media (max-width: 991px) {
     display: none;
   }
@@ -18,12 +19,16 @@
 .sofilu-header {
   position: fixed;
   top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   width: 100%;
-  max-width: 1200px;
-  padding: 0 1rem;
   z-index: 1000;
+  // Centra los elementos internos
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  // Importante para que los dos estados se superpongan
+  height: 60px;
 }
 
 .header-pill {
@@ -65,6 +70,39 @@
     height: 100px;
     width: auto;
     filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+  }
+}
+
+/* ==========================================================================
+   3. SECCIÓN CENTRAL: LOGO
+   ========================================================================== */
+
+.floating-brand-logo {
+  position: absolute;
+  top: -100;
+  left: 50%;
+  z-index: 1000;
+
+  // Posición inicial: oculto y desplazado hacia abajo
+  transform: translateX(-50%) translateY(80px);
+  opacity: 0;
+
+  // Apariencia
+  padding: 0.5rem 2rem;
+  width: 10.5rem;
+  background-color: var(--background-page); // El color de fondo de tu página
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // Evita que se pueda interactuar con él cuando está oculto
+  pointer-events: none;
+
+  img {
+    height: 40px; // Altura del logo de texto
+    width: auto;
   }
 }
 
@@ -417,5 +455,123 @@
 
   &:hover img {
     transform: scale(1.05);
+  }
+}
+
+/* ==========================================================================
+   6. Menu dividido por pildoras
+   ========================================================================== */
+
+// --- ESTADO INICIAL ---
+.header-pill-initial {
+  position: absolute;
+  width: 100%;
+  max-width: 1200px;
+  // Tus estilos existentes para `.header-pill` van aquí
+  height: 60px;
+  padding: 0 1rem 0 1.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+// --- ESTADO "SCROLLED" ---
+.header-pills-scrolled {
+  position: absolute;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  // --- ¡POSICIÓN INICIAL PARA GSAP! ---
+  // GSAP controlará la opacidad y la visibilidad.
+  transform: translateY(-120px); // Empieza oculto arriba
+  opacity: 0;
+  visibility: hidden;
+}
+
+// Estilo base para las píldoras pequeñas
+.nav-pill-scrolled,
+.logo-pill-scrolled,
+.actions-pill-scrolled {
+  height: 48px;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 9999px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  text-decoration: none;
+}
+
+// Píldora de Navegación (Izquierda)
+.nav-pill-scrolled {
+  position: relative;
+  .menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+}
+
+// Píldora del Logo (Centro)
+.logo-pill-scrolled {
+  padding: 0 2rem;
+  img {
+    height: 32px;
+    width: auto;
+  }
+}
+
+// Píldora de Acciones (Derecha)
+.actions-pill-scrolled {
+  // Reutilizamos los botones de la píldora grande
+  .icon-button,
+  .profile-container,
+  .login-button {
+    // Ajustes de tamaño si es necesario
+    transform: scale(0.9);
+  }
+}
+
+.mega-menu-container.scrolled-version {
+  // Lo posicionamos absolutamente relativo al `.nav-pill-scrolled`
+  position: absolute;
+  top: calc(100% + 0.5rem); // Un poco por debajo de la píldora
+  left: 0; // Alineado a la izquierda de la píldora
+  transform: translateX(0); // Reseteamos la transformación
+
+  // Le damos la animación de entrada
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+
+  // Animación de entrada con GSAP (opcional, pero recomendado)
+  // Puedes añadir esto en el `toggleScrolledMenu` del .ts si quieres
+  animation: fadeInDown 0.3s ease-out forwards;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

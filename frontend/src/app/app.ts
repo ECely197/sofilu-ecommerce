@@ -7,7 +7,7 @@
  * de alto nivel, como las animaciones de ruta y la inicialización de librerías.
  */
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
@@ -54,11 +54,12 @@ import { AosOptions } from 'aos';
   styleUrl: './app.scss',
   animations: [routeAnimations], // Asocia las animaciones de ruta al componente
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
   // --- Inyección de Dependencias ---
   private router = inject(Router);
   public uiState = inject(UiState);
   private scrollService = inject(ScrollService);
+  private document = inject(DOCUMENT);
 
   // --- Estado del Componente con Signals ---
   showGlobalHeaderAndFooter = signal(true);
@@ -70,6 +71,10 @@ export class App implements OnInit {
     this.scrollService.init();
     this.initializeAOS();
     this.subscribeToRouterEvents();
+
+    setTimeout(() => {
+      this.document.body.classList.add('loaded');
+    }, 500); // 500ms es un buen punto de partida, ajústalo si es necesario
   }
   ngOnDestroy() {
     this.scrollService.destroy();
