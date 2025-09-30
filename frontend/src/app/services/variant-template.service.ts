@@ -6,7 +6,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 
 // Interfaz para el tipado de una plantilla de variante.
 export interface VariantTemplate {

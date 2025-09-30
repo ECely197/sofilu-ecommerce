@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import { Product } from '../interfaces/product.interface';
 import { AuthService } from './auth';
 import { take, switchMap, of } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root',

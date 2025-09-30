@@ -6,7 +6,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 import { Product } from '../interfaces/product.interface';
 
 // --- Interfaces para el tipado de la estructura de navegación ---
