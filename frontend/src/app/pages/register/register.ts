@@ -3,74 +3,97 @@
  * Gestiona el formulario de creación de cuenta de un nuevo usuario,
  * incluyendo la validación y la comunicación con el AuthService.
  */
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
+  AbstractControl,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { AuthService } from '../../services/auth';
 import { ToastService } from '../../services/toast.service';
-import { RippleDirective } from '../../directives/ripple'; // Importa la directiva para el efecto ripple
+import { RippleDirective } from '../../directives/ripple';
+
+function passwordsMatchValidator(
+  control: AbstractControl
+): ValidationErrors | null {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+  return password && confirmPassword && password.value !== confirmPassword.value
+    ? { passwordsMismatch: true }
+    : null;
+}
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule, // Módulo para formularios reactivos
-    RouterLink, // Para los enlaces de navegación como "Inicia Sesión"
-    RippleDirective, // Añade la directiva para usar `appRipple`
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RippleDirective],
   templateUrl: './register.html',
   styleUrl: './register.scss',
 })
 export class Register {
-  // --- Inyección de Dependencias ---
   private authService = inject(AuthService);
   private router = inject(Router);
-  private toastService = inject(ToastService); // Inyecta el servicio de notificaciones
+  private toastService = inject(ToastService);
 
-  // --- Definición del Formulario Reactivo ---
-  // `FormGroup` agrupa varios `FormControl` para gestionar el estado del formulario completo.
-  registerForm = new FormGroup({
-    // `FormControl` para el email con validadores: es requerido y debe tener formato de email.
-    email: new FormControl('', [Validators.required, Validators.email]),
-    // `FormControl` para la contraseña con validadores: es requerida y debe tener al menos 6 caracteres.
-    password: new FormControl('', [
-      Validators.required,
-      Validators.minLength(6),
-    ]),
-  });
+  // --- Signals para el "ojito" de la contraseña ---
+  hidePassword = signal(true);
+  hideConfirmPassword = signal(true);
 
-  /**
-   * Maneja el envío del formulario de registro.
-   * Se ejecuta cuando el usuario hace clic en el botón "Crear Cuenta".
-   */
+  registerForm = new FormGroup(
+    {
+      displayName: new FormControl('', [
+        Validators.required,
+        Validators.minLength(3),
+      ]),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      password: new FormControl('', [
+        Validators.required,
+        Validators.minLength(6),
+      ]),
+      confirmPassword: new FormControl('', [Validators.required]),
+      acceptsMarketing: new FormControl(false),
+      agreedToTerms: new FormControl(false, [Validators.requiredTrue]),
+    },
+    { validators: passwordsMatchValidator }
+  );
+
   handleSubmit(): void {
-    // Se asegura de que el formulario sea válido antes de intentar el registro.
-    if (this.registerForm.valid) {
-      const { email, password } = this.registerForm.value;
-      this.authService
-        .register({ email: email!, password: password! })
-        .then(() => {
-          this.toastService.show('¡Cuenta creada con éxito!');
-          // Si el registro es exitoso, redirige al usuario a la página principal.
-          this.router.navigate(['/']);
-        })
-        .catch((error) => {
-          // Manejo de errores comunes de Firebase
-          let errorMessage = 'Ocurrió un error en el registro.';
-          if (error.code === 'auth/email-already-in-use') {
-            errorMessage = 'Este correo electrónico ya está en uso.';
-          }
-          this.toastService.show(errorMessage, 'error');
-          console.error('Error en el registro:', error);
-        });
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      this.toastService.show(
+        'Por favor, completa todos los campos requeridos.',
+        'error'
+      );
+      return;
     }
+
+    const { displayName, email, password, acceptsMarketing, agreedToTerms } =
+      this.registerForm.value;
+
+    this.authService
+      .register({ email: email!, password: password! })
+      .then((userCredential) => {
+        return this.authService.updateUserProfile(displayName!);
+      })
+      .then(() => {
+        console.log('Guardar en MongoDB:', { acceptsMarketing, agreedToTerms });
+
+        this.toastService.show('¡Cuenta creada con éxito!');
+        this.router.navigate(['/']);
+      })
+      .catch((error) => {
+        let errorMessage = 'Ocurrió un error en el registro.';
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = 'Este correo electrónico ya está en uso.';
+        }
+        this.toastService.show(errorMessage, 'error');
+        console.error('Error en el registro:', error);
+      });
   }
 
   /**

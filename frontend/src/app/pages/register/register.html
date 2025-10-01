@@ -1,12 +1,29 @@
-<!-- Contenedor principal que centra el formulario en la página -->
 <div class="auth-container">
-  <!-- Tarjeta que contiene el formulario y los elementos de autenticación -->
   <div class="auth-card">
     <h2 class="auth-title">Crea tu Cuenta en Sofilu</h2>
 
-    <!-- Formulario reactivo de Angular. `(ngSubmit)` se dispara al enviar. -->
     <form [formGroup]="registerForm" (ngSubmit)="handleSubmit()">
-      <!-- CAMPO DE CORREO ELECTRÓNICO con etiqueta flotante -->
+      <!-- 1. CAMPO DE NOMBRE DE USUARIO -->
+      <div class="material-field">
+        <input
+          id="displayName"
+          type="text"
+          formControlName="displayName"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="displayName" class="material-label"
+          >Nombre de Usuario</label
+        >
+        @if (registerForm.get('displayName')?.touched &&
+        registerForm.get('displayName')?.invalid) {
+        <div class="error-text">
+          El nombre debe tener al menos 3 caracteres.
+        </div>
+        }
+      </div>
+
+      <!-- 4. CAMPO DE CORREO ELECTRÓNICO -->
       <div class="material-field">
         <input
           id="email"
@@ -16,8 +33,6 @@
           placeholder=" "
         />
         <label for="email" class="material-label">Correo Electrónico</label>
-
-        <!-- Bloque de errores que aparece solo si el campo ha sido tocado y es inválido -->
         @if (registerForm.get('email')?.touched &&
         registerForm.get('email')?.invalid) {
         <div class="error-text">
@@ -29,18 +44,25 @@
         }
       </div>
 
-      <!-- CAMPO DE CONTRASEÑA con etiqueta flotante -->
-      <div class="material-field">
+      <!-- CAMPO DE CONTRASEÑA-->
+      <div class="material-field password-field">
         <input
           id="password"
-          type="password"
+          [type]="hidePassword() ? 'password' : 'text'"
           formControlName="password"
           class="material-input"
           placeholder=" "
         />
         <label for="password" class="material-label">Contraseña</label>
-
-        <!-- Bloque de errores para la contraseña -->
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="hidePassword.set(!hidePassword())"
+        >
+          <span class="material-symbols-outlined">
+            {{ hidePassword() ? "visibility_off" : "visibility" }}
+          </span>
+        </button>
         @if (registerForm.get('password')?.touched &&
         registerForm.get('password')?.invalid) {
         <div class="error-text">
@@ -52,8 +74,62 @@
         }
       </div>
 
+      <!-- CAMPO DE CONFIRMAR CONTRASEÑA -->
+      <div class="material-field password-field">
+        <input
+          id="confirmPassword"
+          [type]="hideConfirmPassword() ? 'password' : 'text'"
+          formControlName="confirmPassword"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="confirmPassword" class="material-label"
+          >Confirmar Contraseña</label
+        >
+        <button
+          type="button"
+          class="password-toggle"
+          (click)="hideConfirmPassword.set(!hideConfirmPassword())"
+        >
+          <span class="material-symbols-outlined">
+            {{ hideConfirmPassword() ? "visibility_off" : "visibility" }}
+          </span>
+        </button>
+        @if (registerForm.hasError('passwordsMismatch') &&
+        registerForm.get('confirmPassword')?.touched) {
+        <div class="error-text">Las contraseñas no coinciden.</div>
+        }
+      </div>
+
+      <div class="checkbox-group">
+        <div class="checkbox-field">
+          <input
+            id="acceptsMarketing"
+            type="checkbox"
+            formControlName="acceptsMarketing"
+          />
+          <label for="acceptsMarketing"
+            >Deseo recibir promociones y novedades por email.</label
+          >
+        </div>
+        <div class="checkbox-field">
+          <input
+            id="agreedToTerms"
+            type="checkbox"
+            formControlName="agreedToTerms"
+          />
+          <label for="agreedToTerms">
+            He leído y acepto los
+            <a routerLink="/terms" target="_blank">Términos y Condiciones</a>.
+          </label>
+        </div>
+        @if(registerForm.get('agreedToTerms')?.touched &&
+        registerForm.get('agreedToTerms')?.hasError('requiredTrue')) {
+        <div class="error-text">Debes aceptar los términos para continuar.</div>
+        }
+      </div>
+
       <!-- BOTÓN DE ENVÍO -->
-      <!-- Se deshabilita si el formulario no es válido. `appRipple` aplica el efecto de onda. -->
       <button
         type="submit"
         [disabled]="registerForm.invalid"

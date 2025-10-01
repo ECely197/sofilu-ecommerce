@@ -21,5 +21,16 @@ import { RippleDirective } from '../../../directives/ripple';
   styleUrl: './account.scss',
 })
 export class Account {
+  private router = inject(Router);
   public authService = inject(AuthService);
+  logout(): void {
+    this.authService
+      .logout()
+      .then(() => {
+        this.router.navigate(['/']);
+      })
+      .catch((error) => {
+        console.error('Error al cerrar sesión:', error);
+      });
+  }
 }

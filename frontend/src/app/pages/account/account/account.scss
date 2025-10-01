@@ -9,10 +9,14 @@
   max-width: 1280px;
   margin: 2rem auto;
   padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
 }
 
 .page-title {
-  font-family: "Playfair Display", serif;
+  font-family: "Baloo 2", serif;
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
@@ -63,6 +67,18 @@
       background-color: var(--pastel-pink);
       color: var(--text-charcoal);
       font-weight: 700;
+    }
+  }
+  .logout-button {
+    width: 100%; // Asegura que ocupe todo el ancho
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    // Estilo de "peligro" al hacer hover
+    &:hover {
+      background-color: #fee2e2; // Rojo claro
+      color: #991b1b; // Rojo oscuro
     }
   }
 

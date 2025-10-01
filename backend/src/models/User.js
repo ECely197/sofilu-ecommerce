@@ -113,6 +113,8 @@ const userSchema = new Schema(
      * @property {Array<addressSchema>} addresses - Lista de direcciones guardadas por el usuario.
      */
     addresses: [addressSchema],
+    acceptsMarketing: { type: Boolean, default: false },
+    agreedToTerms: { type: Boolean, default: false },
   },
   {
     timestamps: true, // Agrega createdAt y updatedAt automáticamente.

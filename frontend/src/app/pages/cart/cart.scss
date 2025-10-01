@@ -5,6 +5,10 @@
   max-width: 1280px;
   margin: 2rem auto;
   padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
 }
 .cart-header {
   display: flex;
@@ -233,9 +237,6 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
   margin-bottom: 0.5rem; // Espacio antes del precio
-
-  span {
-  }
 }
 
 .item-price-unit {
