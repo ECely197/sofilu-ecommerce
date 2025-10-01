@@ -45,7 +45,8 @@ import { WishlistService } from '../../services/wishlist';
 import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
 import { ToastService } from '../../services/toast.service';
-
+import { CategoryService, Category } from '../../services/category.service';
+import { CategoriesSection } from '../../components/home/categories-section/categories-section';
 import { RippleDirective } from '../../directives/ripple';
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
 import {
@@ -82,6 +83,7 @@ export class SafeHtmlPipe implements PipeTransform {
     RippleDirective,
     SafeHtmlPipe,
     StarRatingComponent,
+    CategoriesSection,
   ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
@@ -114,6 +116,7 @@ export class ProductDetailComponent
   private jsonLdService = inject(JsonLdService);
   private el = inject(ElementRef);
   private zone = inject(NgZone);
+  private categoryService = inject(CategoryService);
 
   // --- ESTADO DEL COMPONENTE (SIGNALS) ---
   product = signal<Product | null>(null);
@@ -126,6 +129,7 @@ export class ProductDetailComponent
   quantity = signal(1);
   expandedVariant = signal<string | null>(null);
   private swiperInstance: Swiper | undefined;
+  categories = signal<Category[]>([]);
 
   constructor() {
     // ¡MODIFICADO! El `effect` ahora reacciona a `galleryImages` para actualizar

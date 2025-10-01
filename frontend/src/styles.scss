@@ -308,25 +308,28 @@ html.lenis {
    ========================================================================== */
 #preloader {
   position: fixed;
-  inset: 0; /* Cubre toda la pantalla (top, right, bottom, left = 0) */
+  inset: 0;
   z-index: 9999;
-  background-color: var(
-    --background-page
-  ); // El mismo color de fondo de tu página
+  background-color: var(--background-page);
   display: grid;
-  place-items: center; // La forma más fácil de centrar perfectamente
-  transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-}
+  place-items: center;
 
-#preloader img {
-  width: 100px; // Ajusta el tamaño de tu logo
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-// Clase que añadiremos con JavaScript para ocultar el preloader
-body.loaded #preloader {
+  // --- ¡CAMBIO CLAVE! ---
+  // Por defecto, está oculto. Solo se mostrará cuando el body tenga la clase 'is-loading'.
   opacity: 0;
-  visibility: hidden; // Oculta el elemento después de la transición
+  visibility: hidden;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+
+  img {
+    width: 100px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+// Cuando el body tiene esta clase, el preloader se hace visible.
+body.is-loading #preloader {
+  opacity: 1;
+  visibility: visible;
 }
 
 // Animación de pulso para el logo

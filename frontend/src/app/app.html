@@ -10,7 +10,7 @@
     <!-- El div 'page-container' aplica el padding y max-width a la página actual.
          La directiva `[@routeAnimations]` activa la animación de transición
          cada vez que el valor de `prepareRoute(outlet)` cambia. -->
-    <div class="page-container" [@routeAnimations]="prepareRoute(outlet)">
+    <div class="page-container">
       <!-- El <router-outlet> es el marcador de posición donde Angular
            renderizará el componente de la ruta activa. -->
       <router-outlet #outlet="outlet"></router-outlet>

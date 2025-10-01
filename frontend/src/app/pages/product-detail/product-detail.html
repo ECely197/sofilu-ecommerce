@@ -303,6 +303,13 @@
       }
     </div>
   </div>
+
+  <!-- 2. Carrusel de Categorías -->
+  <div data-aos="fade-up" data-aos-delay="100">
+    <app-categories-section
+      [categories]="categories()"
+    ></app-categories-section>
+  </div>
 </div>
 } @else {
 <div class="loading-container">

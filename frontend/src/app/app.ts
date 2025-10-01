@@ -9,8 +9,15 @@
 
 import { Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
+import {
+  Router,
+  NavigationStart,
+  NavigationEnd,
+  NavigationCancel,
+  NavigationError,
+  RouterOutlet,
+} from '@angular/router';
+import { filter, tap } from 'rxjs';
 
 // --- Componentes Globales de la UI ---
 import { Header } from './components/header/header';
@@ -36,23 +43,22 @@ import { AosOptions } from 'aos';
 @Component({
   selector: 'app-root',
   standalone: true,
-  // ¡CORRECCIÓN CLAVE! Todos los componentes usados en app.html deben estar aquí.
   imports: [
     CommonModule,
-    RouterOutlet,
     Header,
     Footer,
     CartFlyout,
     BottomNavBarComponent,
     ToastContainerComponent,
     ConfirmationModalComponent,
-    ProductExplorerModalComponent, // ¡IMPORTACIÓN CORREGIDA!
-    CustomerDetailModalComponent, // ¡IMPORTACIÓN CORREGIDA!
-    WishlistFlyoutComponent, // ¡IMPORTACIÓN CORREGIDA!
+    ProductExplorerModalComponent,
+    CustomerDetailModalComponent,
+    WishlistFlyoutComponent,
+    RouterOutlet,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  animations: [routeAnimations], // Asocia las animaciones de ruta al componente
+  animations: [routeAnimations],
 })
 export class App implements OnInit, OnDestroy {
   // --- Inyección de Dependencias ---
@@ -68,14 +74,12 @@ export class App implements OnInit, OnDestroy {
    * Hook del ciclo de vida de Angular que se ejecuta una vez que el componente se ha inicializado.
    */
   ngOnInit() {
+    this.handlePageTransitions();
+
     this.scrollService.init();
     this.initializeAOS();
-    this.subscribeToRouterEvents();
-
-    setTimeout(() => {
-      this.document.body.classList.add('loaded');
-    }, 500); // 500ms es un buen punto de partida, ajústalo si es necesario
   }
+
   ngOnDestroy() {
     this.scrollService.destroy();
   }
@@ -114,16 +118,6 @@ export class App implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Prepara la animación de ruta para el <router-outlet>.
-   * Lee el valor de la propiedad `data.animation` de la ruta activa.
-   * @param outlet La directiva RouterOutlet.
-   * @returns El nombre de la animación de la ruta actual.
-   */
-  prepareRoute(outlet: RouterOutlet) {
-    return outlet?.activatedRouteData?.['animation'];
-  }
-
   // Lógica de búsqueda que estaba en tu componente original, la restauro por si la usas
   handleSearch(event: Event, searchInput: HTMLInputElement): void {
     event.preventDefault();
@@ -133,5 +127,36 @@ export class App implements OnInit, OnDestroy {
       searchInput.value = '';
       this.uiState.closeMobileSearch();
     }
+  }
+
+  private handlePageTransitions(): void {
+    // --- Muestra el Preloader al INICIAR la navegación ---
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationStart => event instanceof NavigationStart
+        ),
+        tap(() => this.document.body.classList.add('is-loading'))
+      )
+      .subscribe();
+
+    // --- Oculta el Preloader al FINALIZAR la navegación (con éxito, cancelada o con error) ---
+    this.router.events
+      .pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd ||
+            event instanceof NavigationCancel ||
+            event instanceof NavigationError
+        ),
+        // Usamos un pequeño delay para que la transición sea visible y no un parpadeo.
+        tap(() =>
+          setTimeout(
+            () => this.document.body.classList.remove('is-loading'),
+            300
+          )
+        )
+      )
+      .subscribe();
   }
 }
