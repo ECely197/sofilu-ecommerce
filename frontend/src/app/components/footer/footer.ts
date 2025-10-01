@@ -14,7 +14,7 @@ import { gsap } from 'gsap';
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink], // Ya no necesitamos NgxParticlesModule
+  imports: [CommonModule, RouterLink],
   templateUrl: './footer.html',
   styleUrls: ['./footer.scss'],
 })
@@ -24,18 +24,10 @@ export class Footer implements OnInit {
   settings = signal<AppSettings | null>(null);
 
   ngOnInit(): void {
-    // La única lógica es cargar los ajustes para los links.
     this.settingsService.getSettings().subscribe((data) => {
       this.settings.set(data);
     });
   }
-
-  // --- ¡NUEVA LÓGICA DE ANIMACIÓN DEL CORAZÓN! ---
-
-  /**
-   * Escucha el evento de movimiento del ratón sobre todo el componente footer.
-   * @param event El objeto MouseEvent con las coordenadas del cursor.
-   */
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
@@ -55,20 +47,5 @@ export class Footer implements OnInit {
       duration: 0.5,
       ease: 'power2.out',
     });
-  }
-
-  @HostListener('mouseleave')
-  onMouseLeave() {
-    // --- LÓGICA SIMPLIFICADA Y CORREGIDA! ---
-    const heart = this.el.nativeElement.querySelector('#logo-heart');
-
-    if (heart) {
-      gsap.to(heart, {
-        x: 0,
-        y: 0,
-        duration: 0.7,
-        ease: 'elastic.out(1, 0.5)',
-      });
-    }
   }
 }
