@@ -530,7 +530,10 @@
 
 // Píldora del Logo (Centro)
 .logo-pill-scrolled {
-  padding: 0 2rem;
+  margin-top: -30px;
+  padding: 0 0.8rem;
+  border-radius: 0 0 14px 14px;
+  background-color: var(--soft-white);
   img {
     height: 32px;
     width: auto;
@@ -549,19 +552,15 @@
 }
 
 .mega-menu-container.scrolled-version {
-  // Lo posicionamos absolutamente relativo al `.nav-pill-scrolled`
   position: absolute;
-  top: calc(100% + 0.5rem); // Un poco por debajo de la píldora
-  left: 0; // Alineado a la izquierda de la píldora
-  transform: translateX(0); // Reseteamos la transformación
+  top: calc(100% + 0.5rem);
+  left: 0;
+  transform: translateX(0);
 
-  // Le damos la animación de entrada
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
 
-  // Animación de entrada con GSAP (opcional, pero recomendado)
-  // Puedes añadir esto en el `toggleScrolledMenu` del .ts si quieres
   animation: fadeInDown 0.3s ease-out forwards;
 }
 

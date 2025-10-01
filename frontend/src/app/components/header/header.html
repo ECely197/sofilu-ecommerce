@@ -161,40 +161,35 @@
 
   <!-- Píldora Izquierda: Navegación -->
   <div class="header-pills-scrolled">
-    <!-- Píldora Izquierda: Navegación -->
     <div class="nav-pill-scrolled">
-      <!-- ¡CAMBIOS CLAVE! Añadimos (click) y un contenedor para el menú -->
       <button class="menu-button" (click)="toggleScrolledMenu($event)">
         <span class="material-symbols-outlined">menu</span>
         <span>Productos</span>
       </button>
 
-      <!-- ¡REUTILIZAMOS EL MEGA MENÚ AQUÍ! -->
-      <!-- Se muestra condicionalmente basado en el nuevo signal `isScrolledMenuOpen` -->
       @if (isScrolledMenuOpen()) {
-      <div class="mega-menu-container scrolled-version">
+      <div
+        class="mega-menu-container scrolled-version"
+        (mouseleave)="handleScrolledMenuMouseLeave()"
+      >
         <div class="mega-menu-card">
-          <!-- Usamos el PRIMER item de tu navegación (que asumimos es "Productos") -->
-          @if (navItems().length > 0) {
-          <div
-            class="sub-category-list"
-            (mouseleave)="handleSubCategoryListLeave()"
-          >
-            @for (sub of navItems()[0].subCategories; track sub.id) {
+          @if (scrolledMenuActiveItem(); as productsMenu) {
+          <div class="sub-category-list">
+            @for (sub of productsMenu.subCategories; track sub.id) {
             <a
               href="#"
               (click)="handleSubCategoryClick($event, sub)"
-              #subCategoryLink
-              (mouseenter)="handleSubCategoryEnter(sub, $event)"
-              [class.active]="activeSubCategory()?.id === sub.id"
+              (mouseenter)="handleScrolledSubCategoryEnter(sub)"
+              [class.active]="scrolledActiveSubCategory()?.id === sub.id"
               class="sub-category-link"
             >
               {{ sub.name }}
             </a>
             }
           </div>
+
           <div class="product-preview-container">
-            @if (activeSubCategory(); as subCat) {
+            @if (scrolledActiveSubCategory(); as subCat) {
             <div class="product-preview-grid">
               @for (product of subCat.products; track product._id) {
               <a
@@ -212,6 +207,8 @@
               </a>
               }
             </div>
+            } @else {
+            <div class="preview-placeholder">Selecciona una categoría</div>
             }
           </div>
           }

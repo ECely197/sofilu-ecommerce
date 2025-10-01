@@ -67,7 +67,10 @@ export class Header implements OnInit, AfterViewInit {
   navItems = signal<NavItem[]>([]);
   activeMenu = signal<NavItem | null>(null);
   activeSubCategory = signal<SubCategory | null>(null);
+  activeScrolledSubCategory = signal<SubCategory | null>(null);
   isScrolledMenuOpen = signal(false);
+  scrolledMenuActiveItem = signal<NavItem | null>(null);
+  scrolledActiveSubCategory = signal<SubCategory | null>(null);
 
   // --- Referencias al DOM ---
   @ViewChildren('navLink') navLinks!: QueryList<ElementRef<HTMLDivElement>>;
@@ -149,17 +152,17 @@ export class Header implements OnInit, AfterViewInit {
 
     // Usamos una clase en el contenedor principal para controlar el estado.
     // Es más limpio y permite que GSAP no tenga conflictos.
-    if (scrollY > 100) {
+    if (scrollY > 5) {
       gsap.to(initialPill, {
         y: -120,
         autoAlpha: 0,
-        duration: 0.5,
+        duration: 0.05,
         ease: 'power3.inOut',
       });
       gsap.to(scrolledPills, {
         y: 0,
         autoAlpha: 1,
-        duration: 0.5,
+        duration: 0.05,
         ease: 'power3.out',
         delay: 0.1,
       });
@@ -167,13 +170,13 @@ export class Header implements OnInit, AfterViewInit {
       gsap.to(initialPill, {
         y: 0,
         autoAlpha: 1,
-        duration: 0.5,
+        duration: 0.1,
         ease: 'power3.out',
       });
       gsap.to(scrolledPills, {
         y: -120,
         autoAlpha: 0,
-        duration: 0.5,
+        duration: 0.1,
         ease: 'power3.inOut',
       });
     }
@@ -396,15 +399,45 @@ export class Header implements OnInit, AfterViewInit {
 
   /**
    * Alterna la visibilidad del mega menú cuando el header está en estado "scrolled".
-   * @param event El evento de clic, para detener la propagación.
    */
   toggleScrolledMenu(event: MouseEvent): void {
-    event.stopPropagation(); // Evita que otros clics se disparen
+    event.stopPropagation();
     this.isScrolledMenuOpen.update((isOpen) => !isOpen);
 
-    // Si abrimos este menú, nos aseguramos de que el de perfil esté cerrado.
+    // Si el menú se está ABRIENDO...
     if (this.isScrolledMenuOpen()) {
-      this.isProfileMenuOpen.set(false);
+      const productsMenu = this.navItems().find((item) => item.slug !== '/');
+      if (productsMenu && productsMenu.subCategories.length > 0) {
+        this.scrolledMenuActiveItem.set(productsMenu);
+        this.scrolledActiveSubCategory.set(productsMenu.subCategories[0]);
+      }
+      this.isProfileMenuOpen.set(false); // Cerramos el menú de perfil
+    } else {
+      // Si se está CERRANDO, reseteamos todo.
+      this.scrolledMenuActiveItem.set(null);
+      this.scrolledActiveSubCategory.set(null);
     }
+  }
+
+  /**
+   *  Maneja el `mouseenter` para las subcategorías del menú scrolled.
+   */
+  handleScrolledSubCategoryEnter(subCategory: SubCategory): void {
+    this.scrolledActiveSubCategory.set(subCategory);
+  }
+
+  /**
+   * Cierra el menú scrolled si el ratón sale de él.
+   */
+  handleScrolledMenuMouseLeave(): void {
+    this.isScrolledMenuOpen.set(false);
+    this.scrolledMenuActiveItem.set(null);
+    this.scrolledActiveSubCategory.set(null);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.isProfileMenuOpen.set(false);
+    this.isScrolledMenuOpen.set(false);
   }
 }
