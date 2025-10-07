@@ -48,6 +48,7 @@ import { CategoryFormComponent } from './pages/admin/category-form/category-form
 import { VariantTemplatesComponent } from './pages/admin/variant-templates/variant-templates';
 import { SectionsComponent } from './pages/admin/sections/sections';
 import { VendorsComponent } from './pages/admin/vendors/vendors';
+import { SpecialEvents } from './pages/admin/special-events/special-events';
 
 export const routes: Routes = [
   // ===================================
@@ -125,6 +126,7 @@ export const routes: Routes = [
       { path: 'variant-templates', component: VariantTemplatesComponent },
       { path: 'sections', component: SectionsComponent },
       { path: 'vendors', component: VendorsComponent },
+      { path: 'special-events', component: SpecialEvents },
     ],
   },
 

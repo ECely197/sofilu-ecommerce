@@ -1,0 +1,176 @@
+<header class="page-header">
+  <h1>Gestionar Banners de Eventos</h1>
+</header>
+
+<div class="events-layout">
+  <!-- COLUMNA DEL FORMULARIO -->
+  <div class="form-column">
+    <div class="card">
+      <h2 class="card-title">
+        {{ editingEventId() ? "Editar Evento" : "Crear Nuevo Evento" }}
+      </h2>
+
+      <form [formGroup]="eventForm" (ngSubmit)="handleSubmit()">
+        <!-- Campo Título -->
+        <div class="material-field">
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="title" class="material-label"
+            >Título del Banner (ej. ¡Feliz Día, Mamá!)</label
+          >
+        </div>
+
+        <!-- Campo Subtítulo -->
+        <div class="material-field">
+          <input
+            id="subtitle"
+            type="text"
+            formControlName="subtitle"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="subtitle" class="material-label"
+            >Subtítulo (opcional)</label
+          >
+        </div>
+
+        <!-- Campo de Imagen -->
+        <div class="form-field">
+          <label>Imagen del Banner</label>
+          <div class="image-upload-area">
+            @if (imagePreview()) {
+            <img
+              [src]="imagePreview()"
+              alt="Vista previa"
+              class="image-preview"
+            />
+            } @else {
+            <div class="image-placeholder">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+              <span>Subir imagen</span>
+            </div>
+            }
+            <input
+              id="image-upload"
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              class="file-input"
+            />
+            <label for="image-upload" class="upload-button-overlay"></label>
+          </div>
+        </div>
+
+        <!-- Campo de Productos Vinculados (Multi-select) -->
+        <div class="form-field">
+          <label for="linkedProducts">Productos Sugeridos (opcional)</label>
+          <p class="field-description">
+            Selecciona los productos que aparecerán en el carrusel del banner.
+          </p>
+          <select
+            id="linkedProducts"
+            formControlName="linkedProducts"
+            class="form-input"
+            multiple
+          >
+            @for(product of allProducts(); track product._id) {
+            <option [value]="product._id">{{ product.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Acciones del Formulario -->
+        <div class="form-actions">
+          @if (editingEventId()) {
+          <button
+            type="button"
+            (click)="resetForm()"
+            class="btn-secondary"
+            appRipple
+          >
+            Cancelar
+          </button>
+          }
+          <button
+            type="submit"
+            [disabled]="eventForm.invalid || isSaving()"
+            class="btn-material"
+            appRipple
+          >
+            {{
+              isSaving()
+                ? "Guardando..."
+                : editingEventId()
+                ? "Guardar Cambios"
+                : "Crear Evento"
+            }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- COLUMNA DE LA LISTA -->
+  <div class="list-column">
+    <div class="card">
+      <h2 class="card-title">Eventos Creados</h2>
+      @if (isLoading()) {
+      <p>Cargando...</p>
+      } @else {
+      <div class="events-list">
+        @for (event of events(); track event._id) {
+        <div class="event-item" [class.active]="event.isActive">
+          <img
+            [src]="event.imageUrl"
+            [alt]="event.title"
+            class="event-thumbnail"
+          />
+          <div class="event-info">
+            <p class="event-title">{{ event.title }}</p>
+            <p class="event-products">
+              {{ event.linkedProducts.length }} productos vinculados
+            </p>
+          </div>
+          <div class="event-actions">
+            <!-- Botón para Activar -->
+            <button
+              class="action-button activate-btn"
+              [disabled]="event.isActive"
+              (click)="setActive(event._id)"
+              aria-label="Marcar como activo"
+            >
+              <span class="material-symbols-outlined">{{
+                event.isActive ? "check_circle" : "radio_button_unchecked"
+              }}</span>
+            </button>
+            <!-- Botón para Editar -->
+            <button
+              (click)="startEditing(event)"
+              class="action-button edit-btn"
+              aria-label="Editar"
+            >
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <!-- Botón para Eliminar -->
+            <button
+              (click)="deleteEvent(event._id)"
+              class="action-button delete-btn"
+              aria-label="Eliminar"
+            >
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+        } @empty {
+        <p class="empty-message">Aún no has creado ningún evento especial.</p>
+        }
+      </div>
+      }
+    </div>
+  </div>
+</div>

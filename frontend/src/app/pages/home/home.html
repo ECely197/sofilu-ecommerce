@@ -1,45 +1,39 @@
 <div class="page-container">
-  <!-- 1. Hero Section -->
-  <section class="card hero-card" data-aos="fade-up">
-    <div class="hero-background">
-      <img
-        src="/background-cover-cat.jpeg"
-        alt="Ambiente de confort y descanso"
-      />
-    </div>
-    <div class="hero-content">
-      <h1 class="hero-title">Tu universo de confort te espera</h1>
-    </div>
-  </section>
+  <!-- 1. Banner de Día Especial (se mostrará solo si hay uno activo) -->
+  <app-special-event-banner [event]="activeEvent()"></app-special-event-banner>
 
-  <!-- 2. Carrusel de Categorías -->
-  <div data-aos="fade-up" data-aos-delay="100">
-    <app-categories-section
-      [categories]="categories()"
-    ></app-categories-section>
-  </div>
+  <!-- 2. Sección de Categorías -->
+  <app-categories-section [categories]="categories()"></app-categories-section>
 
-  <!-- 3. Productos Destacados -->
-  <div data-aos="fade-up" data-aos-delay="100">
-    <app-featured-products
-      [products]="featuredProducts()"
-    ></app-featured-products>
-  </div>
-
-  <!-- 4. Carruseles de Productos por Categoría -->
+  <!-- 3. Carruseles de Productos por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <div data-aos="fade-up" data-aos-delay="100" [id]="categoryGroup.slug">
+  <div [id]="categoryGroup.slug">
     <app-product-carousel
       [title]="categoryGroup.name"
       [products]="categoryGroup.products"
       [categorySlug]="categoryGroup.slug"
-    >
-    </app-product-carousel>
+    ></app-product-carousel>
   </div>
   }
 
-  <!-- 5. Sección Cómo Comprar -->
-  <div data-aos="fade-up" data-aos-delay="100">
-    <app-how-to-buy></app-how-to-buy>
-  </div>
+  <!-- 5. Sección "Crea tu Regalo Perfecto" (CTA) -->
+  <app-create-gift-cta></app-create-gift-cta>
+
+  <!-- 6. Métodos de Pago (Trust Bar) -->
+  <app-payment-methods></app-payment-methods>
+
+  <!-- 7. Trabaja con Nosotros -->
+  <app-work-with-us></app-work-with-us>
+
+  <!-- 8. Sección de Tienda Física -->
+  <app-store-info></app-store-info>
+
+  <!-- 9. Experiencia de Nuestros Clientes -->
+  <app-customer-experience></app-customer-experience>
+
+  <!-- 10. Cómo Comprar -->
+  <app-how-to-buy></app-how-to-buy>
+
+  <!-- 11. Información Extra -->
+  <app-extra-info></app-extra-info>
 </div>

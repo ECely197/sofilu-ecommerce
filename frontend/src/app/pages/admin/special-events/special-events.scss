@@ -1,0 +1,151 @@
+@use "../../../../../buttons";
+@use "../../../../forms";
+@use "../_admin-shared.scss";
+
+// --- Layout Principal ---
+.events-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 450px) 1fr; // Columna fija para el form
+  }
+}
+
+// --- Estilos de la Tarjeta (reutilizados) ---
+.card {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: "Baloo 2", serif;
+}
+
+// --- Estilos del Formulario ---
+.image-upload-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; // Formato panorámico para banner
+  border-radius: 0.75rem;
+  border: 2px dashed var(--border);
+  overflow: hidden;
+  cursor: pointer;
+
+  .image-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    background-color: var(--soft-white);
+  }
+
+  .file-input {
+    display: none;
+  }
+  .upload-button-overlay {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+// Estilo para el select múltiple
+select[multiple] {
+  min-height: 150px;
+  padding: 1rem;
+}
+
+// --- Estilos de la Lista de Eventos ---
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background-color: var(--soft-white);
+  transition: all 0.2s;
+
+  &.active {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 2px var(--pastel-pink);
+  }
+}
+
+.event-thumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.event-title {
+  font-weight: 600;
+}
+.event-products {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.event-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  background-color: var(--soft-gray);
+  color: var(--text-primary);
+  transition: background-color 0.2s;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background-color: #dcd5cd;
+  }
+
+  &.activate-btn {
+    color: #4ade80;
+    &:disabled {
+      color: #166534;
+      background-color: #dcfce7;
+      cursor: default;
+    }
+  }
+  &.delete-btn {
+    &:hover {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+  }
+}

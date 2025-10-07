@@ -14,6 +14,14 @@ import { CategoriesSection } from '../../components/home/categories-section/cate
 import { FeaturedProductsComponent } from '../../components/featured-products/featured-products';
 import { ProductCarousel } from '../../components/home/product-carousel/product-carousel';
 import { HowToBuy } from '../../components/how-to-buy/how-to-buy';
+import { SplitText } from 'gsap/SplitText';
+import { SpecialEventBanner } from '../../components/home/special-event-banner/special-event-banner';
+import { CreateGiftCta } from '../../components/home/create-gift-cta/create-gift-cta';
+import { PaymentMethods } from '../../components/home/payment-methods/payment-methods';
+import { WorkWithUs } from '../../components/home/work-with-us/work-with-us';
+import { StoreInfo } from '../../components/home/store-info/store-info';
+import { CustomerExperience } from '../../components/home/customer-experience/customer-experience';
+import { ExtraInfo } from '../../components/home/extra-info/extra-info';
 
 // Servicios y Tipos
 import { ProductServices } from '../../services/product';
@@ -21,6 +29,10 @@ import { CategoryService, Category } from '../../services/category.service';
 import { Product } from '../../interfaces/product.interface';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import {
+  SpecialEvent,
+  SpecialEventService,
+} from '../../services/special-event.service';
 
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -39,9 +51,15 @@ interface ProductsByCategory {
   imports: [
     CommonModule,
     CategoriesSection,
-    FeaturedProductsComponent,
     ProductCarousel,
     HowToBuy,
+    SpecialEventBanner,
+    CreateGiftCta,
+    PaymentMethods,
+    WorkWithUs,
+    StoreInfo,
+    CustomerExperience,
+    ExtraInfo,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
@@ -50,11 +68,13 @@ export class Home implements OnInit {
   private productService = inject(ProductServices);
   private categoryService = inject(CategoryService);
   private zone = inject(NgZone);
+  private specialEventService = inject(SpecialEventService);
 
   // Signals para los datos
   categories = signal<Category[]>([]);
   featuredProducts = signal<Product[]>([]);
   productsByCategory = signal<ProductsByCategory[]>([]);
+  activeEvent = signal<SpecialEvent | null>(null);
 
   ngOnInit() {
     // Obtenemos los datos iniciales
@@ -102,6 +122,10 @@ export class Home implements OnInit {
         });
         this.productsByCategory.set(groupedProducts);
       });
+
+    this.specialEventService.getActiveEvent().subscribe((event) => {
+      this.activeEvent.set(event);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -174,5 +198,19 @@ export class Home implements OnInit {
         });
       }
     });
+
+    const bannerBg = document.querySelector('.banner-background');
+    if (bannerBg) {
+      gsap.to(bannerBg, {
+        y: '20%', // Mueve el fondo hacia abajo un 20%
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.event-banner-container',
+          start: 'top bottom', // Empieza cuando la parte superior del banner toca la parte inferior de la ventana
+          end: 'bottom top', // Termina cuando la parte inferior del banner toca la parte superior de la ventana
+          scrub: true, // "Friega" la animación al scroll
+        },
+      });
+    }
   }
 }

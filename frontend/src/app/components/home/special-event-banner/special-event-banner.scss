@@ -1,0 +1,125 @@
+:host {
+  display: block;
+}
+
+.event-banner-container {
+  position: relative;
+  width: 100vw; // Ocupa todo el ancho de la ventana
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 2rem; // Espacio antes de la siguiente sección
+
+  border-radius: 1.5rem; // Bordes redondeados M3
+  overflow: hidden; // Crucial para el parallax y los bordes
+}
+
+.banner-background {
+  position: absolute;
+  top: -20%; // La imagen empieza un poco más arriba
+  left: 0;
+  width: 100%;
+  height: 140%; // Hacemos la imagen más alta para que tenga espacio para moverse
+  z-index: 0;
+
+  // Gradiente oscuro superpuesto para legibilidad del texto
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0.1) 60%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+  padding: 4rem 2rem;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80vh; // Altura mínima para la sección
+
+  @media (min-width: 768px) {
+    padding: 6rem;
+    min-height: 90vh;
+  }
+}
+
+.text-content {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.event-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.5rem, 8vw, 5rem); // Tamaño de fuente adaptable
+  line-height: 1.1;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.event-subtitle {
+  font-size: 1.25rem;
+  margin-top: 1rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+// --- Estilos del Carrusel Interno ---
+.carousel-container {
+  position: relative;
+  margin-top: 4rem;
+}
+
+.swiper {
+  overflow: visible; // Para que las tarjetas se vean completas
+}
+
+.swiper-slide {
+  // Las tarjetas tendrán un fondo blanco, así que añadimos una sombra para que destaquen
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.2));
+}
+
+// Flechas de navegación (reutilizamos estilos si los tienes globales)
+.swiper-button-next,
+.swiper-button-prev {
+  --swiper-navigation-color: white;
+  --swiper-navigation-size: 28px;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.swiper-button-prev {
+  left: -10px;
+}
+.swiper-button-next {
+  right: -10px;
+}
+
+@media (max-width: 767px) {
+  .swiper-button-prev,
+  .swiper-button-next {
+    display: none; // Ocultamos las flechas en móvil
+  }
+}
