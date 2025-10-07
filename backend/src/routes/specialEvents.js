@@ -82,14 +82,48 @@ router.put("/:id", async (req, res) => {
     }
     res.json(updatedEvent);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar el evento.",
-        details: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar el evento.",
+      details: error.message,
+    });
   }
 });
+
+/**
+ * @route   PATCH /api/special-events/:id/set-active
+ * @desc    Activa un evento específico y desactiva todos los demás.
+ * @access  Admin
+ */
+router.patch(
+  "/:id/set-active",
+  [authMiddleware, adminOnly],
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Paso 1: Desactivar cualquier otro evento que esté activo.
+      // `updateMany` afecta a todos los documentos que coincidan con el filtro.
+      await SpecialEvent.updateMany(
+        { isActive: true },
+        { $set: { isActive: false } }
+      );
+
+      // Paso 2: Activar el evento seleccionado.
+      await SpecialEvent.updateOne({ _id: id }, { $set: { isActive: true } });
+
+      // Paso 3: Devolver la lista actualizada de todos los eventos.
+      const updatedEvents = await SpecialEvent.find().sort("-createdAt");
+      res.json(updatedEvents);
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          message: "Error al activar el evento.",
+          details: error.message,
+        });
+    }
+  }
+);
 
 /**
  * @route   DELETE /api/special-events/:id

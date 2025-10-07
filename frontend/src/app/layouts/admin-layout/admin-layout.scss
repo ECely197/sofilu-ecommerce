@@ -1,12 +1,17 @@
 :host {
   display: block;
   min-height: 100vh;
+  position: relative;
 }
 
 .admin-container {
   display: flex;
   position: relative;
   background-color: var(--background);
+}
+
+app-footer {
+  display: none;
 }
 
 /* ==========================================================================
@@ -28,7 +33,7 @@
 .sidebar-header {
   padding: 1rem 0;
   .sidebar-logo {
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;

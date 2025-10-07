@@ -60,6 +60,7 @@ interface ProductsByCategory {
     StoreInfo,
     CustomerExperience,
     ExtraInfo,
+    FeaturedProductsComponent,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',

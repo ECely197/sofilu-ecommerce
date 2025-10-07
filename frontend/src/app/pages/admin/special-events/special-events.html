@@ -68,20 +68,31 @@
 
         <!-- Campo de Productos Vinculados (Multi-select) -->
         <div class="form-field">
-          <label for="linkedProducts">Productos Sugeridos (opcional)</label>
+          <label>Productos Sugeridos (opcional)</label>
           <p class="field-description">
             Selecciona los productos que aparecerán en el carrusel del banner.
           </p>
-          <select
-            id="linkedProducts"
-            formControlName="linkedProducts"
-            class="form-input"
-            multiple
-          >
-            @for(product of allProducts(); track product._id) {
-            <option [value]="product._id">{{ product.name }}</option>
+
+          <!-- Contenedor con scroll para la lista de productos -->
+          <div class="product-selector-list" formArrayName="linkedProducts">
+            @for(product of allProducts(); track product._id; let i = $index) {
+            <label class="product-selector-item" [for]="'product-' + i">
+              <input
+                [id]="'product-' + i"
+                type="checkbox"
+                [formControlName]="i"
+              />
+              <img
+                [src]="product.images[0]"
+                [alt]="product.name"
+                class="product-thumbnail-selector"
+              />
+              <span class="product-name-selector">{{ product.name }}</span>
+              <div class="checkbox-visual"></div>
+              <!-- Checkbox visual M3 -->
+            </label>
             }
-          </select>
+          </div>
         </div>
 
         <!-- Acciones del Formulario -->

@@ -61,27 +61,72 @@ import { AosOptions } from 'aos';
   animations: [routeAnimations],
 })
 export class App implements OnInit, OnDestroy {
-  // --- Inyección de Dependencias ---
+  // --- Inyecciones ---
   private router = inject(Router);
   public uiState = inject(UiState);
   private scrollService = inject(ScrollService);
   private document = inject(DOCUMENT);
 
-  // --- Estado del Componente con Signals ---
+  // --- Estado ---
   showGlobalHeaderAndFooter = signal(true);
 
   /**
    * Hook del ciclo de vida de Angular que se ejecuta una vez que el componente se ha inicializado.
    */
   ngOnInit() {
-    this.handlePageTransitions();
-
+    // Estas inicializaciones solo se hacen una vez.
     this.scrollService.init();
     this.initializeAOS();
+
+    // Este método ahora manejará TODA la lógica de navegación.
+    this.handlePageTransitions();
   }
 
   ngOnDestroy() {
     this.scrollService.destroy();
+  }
+
+  // --- ¡MÉTODO UNIFICADO Y CORREGIDO! ---
+  private handlePageTransitions(): void {
+    // Muestra el Preloader al INICIAR la navegación
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationStart => event instanceof NavigationStart
+        ),
+        tap(() => this.document.body.classList.add('is-loading'))
+      )
+      .subscribe();
+
+    // Reacciona al FINALIZAR la navegación
+    this.router.events
+      .pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd ||
+            event instanceof NavigationCancel ||
+            event instanceof NavigationError
+        ),
+        tap((event) => {
+          // --- Lógica de Header/Footer ---
+          if (event instanceof NavigationEnd) {
+            const url = event.urlAfterRedirects;
+            const routesToHideOn = ['/checkout', '/admin'];
+            const shouldHide = routesToHideOn.some((route) =>
+              url.startsWith(route)
+            );
+            this.showGlobalHeaderAndFooter.set(!shouldHide);
+          }
+
+          // --- Lógica de Preloader y Scroll ---
+          setTimeout(() => {
+            this.document.body.classList.remove('is-loading');
+            AOS.refresh();
+            window.scrollTo(0, 0);
+          }, 300);
+        })
+      )
+      .subscribe();
   }
 
   /**
@@ -97,25 +142,8 @@ export class App implements OnInit, OnDestroy {
     AOS.init(aosConfig);
   }
 
-  /**
-   * Se suscribe a los eventos de navegación del router para ejecutar lógica
-   * en cada cambio de página.
-   */
-  private subscribeToRouterEvents(): void {
-    this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationEnd => event instanceof NavigationEnd
-        )
-      )
-      .subscribe((event: NavigationEnd) => {
-        const url = event.urlAfterRedirects;
-        const shouldHide =
-          url.includes('/checkout') || url.startsWith('/admin');
-        this.showGlobalHeaderAndFooter.set(!shouldHide);
-        setTimeout(() => AOS.refresh(), 100);
-        window.scrollTo(0, 0);
-      });
+  prepareRoute(outlet: RouterOutlet) {
+    return outlet?.activatedRouteData?.['animation'];
   }
 
   // Lógica de búsqueda que estaba en tu componente original, la restauro por si la usas
@@ -127,36 +155,5 @@ export class App implements OnInit, OnDestroy {
       searchInput.value = '';
       this.uiState.closeMobileSearch();
     }
-  }
-
-  private handlePageTransitions(): void {
-    // --- Muestra el Preloader al INICIAR la navegación ---
-    this.router.events
-      .pipe(
-        filter(
-          (event): event is NavigationStart => event instanceof NavigationStart
-        ),
-        tap(() => this.document.body.classList.add('is-loading'))
-      )
-      .subscribe();
-
-    // --- Oculta el Preloader al FINALIZAR la navegación (con éxito, cancelada o con error) ---
-    this.router.events
-      .pipe(
-        filter(
-          (event) =>
-            event instanceof NavigationEnd ||
-            event instanceof NavigationCancel ||
-            event instanceof NavigationError
-        ),
-        // Usamos un pequeño delay para que la transición sea visible y no un parpadeo.
-        tap(() =>
-          setTimeout(
-            () => this.document.body.classList.remove('is-loading'),
-            300
-          )
-        )
-      )
-      .subscribe();
   }
 }

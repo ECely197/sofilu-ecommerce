@@ -149,3 +149,84 @@ select[multiple] {
     }
   }
 }
+
+.product-selector-list {
+  max-height: 250px; // Altura máxima antes de activar el scroll
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-selector-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  position: relative; // Para el checkbox visual
+
+  &:hover {
+    background-color: var(--soft-white);
+  }
+
+  // Ocultamos el checkbox real
+  input[type="checkbox"] {
+    display: none;
+  }
+}
+
+.product-thumbnail-selector {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.product-name-selector {
+  font-weight: 500;
+  flex-grow: 1; // Ocupa el espacio sobrante
+}
+
+// Checkbox visual M3
+.checkbox-visual {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--soft-gray);
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0; // Evita que se encoja
+  position: relative;
+}
+
+// Estilos cuando el checkbox está seleccionado
+.product-selector-item
+  input[type="checkbox"]:checked
+  + .product-thumbnail-selector
+  + .product-name-selector
+  + .checkbox-visual {
+  background-color: var(--pastel-pink);
+  border-color: var(--pastel-pink);
+
+  // El "check" (✓)
+  &::after {
+    content: "✓";
+    position: absolute;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// Estilo visual para toda la fila seleccionada
+.product-selector-item input[type="checkbox"]:checked ~ * {
+  // Aquí podrías cambiar el color de fondo de toda la fila si quisieras
+}

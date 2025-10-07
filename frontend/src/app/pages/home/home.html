@@ -5,6 +5,11 @@
   <!-- 2. Sección de Categorías -->
   <app-categories-section [categories]="categories()"></app-categories-section>
 
+  <!-- 4. Productos Destacados -->
+  <app-featured-products
+    [products]="featuredProducts()"
+  ></app-featured-products>
+
   <!-- 3. Carruseles de Productos por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
   <div [id]="categoryGroup.slug">

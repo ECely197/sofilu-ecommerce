@@ -5,6 +5,8 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  FormArray,
+  FormControl,
 } from '@angular/forms';
 import {
   SpecialEvent,
@@ -48,14 +50,24 @@ export class SpecialEvents implements OnInit {
     this.eventForm = this.fb.group({
       title: ['', Validators.required],
       subtitle: [''],
-      imageUrl: ['', Validators.required],
-      linkedProducts: [[]],
+      imageUrl: [''], // Ya no es requerido aquí, lo validaremos en el submit
+
+      // ¡CAMBIO CLAVE! `linkedProducts` ahora es un FormArray
+      linkedProducts: this.fb.array([]),
     });
 
-    this.productService
-      .getProducts()
-      .subscribe((prods) => this.allProducts.set(prods));
+    // Cuando cargamos todos los productos, construimos los checkboxes
+    this.productService.getProducts().subscribe((prods) => {
+      this.allProducts.set(prods);
+      // Creamos un `FormControl` (un checkbox) por cada producto
+      prods.forEach((p) => this.productCheckboxes.push(new FormControl(false)));
+    });
+
     this.loadEvents();
+  }
+
+  get productCheckboxes(): FormArray {
+    return this.eventForm.get('linkedProducts') as FormArray;
   }
 
   loadEvents(): void {
@@ -82,6 +94,10 @@ export class SpecialEvents implements OnInit {
       );
       return;
     }
+    if (!this.editingEventId() && !this.selectedFile) {
+      this.toastService.show('La imagen del banner es requerida.', 'error');
+      return;
+    }
     this.isSaving.set(true);
 
     if (this.selectedFile) {
@@ -97,12 +113,20 @@ export class SpecialEvents implements OnInit {
   }
 
   private saveEventData(): void {
+    const selectedProductIds = this.eventForm.value.linkedProducts
+      .map((checked: boolean, i: number) =>
+        checked ? this.allProducts()[i]._id : null
+      )
+      .filter((id: string | null) => id !== null);
+
+    const payload = {
+      ...this.eventForm.value,
+      linkedProducts: selectedProductIds,
+    };
+
     const operation$ = this.editingEventId()
-      ? this.specialEventService.updateEvent(
-          this.editingEventId()!,
-          this.eventForm.value
-        )
-      : this.specialEventService.createEvent(this.eventForm.value);
+      ? this.specialEventService.updateEvent(this.editingEventId()!, payload)
+      : this.specialEventService.createEvent(payload);
 
     operation$.subscribe({
       next: () => {
@@ -124,11 +148,22 @@ export class SpecialEvents implements OnInit {
   startEditing(event: SpecialEvent): void {
     this.editingEventId.set(event._id);
     this.imagePreview.set(event.imageUrl);
+
+    this.productCheckboxes.controls.forEach((control) =>
+      control.setValue(false)
+    );
+
+    const linkedIds = event.linkedProducts.map((p) => p._id);
+    this.allProducts().forEach((product, index) => {
+      if (linkedIds.includes(product._id)) {
+        this.productCheckboxes.at(index).setValue(true);
+      }
+    });
+
     this.eventForm.patchValue({
       title: event.title,
       subtitle: event.subtitle,
       imageUrl: event.imageUrl,
-      linkedProducts: event.linkedProducts.map((p) => p._id),
     });
   }
 
@@ -137,6 +172,9 @@ export class SpecialEvents implements OnInit {
     this.selectedFile = null;
     this.imagePreview.set(null);
     this.eventForm.reset({ linkedProducts: [] });
+    this.productCheckboxes.controls.forEach((control) =>
+      control.setValue(false)
+    );
   }
 
   /**
