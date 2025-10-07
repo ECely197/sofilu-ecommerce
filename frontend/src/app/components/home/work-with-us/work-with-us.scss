@@ -1,0 +1,34 @@
+@use "../../../../../buttons";
+
+:host {
+  display: block;
+}
+
+.work-with-us-section {
+  padding: 6rem 2rem;
+  background-color: #fce7f3; // Un tono rosa muy pálido, casi blanco
+  text-align: center;
+}
+
+.content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: "Playfair Display", serif;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+}
+
+.btn-material {
+  @extend .btn-material;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+}

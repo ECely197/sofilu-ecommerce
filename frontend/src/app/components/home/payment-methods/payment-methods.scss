@@ -1,0 +1,34 @@
+:host {
+  display: block;
+}
+
+.trust-bar {
+  padding: 2rem;
+}
+
+.trust-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.trust-title {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.payment-logos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+
+  img {
+    height: 24px;
+    max-width: 80px;
+    filter: grayscale(1);
+    opacity: 0.6;
+  }
+}

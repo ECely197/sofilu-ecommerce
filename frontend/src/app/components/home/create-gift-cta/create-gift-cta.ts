@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
   selector: 'app-create-gift-cta',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink, RippleDirective],
   templateUrl: './create-gift-cta.html',
-  styleUrl: './create-gift-cta.scss'
+  styleUrls: ['./create-gift-cta.scss'],
 })
-export class CreateGiftCta {
-
-}
+export class CreateGiftCta {}

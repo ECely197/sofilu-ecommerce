@@ -1,6 +1,10 @@
 // En: frontend/src/app/pages/home/home.scss
 :host {
   display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem; // Espacio entre cada sección
+  padding-bottom: 3rem; // Espacio antes del footer
 }
 
 // Contenedor principal de la página
@@ -14,6 +18,12 @@
   gap: 2rem;
 }
 
+.carousel-section-wrapper {
+  width: 100%;
+  max-width: 1440px; // Un poco más ancho que el contenido normal
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
 // Estilo base para todas las tarjetas de sección
 .card {
   // Usa las variables de tema definidas en styles.scss

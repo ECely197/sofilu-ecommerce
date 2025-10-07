@@ -1,1 +1,20 @@
-<p>customer-experience works!</p>
+<section class="experience-section">
+  <h2 class="section-title">La Felicidad de Nuestros Clientes</h2>
+
+  <div class="swiper">
+    <div class="swiper-wrapper">
+      @for(exp of experiences; track exp.url) {
+      <div class="swiper-slide">
+        <div class="experience-card">
+          @if(exp.type === 'image') {
+          <img [src]="exp.url" alt="Experiencia de cliente" />
+          } @if(exp.type === 'video') {
+          <video [src]="exp.url" autoplay loop muted playsinline></video>
+          }
+          <div class="caption">{{ exp.caption }}</div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</section>

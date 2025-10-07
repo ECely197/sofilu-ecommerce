@@ -1,0 +1,38 @@
+@use "../../../../../buttons";
+
+:host {
+  display: block;
+}
+
+.cta-section {
+  width: 100%;
+  padding: 6rem 2rem;
+  background-color: var(--soft-white);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.cta-content {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cta-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.cta-subtitle {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+}
+
+.btn-material {
+  @extend .btn-material;
+  padding: 1rem 2.5rem;
+  font-size: 1rem;
+}

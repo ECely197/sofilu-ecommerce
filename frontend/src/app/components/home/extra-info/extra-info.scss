@@ -1,0 +1,35 @@
+:host {
+  display: block;
+}
+
+.extra-info-section {
+  padding: 6rem 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.info-item {
+  .material-symbols-outlined {
+    font-size: 40px;
+    color: var(--pastel-pink);
+    margin-bottom: 1rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
+}

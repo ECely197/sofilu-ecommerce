@@ -4,10 +4,11 @@
 
 .event-banner-container {
   position: relative;
-  width: 100vw; // Ocupa todo el ancho de la ventana
-  left: 50%;
+  width: 100%; // Ocupa todo el ancho de la ventana
+  max-height: 35rem;
   transform: translateX(-50%);
-  margin-bottom: 2rem; // Espacio antes de la siguiente sección
+  margin-bottom: 2rem;
+  margin-top: 0.5rem;
 
   border-radius: 1.5rem; // Bordes redondeados M3
   overflow: hidden; // Crucial para el parallax y los bordes
@@ -65,7 +66,7 @@
 }
 
 .event-title {
-  font-family: "Playfair Display", serif;
+  font-family: "Baloo 2", serif;
   font-size: clamp(2.5rem, 8vw, 5rem); // Tamaño de fuente adaptable
   line-height: 1.1;
   text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
