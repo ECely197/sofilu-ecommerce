@@ -58,13 +58,16 @@ export class SpecialEventBanner {
   private scrollToCategory(elementId: string): void {
     this.viewportScroller.scrollToAnchor(elementId);
 
-    const element = document.getElementById(elementId);
-    if (element) {
+    const sectionElement = document.getElementById(elementId);
+    const cardElement = sectionElement?.querySelector('.card'); // <-- ¡NUEVO!
+
+    if (cardElement) {
       gsap.fromTo(
-        element,
-        { boxShadow: '0 0 0 0px rgba(244, 194, 194, 0.7)' },
+        cardElement,
+        { boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.04)' },
         {
-          boxShadow: '0 0 0 5px rgba(244, 194, 194, 0.7)',
+          boxShadow:
+            '0 0 0 5px rgba(244, 194, 194, 0.7), 0 10px 25px -5px rgba(0, 0, 0, 0.04)',
           repeat: 1,
           yoyo: true,
           duration: 0.5,
