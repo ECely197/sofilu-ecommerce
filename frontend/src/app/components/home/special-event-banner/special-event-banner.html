@@ -1,13 +1,9 @@
-<!-- El componente solo se renderiza si recibe un evento -->
 @if (event) {
-<!-- `data-aos` es para la animación de entrada global de la página Home -->
 <section class="event-banner-container" data-aos="fade-up">
-  <!-- Contenedor para la imagen de fondo con efecto parallax -->
   <div class="banner-background">
     <img [src]="event.imageUrl" alt="{{ event.title }}" />
   </div>
 
-  <!-- Contenido superpuesto -->
   <div class="banner-content">
     <div class="text-content">
       <h1 class="event-title">{{ event.title }}</h1>
@@ -16,21 +12,12 @@
       }
     </div>
 
-    <!-- Carrusel de productos sugeridos -->
+    <!-- ¡NUEVO! Botón de Llamada a la Acción en lugar del carrusel -->
     @if (event.linkedProducts && event.linkedProducts.length > 0) {
-    <div class="carousel-container">
-      <div class="swiper">
-        <div class="swiper-wrapper">
-          @for (product of event.linkedProducts; track product._id) {
-          <div class="swiper-slide">
-            <app-product-card [product]="product"></app-product-card>
-          </div>
-          }
-        </div>
-      </div>
-      <!-- Botones de navegación -->
-      <div class="swiper-button-prev" [class]="uniqueId"></div>
-      <div class="swiper-button-next" [class]="uniqueId"></div>
+    <div class="cta-container">
+      <button (click)="scrollToProducts()" class="btn-material" appRipple>
+        Ver Productos Sugeridos
+      </button>
     </div>
     }
   </div>

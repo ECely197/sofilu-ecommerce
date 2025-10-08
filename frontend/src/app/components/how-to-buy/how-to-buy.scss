@@ -1,5 +1,5 @@
 .section-container {
-  padding: 4rem 1.5rem; // Más padding para pantallas grandes
+  padding: 4rem 1.5rem;
   background-color: var(--primary-light);
   border-radius: 1.5rem;
   margin: 4rem 0;
@@ -10,19 +10,16 @@
 }
 
 .card {
-  // El fondo de la tarjeta ahora es siempre blanco
   background-color: white;
 
-  // ¡AQUÍ ESTÁ LA MAGIA DEL BORDE DINÁMICO!
-  border: 2px solid var(--card-border-color, var(--soft-gray));
+  border: 1px solid var(--card-border-color, var(--soft-gray));
   box-shadow: 0 0 20px -5px var(--card-border-color, transparent);
 
   border-radius: 1.5rem;
   overflow: hidden;
 
-  // Transición suave para los cambios de borde y sombra
   transition: border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease-in-out; // Mantenemos el hover
+    box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease-in-out;
 
   &:hover {
     transform: translateY(-5px);
@@ -31,7 +28,7 @@
 }
 
 .section-title {
-  font-family: "Playfair Display", serif;
+  font-family: "Baloo 2", serif;
   font-size: 2.25rem;
   font-weight: 700;
   text-align: center;
@@ -41,17 +38,47 @@
 
 .steps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .step-card {
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+
+  .step-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--soft-white);
+    border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+
+    .material-symbols-outlined {
+      font-size: 28px;
+      color: var(--text-primary);
+    }
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+  }
 }
 
 .step-icon-wrapper {

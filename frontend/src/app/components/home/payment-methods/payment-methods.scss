@@ -2,6 +2,16 @@
   display: block;
 }
 
+.trust-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+}
+
 .trust-bar {
   padding: 2rem;
 }

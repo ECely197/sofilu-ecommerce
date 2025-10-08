@@ -5,11 +5,19 @@
 }
 
 .cta-section {
-  width: 100%;
-  padding: 6rem 2rem;
-  background-color: var(--soft-white);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+  // Lo convertimos en una tarjeta contenida
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  background-color: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+  text-align: center;
+
+  @media (min-width: 768px) {
+    padding: 6rem;
+  }
 }
 
 .cta-content {
@@ -19,7 +27,7 @@
 }
 
 .cta-title {
-  font-family: "Playfair Display", serif;
+  font-family: "Baloo 2", serif;
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   line-height: 1.2;
   margin-bottom: 1rem;

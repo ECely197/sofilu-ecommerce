@@ -14,16 +14,20 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
  */
 router.get("/active", async (req, res) => {
   try {
-    // Busca el primer evento marcado como 'isActive: true' y trae los datos de los productos asociados.
+    // --- ¡ESTA ES LA CONSULTA CORREGIDA! ---
     const activeEvent = await SpecialEvent.findOne({ isActive: true }).populate(
-      "linkedProducts"
+      {
+        path: "linkedProducts", // 1. Popula los productos vinculados
+        populate: {
+          path: "category", // 2. DENTRO de cada producto, popula su categoría
+          model: "Category", // Especificamos el modelo para la categoría
+        },
+      }
     );
-    res.json(activeEvent); // Devuelve el evento o `null` si no hay ninguno activo.
+
+    res.json(activeEvent);
   } catch (error) {
-    console.error("Error al obtener el evento activo:", error);
-    res
-      .status(500)
-      .json({ message: "Error del servidor al obtener el evento activo." });
+    res.status(500).json({ message: "Error al obtener el evento activo." });
   }
 });
 
@@ -115,12 +119,10 @@ router.patch(
       const updatedEvents = await SpecialEvent.find().sort("-createdAt");
       res.json(updatedEvents);
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          message: "Error al activar el evento.",
-          details: error.message,
-        });
+      res.status(500).json({
+        message: "Error al activar el evento.",
+        details: error.message,
+      });
     }
   }
 );

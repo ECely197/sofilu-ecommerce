@@ -2,10 +2,15 @@
   display: block;
 }
 
-.extra-info-section {
-  padding: 6rem 1.5rem;
+.extra-info-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  background-color: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
 }
-
 .info-grid {
   display: grid;
   grid-template-columns: 1fr;

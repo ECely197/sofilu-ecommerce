@@ -6,7 +6,7 @@
 
 :host {
   display: block;
-  height: 84px;
+  height: calc(60px + 2rem);
   @media (max-width: 991px) {
     display: none;
   }
@@ -23,12 +23,8 @@
   right: 0;
   width: 100%;
   z-index: 1000;
-  // Centra los elementos internos
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  // Importante para que los dos estados se superpongan
-  height: 60px;
 }
 
 .header-pill {
