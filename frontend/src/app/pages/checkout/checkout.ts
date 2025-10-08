@@ -1,28 +1,19 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { forkJoin, take } from 'rxjs';
 
 // Servicios e Interfaces
 import { CartService } from '../../services/cart';
 import { Customer, Address } from '../../services/customer';
-import { AuthService } from '../../services/auth';
-import { SettingsService } from '../../services/settings.service';
+import { SettingsService, AppSettings } from '../../services/settings.service';
 import { OrderService } from '../../services/order';
 import { Coupon } from '../../services/coupon';
 import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
-import { PaymentService } from '../../services/payment.service';
+import { PaymentService, PayerInfo } from '../../services/payment.service';
+import { environment } from '../../../environments/environment.prod';
 import { loadMercadoPago } from '@mercadopago/sdk-js';
-import { environment } from '../../../environments/environment';
-import { AppSettings } from '../../services/settings.service';
-
-declare global {
-  interface Window {
-    MercadoPago: any;
-  }
-}
 
 @Component({
   selector: 'app-checkout',
@@ -36,20 +27,17 @@ export class checkout implements OnInit {
   public cartService = inject(CartService);
   private router = inject(Router);
   private customerService = inject(Customer);
-  private authService = inject(AuthService); // Lo mantenemos por si lo necesitamos en el futuro
   private settingsService = inject(SettingsService);
   private couponService = inject(Coupon);
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
   private paymentService = inject(PaymentService);
 
-  // --- Signals para el Estado (Versión Simplificada) ---
+  // --- Signals ---
   addresses = signal<Address[]>([]);
   selectedAddress = signal<Address | null>(null);
   isLoading = signal(true);
   isProcessingOrder = signal(false);
-
-  // Signals para costos y cupones
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
@@ -134,47 +122,6 @@ export class checkout implements OnInit {
         : this.appSettings.shippingCostNational;
       this.shippingCost.set(newShippingCost);
     }
-  }
-
-  placeOrder(): void {
-    if (!this.selectedAddress()) {
-      this.toastService.show(
-        'Por favor, selecciona una dirección de envío.',
-        'error'
-      );
-      return;
-    }
-
-    this.isProcessingOrder.set(true);
-    const orderData = this.buildOrderData();
-
-    if (!orderData) {
-      this.toastService.show(
-        'No se pudo recopilar la información del pedido.',
-        'error'
-      );
-      this.isProcessingOrder.set(false);
-      return;
-    }
-
-    // --- ¡VOLVEMOS A CREAR EL PEDIDO DIRECTAMENTE! ---
-    this.orderService.createOrder(orderData).subscribe({
-      next: (savedOrder) => {
-        this.toastService.show('¡Pedido realizado con éxito!', 'success');
-        this.cartService.clearCart();
-        // Redirigimos a la página de confirmación con el ID del pedido creado.
-        this.router.navigate(['/order-confirmation', savedOrder._id]);
-      },
-      error: (err) => {
-        // Mostramos el mensaje de error específico que viene del backend.
-        this.toastService.show(
-          err.error?.message || 'Hubo un error al crear tu pedido.',
-          'error'
-        );
-        this.isProcessingOrder.set(false);
-        console.error('Error al crear el pedido:', err);
-      },
-    });
   }
 
   // --- MÉTODOS HELPER ---
@@ -271,5 +218,86 @@ export class checkout implements OnInit {
   public objectKeys(obj: object): string[] {
     if (!obj) return [];
     return Object.keys(obj);
+  }
+
+  /**
+   * Inicia el proceso de pago.
+   */
+  async placeOrder(): Promise<void> {
+    if (!this.selectedAddress()) {
+      this.toastService.show(
+        'Por favor, selecciona una dirección de envío.',
+        'error'
+      );
+      return;
+    }
+
+    this.isProcessingOrder.set(true);
+    const orderData = this.buildOrderData();
+    if (!orderData) {
+      this.isProcessingOrder.set(false);
+      this.toastService.show(
+        'No se pudo procesar la información del pedido.',
+        'error'
+      );
+      return;
+    }
+
+    // 1. Guardar el pedido en `localStorage`
+    localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
+
+    // 2. Formatear los datos para el `PaymentService`
+    const itemsForMP = this.cartService.cartItems().map((item) => ({
+      name: item.product.name,
+      description:
+        Object.values(item.selectedVariants).join(' / ') || item.product.name,
+      picture_url: item.product.images[0] || '',
+      quantity: item.quantity,
+      unit_price: this.finalItemPrice(item),
+    }));
+
+    // --- ¡PAYERINFO CORRECTO! ---
+    const payerInfo: PayerInfo = {
+      name: orderData.customerInfo.name,
+      surname: '', // Puedes dejarlo vacío si no lo pides
+      email: orderData.customerInfo.email,
+    };
+
+    // 3. Crear la preferencia de pago
+    this.paymentService.createPreference(itemsForMP, payerInfo).subscribe({
+      next: async (preference) => {
+        // 4. Redirigir al checkout de Mercado Pago
+        await this.redirectToMercadoPago(preference.id);
+      },
+      error: (err) => {
+        this.toastService.show('Error al iniciar el proceso de pago.', 'error');
+        this.isProcessingOrder.set(false);
+        console.error('Error al crear preferencia:', err);
+      },
+    });
+  }
+
+  /**
+   * Carga el SDK de MP y renderiza el checkout.
+   */
+  private async redirectToMercadoPago(preferenceId: string) {
+    await loadMercadoPago();
+    const mp = new (window as any).MercadoPago(
+      environment.mercadoPagoPublicKey
+    );
+
+    // Limpiamos el contenedor antes de renderizar, por si acaso
+    const container = document.getElementById('pay-button-container');
+    if (container) container.innerHTML = '';
+
+    await mp.bricks().create('wallet', 'pay-button-container', {
+      initialization: {
+        preferenceId: preferenceId,
+      },
+      customization: {
+        texts: { valueProp: 'smart_option' },
+      },
+    });
+    this.isProcessingOrder.set(false);
   }
 }

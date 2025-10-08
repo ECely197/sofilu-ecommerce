@@ -30,6 +30,7 @@ const navigationRoutes = require("./routes/navigation");
 const sectionRoutes = require("./routes/sections");
 const vendorRoutes = require("./routes/vendors");
 const specialEventRoutes = require("./routes/specialEvents");
+const paymentRoutes = require("./routes/payments");
 
 // --------------------------------------------------------------------------
 // 2. INICIALIZACIÓN Y CONFIGURACIÓN
@@ -123,6 +124,7 @@ app.use(`${apiPrefix}/navigation`, navigationRoutes);
 app.use(`${apiPrefix}/sections`, sectionRoutes);
 app.use(`${apiPrefix}/vendors`, vendorRoutes);
 app.use(`${apiPrefix}/special-events`, specialEventRoutes);
+app.use(`${apiPrefix}/payments`, paymentRoutes);
 
 // Ruta raíz de bienvenida
 app.get("/", (req, res) => {

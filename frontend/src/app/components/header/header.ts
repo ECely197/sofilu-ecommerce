@@ -122,7 +122,6 @@ export class Header implements OnInit, AfterViewInit {
         inline: 'nearest',
       });
 
-      // La animación de resaltado que ya teníamos.
       gsap.fromTo(
         element,
         { boxShadow: '0 0 0 0px rgba(244, 194, 194, 0.7)' },

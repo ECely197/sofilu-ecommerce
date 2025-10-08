@@ -56,18 +56,22 @@ export class SpecialEventBanner {
    * ¡NUEVO! Lógica de scroll y resaltado (replicada del Header).
    */
   private scrollToCategory(elementId: string): void {
-    this.viewportScroller.scrollToAnchor(elementId);
-
+    const element = document.getElementById(elementId);
     const sectionElement = document.getElementById(elementId);
-    const cardElement = sectionElement?.querySelector('.card'); // <-- ¡NUEVO!
+    const cardElement = sectionElement?.querySelector('.card');
+    if (element && cardElement) {
+      // Usamos el método nativo `scrollIntoView` que nos da la opción 'smooth'.
+      element.scrollIntoView({
+        behavior: 'smooth', // ¡ESTA ES LA CLAVE PARA EL SCROLL SUAVE!
+        block: 'start', // Alinea la parte superior del elemento con la parte superior de la ventana.
+        inline: 'nearest',
+      });
 
-    if (cardElement) {
       gsap.fromTo(
         cardElement,
-        { boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.04)' },
+        { boxShadow: '0 0 0 0px rgba(244, 194, 194, 0.7)' },
         {
-          boxShadow:
-            '0 0 0 5px rgba(244, 194, 194, 0.7), 0 10px 25px -5px rgba(0, 0, 0, 0.04)',
+          boxShadow: '0 0 0 5px rgba(244, 194, 194, 0.7)',
           repeat: 1,
           yoyo: true,
           duration: 0.5,

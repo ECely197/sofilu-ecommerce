@@ -168,15 +168,11 @@
       </div>
 
       <!-- Botón Final (ahora fuera de 'summary-details') -->
-      <div class="pay-button-container">
-        <button
-          class="btn-material pay-button"
-          (click)="placeOrder()"
-          [disabled]="!selectedAddress() || isProcessingOrder()"
-          appRipple
-        >
-          {{ isProcessingOrder() ? "Procesando..." : "Continuar al Pago" }}
-        </button>
+      <div id="pay-button-container" class="pay-button-container">
+        <!-- El SDK de Mercado Pago reemplazará el contenido de este div -->
+        @if(isProcessingOrder()) {
+        <button class="btn-material" disabled>Procesando...</button>
+        }
       </div>
     </div>
   </aside>

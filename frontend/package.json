@@ -29,6 +29,7 @@
     "@angular/forms": "^20.1.0",
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
+    "@mercadopago/sdk-js": "^0.0.3",
     "@mercadopago/sdk-react": "^1.0.4",
     "@studio-freight/lenis": "^1.0.42",
     "@tsparticles/angular": "^3.0.0",
