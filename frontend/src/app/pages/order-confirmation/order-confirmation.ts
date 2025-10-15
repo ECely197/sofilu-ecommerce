@@ -29,10 +29,9 @@ export class OrderConfirmation implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       const transactionId = params['id'];
-      const status = params['status'];
 
       if (transactionId) {
-        this.verifyAndCreateOrder(transactionId, status);
+        this.verifyAndCreateOrder(transactionId);
       } else {
         this.error.set('No se recibió información de la transacción');
         this.isLoading.set(false);
@@ -40,11 +39,11 @@ export class OrderConfirmation implements OnInit {
     });
   }
 
-  private async verifyAndCreateOrder(transactionId: string, status: string) {
+  private async verifyAndCreateOrder(transactionId: string) {
     try {
       this.isLoading.set(true);
 
-      // Verify transaction with Wompi
+      // 1. Verificar el estado de la transacción
       const transactionStatus = await firstValueFrom(
         this.orderService.verifyWompiTransaction(transactionId)
       );
@@ -52,7 +51,7 @@ export class OrderConfirmation implements OnInit {
       this.paymentStatus.set(transactionStatus.status);
 
       if (transactionStatus.status === 'APPROVED') {
-        // Get pending order data
+        // 2. Obtener datos del pedido guardados
         const pendingOrderData = localStorage.getItem('pendingOrderData');
         if (!pendingOrderData) {
           throw new Error('No se encontraron los datos del pedido');
@@ -60,29 +59,28 @@ export class OrderConfirmation implements OnInit {
 
         const orderData = JSON.parse(pendingOrderData);
 
-        // Create order in database
+        // 3. Crear el pedido en la base de datos
         const createdOrder = await firstValueFrom(
           this.orderService.createOrder({
             ...orderData,
             paymentId: transactionId,
-            status: 'PAID',
-            paymentMethod: 'WOMPI',
             paymentStatus: transactionStatus.status,
+            paymentMethod: 'WOMPI',
+            status: 'Procesando', // Agregamos el estado inicial del pedido
           })
         );
 
-        // Update UI
+        // 4. Actualizar UI y limpiar datos temporales
         this.orderDetails.set(createdOrder);
         this.orderId.set(createdOrder._id);
-
-        // Clear cart and pending data
         this.cartService.clearCart();
         localStorage.removeItem('pendingOrderData');
 
-        // Show success message
         this.toastService.show('¡Compra realizada con éxito!', 'success');
       } else {
-        this.error.set(`Pago no aprobado. Estado: ${transactionStatus.status}`);
+        this.error.set(
+          `El pago no fue aprobado. Estado: ${transactionStatus.status}`
+        );
       }
     } catch (error) {
       console.error('Error al procesar la orden:', error);

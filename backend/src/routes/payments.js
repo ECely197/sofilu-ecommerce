@@ -15,11 +15,6 @@ router.post("/create-transaction", async (req, res) => {
       reference,
     } = req.body;
 
-    console.log("Using Wompi production keys:", {
-      publicKey: process.env.WOMPI_PUBLIC_KEY,
-      usingProductionAPI: true,
-    });
-
     const wompiResponse = await axios({
       method: "post",
       url: `${WOMPI_PRODUCTION_API}/payment_links`,
@@ -40,28 +35,17 @@ router.post("/create-transaction", async (req, res) => {
           full_name: customer_name,
           phone_number: customer_phone,
         },
-        redirect_url: `${process.env.FRONTEND_URL}/order-confirmation`,
-        // This ensures Wompi will redirect back to your confirmation page
-        environment: "production", // Forzar ambiente de producción
+        redirect_url: `${process.env.FRONTEND_URL}/order-confirmation?status=successful`,
+        environment: "production",
       },
-    });
-
-    console.log("Wompi Response:", {
-      id: wompiResponse.data.data.id,
-      environment: wompiResponse.data.data.environment,
     });
 
     return res.json({
       redirectUrl: `https://checkout.wompi.co/l/${wompiResponse.data.data.id}`,
       transactionId: wompiResponse.data.data.id,
-      environment: "production",
     });
   } catch (error) {
-    console.error("Wompi API Error:", {
-      status: error.response?.status,
-      data: error.response?.data,
-      headers: error.response?.headers,
-    });
+    console.error("Error Wompi:", error.response?.data || error);
     return res.status(500).json({
       message: "Error al crear el enlace de pago",
       error: error.response?.data || error.message,
@@ -74,7 +58,7 @@ router.get("/verify/:id", async (req, res) => {
     const { id } = req.params;
 
     const wompiResponse = await axios.get(
-      `https://api.wompi.co/v1/transactions/${id}`,
+      `${WOMPI_PRODUCTION_API}/transactions/${id}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
@@ -83,17 +67,23 @@ router.get("/verify/:id", async (req, res) => {
     );
 
     const transactionData = wompiResponse.data.data;
+    console.log("Wompi transaction data:", transactionData);
+
     res.json({
       status: transactionData.status,
       amount: transactionData.amount_in_cents,
       paymentMethod: transactionData.payment_method_type,
+      reference: transactionData.reference,
     });
   } catch (error) {
     console.error(
       "Error verificando transacción:",
       error.response?.data || error
     );
-    res.status(500).json({ message: "Error al verificar la transacción" });
+    res.status(500).json({
+      message: "Error al verificar la transacción",
+      details: error.response?.data,
+    });
   }
 });
 
