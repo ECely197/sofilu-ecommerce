@@ -71,6 +71,7 @@ const allowedOrigins = [
   "https://sofilu-ecommerce-git-main-ecely28s-projects.vercel.app",
   "https://sofilu-ecommerce-git-main-ecely28s-projects.vercel.app",
   "https://sofilu-ecommerce-4n7egp3vc-ecely28s-projects.vercel.app",
+  "https://sofilu-ecommerce-4dmykve31-ecely28s-projects.vercel.app",
 ];
 
 const corsOptions = {
