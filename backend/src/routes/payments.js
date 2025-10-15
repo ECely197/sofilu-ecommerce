@@ -59,12 +59,13 @@ router.post("/create-transaction", async (req, res) => {
     } = req.body;
 
     const response = await axios.post(
-      "https://api.wompi.co/v1/transactions",
+      "https://sandbox.wompi.co/v1/transactions",
       {
         amount_in_cents,
         currency: "COP",
         customer_email,
         reference,
+        payment_method_type: "CARD",
         customer_data: {
           phone_number: customer_phone,
           full_name: customer_name,
@@ -84,7 +85,10 @@ router.post("/create-transaction", async (req, res) => {
       "Error creating Wompi transaction:",
       error.response?.data || error
     );
-    res.status(500).json({ message: "Error al crear la transacción" });
+    res.status(500).json({
+      message: "Error al crear la transacción",
+      error: error.response?.data || error.message,
+    });
   }
 });
 
