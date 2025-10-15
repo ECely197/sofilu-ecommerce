@@ -14,6 +14,7 @@ import { CartItem } from '../../interfaces/cart-item.interface';
 import { environment } from '../../../environments/environment.prod';
 import { PaymentService } from '../../services/payment.service';
 import { loadScript } from '../../utils/script-loader';
+import { firstValueFrom } from 'rxjs/internal/firstValueFrom';
 
 declare const WompiCheckout: any;
 
@@ -256,7 +257,7 @@ export class checkout implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          this.redirectToWompiWebCheckout({
+          this.redirectToWompiCheckout({
             reference: reference,
             amountInCents: amountInCents,
             signature: response.signature,
@@ -278,35 +279,48 @@ export class checkout implements OnInit {
    * Crea un formulario HTML en memoria, lo rellena con los datos de la transacción
    * y lo envía automáticamente para redirigir al usuario al Web Checkout de Wompi.
    */
-  private redirectToWompiWebCheckout(data: any): void {
-    const form = document.createElement('form');
-    form.action = 'https://checkout.wompi.co/p/';
-    form.method = 'GET';
+  private async redirectToWompiCheckout(orderData: any) {
+    try {
+      // Crear referencia única
+      const reference = `ORDER-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
 
-    // Asegúrate de que todos los campos requeridos estén presentes y correctamente formateados
-    const fields = {
-      'public-key': environment.wompiPublicKey,
-      currency: 'COP',
-      'amount-in-cents': data.amountInCents.toString(),
-      reference: data.reference,
-      'signature:integrity': data.signature,
-      'redirect-url': `${window.location.origin}/order-confirmation`,
-      'tax-in-cents': '0', // Campo requerido por Wompi
-      'customer-data:email': this.selectedAddress()?.email || '',
-      'customer-data:full-name': this.selectedAddress()?.fullName || '',
-      'customer-data:phone-number': this.selectedAddress()?.phone || '',
-    };
+      const checkoutData = {
+        reference: reference,
+        amount_in_cents: orderData.total * 100, // Convertir a centavos
+        currency: 'COP',
+      };
 
-    // Crear y agregar los campos al formulario
-    for (const [key, value] of Object.entries(fields)) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
+      // Obtener la firma del backend
+      const { signature } = await firstValueFrom(
+        this.paymentService.getIntegritySignature(checkoutData)
+      );
+      // En el componente checkout.ts
+      const redirectUrl = encodeURIComponent(
+        `${window.location.origin}/order-confirmation`
+      );
+
+      // Construir URL de Wompi con todos los parámetros requeridos
+      const wompiUrl = new URL('https://checkout.wompi.co/p/');
+      const params = new URLSearchParams({
+        'public-key': environment.wompiPublicKey,
+        currency: 'COP',
+        'amount-in-cents': checkoutData.amount_in_cents.toString(),
+        reference: reference,
+        'signature:integrity': signature,
+        'redirect-url': `${window.location.origin}/order-confirmation`,
+        'tax-in-cents': '0',
+        'customer-data:email': orderData.customerInfo.email || '',
+        'customer-data:full-name': orderData.customerInfo.fullName || '',
+        'customer-data:phone-number': orderData.customerInfo.phone || '',
+      });
+
+      // Redirigir usando window.location
+      window.location.href = `${wompiUrl}?${params.toString()}`;
+    } catch (error) {
+      console.error('Error redirecting to Wompi:', error);
+      this.toastService.show('Error al procesar el pago', 'error');
     }
-
-    document.body.appendChild(form);
-    form.submit();
   }
 }

@@ -23,18 +23,27 @@ router.post("/create-signature", [authMiddleware], async (req, res) => {
 
 router.get("/verify-transaction-status/:id", async (req, res) => {
   try {
-    // La verificación se hace directamente contra la API de Wompi, no se necesita llave privada
-    const response = await axios.get(
-      `${WOMPI_API_URL}/transactions/${req.params.id}`
-    );
-    const transaction = response.data.data;
-    res.json({ status: transaction.status });
+    const transactionId = req.params.id;
+    const wompiApiUrl = `https://sandbox.wompi.co/v1/transactions/${transactionId}`;
+
+    const response = await fetch(wompiApiUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Wompi API responded with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    res.json({ status: data.data.status });
   } catch (error) {
-    console.error(
-      "Error al verificar la transacción:",
-      error.response?.data || error.message
-    );
-    res.status(500).json({ message: "No se pudo verificar la transacción." });
+    console.error("Error verifying transaction:", error);
+    res.status(500).json({
+      message: "Error al verificar la transacción",
+      error: error.message,
+    });
   }
 });
 
