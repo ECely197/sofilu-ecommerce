@@ -17,8 +17,11 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
   } = req.body;
   const reference = `sofilu-ref-${Date.now()}`;
 
+  // --- ¡CORRECCIÓN! ---
+  // Construimos el objeto de datos sin el campo `payment_method`
+  // para que Wompi muestre todos los métodos disponibles en su checkout.
   const transactionData = {
-    amount_in_cents: amount * 100,
+    amount_in_cents: Math.round(amount * 100), // Usamos Math.round para evitar decimales largos
     currency: "COP",
     customer_email: customer_email,
     reference: reference,
@@ -26,9 +29,6 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
     customer_data: {
       full_name: customer_name,
       phone_number: customer_phone,
-    },
-    payment_method: {
-      // Wompi ya no usa un array aquí, esta es la forma de aceptar todo
     },
   };
 

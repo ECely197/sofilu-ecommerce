@@ -234,41 +234,47 @@ export class checkout implements OnInit {
 
     const orderData = this.buildOrderData();
     if (!orderData) {
-      /* ... validación ... */ return;
+      this.toastService.show(
+        'No se pudo procesar la información del pedido.',
+        'error'
+      );
+      this.isProcessingOrder.set(false);
+      return;
     }
 
-    // 1. Guardamos el pedido en localStorage para usarlo DESPUÉS de la confirmación
+    // 1. Guardamos los datos del pedido en localStorage para usarlos después de la confirmación.
     localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
 
-    // 2. Preparamos los datos para la transacción de Wompi
+    // 2. Preparamos el objeto de datos que espera nuestra API del backend.
     const paymentData = {
       amount: this.grandTotal(),
       customer_email: orderData.customerInfo.email,
       customer_phone: orderData.customerInfo.phone,
       customer_name: orderData.customerInfo.name,
-      // URL a la que Wompi redirigirá al usuario
+      // URL a la que Wompi redirigirá al usuario después del pago.
       redirect_url: `${window.location.origin}/order-confirmation`,
     };
 
-    // 3. Llamamos a nuestro backend para crear la transacción en Wompi
+    // 3. Llamamos al método correcto del `PaymentService` con el objeto correcto.
     this.paymentService.createTransaction(paymentData).subscribe({
       next: (res) => {
-        // 4. Si la transacción se crea, abrimos el Widget de Wompi
+        // 4. Si la transacción se crea en nuestro backend, abrimos el Widget de Wompi.
         const checkout = new WompiCheckout({
           publicKey: environment.wompiPublicKey,
           currency: 'COP',
           amountInCents: paymentData.amount * 100,
-          reference: res.reference, // Usamos la referencia que nos dio el backend
+          reference: res.reference,
         });
 
         checkout.open((result: any) => {
-          // El widget se cierra y nos da un resultado. Lo redirigimos a nuestra página de confirmación.
-          // Pasamos el ID de la transacción en la URL.
+          // Cuando el widget se cierra, nos da el resultado.
+          // Redirigimos a nuestra página de confirmación, pasando el ID de la transacción.
           this.router.navigate(['/order-confirmation'], {
             queryParams: { id: result.transaction.id },
           });
         });
 
+        // Ya no estamos procesando, Wompi tomó el control.
         this.isProcessingOrder.set(false);
       },
       error: (err) => {
@@ -277,6 +283,7 @@ export class checkout implements OnInit {
           'error'
         );
         this.isProcessingOrder.set(false);
+        console.error('Error al crear la transacción:', err);
       },
     });
   }
