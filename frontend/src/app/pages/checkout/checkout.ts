@@ -222,7 +222,7 @@ export class checkout implements OnInit {
     return Object.keys(obj);
   }
   /**
-   * Inicia el proceso de pago con Wompi.
+   * Inicia el proceso de pago with Wompi.
    */
   async placeOrder(): Promise<void> {
     if (!this.selectedAddress()) {
@@ -281,6 +281,12 @@ export class checkout implements OnInit {
    */
   private async redirectToWompiCheckout(orderData: any) {
     try {
+      // Obtener la dirección seleccionada de forma segura
+      const selectedAddr = this.selectedAddress();
+      if (!selectedAddr) {
+        throw new Error('No se ha seleccionado una dirección de envío');
+      }
+
       // Crear referencia única
       const reference = `ORDER-${Date.now()}-${Math.random()
         .toString(36)
@@ -288,7 +294,7 @@ export class checkout implements OnInit {
 
       const checkoutData = {
         reference: reference,
-        amount_in_cents: orderData.total * 100, // Convertir a centavos
+        amount_in_cents: this.grandTotal() * 100, // Usar el computed
         currency: 'COP',
       };
 
@@ -296,13 +302,8 @@ export class checkout implements OnInit {
       const { signature } = await firstValueFrom(
         this.paymentService.getIntegritySignature(checkoutData)
       );
-      // En el componente checkout.ts
-      const redirectUrl = encodeURIComponent(
-        `${window.location.origin}/order-confirmation`
-      );
 
-      // Construir URL de Wompi con todos los parámetros requeridos
-      const wompiUrl = new URL('https://checkout.wompi.co/p/');
+      // Construir URL de Wompi con los datos del cliente de selectedAddress
       const params = new URLSearchParams({
         'public-key': environment.wompiPublicKey,
         currency: 'COP',
@@ -311,16 +312,65 @@ export class checkout implements OnInit {
         'signature:integrity': signature,
         'redirect-url': `${window.location.origin}/order-confirmation`,
         'tax-in-cents': '0',
-        'customer-data:email': orderData.customerInfo.email || '',
-        'customer-data:full-name': orderData.customerInfo.fullName || '',
-        'customer-data:phone-number': orderData.customerInfo.phone || '',
+        // Usar los datos de la dirección seleccionada
+        'customer-data:email': selectedAddr.email || '',
+        'customer-data:full-name': selectedAddr.fullName || '',
+        'customer-data:phone-number': selectedAddr.phone || '',
       });
 
+      // Guardar datos del pedido en localStorage antes de redirigir
+      localStorage.setItem(
+        'pendingOrderData',
+        JSON.stringify({
+          ...orderData,
+          reference,
+          total: this.grandTotal(),
+          shippingAddress: selectedAddr,
+        })
+      );
+
       // Redirigir usando window.location
-      window.location.href = `${wompiUrl}?${params.toString()}`;
+      window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
     } catch (error) {
-      console.error('Error redirecting to Wompi:', error);
-      this.toastService.show('Error al procesar el pago', 'error');
+      console.error('Error al redirigir a Wompi:', error);
+      // Aquí deberías mostrar un mensaje al usuario
+      alert('Error al procesar el pago. Por favor intenta nuevamente.');
+    }
+  }
+
+  async processPayment() {
+    try {
+      const selectedAddr = this.selectedAddress();
+      if (!selectedAddr) {
+        throw new Error('Por favor selecciona una dirección de envío');
+      }
+
+      const reference = `ORDER_${Date.now()}`;
+      const response = await firstValueFrom(
+        this.paymentService.createTransaction({
+          amount_in_cents: this.grandTotal() * 100,
+          customer_email: selectedAddr.email,
+          customer_name: selectedAddr.fullName,
+          customer_phone: selectedAddr.phone,
+          reference,
+        })
+      );
+
+      // Guardar datos del pedido en localStorage
+      localStorage.setItem(
+        'pendingOrderData',
+        JSON.stringify({
+          reference,
+          total: this.grandTotal(),
+          shippingAddress: selectedAddr,
+        })
+      );
+
+      // Redirigir a Wompi
+      window.location.href = response.redirectUrl;
+    } catch (error) {
+      console.error('Error al procesar el pago:', error);
+      alert('Error al procesar el pago. Por favor intenta nuevamente.');
     }
   }
 }

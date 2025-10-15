@@ -30,4 +30,17 @@ export class PaymentService {
       `${this.apiUrl}/verify-transaction-status/${transactionId}`
     );
   }
+
+  createTransaction(data: {
+    amount_in_cents: number;
+    customer_email: string;
+    customer_name: string;
+    customer_phone: string;
+    reference: string;
+  }): Observable<{ redirectUrl: string }> {
+    return this.http.post<{ redirectUrl: string }>(
+      `${this.apiUrl}/create-transaction`,
+      data
+    );
+  }
 }
