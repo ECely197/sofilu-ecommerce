@@ -349,16 +349,7 @@ export class checkout implements OnInit {
 
       const reference = `ORDER_${Date.now()}`;
 
-      // Primero obtener la firma
-      const signatureResponse = await firstValueFrom(
-        this.paymentService.getIntegritySignature({
-          reference,
-          amount_in_cents: this.grandTotal() * 100,
-          currency: 'COP',
-        })
-      );
-
-      // Luego crear la transacción
+      // Crear la transacción
       const response = await firstValueFrom(
         this.paymentService.createTransaction({
           amount_in_cents: this.grandTotal() * 100,
@@ -366,7 +357,6 @@ export class checkout implements OnInit {
           customer_name: selectedAddr.fullName,
           customer_phone: selectedAddr.phone,
           reference,
-          signature: signatureResponse.signature,
         })
       );
 
@@ -377,15 +367,16 @@ export class checkout implements OnInit {
           reference,
           total: this.grandTotal(),
           shippingAddress: selectedAddr,
+          createdAt: new Date().toISOString(),
         })
       );
 
-      // Redirigir a Wompi
+      // Verificar y redirigir
       if (response.redirectUrl) {
-        console.log('Redirecting to:', response.redirectUrl);
+        console.log('Redirigiendo a:', response.redirectUrl);
         window.location.href = response.redirectUrl;
       } else {
-        throw new Error('No se recibió URL de redirección');
+        throw new Error('No se recibió URL de redirección válida de Wompi');
       }
     } catch (error) {
       console.error('Error al procesar el pago:', error);

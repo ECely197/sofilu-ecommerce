@@ -59,17 +59,14 @@ router.post("/create-transaction", async (req, res) => {
       },
     });
 
-    console.log("Wompi response:", wompiResponse.data); // Para debugging
+    // Construir la URL de redirección usando el ID del payment link
+    const paymentUrl = `https://checkout.wompi.co/l/${wompiResponse.data.data.id}`;
 
     return res.json({
-      redirectUrl: wompiResponse.data.data.url,
+      redirectUrl: paymentUrl,
     });
   } catch (error) {
-    console.error("Wompi API Error:", {
-      status: error.response?.status,
-      data: error.response?.data,
-    });
-
+    console.error("Wompi API Error:", error.response?.data || error);
     return res.status(500).json({
       message: "Error al crear el enlace de pago",
       error: error.response?.data || error.message,
