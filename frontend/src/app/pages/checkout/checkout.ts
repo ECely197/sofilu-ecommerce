@@ -13,6 +13,7 @@ import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
 import { environment } from '../../../environments/environment.prod';
 import { PaymentService } from '../../services/payment.service';
+import { loadScript } from '../../utils/script-loader';
 
 declare const WompiCheckout: any;
 
@@ -222,7 +223,7 @@ export class checkout implements OnInit {
   /**
    * Inicia el proceso de pago con Wompi.
    */
-  placeOrder(): void {
+  async placeOrder(): Promise<void> {
     if (!this.selectedAddress()) {
       this.toastService.show(
         'Por favor, selecciona una dirección de envío.',
@@ -247,7 +248,6 @@ export class checkout implements OnInit {
     const reference = `sofilu-ref-${Date.now()}`;
     const amountInCents = Math.round(this.grandTotal() * 100);
 
-    // 1. Pedimos la firma de integridad a nuestro backend
     this.paymentService
       .getIntegritySignature({
         reference: reference,
@@ -256,37 +256,10 @@ export class checkout implements OnInit {
       })
       .subscribe({
         next: (response) => {
-          // 2. Con la firma, configuramos y abrimos el Widget de Wompi
-          const checkout = new WompiCheckout({
-            currency: 'COP',
-            amountInCents: amountInCents,
+          this.redirectToWompiWebCheckout({
             reference: reference,
-            publicKey: environment.wompiPublicKey,
-            signature: {
-              integrity: response.signature, // ¡La firma segura del backend!
-            },
-            redirectUrl: `${window.location.origin}/order-confirmation`,
-            customerData: {
-              email: orderData.customerInfo.email,
-              fullName: orderData.customerInfo.name,
-              phoneNumber: orderData.customerInfo.phone,
-            },
-          });
-
-          checkout.open((result: any) => {
-            // 3. Wompi nos devuelve el resultado y redirigimos
-            if (result.transaction.status === 'APPROVED') {
-              // Pasamos el ID de la transacción en la URL para verificarla en la siguiente página
-              this.router.navigate(['/order-confirmation'], {
-                queryParams: { id: result.transaction.id },
-              });
-            } else {
-              this.toastService.show(
-                'El pago fue rechazado o cancelado.',
-                'error'
-              );
-              this.isProcessingOrder.set(false);
-            }
+            amountInCents: amountInCents,
+            signature: response.signature,
           });
         },
         error: (err) => {
@@ -298,5 +271,42 @@ export class checkout implements OnInit {
           console.error('Error obteniendo la firma:', err);
         },
       });
+  }
+
+  /**
+   * ¡NUEVO MÉTODO!
+   * Crea un formulario HTML en memoria, lo rellena con los datos de la transacción
+   * y lo envía automáticamente para redirigir al usuario al Web Checkout de Wompi.
+   */
+  private redirectToWompiWebCheckout(data: any): void {
+    const form = document.createElement('form');
+    form.action = 'https://checkout.wompi.co/p/';
+    form.method = 'GET';
+
+    // Asegúrate de que todos los campos requeridos estén presentes y correctamente formateados
+    const fields = {
+      'public-key': environment.wompiPublicKey,
+      currency: 'COP',
+      'amount-in-cents': data.amountInCents.toString(),
+      reference: data.reference,
+      'signature:integrity': data.signature,
+      'redirect-url': `${window.location.origin}/order-confirmation`,
+      'tax-in-cents': '0', // Campo requerido por Wompi
+      'customer-data:email': this.selectedAddress()?.email || '',
+      'customer-data:full-name': this.selectedAddress()?.fullName || '',
+      'customer-data:phone-number': this.selectedAddress()?.phone || '',
+    };
+
+    // Crear y agregar los campos al formulario
+    for (const [key, value] of Object.entries(fields)) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
   }
 }

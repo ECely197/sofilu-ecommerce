@@ -8,21 +8,12 @@ router.post("/create-signature", [authMiddleware], async (req, res) => {
   const { reference, amount_in_cents, currency } = req.body;
   const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
 
-  if (!reference || !amount_in_cents || !currency || !integritySecret) {
-    return res
-      .status(400)
-      .json({ message: "Faltan datos para generar la firma." });
-  }
-
   try {
-    // Concatenamos los valores en el orden exacto que pide Wompi
     const concatenatedString = `${reference}${amount_in_cents}${currency}${integritySecret}`;
-    // Generamos el hash SHA256
     const hash = crypto
       .createHash("sha256")
       .update(concatenatedString)
       .digest("hex");
-    // Devolvemos la firma
     res.json({ signature: hash });
   } catch (error) {
     console.error("Error al generar la firma de integridad:", error);

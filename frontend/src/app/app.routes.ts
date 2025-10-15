@@ -67,9 +67,8 @@ export const routes: Routes = [
     data: { animation: 'CheckoutPage' },
   },
   {
-    path: 'order-confirmation/:id',
+    path: 'order-confirmation',
     component: OrderConfirmation,
-    data: { animation: 'ConfirmationPage' },
   },
   { path: 'login', component: Login, data: { animation: 'LoginPage' } },
   {
