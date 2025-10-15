@@ -1,33 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
-const crypto = require("crypto"); // Añadimos esta importación
 
-// Constantes para URLs de producción
-const WOMPI_API_URL = "https://api.wompi.co/v1";
-const WOMPI_CHECKOUT_URL = "https://checkout.wompi.co/l";
+// URLs de producción
+const WOMPI_PRODUCTION_API = "https://api.wompi.co/v1";
 
-// Ruta para generar la firma de integridad
-router.post("/create-signature", async (req, res) => {
-  try {
-    const { reference, amount_in_cents, currency } = req.body;
-    const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
-
-    // Crear la firma de integridad
-    const concatenatedString = `${reference}${amount_in_cents}${currency}${integritySecret}`;
-    const hash = crypto
-      .createHash("sha256")
-      .update(concatenatedString)
-      .digest("hex");
-
-    res.json({ signature: hash });
-  } catch (error) {
-    console.error("Error al generar la firma de integridad:", error);
-    res.status(500).json({ message: "Error al generar la firma" });
-  }
-});
-
-// Ruta para crear la transacción
 router.post("/create-transaction", async (req, res) => {
   try {
     const {
@@ -38,10 +15,14 @@ router.post("/create-transaction", async (req, res) => {
       reference,
     } = req.body;
 
-    // Usar URL de producción
+    console.log("Using Wompi production keys:", {
+      publicKey: process.env.WOMPI_PUBLIC_KEY,
+      usingProductionAPI: true,
+    });
+
     const wompiResponse = await axios({
       method: "post",
-      url: `${WOMPI_API_URL}/payment_links`,
+      url: `${WOMPI_PRODUCTION_API}/payment_links`,
       headers: {
         Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
         "Content-Type": "application/json",
@@ -60,27 +41,31 @@ router.post("/create-transaction", async (req, res) => {
           phone_number: customer_phone,
         },
         redirect_url: `${process.env.FRONTEND_URL}/order-confirmation`,
-        production_payment_source: true, // Forzar modo producción
+        environment: "production", // Forzar ambiente de producción
       },
     });
 
-    // URL de checkout de producción
-    const checkoutUrl = `${WOMPI_CHECKOUT_URL}/${wompiResponse.data.data.id}`;
+    console.log("Wompi Response:", {
+      id: wompiResponse.data.data.id,
+      environment: wompiResponse.data.data.environment,
+    });
 
     return res.json({
-      redirectUrl: checkoutUrl,
+      redirectUrl: `https://checkout.wompi.co/l/${wompiResponse.data.data.id}`,
       transactionId: wompiResponse.data.data.id,
-      mode: "production", // Para verificación
+      environment: "production",
     });
   } catch (error) {
-    console.error("Wompi API Error:", error.response?.data || error);
+    console.error("Wompi API Error:", {
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers,
+    });
     return res.status(500).json({
       message: "Error al crear el enlace de pago",
       error: error.response?.data || error.message,
     });
   }
 });
-
-// Ruta para manejar las notificaciones de Wompi
 
 module.exports = router;
