@@ -404,8 +404,8 @@ router.delete("/:id", [authMiddleware, adminOnly], async (req, res) => {
 
 /**
  * @route   POST /api/orders
- * @desc    Crear un nuevo pedido.
- * @access  Private (Usuario logueado)
+ * @desc    Crear un nuevo pedido con pago de Wompi
+ * @access  Private
  */
 router.post("/", [authMiddleware], async (req, res) => {
   try {
@@ -416,6 +416,9 @@ router.post("/", [authMiddleware], async (req, res) => {
       appliedCoupon,
       discountAmount,
       totalAmount,
+      paymentId,
+      paymentStatus,
+      paymentMethod,
     } = req.body;
     const userId = req.user.uid;
 
@@ -425,19 +428,19 @@ router.post("/", [authMiddleware], async (req, res) => {
         .json({ message: "El carrito no puede estar vacío." });
     }
 
-    // --- 1. Verificación de Stock y Preparación de Items ---
+    // Verificación de stock
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
         return res.status(404).json({ message: `Producto no encontrado.` });
       }
       if (product.status === "Agotado") {
-        return res
-          .status(400)
-          .json({ message: `El producto "${product.name}" está agotado.` });
+        return res.status(400).json({
+          message: `El producto "${product.name}" está agotado.`,
+        });
       }
 
-      // Validar stock de variantes
+      // Validar stock
       if (
         item.selectedVariants &&
         Object.keys(item.selectedVariants).length > 0
@@ -454,16 +457,15 @@ router.post("/", [authMiddleware], async (req, res) => {
           }
         }
       } else {
-        // Validar stock de producto principal (si no hay variantes)
         if (product.stock < item.quantity) {
-          return res
-            .status(400)
-            .json({ message: `Stock insuficiente para ${product.name}.` });
+          return res.status(400).json({
+            message: `Stock insuficiente para ${product.name}.`,
+          });
         }
       }
     }
 
-    // --- 2. Crear y Guardar el Pedido ---
+    // Crear el pedido
     const newOrder = new Order({
       userId,
       customerInfo,
@@ -472,57 +474,67 @@ router.post("/", [authMiddleware], async (req, res) => {
       appliedCoupon,
       discountAmount,
       totalAmount,
+      paymentId,
+      paymentStatus,
+      paymentMethod,
+      status: paymentStatus === "APPROVED" ? "Procesando" : "Pendiente",
     });
+
     let savedOrder = await newOrder.save();
 
-    // --- 3. Actualizar el Inventario (¡Paso Crítico!) ---
-    for (const item of items) {
-      if (
-        item.selectedVariants &&
-        Object.keys(item.selectedVariants).length > 0
-      ) {
-        const updateQuery = {};
-        for (const variantName in item.selectedVariants) {
-          // Creamos el path dinámico para actualizar el stock de la opción correcta
-          const fieldPath = `variants.$[v].options.$[o].stock`;
-          updateQuery[fieldPath] = -item.quantity; // Restamos la cantidad
+    // Actualizar inventario si el pago fue aprobado
+    if (paymentStatus === "APPROVED") {
+      for (const item of items) {
+        if (
+          item.selectedVariants &&
+          Object.keys(item.selectedVariants).length > 0
+        ) {
+          const updateQuery = {};
+          for (const variantName in item.selectedVariants) {
+            // Creamos el path dinámico para actualizar el stock de la opción correcta
+            const fieldPath = `variants.$[v].options.$[o].stock`;
+            updateQuery[fieldPath] = -item.quantity; // Restamos la cantidad
 
+            await Product.updateOne(
+              { _id: item.product },
+              { $inc: updateQuery },
+              {
+                arrayFilters: [
+                  { "v.name": variantName },
+                  { "o.name": item.selectedVariants[variantName] },
+                ],
+              }
+            );
+          }
+        } else {
+          // Si no hay variantes, actualizamos el stock del producto principal
           await Product.updateOne(
             { _id: item.product },
-            { $inc: updateQuery },
-            {
-              arrayFilters: [
-                { "v.name": variantName },
-                { "o.name": item.selectedVariants[variantName] },
-              ],
-            }
+            { $inc: { stock: -item.quantity } }
           );
         }
-      } else {
-        // Si no hay variantes, actualizamos el stock del producto principal
-        await Product.updateOne(
-          { _id: item.product },
-          { $inc: { stock: -item.quantity } }
+      }
+
+      // Actualizar cupón si fue usado
+      if (appliedCoupon) {
+        await Coupon.updateOne(
+          { code: appliedCoupon },
+          { $inc: { timesUsed: 1 } }
         );
       }
-    }
 
-    // --- 4. Actualizar Cupón y Enviar Correo ---
-    if (appliedCoupon) {
-      await Coupon.updateOne(
-        { code: appliedCoupon },
-        { $inc: { timesUsed: 1 } }
-      );
+      // Enviar email de confirmación
+      savedOrder = await savedOrder.populate("items.product");
+      await sendOrderConfirmationEmail(savedOrder);
     }
-    savedOrder = await savedOrder.populate("items.product");
-    // sendOrderConfirmationEmail(savedOrder); // Puedes habilitar esto cuando configures el email
 
     res.status(201).json(savedOrder);
   } catch (error) {
     console.error("Error al crear el pedido:", error);
-    res
-      .status(400)
-      .json({ message: "Error al crear el pedido.", details: error.message });
+    res.status(400).json({
+      message: "Error al crear el pedido.",
+      details: error.message,
+    });
   }
 });
 

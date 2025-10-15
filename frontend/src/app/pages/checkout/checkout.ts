@@ -234,7 +234,16 @@ export class checkout implements OnInit {
       }
 
       const reference = `ORDER_${Date.now()}`;
+      const orderData = this.buildOrderData();
 
+      if (!orderData) {
+        throw new Error('No se pudo recopilar la información del pedido');
+      }
+
+      // Save order data in localStorage for later use
+      localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
+
+      // Create Wompi payment link
       const response = await firstValueFrom(
         this.paymentService.createTransaction({
           amount_in_cents: this.grandTotal() * 100,
@@ -249,20 +258,7 @@ export class checkout implements OnInit {
         throw new Error('No se recibió URL de redirección válida');
       }
 
-      // Guardar datos antes de redirigir
-      localStorage.setItem(
-        'pendingOrderData',
-        JSON.stringify({
-          reference,
-          transactionId: response.transactionId,
-          total: this.grandTotal(),
-          shippingAddress: selectedAddr,
-          items: this.cartService.cartItems(),
-          createdAt: new Date().toISOString(),
-        })
-      );
-
-      // Usar la URL del checkout de Wompi
+      // Redirect to Wompi
       window.location.href = response.redirectUrl;
     } catch (error) {
       console.error('Error al procesar el pago:', error);
@@ -270,7 +266,6 @@ export class checkout implements OnInit {
         'Error al procesar el pago. Por favor intenta nuevamente.',
         'error'
       );
-    } finally {
       this.isProcessingOrder.set(false);
     }
   }
