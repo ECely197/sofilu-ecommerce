@@ -9,24 +9,25 @@ export class PaymentService {
   private apiUrl = `${environment.apiUrl}/payments`;
 
   /**
-   * Pide al backend que cree un checkout en Wompi.
+   * Pide al backend la firma de integridad para iniciar el checkout.
    */
-  createCheckout(paymentData: any): Observable<{ checkoutId: string }> {
-    return this.http.post<{ checkoutId: string }>(
-      `${this.apiUrl}/create-transaction`,
-      paymentData
+  getIntegritySignature(data: {
+    reference: string;
+    amount_in_cents: number;
+    currency: string;
+  }): Observable<{ signature: string }> {
+    return this.http.post<{ signature: string }>(
+      `${this.apiUrl}/create-signature`,
+      data
     );
   }
 
   /**
-   * ¡MÉTODO RESTAURADO!
-   * Pide al backend que verifique el estado final de una transacción.
+   * Pide al backend que verifique el estado de una transacción.
    */
-  verifyTransaction(
-    transactionId: string
-  ): Observable<{ status: string; reference: string }> {
-    return this.http.get<{ status: string; reference: string }>(
-      `${this.apiUrl}/verify-transaction/${transactionId}`
+  verifyTransaction(transactionId: string): Observable<{ status: string }> {
+    return this.http.get<{ status: string }>(
+      `${this.apiUrl}/verify-transaction-status/${transactionId}`
     );
   }
 }

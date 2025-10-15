@@ -1,70 +1,43 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
 const crypto = require("crypto");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
-const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
+// --- ¡ÚNICA RUTA! SOLO PARA GENERAR LA FIRMA DE INTEGRIDAD ---
+router.post("/create-signature", [authMiddleware], async (req, res) => {
+  const { reference, amount_in_cents, currency } = req.body;
+  const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
 
-// --- RUTA PARA CREAR LA TRANSACCIÓN ---
-router.post("/create-transaction", [authMiddleware], async (req, res) => {
-  const {
-    amount,
-    customer_email,
-    customer_phone,
-    customer_name,
-    redirect_url,
-  } = req.body;
-  const reference = `sofilu-ref-${Date.now()}`;
-
-  const transactionData = {
-    amount_in_cents: Math.round(amount * 100),
-    currency: "COP",
-    customer_email: customer_email,
-    reference: reference,
-  };
+  if (!reference || !amount_in_cents || !currency || !integritySecret) {
+    return res
+      .status(400)
+      .json({ message: "Faltan datos para generar la firma." });
+  }
 
   try {
-    const response = await axios.post(
-      `${WOMPI_API_URL}/transactions`,
-      transactionData,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
-        },
-      }
-    );
-
-    const transaction = response.data.data;
-    res.json({
-      transactionId: transaction.id,
-      reference: transaction.reference,
-    });
+    // Concatenamos los valores en el orden exacto que pide Wompi
+    const concatenatedString = `${reference}${amount_in_cents}${currency}${integritySecret}`;
+    // Generamos el hash SHA256
+    const hash = crypto
+      .createHash("sha256")
+      .update(concatenatedString)
+      .digest("hex");
+    // Devolvemos la firma
+    res.json({ signature: hash });
   } catch (error) {
-    console.error(
-      "Error al crear la transacción en Wompi:",
-      error.response?.data?.error?.messages ||
-        error.response?.data ||
-        error.message
-    );
-    res.status(500).json({ message: "No se pudo crear la transacción." });
+    console.error("Error al generar la firma de integridad:", error);
+    res.status(500).json({ message: "No se pudo generar la firma." });
   }
 });
 
-// --- RUTA PARA VERIFICAR LA TRANSACCIÓN (PARA LA PÁGINA DE CONFIRMACIÓN) ---
-router.get("/verify-transaction/:id", [authMiddleware], async (req, res) => {
+router.get("/verify-transaction-status/:id", async (req, res) => {
   try {
+    // La verificación se hace directamente contra la API de Wompi, no se necesita llave privada
     const response = await axios.get(
-      `${WOMPI_API_URL}/transactions/${req.params.id}`,
-      {
-        headers: {
-          // Para verificar, SÍ usamos la llave PRIVADA
-          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
-        },
-      }
+      `${WOMPI_API_URL}/transactions/${req.params.id}`
     );
     const transaction = response.data.data;
-    res.json({ status: transaction.status, reference: transaction.reference });
+    res.json({ status: transaction.status });
   } catch (error) {
     console.error(
       "Error al verificar la transacción:",
