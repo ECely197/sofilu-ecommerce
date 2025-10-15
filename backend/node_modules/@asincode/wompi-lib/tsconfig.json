@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "#*": ["lib/*"]
+    },
+
+    // Para trabajar con JavaScript
+    "allowJs": true,
+    "checkJs": true,
+
+    // Generar solo archivos .d.ts
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "types",
+
+    // Para soportar import/export modernos
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    // Linting y errores
+    "noImplicitAny": true,
+    "strict": true,
+    "noEmitOnError": true,
+    "noUnusedLocals": true
+  },
+  "include": ["lib", "test"],
+  "exclude": ["node_modules", "dist", "types"]
+}

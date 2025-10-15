@@ -2,51 +2,57 @@ const express = require("express");
 const router = express.Router();
 const { authMiddleware } = require("../middleware/authMiddleware");
 
-// --- ¡NUEVA SINTAXIS DE MERCADO PAGO V2! ---
-const { MercadoPagoConfig, Preference } = require("mercadopago");
+// --- ¡USANDO LA LIBRERÍA CORRECTA! ---
+const Wompi = require("@asincode/wompi-lib");
 
-// 1. Crea un cliente de Mercado Pago con tu Access Token SECRETO.
-const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
+// Inicializa el cliente de Wompi con tus llaves y especificando el entorno de prueba.
+const wompi = new Wompi({
+  publicKey: process.env.WOMPI_PUBLIC_KEY, // Tu llave pública desde .env
+  privateKey: process.env.WOMPI_PRIVATE_KEY, // Tu llave privada desde .env
+  environment: "test", // ¡Importante! Le decimos que use el Sandbox de Wompi
 });
 
-router.post("/create_preference", [authMiddleware], async (req, res) => {
-  const { items, payerInfo } = req.body;
+// --- RUTA PARA CREAR LA TRANSACCIÓN ---
+router.post("/create-transaction", [authMiddleware], async (req, res) => {
+  const {
+    amount,
+    customer_email,
+    customer_phone,
+    customer_name,
+    redirect_url,
+  } = req.body;
+  const reference = `sofilu-ref-${Date.now()}`; // Referencia de pago única
 
   try {
-    // 2. Crea un objeto de preferencia.
-    const preference = new Preference(client);
-
-    // 3. Usa el método `create` para generar la preferencia.
-    const result = await preference.create({
-      body: {
-        items: items.map((item) => ({
-          title: item.name,
-          description: item.description || "",
-          picture_url: item.picture_url,
-          quantity: Number(item.quantity),
-          currency_id: "COP",
-          unit_price: Number(item.unit_price),
-        })),
-        payer: {
-          name: payerInfo.name,
-          surname: payerInfo.surname || "",
-          email: payerInfo.email,
-        },
-        back_urls: {
-          success: `${process.env.FRONTEND_URL}/order-confirmation`,
-          failure: `${process.env.FRONTEND_URL}/cart`, // Vuelve al carrito si falla
-          pending: `${process.env.FRONTEND_URL}/cart`, // Vuelve al carrito si está pendiente
-        },
-        auto_return: "approved",
+    const transaction = await wompi.createTransaction({
+      amount_in_cents: amount * 100,
+      currency: "COP",
+      customer_email: customer_email,
+      reference: reference,
+      redirect_url: redirect_url,
+      customer_data: {
+        full_name: customer_name,
+        phone_number: customer_phone,
       },
+      // Puedes especificar los métodos de pago que quieres aceptar
+      payment_methods: ["CARD", "NEQUI", "PSE", "BANCOLOMBIA_TRANSFER"],
     });
 
-    // 4. Envía el ID de la preferencia al frontend.
-    res.json({ id: result.id });
+    res.json({ transactionId: transaction.id });
   } catch (error) {
-    console.error("Error al crear la preferencia de Mercado Pago:", error);
-    res.status(500).json({ message: "No se pudo generar el enlace de pago." });
+    console.error("Error al crear la transacción en Wompi:", error.message);
+    res.status(500).json({ message: "No se pudo crear la transacción." });
+  }
+});
+
+// --- RUTA PARA VERIFICAR LA TRANSACCIÓN ---
+router.get("/verify-transaction/:id", [authMiddleware], async (req, res) => {
+  try {
+    const transaction = await wompi.getTransaction(req.params.id);
+    res.json({ status: transaction.status, reference: transaction.reference });
+  } catch (error) {
+    console.error("Error al verificar la transacción en Wompi:", error.message);
+    res.status(500).json({ message: "No se pudo verificar la transacción." });
   }
 });
 

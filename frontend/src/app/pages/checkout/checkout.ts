@@ -11,9 +11,10 @@ import { Coupon } from '../../services/coupon';
 import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
-import { PaymentService, PayerInfo } from '../../services/payment.service';
 import { environment } from '../../../environments/environment.prod';
-import { loadMercadoPago } from '@mercadopago/sdk-js';
+import { PaymentService } from '../../services/payment.service';
+
+declare const WompiCheckout: any;
 
 @Component({
   selector: 'app-checkout',
@@ -32,7 +33,6 @@ export class checkout implements OnInit {
   private orderService = inject(OrderService);
   private toastService = inject(ToastService);
   private paymentService = inject(PaymentService);
-
   // --- Signals ---
   addresses = signal<Address[]>([]);
   selectedAddress = signal<Address | null>(null);
@@ -219,11 +219,10 @@ export class checkout implements OnInit {
     if (!obj) return [];
     return Object.keys(obj);
   }
-
   /**
-   * Inicia el proceso de pago.
+   * Inicia el proceso de pago con Wompi.
    */
-  async placeOrder(): Promise<void> {
+  placeOrder(): void {
     if (!this.selectedAddress()) {
       this.toastService.show(
         'Por favor, selecciona una dirección de envío.',
@@ -231,73 +230,54 @@ export class checkout implements OnInit {
       );
       return;
     }
-
     this.isProcessingOrder.set(true);
+
     const orderData = this.buildOrderData();
     if (!orderData) {
-      this.isProcessingOrder.set(false);
-      this.toastService.show(
-        'No se pudo procesar la información del pedido.',
-        'error'
-      );
-      return;
+      /* ... validación ... */ return;
     }
 
-    // 1. Guardar el pedido en `localStorage`
+    // 1. Guardamos el pedido en localStorage para usarlo DESPUÉS de la confirmación
     localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
 
-    // 2. Formatear los datos para el `PaymentService`
-    const itemsForMP = this.cartService.cartItems().map((item) => ({
-      name: item.product.name,
-      description:
-        Object.values(item.selectedVariants).join(' / ') || item.product.name,
-      picture_url: item.product.images[0] || '',
-      quantity: item.quantity,
-      unit_price: this.finalItemPrice(item),
-    }));
-
-    // --- ¡PAYERINFO CORRECTO! ---
-    const payerInfo: PayerInfo = {
-      name: orderData.customerInfo.name,
-      surname: '', // Puedes dejarlo vacío si no lo pides
-      email: orderData.customerInfo.email,
+    // 2. Preparamos los datos para la transacción de Wompi
+    const paymentData = {
+      amount: this.grandTotal(),
+      customer_email: orderData.customerInfo.email,
+      customer_phone: orderData.customerInfo.phone,
+      customer_name: orderData.customerInfo.name,
+      // URL a la que Wompi redirigirá al usuario
+      redirect_url: `${window.location.origin}/order-confirmation`,
     };
 
-    // 3. Crear la preferencia de pago
-    this.paymentService.createPreference(itemsForMP, payerInfo).subscribe({
-      next: async (preference) => {
-        // 4. Redirigir al checkout de Mercado Pago
-        await this.redirectToMercadoPago(preference.id);
+    // 3. Llamamos a nuestro backend para crear la transacción en Wompi
+    this.paymentService.createTransaction(paymentData).subscribe({
+      next: (res) => {
+        // 4. Si la transacción se crea, abrimos el Widget de Wompi
+        const checkout = new WompiCheckout({
+          publicKey: environment.wompiPublicKey,
+          currency: 'COP',
+          amountInCents: paymentData.amount * 100,
+          reference: res.reference, // Usamos la referencia que nos dio el backend
+        });
+
+        checkout.open((result: any) => {
+          // El widget se cierra y nos da un resultado. Lo redirigimos a nuestra página de confirmación.
+          // Pasamos el ID de la transacción en la URL.
+          this.router.navigate(['/order-confirmation'], {
+            queryParams: { id: result.transaction.id },
+          });
+        });
+
+        this.isProcessingOrder.set(false);
       },
       error: (err) => {
-        this.toastService.show('Error al iniciar el proceso de pago.', 'error');
+        this.toastService.show(
+          'Error al preparar el pago. Intenta de nuevo.',
+          'error'
+        );
         this.isProcessingOrder.set(false);
-        console.error('Error al crear preferencia:', err);
       },
     });
-  }
-
-  /**
-   * Carga el SDK de MP y renderiza el checkout.
-   */
-  private async redirectToMercadoPago(preferenceId: string) {
-    await loadMercadoPago();
-    const mp = new (window as any).MercadoPago(
-      environment.mercadoPagoPublicKey
-    );
-
-    // Limpiamos el contenedor antes de renderizar, por si acaso
-    const container = document.getElementById('pay-button-container');
-    if (container) container.innerHTML = '';
-
-    await mp.bricks().create('wallet', 'pay-button-container', {
-      initialization: {
-        preferenceId: preferenceId,
-      },
-      customization: {
-        texts: { valueProp: 'smart_option' },
-      },
-    });
-    this.isProcessingOrder.set(false);
   }
 }

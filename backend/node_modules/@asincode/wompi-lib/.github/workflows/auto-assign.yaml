@@ -1,0 +1,9 @@
+name: Auto Assign PR
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  trigger:
+    uses: asincode-sas/actions/.github/workflows/pr-auto-assign.yaml@main

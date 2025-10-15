@@ -1,0 +1,47 @@
+name: 🚀 NPM Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: 📦 Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: 🛎 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🛠 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+          registry-url: 'https://registry.npmjs.org'
+          always-auth: true
+      
+      - name: 🔐 Get NPM Token
+        uses: hashicorp/vault-action@v3.4.0
+        id: secrets
+        with:
+          url: https://vault.asincode.co
+          jwtGithubAudience: https://vault.asincode.co
+          method: jwt
+          role: github-actions
+          secrets: |
+            infrastructure/data/npm token | NPM_TOKEN;
+
+      - name: 📦 Install & Compile
+        run: |
+          npm ci --silent
+          npm run build --if-present
+          npm run prepublish --if-present
+
+      - name: 🚀 Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ steps.secrets.outputs.NPM_TOKEN }}

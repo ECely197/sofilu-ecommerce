@@ -1,0 +1,28 @@
+name: 🕵 Pull Request Automation
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  coverage:
+    name: PR Validation
+    uses: asincode-sas/actions/.github/workflows/test-node.yaml@main
+    with:
+      ref: ${{ github.ref }}
+    secrets: inherit
+
+  release:
+    name: Create New Release
+    uses: asincode-sas/actions/.github/workflows/release-create.yaml@main
+    if: ${{ github.event.action == 'closed' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' }}
+    with:
+      ref: ${{ github.ref }}
+      head: ${{ github.event.pull_request.head.ref }}
+      body:  ${{ github.event.pull_request.body }}
+    secrets: inherit

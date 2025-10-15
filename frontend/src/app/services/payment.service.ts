@@ -2,16 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { CartItem } from '../interfaces/cart-item.interface';
-
-// --- ¡INTERFAZ CORRECTA! ---
-// Esta interfaz define la información del pagador que espera el backend.
-export interface PayerInfo {
-  name: string;
-  surname: string; // Es opcional, pero debe estar definido
-  email: string;
-}
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
@@ -19,22 +10,29 @@ export class PaymentService {
   private apiUrl = `${environment.apiUrl}/payments`;
 
   /**
-   * Pide al backend que cree una preferencia de pago en Mercado Pago.
-   * @param items Los artículos del carrito, formateados para Mercado Pago.
-   * @param payerInfo La información del cliente.
-   * @returns Un Observable que emite un objeto con el ID de la preferencia.
+   * Pide al backend que cree una transacción en Wompi.
+   * @param paymentData Los datos necesarios para la transacción.
+   * @returns Un Observable con el ID de la transacción creada.
    */
-  createPreference(
-    items: any[], // `any[]` es aceptable aquí porque es un formato específico de MP
-    payerInfo: PayerInfo
-  ): Observable<{ id: string }> {
-    const payload = {
-      items: items,
-      payerInfo: payerInfo,
-    };
-    return this.http.post<{ id: string }>(
-      `${this.apiUrl}/create_preference`,
-      payload
+  createTransaction(
+    paymentData: any
+  ): Observable<{ transactionId: string; reference: string }> {
+    return this.http.post<{ transactionId: string; reference: string }>(
+      `${this.apiUrl}/create-transaction`,
+      paymentData
+    );
+  }
+
+  /**
+   * Pide al backend que verifique el estado final de una transacción en Wompi.
+   * @param transactionId El ID de la transacción a verificar.
+   * @returns Un Observable con el estado de la transacción.
+   */
+  verifyTransaction(
+    transactionId: string
+  ): Observable<{ status: string; reference: string }> {
+    return this.http.get<{ status: string; reference: string }>(
+      `${this.apiUrl}/verify-transaction/${transactionId}`
     );
   }
 }
