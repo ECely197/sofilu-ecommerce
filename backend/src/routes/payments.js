@@ -16,8 +16,6 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
     redirect_url,
   } = req.body;
   const reference = `sofilu-ref-${Date.now()}`;
-
-  // Generamos la firma de integridad DENTRO de esta ruta
   const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
   const amountInCents = Math.round(amount * 100);
   const concatenatedString = `${reference}${amountInCents}COP${integritySecret}`;
@@ -26,30 +24,32 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
     .update(concatenatedString)
     .digest("hex");
 
+  const transactionData = {
+    amount_in_cents: amountInCents,
+    currency: "COP",
+    customer_email: customer_email,
+    reference: reference,
+    redirect_url: redirect_url,
+    "signature:integrity": signature,
+    customer_data: {
+      full_name: customer_name,
+      phone_number: customer_phone,
+    },
+  };
+
   try {
+    // --- ¡ESTA ES LA LÍNEA DE LA CORRECCIÓN! ---
+    // Cambiamos `/transactions` por `/checkouts`
     const response = await axios.post(
       `${WOMPI_API_URL}/checkouts`,
-      {
-        // La creación del checkout es más simple
-        amount_in_cents: amountInCents,
-        currency: "COP",
-        customer_email: customer_email,
-        reference: reference,
-        redirect_url: redirect_url,
-        "signature:integrity": signature,
-        customer_data: {
-          full_name: customer_name,
-          phone_number: customer_phone,
-        },
-      },
+      transactionData,
       {
         headers: {
-          Authorization: `Bearer ${process.env.WOMPI_PUBLIC_KEY}`, // ¡Usa la llave PÚBLICA para el checkout!
+          Authorization: `Bearer ${process.env.WOMPI_PUBLIC_KEY}`,
         },
       }
     );
 
-    // El checkout devuelve un ID diferente
     const checkout = response.data.data;
     res.json({ checkoutId: checkout.id });
   } catch (error) {
