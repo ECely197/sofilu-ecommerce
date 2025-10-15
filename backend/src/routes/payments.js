@@ -6,7 +6,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
 
-// --- RUTA PARA CREAR LA TRANSACCIÓN (LA QUE FALLABA) ---
+// --- RUTA PARA CREAR LA TRANSACCIÓN ---
 router.post("/create-transaction", [authMiddleware], async (req, res) => {
   const {
     amount,
@@ -16,48 +16,38 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
     redirect_url,
   } = req.body;
   const reference = `sofilu-ref-${Date.now()}`;
-  const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
-  const amountInCents = Math.round(amount * 100);
-  const concatenatedString = `${reference}${amountInCents}COP${integritySecret}`;
-  const signature = crypto
-    .createHash("sha256")
-    .update(concatenatedString)
-    .digest("hex");
 
   const transactionData = {
-    amount_in_cents: amountInCents,
+    amount_in_cents: Math.round(amount * 100),
     currency: "COP",
     customer_email: customer_email,
     reference: reference,
-    redirect_url: redirect_url,
-    "signature:integrity": signature,
-    customer_data: {
-      full_name: customer_name,
-      phone_number: customer_phone,
-    },
   };
 
   try {
-    // --- ¡ESTA ES LA LÍNEA DE LA CORRECCIÓN! ---
-    // Cambiamos `/transactions` por `/checkouts`
     const response = await axios.post(
-      `${WOMPI_API_URL}/checkouts`,
+      `${WOMPI_API_URL}/transactions`,
       transactionData,
       {
         headers: {
-          Authorization: `Bearer ${process.env.WOMPI_PUBLIC_KEY}`,
+          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
         },
       }
     );
 
-    const checkout = response.data.data;
-    res.json({ checkoutId: checkout.id });
+    const transaction = response.data.data;
+    res.json({
+      transactionId: transaction.id,
+      reference: transaction.reference,
+    });
   } catch (error) {
     console.error(
-      "Error al crear el checkout en Wompi:",
-      error.response?.data || error.message
+      "Error al crear la transacción en Wompi:",
+      error.response?.data?.error?.messages ||
+        error.response?.data ||
+        error.message
     );
-    res.status(500).json({ message: "No se pudo crear el checkout." });
+    res.status(500).json({ message: "No se pudo crear la transacción." });
   }
 });
 
