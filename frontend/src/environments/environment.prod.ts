@@ -1,7 +1,8 @@
 export const environment = {
   production: true,
-  //apiUrl: 'http://localhost:3000/api',
-  apiUrl: 'https://api.sofilu.shop/api', // Ajusta según tu dominio
+
+  // ¡La URL de tu API en Render!
+  apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
   wompiPublicKey: 'pub_prod_ZGUAU2G2nYZoaxItyvFfTEojlb5qK303',
   wompiMode: 'production',
 
