@@ -1,37 +1,87 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto"); // Módulo nativo de Node.js para criptografía
+const axios = require("axios");
+const crypto = require("crypto");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
-router.post("/create-signature", [authMiddleware], async (req, res) => {
-  const { reference, amount_in_cents, currency } = req.body;
-  const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
+const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
 
-  if (!reference || !amount_in_cents || !currency || !integritySecret) {
-    return res
-      .status(400)
-      .json({ message: "Faltan datos para generar la firma." });
-  }
+// --- RUTA PARA CREAR LA TRANSACCIÓN (LA QUE FALLABA) ---
+router.post("/create-transaction", [authMiddleware], async (req, res) => {
+  const {
+    amount,
+    customer_email,
+    customer_phone,
+    customer_name,
+    redirect_url,
+  } = req.body;
+  const reference = `sofilu-ref-${Date.now()}`;
+
+  // Generamos la firma de integridad DENTRO de esta ruta
+  const integritySecret = process.env.WOMPI_INTEGRITY_SECRET;
+  const amountInCents = Math.round(amount * 100);
+  const concatenatedString = `${reference}${amountInCents}COP${integritySecret}`;
+  const signature = crypto
+    .createHash("sha256")
+    .update(concatenatedString)
+    .digest("hex");
 
   try {
-    // Paso 1: Concatenar los valores en el orden exacto que pide Wompi
-    const concatenatedString = `${reference}${amount_in_cents}${currency}${integritySecret}`;
+    const response = await axios.post(
+      `${WOMPI_API_URL}/checkouts`,
+      {
+        // La creación del checkout es más simple
+        amount_in_cents: amountInCents,
+        currency: "COP",
+        customer_email: customer_email,
+        reference: reference,
+        redirect_url: redirect_url,
+        "signature:integrity": signature,
+        customer_data: {
+          full_name: customer_name,
+          phone_number: customer_phone,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WOMPI_PUBLIC_KEY}`, // ¡Usa la llave PÚBLICA para el checkout!
+        },
+      }
+    );
 
-    // Paso 2: Generar el hash SHA256
-    const hash = crypto
-      .createHash("sha256")
-      .update(concatenatedString)
-      .digest("hex");
-
-    // Paso 3: Devolver la firma generada
-    res.json({ signature: hash });
+    // El checkout devuelve un ID diferente
+    const checkout = response.data.data;
+    res.json({ checkoutId: checkout.id });
   } catch (error) {
-    console.error("Error al generar la firma de integridad:", error);
-    res.status(500).json({ message: "No se pudo generar la firma." });
+    console.error(
+      "Error al crear el checkout en Wompi:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({ message: "No se pudo crear el checkout." });
   }
 });
 
-// Ya no necesitamos las rutas create-transaction ni verify-transaction aquí.
-// La verificación la haremos en el webhook en el futuro.
+// --- RUTA PARA VERIFICAR LA TRANSACCIÓN (PARA LA PÁGINA DE CONFIRMACIÓN) ---
+router.get("/verify-transaction/:id", [authMiddleware], async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${WOMPI_API_URL}/transactions/${req.params.id}`,
+      {
+        headers: {
+          // Para verificar, SÍ usamos la llave PRIVADA
+          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+        },
+      }
+    );
+    const transaction = response.data.data;
+    res.json({ status: transaction.status, reference: transaction.reference });
+  } catch (error) {
+    console.error(
+      "Error al verificar la transacción:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({ message: "No se pudo verificar la transacción." });
+  }
+});
 
 module.exports = router;

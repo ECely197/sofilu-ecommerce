@@ -1,4 +1,3 @@
-// En: frontend/src/app/services/payment.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -10,16 +9,24 @@ export class PaymentService {
   private apiUrl = `${environment.apiUrl}/payments`;
 
   /**
-   * Pide al backend que genere la firma de integridad para una transacción.
+   * Pide al backend que cree un checkout en Wompi.
    */
-  getIntegritySignature(data: {
-    reference: string;
-    amount_in_cents: number;
-    currency: string;
-  }): Observable<{ signature: string }> {
-    return this.http.post<{ signature: string }>(
-      `${this.apiUrl}/create-signature`,
-      data
+  createCheckout(paymentData: any): Observable<{ checkoutId: string }> {
+    return this.http.post<{ checkoutId: string }>(
+      `${this.apiUrl}/create-transaction`,
+      paymentData
+    );
+  }
+
+  /**
+   * ¡MÉTODO RESTAURADO!
+   * Pide al backend que verifique el estado final de una transacción.
+   */
+  verifyTransaction(
+    transactionId: string
+  ): Observable<{ status: string; reference: string }> {
+    return this.http.get<{ status: string; reference: string }>(
+      `${this.apiUrl}/verify-transaction/${transactionId}`
     );
   }
 }
