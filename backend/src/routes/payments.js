@@ -77,4 +77,6 @@ router.post("/create-transaction", async (req, res) => {
   }
 });
 
+// Ruta para manejar las notificaciones de Wompi
+
 module.exports = router;
