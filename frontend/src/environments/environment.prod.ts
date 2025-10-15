@@ -5,7 +5,7 @@ export const environment = {
   apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
   //apiUrl: 'http://localhost:3000/api',
 
-  wompiPublicKey: 'pub_test_O2VFwk1Uc1iyRU0sAAp0cVsHw34kJ49x',
+  wompiPublicKey: 'pub_prod_ZGUAU2G2nYZoaxItyvFfTEojlb5qK303',
 
   // Las credenciales de Firebase son las mismas.
   firebase: {

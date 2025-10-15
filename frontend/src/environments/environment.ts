@@ -4,7 +4,7 @@ export const environment = {
   // La URL de tu API cuando corres el backend en tu máquina local
   apiUrl: 'http://localhost:3000/api',
 
-  wompiPublicKey: 'pub_test_O2VFwk1Uc1iyRU0sAAp0cVsHw34kJ49x',
+  wompiPublicKey: 'pub_prod_ZGUAU2G2nYZoaxItyvFfTEojlb5qK303',
   // Tus credenciales de Firebase. Son las mismas para desarrollo y producción.
   firebase: {
     apiKey: 'AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM',
