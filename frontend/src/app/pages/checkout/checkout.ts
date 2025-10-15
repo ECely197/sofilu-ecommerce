@@ -245,46 +245,59 @@ export class checkout implements OnInit {
     // 1. Guardamos los datos del pedido en localStorage para usarlos después de la confirmación.
     localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
 
-    // 2. Preparamos el objeto de datos que espera nuestra API del backend.
-    const paymentData = {
-      amount: this.grandTotal(),
-      customer_email: orderData.customerInfo.email,
-      customer_phone: orderData.customerInfo.phone,
-      customer_name: orderData.customerInfo.name,
-      // URL a la que Wompi redirigirá al usuario después del pago.
-      redirect_url: `${window.location.origin}/order-confirmation`,
-    };
+    const reference = `sofilu-ref-${Date.now()}`;
+    const amountInCents = Math.round(this.grandTotal() * 100);
 
-    // 3. Llamamos al método correcto del `PaymentService` con el objeto correcto.
-    this.paymentService.createTransaction(paymentData).subscribe({
-      next: (res) => {
-        // 4. Si la transacción se crea en nuestro backend, abrimos el Widget de Wompi.
-        const checkout = new WompiCheckout({
-          publicKey: environment.wompiPublicKey,
-          currency: 'COP',
-          amountInCents: paymentData.amount * 100,
-          reference: res.reference,
-        });
-
-        checkout.open((result: any) => {
-          // Cuando el widget se cierra, nos da el resultado.
-          // Redirigimos a nuestra página de confirmación, pasando el ID de la transacción.
-          this.router.navigate(['/order-confirmation'], {
-            queryParams: { id: result.transaction.id },
+    // 1. Pedimos la firma de integridad a nuestro backend
+    this.paymentService
+      .getIntegritySignature({
+        reference: reference,
+        amount_in_cents: amountInCents,
+        currency: 'COP',
+      })
+      .subscribe({
+        next: (response) => {
+          // 2. Con la firma, configuramos y abrimos el Widget de Wompi
+          const checkout = new WompiCheckout({
+            currency: 'COP',
+            amountInCents: amountInCents,
+            reference: reference,
+            publicKey: environment.wompiPublicKey,
+            signature: {
+              integrity: response.signature, // ¡Aquí va la firma del backend!
+            },
+            redirectUrl: `${window.location.origin}/order-confirmation`,
+            // Opcional: pre-rellenar datos del cliente
+            customerData: {
+              email: orderData.customerInfo.email,
+              fullName: orderData.customerInfo.name,
+              phoneNumber: orderData.customerInfo.phone,
+            },
           });
-        });
 
-        // Ya no estamos procesando, Wompi tomó el control.
-        this.isProcessingOrder.set(false);
-      },
-      error: (err) => {
-        this.toastService.show(
-          'Error al preparar el pago. Intenta de nuevo.',
-          'error'
-        );
-        this.isProcessingOrder.set(false);
-        console.error('Error al crear la transacción:', err);
-      },
-    });
+          checkout.open((result: any) => {
+            // 3. Wompi nos devuelve el resultado y redirigimos
+            if (result.transaction.status === 'APPROVED') {
+              this.router.navigate(['/order-confirmation'], {
+                queryParams: { id: result.transaction.id },
+              });
+            } else {
+              this.toastService.show(
+                'El pago fue rechazado o cancelado.',
+                'error'
+              );
+              this.isProcessingOrder.set(false);
+            }
+          });
+        },
+        error: (err) => {
+          this.toastService.show(
+            'Error al preparar el pago. Intenta de nuevo.',
+            'error'
+          );
+          this.isProcessingOrder.set(false);
+          console.error('Error obteniendo la firma:', err);
+        },
+      });
   }
 }
