@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require("crypto");
-const { authMiddleware } = require("../middleware/authMiddleware");
 const axios = require("axios");
+const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
 // --- ¡ÚNICA RUTA! SOLO PARA GENERAR LA FIRMA DE INTEGRIDAD ---
 router.post("/create-signature", [authMiddleware], async (req, res) => {
@@ -58,35 +57,43 @@ router.post("/create-transaction", async (req, res) => {
       reference,
     } = req.body;
 
-    const response = await axios.post(
-      "https://sandbox.wompi.co/v1/transactions",
-      {
-        amount_in_cents,
+    const wompiResponse = await axios({
+      method: "post",
+      url: "https://sandbox.wompi.co/v1/payment_links", // Cambiamos a payment_links
+      headers: {
+        Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        name: "Pago Sofilu Shop",
+        description: `Orden #${reference}`,
+        single_use: true,
         currency: "COP",
-        customer_email,
-        reference,
-        payment_method_type: "CARD",
+        amount_in_cents,
+        collect_shipping: false,
+        collect_customer_legal_id: false,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 horas
         customer_data: {
-          phone_number: customer_phone,
+          email: customer_email,
           full_name: customer_name,
+          phone_number: customer_phone,
         },
         redirect_url: `${process.env.FRONTEND_URL}/order-confirmation`,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
-        },
-      }
-    );
+    });
 
-    res.json({ redirectUrl: response.data.data.redirect_url });
+    // La respuesta incluirá la URL de redirección
+    return res.json({
+      redirectUrl: wompiResponse.data.data.url,
+    });
   } catch (error) {
-    console.error(
-      "Error creating Wompi transaction:",
-      error.response?.data || error
-    );
-    res.status(500).json({
-      message: "Error al crear la transacción",
+    console.error("Wompi API Error:", {
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    return res.status(500).json({
+      message: "Error al crear el enlace de pago",
       error: error.response?.data || error.message,
     });
   }

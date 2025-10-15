@@ -366,11 +366,15 @@ export class checkout implements OnInit {
         })
       );
 
-      // Redirigir a Wompi
+      // Redirigir a la URL de pago de Wompi
       window.location.href = response.redirectUrl;
     } catch (error) {
       console.error('Error al procesar el pago:', error);
-      alert('Error al procesar el pago. Por favor intenta nuevamente.');
+      // Mostrar mensaje de error al usuario
+      this.toastService.show(
+        'Error al procesar el pago. Por favor intenta nuevamente.',
+        'error'
+      );
     }
   }
 }
