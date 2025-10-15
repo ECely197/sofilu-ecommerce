@@ -340,12 +340,25 @@ export class checkout implements OnInit {
 
   async processPayment() {
     try {
+      this.isProcessingOrder.set(true);
       const selectedAddr = this.selectedAddress();
+
       if (!selectedAddr) {
         throw new Error('Por favor selecciona una dirección de envío');
       }
 
       const reference = `ORDER_${Date.now()}`;
+
+      // Primero obtener la firma
+      const signatureResponse = await firstValueFrom(
+        this.paymentService.getIntegritySignature({
+          reference,
+          amount_in_cents: this.grandTotal() * 100,
+          currency: 'COP',
+        })
+      );
+
+      // Luego crear la transacción
       const response = await firstValueFrom(
         this.paymentService.createTransaction({
           amount_in_cents: this.grandTotal() * 100,
@@ -353,10 +366,11 @@ export class checkout implements OnInit {
           customer_name: selectedAddr.fullName,
           customer_phone: selectedAddr.phone,
           reference,
+          signature: signatureResponse.signature,
         })
       );
 
-      // Guardar datos del pedido en localStorage
+      // Guardar datos del pedido
       localStorage.setItem(
         'pendingOrderData',
         JSON.stringify({
@@ -366,15 +380,21 @@ export class checkout implements OnInit {
         })
       );
 
-      // Redirigir a la URL de pago de Wompi
-      window.location.href = response.redirectUrl;
+      // Redirigir a Wompi
+      if (response.redirectUrl) {
+        console.log('Redirecting to:', response.redirectUrl);
+        window.location.href = response.redirectUrl;
+      } else {
+        throw new Error('No se recibió URL de redirección');
+      }
     } catch (error) {
       console.error('Error al procesar el pago:', error);
-      // Mostrar mensaje de error al usuario
       this.toastService.show(
         'Error al procesar el pago. Por favor intenta nuevamente.',
         'error'
       );
+    } finally {
+      this.isProcessingOrder.set(false);
     }
   }
 }

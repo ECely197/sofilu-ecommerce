@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/payments`;
@@ -31,13 +33,7 @@ export class PaymentService {
     );
   }
 
-  createTransaction(data: {
-    amount_in_cents: number;
-    customer_email: string;
-    customer_name: string;
-    customer_phone: string;
-    reference: string;
-  }): Observable<{ redirectUrl: string }> {
+  createTransaction(data: any): Observable<{ redirectUrl: string }> {
     return this.http.post<{ redirectUrl: string }>(
       `${this.apiUrl}/create-transaction`,
       data
