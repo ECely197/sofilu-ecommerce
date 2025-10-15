@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/payments`;
+  private isProduction = environment.production;
 
   /**
    * Pide al backend la firma de integridad para iniciar el checkout.
@@ -33,13 +34,13 @@ export class PaymentService {
     );
   }
 
-  createTransaction(data: {
-    amount_in_cents: number;
-    customer_email: string;
-    customer_name: string;
-    customer_phone: string;
-    reference: string;
-  }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/create-transaction`, data);
+  createTransaction(data: any): Observable<any> {
+    // Añadir indicador de producción
+    const payload = {
+      ...data,
+      mode: this.isProduction ? 'production' : 'test',
+    };
+
+    return this.http.post<any>(`${this.apiUrl}/create-transaction`, payload);
   }
 }

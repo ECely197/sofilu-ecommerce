@@ -3,6 +3,10 @@ const router = express.Router();
 const axios = require("axios");
 const crypto = require("crypto"); // Añadimos esta importación
 
+// Constantes para URLs de producción
+const WOMPI_API_URL = "https://api.wompi.co/v1";
+const WOMPI_CHECKOUT_URL = "https://checkout.wompi.co/l";
+
 // Ruta para generar la firma de integridad
 router.post("/create-signature", async (req, res) => {
   try {
@@ -34,10 +38,10 @@ router.post("/create-transaction", async (req, res) => {
       reference,
     } = req.body;
 
-    // Cambiamos la URL a producción
+    // Usar URL de producción
     const wompiResponse = await axios({
       method: "post",
-      url: "https://api.wompi.co/v1/payment_links", // Cambiado de sandbox a producción
+      url: `${WOMPI_API_URL}/payment_links`,
       headers: {
         Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
         "Content-Type": "application/json",
@@ -56,15 +60,17 @@ router.post("/create-transaction", async (req, res) => {
           phone_number: customer_phone,
         },
         redirect_url: `${process.env.FRONTEND_URL}/order-confirmation`,
+        production_payment_source: true, // Forzar modo producción
       },
     });
 
     // URL de checkout de producción
-    const checkoutUrl = `https://checkout.wompi.co/l/${wompiResponse.data.data.id}`;
+    const checkoutUrl = `${WOMPI_CHECKOUT_URL}/${wompiResponse.data.data.id}`;
 
     return res.json({
       redirectUrl: checkoutUrl,
       transactionId: wompiResponse.data.data.id,
+      mode: "production", // Para verificación
     });
   } catch (error) {
     console.error("Wompi API Error:", error.response?.data || error);
