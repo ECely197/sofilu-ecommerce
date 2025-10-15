@@ -1,29 +1,75 @@
-<div class="confirmation-container">
-  <div class="confirmation-card" data-aos="zoom-in" data-aos-duration="500">
-    <div class="icon-container">
-      <!-- Icono de check (puedes usar un SVG si lo prefieres) -->
-      <span>✓</span>
+<div class="order-confirmation">
+  <ng-container *ngIf="isLoading()">
+    <div class="loading">
+      <span>Verificando tu pago...</span>
     </div>
-    <h2 class="confirmation-title">¡Gracias por tu compra!</h2>
-    <p class="confirmation-subtitle">
-      Hemos recibido tu pedido y ya lo estamos preparando. Recibirás un correo con todos los detalles.
-    </p>
-    @if (orderId()) {
-    <div class="order-number">
-      Pedido #SFL-{{ orderId()!.substring(orderId()!.length - 8).toUpperCase() }}
+  </ng-container>
+
+  <ng-container
+    *ngIf="!isLoading() && !error() && paymentStatus() === 'APPROVED'"
+  >
+    <div class="success-container">
+      <div class="icon-success">✓</div>
+      <h1>¡Gracias por tu compra!</h1>
+      <p>Tu pedido ha sido confirmado</p>
+
+      <div class="order-details" *ngIf="orderDetails()">
+        <h2>Resumen del pedido #{{ orderId() }}</h2>
+
+        <div class="shipping-info">
+          <h3>Información de envío</h3>
+          <p>{{ orderDetails().shippingAddress.fullName }}</p>
+          <p>{{ orderDetails().shippingAddress.streetAddress }}</p>
+          <p>
+            {{ orderDetails().shippingAddress.city }},
+            {{ orderDetails().shippingAddress.department }}
+          </p>
+        </div>
+
+        <div class="items-list">
+          <h3>Productos</h3>
+          <div class="item" *ngFor="let item of orderDetails().items">
+            <span>{{ item.name }} x {{ item.quantity }}</span>
+            <span>{{
+              item.price * item.quantity
+                | currency : "COP" : "symbol-narrow" : "1.0-0"
+            }}</span>
+          </div>
+        </div>
+
+        <div class="total">
+          <h3>Total</h3>
+          <p>
+            {{
+              orderDetails().total
+                | currency : "COP" : "symbol-narrow" : "1.0-0"
+            }}
+          </p>
+        </div>
+      </div>
+
+      <p class="email-notice">
+        Hemos enviado un correo de confirmación a
+        {{ orderDetails()?.shippingAddress.email }}
+      </p>
+
+      <div class="actions">
+        <a routerLink="/" class="button">Volver a la tienda</a>
+      </div>
     </div>
-    }
-    <hr>
-    <div class="next-steps">
-      <h3 class="steps-title">Próximos Pasos</h3>
-      <ul class="steps-list">
-        <li>Recibirás un correo electrónico de confirmación.</li>
-        <li>Te notificaremos cuando tu pedido sea enviado.</li>
-        <li>Puedes verificar el estado en 'Mi Cuenta'.</li>
-      </ul>
+  </ng-container>
+
+  <ng-container *ngIf="!isLoading() && error()">
+    <div class="error-container">
+      <div class="icon-error">✗</div>
+      <h1>Ha ocurrido un error</h1>
+      <p>{{ error() }}</p>
+      <div class="actions">
+        <a routerLink="/" class="button">Volver a la tienda</a>
+        <a href="mailto:soporte@sofilu.shop" class="button secondary"
+          >Contactar soporte</a
+        >
+      </div>
     </div>
-    <div class="actions">
-      <a routerLink="/" class="btn-secondary" appRipple>Seguir Explorando</a>
-    </div>
-  </div>
+  </ng-container>
 </div>

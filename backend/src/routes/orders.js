@@ -592,4 +592,30 @@ router.put("/:id/status", authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * @route   POST /api/orders/create
+ * @desc    Crear un nuevo pedido (ruta simplificada).
+ * @access  Private (Usuario logueado)
+ */
+router.post("/create", authMiddleware, async (req, res) => {
+  try {
+    const orderData = {
+      ...req.body,
+      userId: req.user._id,
+      createdAt: new Date(),
+    };
+
+    const newOrder = new Order(orderData);
+    const savedOrder = await newOrder.save();
+
+    // Send confirmation email
+    await sendOrderConfirmationEmail(savedOrder);
+
+    res.status(201).json(savedOrder);
+  } catch (error) {
+    console.error("Error al crear la orden:", error);
+    res.status(500).json({ message: "Error al crear la orden" });
+  }
+});
+
 module.exports = router;

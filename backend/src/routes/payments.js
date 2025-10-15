@@ -41,6 +41,7 @@ router.post("/create-transaction", async (req, res) => {
           phone_number: customer_phone,
         },
         redirect_url: `${process.env.FRONTEND_URL}/order-confirmation`,
+        // This ensures Wompi will redirect back to your confirmation page
         environment: "production", // Forzar ambiente de producción
       },
     });
@@ -65,6 +66,34 @@ router.post("/create-transaction", async (req, res) => {
       message: "Error al crear el enlace de pago",
       error: error.response?.data || error.message,
     });
+  }
+});
+
+router.get("/verify/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const wompiResponse = await axios.get(
+      `https://api.wompi.co/v1/transactions/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+        },
+      }
+    );
+
+    const transactionData = wompiResponse.data.data;
+    res.json({
+      status: transactionData.status,
+      amount: transactionData.amount_in_cents,
+      paymentMethod: transactionData.payment_method_type,
+    });
+  } catch (error) {
+    console.error(
+      "Error verificando transacción:",
+      error.response?.data || error
+    );
+    res.status(500).json({ message: "Error al verificar la transacción" });
   }
 });
 

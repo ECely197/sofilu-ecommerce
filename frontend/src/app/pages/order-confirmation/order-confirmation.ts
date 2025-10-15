@@ -1,9 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { OrderService } from '../../services/order';
 import { CartService } from '../../services/cart';
-import { PaymentService } from '../../services/payment.service'; // <-- Importamos el servicio
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -16,75 +17,80 @@ export class OrderConfirmation implements OnInit {
   private route = inject(ActivatedRoute);
   private orderService = inject(OrderService);
   private cartService = inject(CartService);
-  private paymentService = inject(PaymentService); // <-- Inyectamos el servicio
+  private router = inject(Router);
+  private toastService = inject(ToastService);
 
   orderId = signal<string | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
+  orderDetails = signal<any>(null);
+  paymentStatus = signal<'APPROVED' | 'DECLINED' | 'PENDING' | null>(null);
 
   ngOnInit(): void {
-    // 1. Leemos el ID de la transacción que Wompi nos envió en la URL
     this.route.queryParams.subscribe((params) => {
       const transactionId = params['id'];
+      const status = params['status'];
+
       if (transactionId) {
-        // 2. Si hay un ID, lo verificamos con nuestro backend
-        this.verifyAndCreateOrder(transactionId);
+        this.verifyAndCreateOrder(transactionId, status);
       } else {
-        this.error.set('No se encontró un ID de transacción para verificar.');
+        this.error.set('No se recibió información de la transacción');
         this.isLoading.set(false);
       }
     });
   }
 
-  /**
-   * Llama al backend para verificar el estado de la transacción en Wompi
-   * y, si es APROBADO, crea el pedido en nuestra base de datos.
-   */
-  verifyAndCreateOrder(transactionId: string): void {
-    this.paymentService.verifyTransaction(transactionId).subscribe({
-      next: (response) => {
-        if (response.status === 'APPROVED') {
-          // 3. Si el pago fue aprobado, creamos el pedido desde localStorage
-          this.createOrderFromLocalStorage();
-        } else {
-          this.error.set(
-            `El estado del pago es: ${response.status}. Por favor, contacta a soporte.`
-          );
-          this.isLoading.set(false);
+  private async verifyAndCreateOrder(transactionId: string, status: string) {
+    try {
+      this.isLoading.set(true);
+
+      // Verify transaction with Wompi
+      const transactionStatus = await firstValueFrom(
+        this.orderService.verifyWompiTransaction(transactionId)
+      );
+
+      this.paymentStatus.set(transactionStatus.status);
+
+      if (transactionStatus.status === 'APPROVED') {
+        // Get pending order data
+        const pendingOrderData = localStorage.getItem('pendingOrderData');
+        if (!pendingOrderData) {
+          throw new Error('No se encontraron los datos del pedido');
         }
-      },
-      error: (err) => {
-        this.error.set('Hubo un error al verificar tu pago.');
-        this.isLoading.set(false);
-      },
-    });
-  }
 
-  /**
-   * Lee los datos del pedido de localStorage, los envía a nuestra API para crear el pedido,
-   * y luego limpia todo.
-   */
-  createOrderFromLocalStorage(): void {
-    const pendingOrderDataString = localStorage.getItem('pendingOrderData');
-    if (!pendingOrderDataString) {
-      this.error.set('No se encontraron datos del pedido para confirmar.');
-      this.isLoading.set(false);
-      return;
-    }
+        const orderData = JSON.parse(pendingOrderData);
 
-    const orderData = JSON.parse(pendingOrderDataString);
+        // Create order in database
+        const createdOrder = await firstValueFrom(
+          this.orderService.createOrder({
+            ...orderData,
+            paymentId: transactionId,
+            status: 'PAID',
+            paymentMethod: 'WOMPI',
+            paymentStatus: transactionStatus.status,
+          })
+        );
 
-    this.orderService.createOrder(orderData).subscribe({
-      next: (savedOrder) => {
-        this.orderId.set(savedOrder._id);
-        this.isLoading.set(false);
+        // Update UI
+        this.orderDetails.set(createdOrder);
+        this.orderId.set(createdOrder._id);
+
+        // Clear cart and pending data
         this.cartService.clearCart();
         localStorage.removeItem('pendingOrderData');
-      },
-      error: (err) => {
-        this.error.set('Hubo un error al guardar tu pedido.');
-        this.isLoading.set(false);
-      },
-    });
+
+        // Show success message
+        this.toastService.show('¡Compra realizada con éxito!', 'success');
+      } else {
+        this.error.set(`Pago no aprobado. Estado: ${transactionStatus.status}`);
+      }
+    } catch (error) {
+      console.error('Error al procesar la orden:', error);
+      this.error.set(
+        'Error al procesar la orden. Por favor contacta a soporte.'
+      );
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 }

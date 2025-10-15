@@ -91,4 +91,11 @@ export class OrderService {
     const url = `${this.apiUrl}/${orderId}`;
     return this.http.put<any>(url, { items: newItems });
   }
+
+  /** Verifica una transacción de wompi. */
+  verifyWompiTransaction(transactionId: string): Observable<any> {
+    return this.http.get(
+      `${environment.apiUrl}/payments/verify/${transactionId}`
+    );
+  }
 }
