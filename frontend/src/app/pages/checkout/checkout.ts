@@ -224,120 +224,6 @@ export class checkout implements OnInit {
   /**
    * Inicia el proceso de pago with Wompi.
    */
-  async placeOrder(): Promise<void> {
-    if (!this.selectedAddress()) {
-      this.toastService.show(
-        'Por favor, selecciona una dirección de envío.',
-        'error'
-      );
-      return;
-    }
-    this.isProcessingOrder.set(true);
-
-    const orderData = this.buildOrderData();
-    if (!orderData) {
-      this.toastService.show(
-        'No se pudo procesar la información del pedido.',
-        'error'
-      );
-      this.isProcessingOrder.set(false);
-      return;
-    }
-
-    localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
-
-    const reference = `sofilu-ref-${Date.now()}`;
-    const amountInCents = Math.round(this.grandTotal() * 100);
-
-    this.paymentService
-      .getIntegritySignature({
-        reference: reference,
-        amount_in_cents: amountInCents,
-        currency: 'COP',
-      })
-      .subscribe({
-        next: (response) => {
-          this.redirectToWompiCheckout({
-            reference: reference,
-            amountInCents: amountInCents,
-            signature: response.signature,
-          });
-        },
-        error: (err) => {
-          this.toastService.show(
-            'Error al preparar el pago. Intenta de nuevo.',
-            'error'
-          );
-          this.isProcessingOrder.set(false);
-          console.error('Error obteniendo la firma:', err);
-        },
-      });
-  }
-
-  /**
-   * ¡NUEVO MÉTODO!
-   * Crea un formulario HTML en memoria, lo rellena con los datos de la transacción
-   * y lo envía automáticamente para redirigir al usuario al Web Checkout de Wompi.
-   */
-  private async redirectToWompiCheckout(orderData: any) {
-    try {
-      // Obtener la dirección seleccionada de forma segura
-      const selectedAddr = this.selectedAddress();
-      if (!selectedAddr) {
-        throw new Error('No se ha seleccionado una dirección de envío');
-      }
-
-      // Crear referencia única
-      const reference = `ORDER-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-
-      const checkoutData = {
-        reference: reference,
-        amount_in_cents: this.grandTotal() * 100, // Usar el computed
-        currency: 'COP',
-      };
-
-      // Obtener la firma del backend
-      const { signature } = await firstValueFrom(
-        this.paymentService.getIntegritySignature(checkoutData)
-      );
-
-      // Construir URL de Wompi con los datos del cliente de selectedAddress
-      const params = new URLSearchParams({
-        'public-key': environment.wompiPublicKey,
-        currency: 'COP',
-        'amount-in-cents': checkoutData.amount_in_cents.toString(),
-        reference: reference,
-        'signature:integrity': signature,
-        'redirect-url': `${window.location.origin}/order-confirmation`,
-        'tax-in-cents': '0',
-        // Usar los datos de la dirección seleccionada
-        'customer-data:email': selectedAddr.email || '',
-        'customer-data:full-name': selectedAddr.fullName || '',
-        'customer-data:phone-number': selectedAddr.phone || '',
-      });
-
-      // Guardar datos del pedido en localStorage antes de redirigir
-      localStorage.setItem(
-        'pendingOrderData',
-        JSON.stringify({
-          ...orderData,
-          reference,
-          total: this.grandTotal(),
-          shippingAddress: selectedAddr,
-        })
-      );
-
-      // Redirigir usando window.location
-      window.location.href = `https://checkout.wompi.co/p/?${params.toString()}`;
-    } catch (error) {
-      console.error('Error al redirigir a Wompi:', error);
-      // Aquí deberías mostrar un mensaje al usuario
-      alert('Error al procesar el pago. Por favor intenta nuevamente.');
-    }
-  }
-
   async processPayment() {
     try {
       this.isProcessingOrder.set(true);
@@ -349,7 +235,6 @@ export class checkout implements OnInit {
 
       const reference = `ORDER_${Date.now()}`;
 
-      // Crear la transacción
       const response = await firstValueFrom(
         this.paymentService.createTransaction({
           amount_in_cents: this.grandTotal() * 100,
@@ -360,24 +245,25 @@ export class checkout implements OnInit {
         })
       );
 
-      // Guardar datos del pedido
+      if (!response?.redirectUrl) {
+        throw new Error('No se recibió URL de redirección válida');
+      }
+
+      // Guardar datos antes de redirigir
       localStorage.setItem(
         'pendingOrderData',
         JSON.stringify({
           reference,
+          transactionId: response.transactionId,
           total: this.grandTotal(),
           shippingAddress: selectedAddr,
+          items: this.cartService.cartItems(),
           createdAt: new Date().toISOString(),
         })
       );
 
-      // Verificar y redirigir
-      if (response.redirectUrl) {
-        console.log('Redirigiendo a:', response.redirectUrl);
-        window.location.href = response.redirectUrl;
-      } else {
-        throw new Error('No se recibió URL de redirección válida de Wompi');
-      }
+      // Usar la URL del checkout de Wompi
+      window.location.href = response.redirectUrl;
     } catch (error) {
       console.error('Error al procesar el pago:', error);
       this.toastService.show(

@@ -33,10 +33,13 @@ export class PaymentService {
     );
   }
 
-  createTransaction(data: any): Observable<{ redirectUrl: string }> {
-    return this.http.post<{ redirectUrl: string }>(
-      `${this.apiUrl}/create-transaction`,
-      data
-    );
+  createTransaction(data: {
+    amount_in_cents: number;
+    customer_email: string;
+    customer_name: string;
+    customer_phone: string;
+    reference: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/create-transaction`, data);
   }
 }
