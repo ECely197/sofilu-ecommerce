@@ -1,16 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const axios = require("axios"); // ¡NUEVA IMPORTACIÓN!
 const { authMiddleware } = require("../middleware/authMiddleware");
 
-// --- ¡USANDO LA LIBRERÍA CORRECTA! ---
-const Wompi = require("@asincode/wompi-lib");
-
-// Inicializa el cliente de Wompi con tus llaves y especificando el entorno de prueba.
-const wompi = new Wompi({
-  publicKey: process.env.WOMPI_PUBLIC_KEY, // Tu llave pública desde .env
-  privateKey: process.env.WOMPI_PRIVATE_KEY, // Tu llave privada desde .env
-  environment: "test", // ¡Importante! Le decimos que use el Sandbox de Wompi
-});
+// URL base de la API de Wompi para el entorno de pruebas (Sandbox)
+const WOMPI_API_URL = "https://sandbox.wompi.co/v1";
 
 // --- RUTA PARA CREAR LA TRANSACCIÓN ---
 router.post("/create-transaction", [authMiddleware], async (req, res) => {
@@ -21,26 +15,47 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
     customer_name,
     redirect_url,
   } = req.body;
-  const reference = `sofilu-ref-${Date.now()}`; // Referencia de pago única
+  const reference = `sofilu-ref-${Date.now()}`;
+
+  const transactionData = {
+    amount_in_cents: amount * 100,
+    currency: "COP",
+    customer_email: customer_email,
+    reference: reference,
+    redirect_url: redirect_url,
+    customer_data: {
+      full_name: customer_name,
+      phone_number: customer_phone,
+    },
+    payment_method: {
+      // Wompi ya no usa un array aquí, esta es la forma de aceptar todo
+    },
+  };
 
   try {
-    const transaction = await wompi.createTransaction({
-      amount_in_cents: amount * 100,
-      currency: "COP",
-      customer_email: customer_email,
-      reference: reference,
-      redirect_url: redirect_url,
-      customer_data: {
-        full_name: customer_name,
-        phone_number: customer_phone,
-      },
-      // Puedes especificar los métodos de pago que quieres aceptar
-      payment_methods: ["CARD", "NEQUI", "PSE", "BANCOLOMBIA_TRANSFER"],
-    });
+    // --- ¡PETICIÓN DIRECTA CON AXIOS! ---
+    const response = await axios.post(
+      `${WOMPI_API_URL}/transactions`,
+      transactionData,
+      {
+        headers: {
+          // La autenticación se hace con la llave privada en la cabecera
+          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+        },
+      }
+    );
 
-    res.json({ transactionId: transaction.id });
+    // La respuesta de axios pone los datos dentro de `data.data`
+    const transaction = response.data.data;
+    res.json({
+      transactionId: transaction.id,
+      reference: transaction.reference,
+    });
   } catch (error) {
-    console.error("Error al crear la transacción en Wompi:", error.message);
+    console.error(
+      "Error al crear la transacción en Wompi:",
+      error.response?.data || error.message
+    );
     res.status(500).json({ message: "No se pudo crear la transacción." });
   }
 });
@@ -48,10 +63,22 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
 // --- RUTA PARA VERIFICAR LA TRANSACCIÓN ---
 router.get("/verify-transaction/:id", [authMiddleware], async (req, res) => {
   try {
-    const transaction = await wompi.getTransaction(req.params.id);
+    const response = await axios.get(
+      `${WOMPI_API_URL}/transactions/${req.params.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
+        },
+      }
+    );
+
+    const transaction = response.data.data;
     res.json({ status: transaction.status, reference: transaction.reference });
   } catch (error) {
-    console.error("Error al verificar la transacción en Wompi:", error.message);
+    console.error(
+      "Error al verificar la transacción en Wompi:",
+      error.response?.data || error.message
+    );
     res.status(500).json({ message: "No se pudo verificar la transacción." });
   }
 });
