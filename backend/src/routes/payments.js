@@ -30,6 +30,7 @@ router.post("/create-transaction", [authMiddleware], async (req, res) => {
       full_name: customer_name,
       phone_number: customer_phone,
     },
+    payment_methods: ["CARD", "PSE", "NEQUI", "BANCOLOMBIA_TRANSFER"],
   };
 
   try {
