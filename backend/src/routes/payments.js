@@ -34,10 +34,10 @@ router.post("/create-transaction", async (req, res) => {
       reference,
     } = req.body;
 
-    // Creamos el payment link usando la API de Wompi
+    // Cambiamos la URL a producción
     const wompiResponse = await axios({
       method: "post",
-      url: "https://sandbox.wompi.co/v1/payment_links",
+      url: "https://api.wompi.co/v1/payment_links", // Cambiado de sandbox a producción
       headers: {
         Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}`,
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ router.post("/create-transaction", async (req, res) => {
       },
     });
 
-    // La URL de redirección correcta para el checkout
+    // URL de checkout de producción
     const checkoutUrl = `https://checkout.wompi.co/l/${wompiResponse.data.data.id}`;
 
     return res.json({
