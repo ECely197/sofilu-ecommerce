@@ -75,14 +75,25 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    // Permite peticiones sin 'origin' (como las de Postman o apps móviles)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`CORS: Origen no permitido bloqueado: ${origin}`);
-      callback(new Error("No permitido por la política de CORS"));
+  origin: function (origin, callback) {
+    // Permitir solicitudes sin origen (como Postman o apps móviles)
+    if (!origin) return callback(null, true);
+
+    // 1. Si está en la lista blanca exacta (localhost, sofilu.shop)
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
     }
+
+    // 2. ¡LA SOLUCIÓN! Permitir cualquier deploy de Vercel de TU proyecto
+    // Esto aceptará https://sofilu-ecommerce-git-main...
+    // Y también las raras como: https://sofilu-ecommerce-1ysihhg11...
+    if (origin.includes("sofilu-ecommerce") && origin.endsWith(".vercel.app")) {
+      return callback(null, true);
+    }
+
+    // Si no cumple nada, bloquear y mostrar en consola quién fue
+    console.log(`CORS Error: El origen "${origin}" no está permitido.`);
+    callback(new Error("No permitido por la política de CORS"));
   },
 };
 app.use(cors(corsOptions));
