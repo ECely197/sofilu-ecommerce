@@ -1,13 +1,16 @@
+@use "../../../../buttons";
 @use "sass:math";
-@use "sass:string";
+@use "sass:string"; // Asegura que string.unquote funcione
 
 :host {
   display: block;
+  // Mantenemos tu cálculo de altura para el parallax
   height: calc(100vh + 800px);
   position: relative;
 }
 
 .sofilu-footer {
+  // Mantenemos la lógica sticky para el parallax
   position: sticky;
   bottom: 0;
   left: 0;
@@ -19,31 +22,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(180deg, #1d2b5e 0%, #0b0f2a 100%);
-  color: rgba(255, 255, 255, 0.7);
+  // Fondo Noche Profunda (Un poco más rico)
+  background: radial-gradient(
+    circle at 50% 100%,
+    #322d42 0%,
+    #0f172a 60%,
+    #050505 100%
+  );
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.footer-content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 2rem;
-
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-// ---ESTILOS PARA LAS ESTRELLAS CSS ---
-
+// --- ESTRELLAS (Sin cambios, funcionan bien) ---
 @function multiple-box-shadow($n) {
   $value: "#{math.random(2000)}px #{math.random(2000)}px #FFF";
   @for $i from 2 through $n {
     $value: "#{$value} , #{math.random(2000)}px #{math.random(2000)}px #FFF";
   }
-  @return string.unquote($value);
+  @return string.unquote(
+    $value
+  ); // Corrección: unquote directo o string.unquote
 }
 
 $stars-small: 700;
@@ -59,8 +56,8 @@ $stars-large: 100;
   background: transparent;
   border-radius: 50%;
   animation: twinkle 100s infinite linear;
+  opacity: 0.6;
 }
-
 #stars1 {
   box-shadow: multiple-box-shadow($stars-small);
 }
@@ -86,81 +83,82 @@ $stars-large: 100;
   }
 }
 
-// ---ESTILOS PARA LA ANIMACIÓN DEL CORAZÓN ---
+// --- CONTENIDO (Aquí empieza la magia estética) ---
+.footer-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
 
-// Logo central animado (lo movemos arriba del grid en el flujo)
-.footer-logo {
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
+  justify-content: center; // Centrado vertical
+}
+
+// LOGO DEL GATO (Flotante)
+.footer-logo {
+  flex-grow: 0; // Ya no crece tanto para no separar mucho
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  animation: main-logo-float 6s ease-in-out infinite;
+  margin-bottom: 2rem;
+  animation: float 6s ease-in-out infinite;
 
   img {
-    width: 120px;
+    width: 140px; // Un poco más grande
     height: auto;
-    filter: drop-shadow(0 5px 20px rgba(230, 230, 250, 0.15));
-    @media (min-width: 768px) {
-      width: 150px;
-    }
+    filter: drop-shadow(0 0 40px rgba(255, 209, 220, 0.3)); // Resplandor
   }
 }
 
 @keyframes float {
-  0% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
     transform: translateY(-15px);
   }
-  100% {
-    transform: translateY(0);
-  }
 }
 
-// --- ¡NUEVO! Contenedor para el grid y la línea superior ---
-.footer-info-wrapper {
-  width: 100%;
-  padding-top: 3rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+// --- PANEL DE VIDRIO (NUEVO) ---
+// Envolvemos la info en un panel para que destaque sobre las estrellas
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-// --- ¡GRID MEJORADO! ---
 .footer-info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2.5rem;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-areas: "sofilu1 sofilu1 tienda1 tienda1 espacio espacio ayuda1 ayuda1";
-    .column-sofilu {
-      grid-area: sofilu1;
-    }
-    .column-tienda {
-      grid-area: tienda1;
-    }
-    .column-ayuda {
-      grid-area: ayuda1;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
-    gap: 4rem; // Aumentamos aún más el espaciado
+  @media (min-width: 900px) {
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+    text-align: left;
+    gap: 2rem;
   }
 }
 
 .footer-column {
   h4 {
     color: white;
-    font-weight: 700;
-    margin-bottom: 1.5rem; // Más espacio debajo del título
-    font-size: 1rem;
+    font-family: "Baloo 2", sans-serif;
+    font-weight: 800;
+    margin-bottom: 1.2rem;
+    font-size: 1.2rem;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
   }
 
   p,
@@ -168,96 +166,122 @@ $stars-large: 100;
     margin: 0;
     padding: 0;
     list-style: none;
-    font-size: 0.9rem; // Ligeramente más grande para legibilidad
+    font-size: 0.95rem;
     line-height: 1.6;
   }
 
   .link-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem; // Más espacio entre links
-
+    gap: 0.8rem;
     a {
-      color: inherit;
+      color: rgba(255, 255, 255, 0.7);
       text-decoration: none;
-      transition: color 0.2s;
+      transition: all 0.3s;
       &:hover {
-        color: white;
+        color: var(--pastel-pink, #ffd1dc);
+        transform: translateX(5px);
+        text-shadow: 0 0 10px rgba(255, 182, 193, 0.6);
       }
     }
   }
 
+  // Redes Sociales (Botones Píldora)
   .social-links {
     display: flex;
-    gap: 1rem;
-    // Centra los links de redes en móvil
+    gap: 0.8rem;
+    flex-wrap: wrap;
     justify-content: center;
-    @media (min-width: 768px) {
+    @media (min-width: 900px) {
       justify-content: flex-start;
+    }
+
+    a {
+      color: white;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+
+      &:hover {
+        background: white;
+        color: #333;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        transform: translateY(-3px);
+      }
     }
   }
 }
 
-@keyframes main-logo-float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
+// LOGO SOFILU GRANDE (Animado)
 .footer-brand-logo {
   width: 100%;
-  margin-bottom: 3rem;
-  filter: drop-shadow(0 5px 20px rgba(230, 230, 250, 0.15));
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+
+  // Resplandor de fondo
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 80px;
+    background: radial-gradient(
+      ellipse,
+      rgba(179, 132, 187, 0.2) 0%,
+      transparent 70%
+    );
+    filter: blur(40px);
+    z-index: -1;
+  }
 
   .logo-svg {
     width: 100%;
+    max-width: 600px;
     height: auto;
     overflow: visible;
 
-    #logo-s,
-    #logo-o,
-    #logo-f,
-    #logo-i-stem,
-    #logo-l,
-    #logo-u {
-      animation-name: letter-float;
-      animation-iteration-count: infinite;
-      animation-timing-function: ease-in-out;
-      animation-direction: alternate;
+    // Animación de letras (Mantenemos tu lógica, solo limpiamos sintaxis)
+    path {
+      animation: letter-float 3s ease-in-out infinite alternate;
+      transform-origin: center;
+      transition: fill 0.3s;
+      &:hover {
+        fill: var(--pastel-pink, #ffd1dc) !important;
+        filter: drop-shadow(0 0 10px rgba(255, 182, 193, 0.8));
+      }
     }
 
+    // Retrasos para efecto de onda
     #logo-s {
-      animation-duration: 8s;
       animation-delay: 0s;
     }
     #logo-o {
-      animation-duration: 10s;
-      animation-delay: -2s;
+      animation-delay: 0.2s;
     }
-    de ciclo #logo-f {
-      animation-duration: 7s;
-      animation-delay: -1s;
+    #logo-f {
+      animation-delay: 0.4s;
     }
     #logo-i-stem {
-      animation-duration: 9s;
-      animation-delay: -3s;
+      animation-delay: 0.6s;
     }
     #logo-l {
-      animation-duration: 11s;
-      animation-delay: -0.5s;
+      animation-delay: 0.8s;
     }
     #logo-u {
-      animation-duration: 8.5s;
-      animation-delay: -1.5s;
+      animation-delay: 1s;
     }
 
     #logo-heart {
-      transition: transform 0.3s ease-out;
+      animation: none;
+      transition: transform 0.3s;
     }
   }
 }
@@ -267,32 +291,13 @@ $stars-large: 100;
     transform: translateY(0);
   }
   to {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
   }
 }
 
 .footer-bottom {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  padding-top: 0.5rem; // Más espacio
-  margin-top: 0.5rem; // Más espacio
-  border-top: 1px solid rgba(255, 255, 255, 0.1); // Línea divisoria
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-
-  .legal-links {
-    display: flex;
-    gap: 1.5rem;
-    a {
-      color: inherit;
-      text-decoration: none;
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
+  text-align: center;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
 }

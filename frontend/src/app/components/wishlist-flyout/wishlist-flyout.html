@@ -4,18 +4,20 @@
 >
   <div class="flyout-overlay" (click)="uiState.closeWishlistFlyout()"></div>
   <aside class="flyout-panel" @flyInOut>
-    <header class="flyout-header">
-      <div class="header-title-pill">
-        <span>Tu Lista de Deseos</span>
-        <button
-          class="close-button"
-          (click)="uiState.closeWishlistFlyout()"
-          appRipple
-        >
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
+        
+<header class="flyout-header">
+      <!-- Eliminamos el div .header-title-pill y dejamos solo el h2 -->
+      <h2 class="header-title-pill">Tu Lista de Deseos</h2> <!-- Reutilizamos clase para estilo de texto -->
+      <button
+        class="close-button"
+        (click)="uiState.closeWishlistFlyout()"
+        appRipple
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </header>
+
+  
 
     @if (wishlistService.wishlistProducts().length > 0) {
     <div class="items-list">
@@ -64,7 +66,7 @@
     } @else {
     <div class="empty-state">
       <img
-        src="icon-cat.gif"
+        src="icon-cat.png"
         alt="Tu lista de deseos está vacía"
         class="empty-illustration"
       />

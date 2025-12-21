@@ -1,21 +1,27 @@
 <footer class="sofilu-footer">
+  <!-- Fondo Estrellado -->
   <div class="stars-bg" id="stars1"></div>
   <div class="stars-bg" id="stars2"></div>
   <div class="stars-bg" id="stars3"></div>
 
   <div class="footer-content">
+    
+    <!-- Logo del Gato (Flotando encima del panel) -->
     <div class="footer-logo">
       <a routerLink="/">
         <img src="/sofilu-logo.svg" alt="Sofilu Logo" />
       </a>
     </div>
 
-    <div class="footer-info-wrapper">
+    <!-- PANEL DE VIDRIO OSCURO -->
+    <div class="glass-panel">
       <div class="footer-info-grid">
         <!-- Columna 1: Marca -->
         <div class="footer-column column-sofilu">
           <h4 class="column-title">{{ settings()?.storeName || "Sofilu" }}</h4>
-          <p class="column-text">Confort y estilo para tu hogar.</p>
+          <p class="column-text">
+            Creando momentos mágicos con confort y estilo para tu hogar.
+          </p>
         </div>
 
         <!-- Columna 2: Tienda -->
@@ -24,6 +30,7 @@
           <ul class="link-list">
             <li><a routerLink="#">Peluches</a></li>
             <li><a routerLink="#">Cajas Sorpresa</a></li>
+            <li><a routerLink="#">Ofertas</a></li>
           </ul>
         </div>
 
@@ -37,7 +44,7 @@
           </ul>
         </div>
 
-        <!-- Columna 4: Síguenos (Dinámica) -->
+        <!-- Columna 4: Síguenos (Botones Píldora) -->
         @if (settings()?.socialLinks && settings()!.socialLinks.length > 0) {
         <div class="footer-column">
           <h4 class="column-title">Síguenos</h4>
@@ -52,6 +59,7 @@
         }
       </div>
 
+      <!-- Logo Gigante SVG -->
       <div class="footer-brand-logo">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -203,6 +211,8 @@
           />
         </svg>
       </div>
+          
+
 
       <div class="footer-bottom">
         <p>

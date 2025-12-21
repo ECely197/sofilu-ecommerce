@@ -1,43 +1,33 @@
 <div class="page-container">
-  <!-- 1. Banner de Día Especial (se mostrará solo si hay uno activo) -->
+  <!-- Opcional: Capa de estrellas si la quieres -->
+  <!-- <div class="stars-overlay"></div> -->
+
+  <!-- 1. Banner (Full Width) -->
   <app-special-event-banner [event]="activeEvent()"></app-special-event-banner>
-  <!-- 2. Sección de Categorías -->
+  
+  <!-- 2. Categorías -->
   <app-categories-section [categories]="categories()"></app-categories-section>
 
-  <!-- 4. Productos Destacados -->
-  <app-featured-products
-    [products]="featuredProducts()"
-  ></app-featured-products>
+  <!-- 4. Favoritos -->
+  <app-featured-products [products]="featuredProducts()"></app-featured-products>
 
-  <!-- 3. Carruseles de Productos por Categoría -->
+  <!-- 3. Carruseles por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <div [id]="categoryGroup.slug">
-    <app-product-carousel
-      [title]="categoryGroup.name"
-      [products]="categoryGroup.products"
-      [categorySlug]="categoryGroup.slug"
-    ></app-product-carousel>
-  </div>
+    <div [id]="categoryGroup.slug" class="category-section-wrapper">
+      <app-product-carousel
+        [title]="categoryGroup.name"
+        [products]="categoryGroup.products"
+        [categorySlug]="categoryGroup.slug"
+      ></app-product-carousel>
+    </div>
   }
 
-  <!-- 5. Sección "Crea tu Regalo Perfecto" (CTA) -->
+  <!-- Resto de secciones... -->
   <app-create-gift-cta></app-create-gift-cta>
-
-  <!-- 6. Métodos de Pago (Trust Bar) -->
   <app-payment-methods></app-payment-methods>
-
-  <!-- 7. Trabaja con Nosotros -->
   <app-work-with-us></app-work-with-us>
-
-  <!-- 8. Sección de Tienda Física -->
   <app-store-info></app-store-info>
-
-  <!-- 9. Experiencia de Nuestros Clientes -->
   <app-customer-experience></app-customer-experience>
-
-  <!-- 10. Cómo Comprar -->
   <app-how-to-buy></app-how-to-buy>
-
-  <!-- 11. Información Extra -->
   <app-extra-info></app-extra-info>
 </div>

@@ -1,554 +1,292 @@
-// Importamos los estilos globales para heredar clases de botones y formularios
 @use "../../../../buttons";
 @use "../../../forms";
 
-// --- ESTILOS GENERALES Y LAYOUT ---
 :host {
   display: block;
+  padding-top: 8rem; 
 }
 
 .page-container {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding: 1rem; // Padding base para móvil
-
-  @media (min-width: 768px) {
-    padding: 1.5rem;
-  }
+  padding: 0 1.5rem;
+  position: relative;
+  z-index: 2;
 }
 
+// --- TARJETAS DE VIDRIO (GLASS CARDS) ---
 .card {
-  background-color: white;
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(30px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2.5rem;
+  
+  box-shadow: 
+    0 20px 50px -10px rgba(0,0,0,0.05),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
+    
+  overflow: hidden;
 }
 
 .product-detail-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 3rem;
 
   @media (min-width: 1024px) {
-    display: grid;
-    grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
-    gap: 2rem;
+    grid-template-columns: 1.2fr 0.8fr; 
+    align-items: start;
   }
 }
 
-// --- GALERÍA DE IMÁGENES ---
+// --- GALERÍA ---
 .gallery-card {
-  overflow: hidden;
+  padding: 1rem;
+  @media (min-width: 768px) { padding: 1.5rem; }
 }
 
-// Oculta/Muestra la galería correcta según el tamaño de pantalla
 .desktop-gallery {
   display: none;
-}
-.mobile-swiper {
-  display: block;
-}
-
-@media (min-width: 768px) {
-  .gallery-card {
-    padding: 1.5rem;
-  }
-  .desktop-gallery {
+  @media (min-width: 768px) {
     display: flex;
     gap: 1.5rem;
-  }
-  .mobile-swiper {
-    display: none;
+    height: 600px; // Altura fija para presencia
   }
 }
 
-// Estilos de la Galería de Escritorio
-.main-image-wrapper {
-  max-height: 50vh;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 1rem;
-  overflow: hidden;
-  order: 2;
-  flex-grow: 1;
-}
-.main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.placeholder-image {
-  background-color: var(--soft-gray);
-}
 .thumbnail-wrapper {
   display: flex;
   flex-direction: column;
-  order: 1;
-  gap: 0.75rem;
-
-  max-height: 50vh;
-  overflow-y: auto;
-  padding-right: 8px;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 2px;
-  }
-}
-.thumbnail {
-  width: 80px;
-  height: 80px;
-  flex-shrink: 0;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  cursor: pointer;
-  border: 2px solid var(--border);
-  transition: border-color 0.2s;
-  &.active {
-    border-color: var(--pastel-pink);
-  }
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-// Estilos de la Galería Móvil (Swiper)
-.mobile-swiper {
-  width: 100%;
-  padding-bottom: 2rem;
-  border-radius: 1.5rem; // Asegura que el contenedor tenga bordes redondeados
-  .swiper-slide {
-    aspect-ratio: 1 / 1;
-  }
-  .main-image-mobile {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 1.5rem;
-  }
-  .swiper-pagination {
-    bottom: 0.5rem;
-    .swiper-pagination-bullet-active {
-      background-color: var(--pastel-pink) !important;
-    }
-  }
-}
-
-// --- INFORMACIÓN Y ACCIONES ---
-.info-card {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  @media (min-width: 768px) {
-    padding: 2.5rem;
-  }
-}
-
-.variants-scroll-container {
-  // Define una altura máxima. El contenedor nunca será más alto que esto.
-  // 60vh significa 60% de la altura de la ventana. Ajústalo si lo necesitas.
-  max-height: 30vh;
-  overflow-y: auto; // Activa el scroll vertical si el contenido es más alto
-  padding-right: 12px; // Espacio para que la barra de scroll no se pegue
-  margin-right: -12px; // Compensa el padding para mantener el alineamiento
-  margin-bottom: 1.5rem; // Mantenemos el espacio inferior
-
-  // Estilo sutil para la barra de scroll (estilo Material You)
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent; // El fondo es invisible
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--border); // Un gris muy suave
-    border-radius: 3px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: var(--soft-gray); // Un poco más oscuro al pasar el ratón
-  }
-}
-.product-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.75rem;
-  line-height: 1.2;
-  @media (min-width: 768px) {
-    font-size: 2.25rem;
-  }
-}
-.product-price {
-  font-size: 1.5rem;
-  font-weight: 500;
-  margin: 0.5rem 0 1.5rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  .price-suffix {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    font-weight: 400;
-  }
-}
-
-// Estilos de Variantes desplegables
-
-.variants-container.accordion {
-  background-color: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
   gap: 1rem;
+  width: 90px;
+  overflow-y: auto;
+  padding-right: 5px;
+  
+  // Scrollbar invisible pero funcional
+  &::-webkit-scrollbar { width: 0; }
 }
 
-.accordion-item {
-  background-color: var(--soft-white);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  overflow: hidden; // Importante para que el contenido no se desborde al colapsar
+.thumbnail {
+  width: 80px; height: 80px; flex-shrink: 0;
+  border-radius: 1.2rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: white;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+
+  &:hover { transform: scale(1.05); }
+  &.active { border-color: var(--pastel-pink); box-shadow: 0 0 0 4px rgba(255, 209, 220, 0.3); }
 }
 
-.accordion-header {
+.main-image-wrapper {
+  flex-grow: 1;
+  background: white;
+  border-radius: 2rem;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  padding: 1rem;
-  cursor: pointer;
-  gap: 1rem;
-  transition: background-color 0.2s;
+  justify-content: center;
+  position: relative;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.03);
 
-  &:hover {
-    background-color: #f5f1ed; // Un color sutil para el hover
+  img {
+    width: 100%; height: 100%; object-fit: contain;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.1)); // Sombra realista al peluche
   }
+  
+  &:hover img { transform: scale(1.1); }
 }
 
-.accordion-preview-image,
-.accordion-preview-placeholder {
-  width: 50px;
-  height: 50px;
-  border-radius: 0.5rem;
-  object-fit: cover;
-  flex-shrink: 0;
+// Mobile Swiper
+.mobile-swiper {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: white;
+  border-radius: 2rem;
+  overflow: hidden;
+  @media (min-width: 768px) { display: none; }
+  
+  img { width: 100%; height: 100%; object-fit: contain; }
 }
 
-.accordion-preview-placeholder {
-  background-color: var(--soft-gray);
+
+// --- INFO CARD (DERECHA) ---
+.info-card {
+  padding: 2rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
 }
 
-.accordion-info {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.variant-name {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
+.product-title {
+  font-family: "Baloo 2", serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #333;
   margin: 0;
 }
 
-.variant-selection {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.accordion-icon {
-  transition: transform 0.3s ease;
-  &.expanded {
-    transform: rotate(180deg);
+.product-price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #555;
+  display: flex; align-items: baseline; gap: 0.5rem;
+  
+  .price-suffix {
+    font-size: 1rem; font-weight: 500; color: #888;
   }
 }
 
-.accordion-content {
-  // La altura y opacidad son controladas por la animación de Angular
-  background-color: white;
-  padding: 0 1rem 1rem 1rem;
+// --- VARIANTES (ACORDEÓN DE VIDRIO) ---
+.variants-scroll-container {
+  width: 100%;
+}
+
+.accordion-item {
+  background: rgba(255, 255, 255, 0.5); // Ligeramente más oscuro que la tarjeta
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 1.5rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: background 0.3s;
+  
+  &:hover { background: rgba(255, 255, 255, 0.8); }
+}
+
+.accordion-header {
+  padding: 1rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  cursor: pointer;
+  
+  .accordion-preview-image {
+    width: 50px; height: 50px; border-radius: 12px; object-fit: cover; background: white;
+  }
+  
+  .accordion-info {
+    flex-grow: 1;
+    .variant-name { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #888; font-weight: 700; }
+    .variant-selection { font-size: 1.1rem; font-weight: 700; color: #333; }
+  }
+  
+  .accordion-icon { 
+    color: #333; 
+    transition: transform 0.3s; 
+    &.expanded { transform: rotate(180deg); }
+  }
 }
 
 .variant-options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .option-card {
-  border: 2px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 0.5rem;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  padding: 0.8rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 
+  &:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+  
   &.active {
     border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 2px var(--pastel-pink);
+    background: #fff0f5;
+    box-shadow: 0 0 0 4px rgba(255, 182, 193, 0.3);
   }
-
-  &.unavailable {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: var(--soft-white);
+  
+  .option-image {
+    width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 0.6rem; margin-bottom: 0.5rem;
   }
-
-  &:not(.unavailable):hover {
-    transform: translateY(-2px);
-    border-color: #dcd5cd;
-  }
+  .option-name { font-weight: 700; font-size: 0.9rem; display: block; line-height: 1.2; }
+  .option-price { font-size: 0.8rem; color: #888; }
 }
 
-.option-image,
-.option-image-placeholder {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 0.5rem;
-  object-fit: cover;
-  margin-bottom: 0.5rem;
-}
-
-.option-image-placeholder {
-  background-color: var(--soft-gray);
-}
-
-.option-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.option-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.option-price {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
+// --- ACCIONES (Botones) ---
 .actions {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.75rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  grid-template-areas:
-    "quantity add"
-    "wishlist wishlist";
-
-  @media (min-width: 480px) {
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: "quantity add wishlist";
-  }
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 .quantity-selector {
-  grid-area: quantity;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--soft-white);
-  border-radius: 9999px;
-  height: 52px;
-  border: 1px solid var(--border);
-  .quantity-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--text-charcoal);
-    padding: 0 1rem;
-    line-height: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  background: white;
+  border-radius: 50px;
+  padding: 0.5rem;
+  width: 120px;
+  height: 60px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  
+  button {
+    width: 40px; height: 40px; border-radius: 50%; border: none; background: #f5f5f5; cursor: pointer; font-size: 1.2rem;
+    &:hover { background: #eee; }
   }
-  .quantity-value {
-    font-weight: 700;
-    font-size: 1.125rem;
-    min-width: 2ch;
-    text-align: center;
-  }
+  span { font-weight: 800; font-size: 1.2rem; }
 }
 
 .add-to-cart-btn {
-  grid-area: add;
-  @extend .btn-material;
-  height: 52px;
-
-  &.was-added {
-    background-color: #16a34a;
-    box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
-    cursor: default;
-    &:hover {
-      transform: none;
-      box-shadow: 0 4px 15px rgba(22, 163, 74, 0.4);
-    }
+  @extend .btn-material; // Tu mixin global
+  height: 60px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  width: 100%;
+  background: linear-gradient(135deg, #333 0%, #000 100%);
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  
+  &:hover { transform: scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+  
+  // Estilo cuando faltan opciones (Deshabilitado visualmente pero clickeable para feedback)
+  &.incomplete {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
 .wishlist-btn {
-  grid-area: wishlist;
-  @extend .btn-secondary;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 2px solid white; background: rgba(255,255,255,0.5);
+  display: grid; place-items: center; cursor: pointer;
+  transition: all 0.3s;
+  
+  &:hover { background: white; transform: scale(1.1); }
+  .material-symbols-outlined { font-size: 1.8rem; color: #e11d48; }
 }
 
-// --- PESTAÑAS (TABS) Y RESEÑAS ---
+// --- TABS INFERIORES ---
 .details-card {
-  padding: 1.5rem;
-  @media (min-width: 768px) {
-    padding: 2rem;
+  padding: 0; // Reset padding
+  .tab-header {
+    display: flex;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    
+    button {
+      flex: 1; padding: 1.5rem; background: transparent; border: none;
+      font-family: "Baloo 2"; font-weight: 700; font-size: 1.2rem; color: #888; cursor: pointer;
+      border-bottom: 4px solid transparent;
+      transition: all 0.3s;
+      
+      &.active { color: #333; border-bottom-color: var(--pastel-pink); background: rgba(255,255,255,0.3); }
+    }
   }
-  @media (min-width: 1024px) {
-    grid-column: 1 / -1;
-  }
-}
-.tab-header {
-  display: flex;
-  gap: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-.tab-link {
-  padding: 0.75rem 0.25rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  transition: all 0.2s;
-  &.active {
-    color: var(--text-primary);
-    border-bottom-color: var(--pastel-pink);
-  }
-}
-.tab-content {
-  padding: 2.5rem 0;
-}
-.prose {
-  line-height: 1.7;
-  color: var(--text-primary);
-  h1,
-  h2,
-  h3 {
-    margin-bottom: 1rem;
-  }
-  ul,
-  ol {
-    padding-left: 1.5rem;
-  }
-  li {
-    margin-bottom: 0.5rem;
-  }
+  .tab-content { padding: 3rem; line-height: 1.8; color: #555; font-size: 1.1rem; }
 }
 
-.reviews-summary {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  .reviews-summary-title {
-    font-size: 1.5rem;
-  }
-}
-.reviews-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
+// --- RESEÑAS ---
 .review-card {
-  background-color: var(--soft-white);
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border: 1px solid var(--border);
-}
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  .review-author {
-    font-weight: 700;
-  }
-  .review-date {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
-}
-.review-rating {
-  margin-bottom: 0.75rem;
-}
-.review-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-}
-.review-comment {
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-.empty-reviews-message {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
-  border: 2px dashed var(--border);
-  border-radius: 1rem;
-}
-
-.review-form-container {
-  background-color: var(--soft-white);
-  padding: 2rem;
-  border-radius: 1.5rem;
-  margin-top: 3rem;
-  border: 1px solid var(--border);
-}
-.review-form-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.75rem;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-.rating-field {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-.submit-review-btn {
-  @extend .btn-material;
-  width: 100%;
-  margin-top: 1rem;
-  padding: 0.875rem;
-  font-size: 1rem;
-}
-
-// --- ESTADO DE CARGA ---
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  font-size: 1.25rem;
-  color: var(--text-secondary);
+  background: white; border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.03);
 }

@@ -1,38 +1,26 @@
-<!-- En: categories-section.html -->
-
-<section class="card">
-  <div class="card-header">
-    <h2 class="card-title">Explora Nuestras Categorías</h2>
+<section class="section-container" data-aos="fade-up">
+  <div class="section-header">
+    <h2 class="section-title">Explora Nuestras Categorías</h2>
   </div>
 
-  <!-- 1. Envolvemos el swiper en un carousel-container -->
-  <div class="carousel-container">
-    <div class="swiper">
-      <div class="swiper-wrapper">
-        @for (category of categories; track category._id) {
-        <div class="swiper-slide">
-          <a
-            href="#"
-            (click)="handleCategoryClick($event, category)"
-            class="category-card"
-            [class]="category.slug"
-          >
-            <div class="icon-container">
-              <img
-                [src]="category.imageUrl"
-                class="category-icon"
-                alt="{{ category.name }}"
-              />
-            </div>
-            <p class="category-name">{{ category.name }}</p>
-          </a>
+  <!-- Usamos un Grid nativo en lugar de Swiper para mayor libertad -->
+  <div class="categories-grid">
+    @for (category of categories; track category._id) {
+      <a
+        href="javascript:void(0)"
+        (click)="handleCategoryClick($event, category)"
+        class="category-card {{category.slug}}"
+      >
+        <div class="icon-container">
+          <!-- Usamos el icono/imagen de la categoría -->
+          <img
+            [src]="category.imageUrl"
+            [alt]="category.name"
+            loading="lazy"
+          />
         </div>
-        }
-      </div>
-    </div>
-
-    <!-- 2. Añadimos los botones, vinculados con el ID único -->
-    <div class="swiper-button-prev {{ uniqueId }}"></div>
-    <div class="swiper-button-next {{ uniqueId }}"></div>
+        <p class="category-name">{{ category.name }}</p>
+      </a>
+    }
   </div>
 </section>

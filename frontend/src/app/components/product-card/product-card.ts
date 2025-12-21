@@ -84,15 +84,10 @@ export class ProductCard {
     }
 
     if (this.product) {
-      // Para añadir desde la tarjeta, siempre asumimos la primera variante por defecto
-      const defaultVariants: { [key: string]: string } = {};
-      this.product.variants.forEach((variant) => {
-        if (variant.options.length > 0) {
-          defaultVariants[variant.name] = variant.options[0].name;
-        }
-      });
+      const noVariants: { [key: string]: string } = {};
 
-      this.cartService.addItem(this.product, defaultVariants, 1);
+      this.cartService.addItem(this.product, noVariants, 1);
+      
       this.toastService.show(
         `${this.product.name} añadido al carrito`,
         'success'

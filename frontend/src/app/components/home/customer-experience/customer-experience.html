@@ -7,7 +7,7 @@
       <div class="swiper-slide">
         <div class="experience-card">
           @if(exp.type === 'image') {
-          <img [src]="exp.url" alt="Experiencia de cliente" />
+          <img [src]="exp.url" alt="Experiencia de cliente" loading="lazy" />
           } @if(exp.type === 'video') {
           <video [src]="exp.url" autoplay loop muted playsinline></video>
           }

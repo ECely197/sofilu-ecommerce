@@ -1,23 +1,26 @@
 <header class="sofilu-header" data-lenis-prevent>
-  <!-- ESTADO INICIAL: La píldora grande que ya conoces -->
-  <div class="header-pill-initial">
+  <!-- Contenedor Principal "Liquid Glass" -->
+  <div class="header-pill">
+    
+    <!-- 1. LOGO (Izquierda) -->
     <div class="logo-wrapper">
       <a routerLink="/" class="logo-link">
-        <img src="/sofilu-logo.svg" alt="Logo de Sofilu" class="logo-image" />
+        <img src="/sofilu-logo.svg" alt="Sofilu" class="logo-image" />
       </a>
     </div>
+
+    <!-- 2. NAVEGACIÓN (Centro) -->
     <nav #navContainer class="desktop-nav">
+      <!-- La píldora rosa animada (Fondo) -->
       <div #navPill class="nav-pill"></div>
 
       @for (item of navItems(); track item.id) {
-      <!-- ¡ESTE ES EL CONTENEDOR CLAVE! -->
       <div
         #navLink
         class="nav-item-wrapper"
         (mouseenter)="handleMouseEnter(item)"
         (mouseleave)="handleMouseLeave()"
       >
-        <!-- El enlace de navegación -->
         <a
           [routerLink]="item.subCategories.length === 0 ? item.slug : null"
           [routerLinkActiveOptions]="{ exact: item.slug === '/' }"
@@ -28,20 +31,21 @@
           <span class="nav-text-reveal">{{ item.name }}</span>
         </a>
 
-        <!-- ¡EL MEGA MENÚ AHORA VIVE DENTRO DEL WRAPPER! -->
+        <!-- MEGA MENÚ -->
         <div
           class="mega-menu-container"
           [class.is-active]="activeMenu()?.id === item.id"
         >
-          @if (activeMenu()?.id === item.id; as menu) {
+          @if (activeMenu()?.id === item.id) {
           <div class="mega-menu-card">
             <div
               class="sub-category-list"
               (mouseleave)="handleSubCategoryListLeave()"
             >
+              <div #subCategoryPill class="hover-pill"></div>
               @for (sub of activeMenu()!.subCategories; track sub.id) {
               <a
-                href="#"
+                href="javascript:void(0)"
                 (click)="handleSubCategoryClick($event, sub)"
                 #subCategoryLink
                 (mouseenter)="handleSubCategoryEnter(sub, $event)"
@@ -59,6 +63,7 @@
                 <a
                   [routerLink]="['/product', product._id]"
                   class="preview-product-card"
+                  #previewCard
                 >
                   <div class="preview-image-wrapper">
                     @if(product.images.length > 0) {
@@ -80,198 +85,52 @@
       }
     </nav>
 
-    <!-- ACCIONES (DERECHA) -->
+    <!-- 3. ACCIONES (Derecha) -->
     <div class="header-right">
-      <div class="header-right">
-        <form class="search-form" (submit)="handleSearch($event, searchInput)">
-          <span class="material-symbols-outlined search-icon">search</span>
-          <input
-            #searchInput
-            type="text"
-            placeholder="Buscar..."
-            class="search-input"
-          />
-        </form>
+      <form class="search-form" (submit)="handleSearch($event, searchInput)">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input
+          #searchInput
+          type="text"
+          placeholder="Buscar..."
+          class="search-input"
+        />
+      </form>
 
-        <button
-          (click)="uiStateService.openWishlistFlyout()"
-          class="icon-button"
-          aria-label="Abrir lista de deseos"
-        >
-          <span class="material-symbols-outlined">favorite</span>
-          @if (wishlistService.wishlistProductIds().length > 0) {
-          <span class="wishlist-badge">{{
-            wishlistService.wishlistProductIds().length
-          }}</span>
-          }
-        </button>
-
-        <button
-          (click)="uiStateService.openCartFlyout()"
-          class="icon-button"
-          aria-label="Abrir carrito"
-        >
-          <span class="material-symbols-outlined">shopping_bag</span>
-          @if (cartService.totalItems() > 0) {
-          <span class="cart-badge">{{ cartService.totalItems() }}</span>
-          }
-        </button>
-
-        @if (currentUser$ | async; as user) {
-        <div class="profile-container">
-          <button (click)="toggleProfileMenu($event)" class="profile-button">
-            <span>{{ user.email?.charAt(0)?.toUpperCase() }}</span>
-          </button>
-          @if (isProfileMenuOpen()) {
-          <div #profileMenu class="profile-menu">
-            <!-- Quitamos la animación @flyInOut de aquí -->
-            <div class="menu-header">
-              @if(user.email) {
-              <p class="user-email">{{ user.email }}</p>
-              }
-            </div>
-            <div class="menu-links">
-              <a routerLink="/account" (click)="toggleProfileMenu()"
-                >Mi Cuenta</a
-              >
-              @if(isAdmin$ | async) {
-              <a routerLink="/admin" (click)="toggleProfileMenu()"
-                >Panel de Admin</a
-              >
-              }
-            </div>
-            <div class="menu-footer">
-              <button (click)="logout()" class="logout-button">
-                Cerrar Sesión
-              </button>
-            </div>
-          </div>
-          }
-        </div>
-        } @else {
-        <a routerLink="/login" class="login-button btn btn-primary"
-          >Iniciar Sesión</a
-        >
-        }
-      </div>
-    </div>
-  </div>
-
-  <!-- Header Secundario -->
-
-  <!-- Píldora Izquierda: Navegación -->
-  <div class="header-pills-scrolled">
-    <div class="nav-pill-scrolled">
-      <button class="menu-button" (click)="toggleScrolledMenu($event)">
-        <span class="material-symbols-outlined">menu</span>
-        <span>Productos</span>
-      </button>
-
-      @if (isScrolledMenuOpen()) {
-      <div
-        class="mega-menu-container scrolled-version"
-        (mouseleave)="handleScrolledMenuMouseLeave()"
-      >
-        <div class="mega-menu-card">
-          @if (scrolledMenuActiveItem(); as productsMenu) {
-          <div class="sub-category-list">
-            @for (sub of productsMenu.subCategories; track sub.id) {
-            <a
-              href="#"
-              (click)="handleSubCategoryClick($event, sub)"
-              (mouseenter)="handleScrolledSubCategoryEnter(sub)"
-              [class.active]="scrolledActiveSubCategory()?.id === sub.id"
-              class="sub-category-link"
-            >
-              {{ sub.name }}
-            </a>
-            }
-          </div>
-
-          <div class="product-preview-container">
-            @if (scrolledActiveSubCategory(); as subCat) {
-            <div class="product-preview-grid">
-              @for (product of subCat.products; track product._id) {
-              <a
-                [routerLink]="['/product', product._id]"
-                class="preview-product-card"
-              >
-                <div class="preview-image-wrapper">
-                  @if(product.images.length > 0) {
-                  <img [src]="product.images[0]" [alt]="product.name" />
-                  } @else {
-                  <div class="image-placeholder"></div>
-                  }
-                </div>
-                <p>{{ product.name }}</p>
-              </a>
-              }
-            </div>
-            } @else {
-            <div class="preview-placeholder">Selecciona una categoría</div>
-            }
-          </div>
-          }
-        </div>
-      </div>
-      }
-    </div>
-
-    <!-- Píldora Central: Logo de Texto -->
-    <a routerLink="/" class="logo-pill-scrolled">
-      <img src="/sofilu-text.svg" alt="Sofilu" />
-    </a>
-
-    <!-- Píldora Derecha: Acciones -->
-    <div class="actions-pill-scrolled">
-      <!-- Reutilizamos los mismos botones de acción -->
       <button (click)="uiStateService.openWishlistFlyout()" class="icon-button">
         <span class="material-symbols-outlined">favorite</span>
         @if (wishlistService.wishlistProductIds().length > 0) {
-        <span class="wishlist-badge">{{
-          wishlistService.wishlistProductIds().length
-        }}</span>
+        <span class="badge">{{ wishlistService.wishlistProductIds().length }}</span>
         }
       </button>
+
       <button (click)="uiStateService.openCartFlyout()" class="icon-button">
         <span class="material-symbols-outlined">shopping_bag</span>
         @if (cartService.totalItems() > 0) {
-        <span class="cart-badge">{{ cartService.totalItems() }}</span>
+        <span class="badge">{{ cartService.totalItems() }}</span>
         }
       </button>
+
       @if (currentUser$ | async; as user) {
       <div class="profile-container">
         <button (click)="toggleProfileMenu($event)" class="profile-button">
-          <span>{{ user.email?.charAt(0)?.toUpperCase() }}</span>
+          {{ user.email?.charAt(0)?.toUpperCase() }}
         </button>
         @if (isProfileMenuOpen()) {
         <div #profileMenu class="profile-menu">
-          <!-- Quitamos la animación @flyInOut de aquí -->
-          <div class="menu-header">
-            @if(user.email) {
-            <p class="user-email">{{ user.email }}</p>
-            }
-          </div>
+          <div class="menu-header"><p>{{ user.email }}</p></div>
           <div class="menu-links">
             <a routerLink="/account" (click)="toggleProfileMenu()">Mi Cuenta</a>
-            @if(isAdmin$ | async) {
-            <a routerLink="/admin" (click)="toggleProfileMenu()"
-              >Panel de Admin</a
-            >
-            }
+            @if(isAdmin$ | async) { <a routerLink="/admin">Panel Admin</a> }
           </div>
           <div class="menu-footer">
-            <button (click)="logout()" class="logout-button">
-              Cerrar Sesión
-            </button>
+            <button (click)="logout()" class="logout-button">Cerrar Sesión</button>
           </div>
         </div>
         }
       </div>
       } @else {
-      <a routerLink="/login" class="login-button btn btn-primary"
-        >Iniciar Sesión</a
-      >
+      <a routerLink="/login" class="login-button">Ingresar</a>
       }
     </div>
   </div>

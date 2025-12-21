@@ -1,183 +1,249 @@
-@use "../../../../buttons"; // Para heredar estilos de botón
+@use "../../../../buttons";
 
-// --- CONTENEDOR PRINCIPAL DEL COMPONENTE ---
 :host {
   position: fixed;
-  inset: 0; // Ocupa toda la pantalla
-  z-index: 1000; // Un z-index alto
-  pointer-events: none; // No es clickeable por defecto
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  font-family: "Baloo 2", sans-serif; // Tipografía uniforme
 }
 
-// --- CONTENEDOR DEL FLYOUT (Controla la visibilidad) ---
 .flyout-container {
   position: absolute;
   inset: 0;
-
-  // Oculto por defecto
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.4s ease, visibility 0s 0.4s; // Transición suave
-
-  // Estado abierto
-  &.is-open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto; // Se vuelve interactivo cuando está abierto
-    transition-delay: 0s;
-  }
+  width: 100%;
+  height: 100%;
 }
 
-// --- FONDO OSCURO (Overlay) ---
+// --- OVERLAY ---
 .flyout-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(32, 34, 31, 0.4);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-// --- PANEL FLOTANTE (El contenido) ---
+// --- PANEL PRINCIPAL (LIQUID GLASS) ---
 .flyout-panel {
   position: absolute;
   top: 1rem;
   right: 1rem;
-
-  // ¡CAMBIOS CLAVE AQUÍ!
-  bottom: auto; // <-- Ya no lo anclamos a la parte inferior
+  bottom: 1rem;
   width: 420px;
   max-width: calc(100% - 2rem);
-
-  // Le damos una altura máxima, pero puede ser más pequeño si el contenido no la llena
-  max-height: calc(100vh - 2rem);
-
-  background-color: var(--background);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
-  // Animación (sin cambios)
-  transform: translateX(110%);
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  // Efecto Vidrio Premium
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(50px) saturate(180%);
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 2.5rem;
+  
+  box-shadow: 
+    -20px 0 50px rgba(0,0,0,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
 
-  .flyout-container.is-open & {
-    transform: translateX(0);
-  }
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-// --- CABECERA DEL PANEL ---
+.flyout-container.is-open {
+  pointer-events: auto;
+  .flyout-overlay { opacity: 1; }
+  .flyout-panel { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
 .flyout-header {
-  padding: 1rem;
+  padding: 1.5rem 2rem;
   flex-shrink: 0;
-}
-
-.header-title-pill {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--soft-white);
-  border-radius: 9999px;
-  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-  font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--soft-gray);
+  border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.header-title-pill {
+  // Aquí simplificamos para que se vea limpio como el carrito
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-charcoal);
+  margin: 0;
+  letter-spacing: -0.5px;
+  background: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
 }
 
 .close-button {
-  background-color: var(--soft-gray);
-  border: none;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  background: rgba(0,0,0,0.05);
+  border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-
-  .material-symbols-outlined {
-    font-size: 20px;
-  }
+  display: grid;
+  place-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #555;
 
   &:hover {
-    transform: scale(1.1);
-    background-color: #dcd5cd;
+    background: #ffefef;
+    color: #ff6b6b;
+    transform: rotate(90deg) scale(1.1);
   }
+  
+  .material-symbols-outlined { font-size: 1.4rem; }
 }
 
-// --- LISTA DE ITEMS ---
+/* ==========================================================================
+   LISTA DE ITEMS
+   ========================================================================== */
 .items-list {
-  padding: 1rem 1.5rem;
+  padding: 1.5rem;
   overflow-y: auto;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 }
 
 .item-card {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 80px 1fr auto;
   gap: 1rem;
   align-items: center;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--soft-gray);
-  &:last-child {
-    border-bottom: none;
+  padding: 0.8rem;
+  border-radius: 1.5rem;
+  
+  // Tarjetas de vidrio individuales
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s, background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
   }
 }
 
 .item-image {
-  width: 72px;
-  height: 72px;
-  border-radius: 0.75rem;
+  width: 80px;
+  height: 80px;
+  border-radius: 1rem;
   object-fit: cover;
+  background: white;
 }
-.item-info a {
-  text-decoration: none;
-  color: inherit;
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+  a { text-decoration: none; }
 }
+
 .item-name {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+  line-height: 1.2;
+  transition: color 0.2s;
+  
+  &:hover { color: var(--pastel-pink, #FFD1DC); }
 }
+
 .item-price {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: #666;
+  font-weight: 600;
 }
 
 .item-actions {
   display: flex;
+  flex-direction: column; // Botones verticales para ahorrar espacio horizontal
   gap: 0.5rem;
 }
+
 .action-btn {
-  @extend .btn-secondary;
-  width: 40px;
-  height: 40px;
-  padding: 0;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  &.remove-btn {
-    color: #ef4444;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+  
+  &.cart-btn {
+    background: var(--pastel-pink, #FFD1DC);
+    color: white;
+    box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
+    &:hover { transform: scale(1.1); }
   }
+  
+  &.remove-btn {
+    background: transparent;
+    color: #aaa;
+    &:hover { color: #ff6b6b; background: #fff5f5; }
+  }
+  
+  .material-symbols-outlined { font-size: 1.2rem; }
 }
 
-// --- ESTADO VACÍO ---
+/* ==========================================================================
+   ESTADO VACÍO
+   ========================================================================== */
 .empty-state {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
   text-align: center;
+  padding: 2rem;
+  color: var(--text-charcoal);
+}
 
-  .empty-illustration {
-    width: 100%;
-    max-width: 150px;
-    margin-bottom: 1.5rem;
-  }
-  h2 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-  p {
-    color: var(--text-secondary);
-  }
+.empty-illustration {
+  width: 180px;
+  margin-bottom: 1.5rem;
+  // Efecto de fusión si la imagen tiene fondo blanco
+  mix-blend-mode: multiply; 
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-state h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #888;
+  max-width: 250px;
+  line-height: 1.5;
 }

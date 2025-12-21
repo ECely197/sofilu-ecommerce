@@ -1,51 +1,34 @@
-@if (product) {
-<!-- El enlace ahora es el contenedor principal de la tarjeta -->
-<a
-  [routerLink]="isOutOfStock() ? null : ['/product', product._id]"
-  class="product-card"
-  [class.out-of-stock]="isOutOfStock()"
->
-  <!-- Contenedor de la Imagen con las burbujas de acción -->
-  <div class="image-container">
-    @if (isOutOfStock()) {
+<a [routerLink]="['/product', product._id]" class="product-card" [class.out-of-stock]="isOutOfStock()">
+  
+  <!-- Badge de Stock -->
+  @if (isOutOfStock()) {
     <div class="stock-badge">Agotado</div>
-    } @if (product.images && product.images.length > 0) {
-    <img
-      [src]="product.images[0]"
-      [alt]="product.name"
-      class="product-image"
-      loading="lazy"
-      decoding="async"
-    />
-    } @else {
-    <div class="image-placeholder"></div>
-    }
+  }
 
-    <!-- Las burbujas ahora son siempre visibles en el hover de la imagen -->
-    @if (authService.currentUser$ | async) {
+  <!-- Imagen Contenida -->
+  <div class="image-container">
+    @if (product.images.length > 0) {
+      <img [src]="product.images[0]" [alt]="product.name" class="product-image" loading="lazy" />
+    } @else {
+      <div class="image-placeholder"></div>
+    }
+    
+    <!-- Botones de Acción (Ahora dentro del contenedor de imagen para posicionamiento relativo) -->
     <div class="action-bubbles">
-      <button
-        (click)="toggleWishlist($event)"
-        class="bubble-button"
-        [class.active]="isProductInWishlist()"
-      >
-        <span class="material-symbols-outlined">{{
-          isProductInWishlist() ? "favorite" : "favorite_border"
-        }}</span>
+      <!-- Botón Carrito -->
+      <button class="bubble-button" (click)="addToCart($event)" title="Añadir al carrito">
+        <span class="material-symbols-outlined">shopping_bag</span>
       </button>
-      <button (click)="addToCart($event)" class="bubble-button">
-        <span class="material-symbols-outlined">add_shopping_cart</span>
+      <!-- Botón Wishlist -->
+      <button class="bubble-button" [class.active]="isProductInWishlist()" (click)="toggleWishlist($event)" title="Favoritos">
+        <span class="material-symbols-outlined">{{ isProductInWishlist() ? 'favorite' : 'favorite_border' }}</span>
       </button>
     </div>
-    }
   </div>
 
-  <!-- Contenido de texto -->
+  <!-- Info -->
   <div class="card-content">
     <h3 class="product-name">{{ product.name }}</h3>
-    <p class="price">
-      {{ displayPrice | currency : "COP" : "symbol" : "1.0-0" }}
-    </p>
+    <span class="price">{{ displayPrice | currency:'COP':'symbol':'1.0-0' }}</span>
   </div>
 </a>
-}

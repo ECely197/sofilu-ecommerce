@@ -1,17 +1,3 @@
-// En: frontend/src/app/pages/product-detail/product-detail.ts
-/**
- * @fileoverview Componente de la Página de Detalle de Producto.
- * Este componente es el corazón de la experiencia de compra. Gestiona:
- * - Carga de datos del producto.
- * - Galería de imágenes interactiva.
- * - Selección de variantes de producto.
- * - Lógica de añadir al carrito y a la lista de deseos.
- * - Gestión de pestañas para descripción y reseñas.
- * - Formulario para enviar nuevas reseñas.
- * - SEO (títulos, metaetiquetas) y datos estructurados (JSON-LD).
- */
-
-// --- Importaciones de Angular y Módulos ---
 import {
   Component,
   OnInit,
@@ -36,7 +22,7 @@ import {
 } from '@angular/forms';
 import { Title, Meta, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-// --- Servicios, Tipos y Componentes Personalizados ---
+// --- Servicios, Tipos y Componentes ---
 import { ProductServices, Review } from '../../services/product';
 import { Product, Option } from '../../interfaces/product.interface';
 import { JsonLdService } from '../../services/json-ld.service';
@@ -46,9 +32,14 @@ import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
 import { ToastService } from '../../services/toast.service';
 import { CategoryService, Category } from '../../services/category.service';
+
+// --- Componentes Hijos ---
 import { CategoriesSection } from '../../components/home/categories-section/categories-section';
+import { ProductCarousel } from '../../components/home/product-carousel/product-carousel';
 import { RippleDirective } from '../../directives/ripple';
 import { StarRatingComponent } from '../../components/star-rating/star-rating';
+
+// --- Animaciones ---
 import {
   trigger,
   state,
@@ -62,10 +53,7 @@ import Swiper from 'swiper';
 import { Pagination } from 'swiper/modules';
 Swiper.use([Pagination]);
 
-/**
- * Pipe personalizado para renderizar HTML de forma segura,
- * previniendo ataques XSS. Esencial para descripciones de productos que vienen de un editor de texto enriquecido.
- */
+// --- PIPE SEGURO ---
 @Pipe({ name: 'safeHtml', standalone: true })
 export class SafeHtmlPipe implements PipeTransform {
   constructor(private sanitizer: DomSanitizer) {}
@@ -84,6 +72,7 @@ export class SafeHtmlPipe implements PipeTransform {
     SafeHtmlPipe,
     StarRatingComponent,
     CategoriesSection,
+    ProductCarousel,
   ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
@@ -118,7 +107,7 @@ export class ProductDetailComponent
   private zone = inject(NgZone);
   private categoryService = inject(CategoryService);
 
-  // --- ESTADO DEL COMPONENTE (SIGNALS) ---
+  // --- SIGNALS (ESTADO) ---
   product = signal<Product | null>(null);
   selectedImage = signal<string>('');
   reviews = signal<Review[]>([]);
@@ -129,20 +118,21 @@ export class ProductDetailComponent
   quantity = signal(1);
   expandedVariant = signal<string | null>(null);
   private swiperInstance: Swiper | undefined;
+  
+  // Datos para secciones inferiores
   categories = signal<Category[]>([]);
+  relatedProducts = signal<Product[]>([]);
 
   constructor() {
-    // ¡MODIFICADO! El `effect` ahora reacciona a `galleryImages` para actualizar
-    // la imagen seleccionada si la lista cambia.
+    // Efecto para manejar la galería y el swiper móvil
     effect(() => {
       const images = this.galleryImages();
-      // Si la imagen actualmente seleccionada ya no está en la galería,
-      // volvemos a la primera imagen disponible.
+      // Si la imagen seleccionada ya no es válida (por cambio de variante), resetear a la primera
       if (images.length > 0 && !images.includes(this.selectedImage())) {
         this.selectedImage.set(images[0]);
       }
 
-      // Lógica de Swiper sin cambios
+      // Inicializar Swiper solo en móvil
       if (this.product() && window.innerWidth < 768) {
         setTimeout(() => this.initMobileSwiper(), 50);
       } else if (this.swiperInstance) {
@@ -152,16 +142,13 @@ export class ProductDetailComponent
     });
   }
 
-  //logica de galeria de imagenes
+  // --- COMPUTED PROPERTIES ---
 
+  // Filtra las imágenes según las variantes seleccionadas
   galleryImages = computed(() => {
     const p = this.product();
     if (!p) return [];
-
-    // 1. Empieza con las imágenes originales del producto.
     const images = [...p.images];
-
-    // 2. Recorre las variantes seleccionadas.
     const selections = this.selectedVariants();
     for (const variantName in selections) {
       const selectedOptionName = selections[variantName];
@@ -169,7 +156,6 @@ export class ProductDetailComponent
       const option = variant?.options.find(
         (o) => o.name === selectedOptionName
       );
-      // 3. Si la opción seleccionada tiene una imagen, la añade a la galería.
       if (option?.image) {
         images.push(option.image);
       }
@@ -177,18 +163,14 @@ export class ProductDetailComponent
     return images;
   });
 
-  //Animacion de acordeon para grupo de variantes
-
+  // Obtiene una imagen de previsualización para el acordeón de variantes
   variantPreviewImages = computed(() => {
     const product = this.product();
     if (!product) return {};
-
     const previews: { [key: string]: string } = {};
     product.variants.forEach((variant) => {
-      // Filtra solo las opciones que tienen una imagen definida.
       const optionsWithImages = variant.options.filter((opt) => !!opt.image);
       if (optionsWithImages.length > 0) {
-        // Selecciona una imagen aleatoria de las opciones disponibles.
         const randomIndex = Math.floor(
           Math.random() * optionsWithImages.length
         );
@@ -198,74 +180,57 @@ export class ProductDetailComponent
     return previews;
   });
 
-  toggleVariant(variantName: string): void {
-    this.expandedVariant.update((current) =>
-      current === variantName ? null : variantName
-    );
-  }
-
+  // LÓGICA FLEXIBLE: Permite añadir al carrito incluso si no hay variantes seleccionadas,
+  // a menos que la opción seleccionada explícitamente esté sin stock.
   canAddToCart = computed(() => {
     const p = this.product();
     if (!p) return false;
+    if (p.status === 'Agotado') return false;
 
-    // Si no hay variantes, solo importa el stock del producto principal (lógica futura).
-    if (p.variants.length === 0) return true;
+    // 1. Verificamos stock base del producto (si manejas stock global)
+    if ((p.stock || 0) <= 0) return false;
 
-    // Si hay variantes, verificamos que las seleccionadas (si las hay) tengan stock.
+    // 2. Verificamos SOLO las opciones que el usuario ha seleccionado activamente
     const selections = this.selectedVariants();
     for (const variantName in selections) {
       const selectedOptionName = selections[variantName];
-      const variant = p.variants.find((v) => v.name === variantName);
-      const option = variant?.options.find(
-        (o) => o.name === selectedOptionName
-      );
-      if (option && (option.stock || 0) <= 0) {
-        return false; // Si CUALQUIER opción seleccionada está sin stock, deshabilita.
+      if (selectedOptionName) {
+        const variant = p.variants.find((v) => v.name === variantName);
+        const option = variant?.options.find(
+          (o) => o.name === selectedOptionName
+        );
+        // Si seleccionó algo y ese algo no tiene stock, bloqueamos.
+        if (option && (option.stock || 0) <= 0) {
+          return false; 
+        }
       }
     }
 
-    return true; // Si todo lo seleccionado tiene stock, habilita.
+    // Si no seleccionó nada (compra el producto base) o lo que seleccionó tiene stock -> TRUE
+    return true;
   });
 
-  // --- MÉTODOS DE CANTIDAD ---
-  increaseQuantity(): void {
-    this.quantity.update((q) => q + 1);
-  }
-  decreaseQuantity(): void {
-    this.quantity.update((q) => Math.max(1, q - 1));
-  }
-
-  // --- COMPUTED PROPERTIES ---
+  // Calcula el precio total sumando las opciones
   finalPrice = computed(() => {
     const p = this.product();
     if (!p) return 0;
-
-    // 1. Empezamos SIEMPRE con el precio base del producto.
-    // Si está en oferta, usamos el precio de oferta.
     let totalPrice = p.isOnSale && p.salePrice ? p.salePrice : p.price;
-
-    // 2. Obtenemos las variantes que el usuario ha seleccionado.
     const selections = this.selectedVariants();
-
-    // 3. Iteramos sobre cada variante del producto (ej: "Empaque", "Acompañamiento").
     p.variants.forEach((variant) => {
-      // Verificamos si el usuario ha seleccionado una opción para esta variante.
       const selectedOptionName = selections[variant.name];
       if (selectedOptionName) {
-        // Si la seleccionó, buscamos esa opción en los datos del producto.
         const option = variant.options.find(
           (opt) => opt.name === selectedOptionName
         );
-        // Si la opción existe y tiene un precio, lo SUMAMOS al total.
         if (option && option.price) {
           totalPrice += option.price;
         }
       }
     });
-
     return totalPrice;
   });
 
+  // Verifica si todas las variantes posibles han sido seleccionadas (solo para UI, no bloquea compra)
   allVariantsSelected = computed(() => {
     const p = this.product();
     if (!p || p.variants.length === 0) return true;
@@ -274,28 +239,15 @@ export class ProductDetailComponent
     );
   });
 
+  // Verifica stock general
   isInStock = computed(() => {
     const p = this.product();
     if (!p) return false;
     if (p.status === 'Agotado') return false;
-
-    if (p.variants && p.variants.length > 0) {
-      // ¡CORRECCIÓN! Usamos el nombre correcto aquí también
-      if (!this.allVariantsSelected()) return false;
-
-      return p.variants.every((variant) => {
-        const selectedOptionName = this.selectedVariants()[variant.name];
-        const option = variant.options.find(
-          (opt) => opt.name === selectedOptionName
-        );
-        return (option?.stock || 0) > 0;
-      });
-    }
     return (p.stock || 0) > 0;
   });
 
-  // --- MÉTODO isOptionAvailable (sin cambios, ya era correcto) ---
-
+  // Helper para la UI de opciones
   isOptionAvailable(option: Option): boolean {
     return (option.stock || 0) > 0;
   }
@@ -307,6 +259,7 @@ export class ProductDetailComponent
       : false;
   });
 
+  // Verifica si el usuario compró el producto para dejar reseña
   canWriteReview = computed(() => {
     const p = this.product();
     if (!p || this.userOrders().length === 0) return false;
@@ -323,29 +276,22 @@ export class ProductDetailComponent
   });
 
   // --- CICLO DE VIDA ---
+
   ngOnInit() {
-    const productId = this.route.snapshot.paramMap.get('id');
-    if (productId) {
-      this.productService.getProductById(productId).subscribe({
-        next: (foundProduct) => {
-          this.product.set(foundProduct);
+    // Suscripción a cambios de ruta para cargar nuevos productos sin recargar página
+    this.route.paramMap.subscribe((params) => {
+      const productId = params.get('id');
+      if (productId) {
+        this.loadProductData(productId);
+        this.fetchReviews(productId);
+        this.fetchUserOrders();
+      }
+    });
 
-          if (foundProduct.images && foundProduct.images.length > 0) {
-            this.selectedImage.set(foundProduct.images[0]);
-          }
-
-          this.initializeVariants(foundProduct);
-          this.setupSeo(foundProduct);
-          this.setStructuredData(foundProduct);
-        },
-        error: (err) => {
-          console.error('Error al cargar el producto:', err);
-          this.product.set(null);
-        },
-      });
-      this.fetchReviews(productId);
-      this.fetchUserOrders();
-    }
+    // Cargar categorías para la sección inferior
+    this.categoryService.getCategories().subscribe((cats) => {
+      this.categories.set(cats);
+    });
   }
 
   ngAfterViewInit() {}
@@ -357,7 +303,114 @@ export class ProductDetailComponent
     }
   }
 
-  // --- MÉTODOS ---
+  // --- MÉTODOS DE LÓGICA ---
+
+  loadProductData(productId: string) {
+    this.productService.getProductById(productId).subscribe({
+      next: (foundProduct) => {
+        this.product.set(foundProduct);
+        this.quantity.set(1);
+        this.selectedVariants.set({}); // Resetear variantes al cambiar de producto
+
+        if (foundProduct.images && foundProduct.images.length > 0) {
+          this.selectedImage.set(foundProduct.images[0]);
+        }
+
+        this.initializeVariants(foundProduct);
+        this.setupSeo(foundProduct);
+        this.setStructuredData(foundProduct);
+
+        // Cargar productos relacionados
+        if (foundProduct.category) {
+          const categorySlug = typeof foundProduct.category === 'object' ? foundProduct.category.slug : ''; 
+          if (categorySlug) {
+            this.productService.getProductsByCategory(categorySlug).subscribe(products => {
+              const others = products.filter(p => p._id !== foundProduct._id);
+              this.relatedProducts.set(others);
+            });
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error al cargar el producto:', err);
+        this.product.set(null);
+      },
+    });
+  }
+
+  // Añadir al Carrito (Versión Flexible)
+  addToCart(): void {
+    const p = this.product();
+    
+    // 1. Verificación básica de disponibilidad
+    if (!this.isInStock()) {
+      this.toastService.show('Lo sentimos, este producto está agotado.', 'error');
+      return;
+    }
+
+    // 2. Verificación de validez de la selección (canAddToCart maneja la lógica flexible)
+    if (p && this.canAddToCart()) {
+      this.cartService.addItem(p, this.selectedVariants(), this.quantity());
+      
+      this.toastService.show(
+        `${p.name} añadido al carrito!`,
+        'success'
+      );
+      
+      // Feedback visual en el botón
+      this.justAddedToCart.set(true);
+      setTimeout(() => {
+        this.justAddedToCart.set(false);
+        this.quantity.set(1); // Reset cantidad
+      }, 2000);
+    } else {
+      // Solo entra aquí si eligió una variante que no tiene stock
+      this.toastService.show(
+        'La opción seleccionada no está disponible.',
+        'error'
+      );
+    }
+  }
+
+  // --- UTILS ---
+  increaseQuantity(): void {
+    this.quantity.update((q) => q + 1);
+  }
+  decreaseQuantity(): void {
+    this.quantity.update((q) => Math.max(1, q - 1));
+  }
+
+  toggleVariant(variantName: string): void {
+    this.expandedVariant.update((current) =>
+      current === variantName ? null : variantName
+    );
+  }
+
+  selectOption(variantName: string, optionName: string): void {
+    this.selectedVariants.update((current) => {
+      const newSelection = { ...current };
+      // Lógica de toggle: si ya está, lo quita. Si no, lo pone.
+      if (current[variantName] === optionName) {
+        delete newSelection[variantName];
+      } else {
+        newSelection[variantName] = optionName;
+      }
+      return newSelection;
+    });
+  }
+
+  isSelected(variantName: string, optionName: string): boolean {
+    return this.selectedVariants()[variantName] === optionName;
+  }
+
+  toggleWishlist(): void {
+    const currentProduct = this.product();
+    if (!currentProduct) return;
+    this.wishlistService.toggleProduct(currentProduct);
+  }
+
+  // --- AUXILIARES (SEO, Swiper, Reseñas) ---
+
   private initMobileSwiper(): void {
     this.zone.runOutsideAngular(() => {
       if (this.swiperInstance) {
@@ -382,33 +435,19 @@ export class ProductDetailComponent
   private setupSeo(product: Product): void {
     const title = `Sofilu | ${product.name}`;
     const cleanDescription = product.description.replace(/<[^>]*>?/gm, '');
-    const description = `${cleanDescription.substring(
-      0,
-      120
-    )}... Encuentra el mejor confort y estilo en Sofilu.`;
+    const description = `${cleanDescription.substring(0, 120)}... Encuentra el mejor confort y estilo en Sofilu.`;
 
     this.titleService.setTitle(title);
     this.metaService.updateTag({ name: 'description', content: description });
     this.metaService.updateTag({ property: 'og:title', content: title });
-    this.metaService.updateTag({
-      property: 'og:description',
-      content: description,
-    });
-    this.metaService.updateTag({
-      property: 'og:image',
-      content: product.images[0] || '',
-    });
-    this.metaService.updateTag({
-      property: 'og:url',
-      content: `https://www.sofilu.shop/product/${product._id}`,
-    });
+    this.metaService.updateTag({ property: 'og:description', content: description });
+    this.metaService.updateTag({ property: 'og:image', content: product.images[0] || '' });
+    this.metaService.updateTag({ property: 'og:url', content: `https://www.sofilu.shop/product/${product._id}` });
     this.metaService.updateTag({ property: 'og:site_name', content: 'Sofilu' });
   }
 
   private setStructuredData(product: Product): void {
-    const prices = product.variants.flatMap((v) =>
-      v.options.map((o) => o.price)
-    );
+    const prices = product.variants.flatMap((v) => v.options.map((o) => o.price));
     const lowPrice = prices.length > 0 ? Math.min(...prices) : product.price;
 
     const schema = {
@@ -436,44 +475,6 @@ export class ProductDetailComponent
 
   initializeVariants(p: Product): void {
     this.selectedVariants.set({});
-  }
-
-  selectOption(variantName: string, optionName: string): void {
-    this.selectedVariants.update((current) => {
-      const newSelection = { ...current };
-      if (current[variantName] === optionName) {
-        delete newSelection[variantName];
-      } else {
-        newSelection[variantName] = optionName;
-      }
-      return newSelection;
-    });
-  }
-
-  isSelected(variantName: string, optionName: string): boolean {
-    return this.selectedVariants()[variantName] === optionName;
-  }
-
-  addToCart(): void {
-    const p = this.product();
-    // ¡MODIFICADO! Usamos el nuevo `canAddToCart` para la validación.
-    if (p && this.canAddToCart()) {
-      this.cartService.addItem(p, this.selectedVariants(), this.quantity());
-      this.toastService.show(
-        `${p.name} (x${this.quantity()}) añadido al carrito!`,
-        'success'
-      );
-      this.justAddedToCart.set(true);
-      setTimeout(() => {
-        this.justAddedToCart.set(false);
-        this.quantity.set(1);
-      }, 2000);
-    } else {
-      this.toastService.show(
-        'Una de las opciones seleccionadas no está disponible.',
-        'error'
-      );
-    }
   }
 
   fetchReviews(productId: string): void {
@@ -524,11 +525,5 @@ export class ProductDetailComponent
           this.toastService.show('¡Gracias por tu reseña!', 'success');
         });
     }
-  }
-
-  toggleWishlist(): void {
-    const currentProduct = this.product();
-    if (!currentProduct) return;
-    this.wishlistService.toggleProduct(currentProduct);
   }
 }

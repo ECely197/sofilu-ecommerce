@@ -4,6 +4,7 @@ import {
   OnInit,
   HostListener,
   ElementRef,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -47,5 +48,25 @@ export class Footer implements OnInit {
       duration: 0.5,
       ease: 'power2.out',
     });
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    // Calculamos si estamos cerca del final de la página
+    const scrollPosition = window.scrollY + window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const footerHeight = this.el.nativeElement.offsetHeight || 800;
+
+    // Si ya estamos viendo gran parte del footer...
+    if (scrollPosition > documentHeight - (footerHeight / 2)) {
+      document.body.classList.add('hide-header');
+    } else {
+      document.body.classList.remove('hide-header');
+    }
+  }
+
+  ngOnDestroy() {
+    // Limpieza por si acaso
+    document.body.classList.remove('hide-header');
   }
 }

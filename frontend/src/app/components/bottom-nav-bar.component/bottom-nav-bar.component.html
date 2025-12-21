@@ -48,15 +48,19 @@
         <span class="material-symbols-outlined">home</span>
         <span class="label">Inicio</span>
       </a>
-      <button
+       <button
         #navItem
         (click)="uiStateService.openWishlistFlyout()"
-        class="icon-button"
+        class="icon-button nav-item"  
         aria-label="Abrir lista de deseos"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
       >
+        <!-- Agregamos la clase nav-item arriba para heredar estilos de layout -->
         <span class="material-symbols-outlined">favorite</span>
+        <!-- ¡AQUÍ ESTÁ EL TEXTO QUE FALTABA! -->
+        <span class="label">Favoritos</span>
+        
         @if (wishlistService.wishlistProductIds().length > 0) {
         <span class="wishlist-badge">{{
           wishlistService.wishlistProductIds().length

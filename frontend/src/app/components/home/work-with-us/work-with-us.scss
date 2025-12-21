@@ -2,40 +2,109 @@
 
 :host {
   display: block;
+  width: 100%;
+  padding: 0 1.5rem;
+  margin-bottom: 4rem;
 }
 
 .work-with-us-section {
-  max-width: 1200px;
+  position: relative;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 4rem 2rem;
-  background-color: #fce7f3;
-  border-radius: 1.5rem;
-  text-align: center;
-
-  @media (min-width: 768px) {
-    padding: 6rem;
-  }
+  padding: 5rem 2rem;
+  
+  // Fondo Artístico Animado
+  background: linear-gradient(120deg, #fce7f3 0%, #e0c3fc 50%, #f3e5f5 100%);
+  background-size: 200% 200%;
+  animation: artisticFlow 15s ease infinite;
+  
+  border-radius: 3rem;
+  overflow: hidden; // Para contener las formas flotantes
+  box-shadow: 0 20px 50px -10px rgba(224, 195, 252, 0.4);
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.content {
-  max-width: 600px;
-  margin: 0 auto;
+@keyframes artisticFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+// --- FORMAS ARTÍSTICAS FLOTANTES ---
+.art-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.6;
+  animation: floatShape 10s ease-in-out infinite alternate;
+}
+
+.shape-1 {
+  top: -10%; left: -10%;
+  width: 400px; height: 400px;
+  background: #fff;
+}
+
+.shape-2 {
+  bottom: -20%; right: -10%;
+  width: 350px; height: 350px;
+  background: #FFD1DC; // Rosa pastel
+  animation-delay: -5s;
+}
+
+@keyframes floatShape {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -30px) scale(1.1); }
+}
+
+// --- TARJETA DE VIDRIO CENTRAL ---
+.content-card {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.05);
 }
 
 .section-title {
   font-family: "Baloo 2", serif;
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
   margin-bottom: 1rem;
+  color: #333;
+  line-height: 1.2;
 }
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: var(--text-secondary);
+  color: #555;
   margin-bottom: 2.5rem;
+  line-height: 1.6;
 }
 
 .btn-material {
   @extend .btn-material;
-  padding: 1rem 2.5rem;
-  font-size: 1rem;
+  padding: 1rem 3rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 50px;
+  text-decoration: none;
+  display: inline-block;
+  background: #333; // Contraste fuerte
+  color: white;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  
+  &:hover {
+    transform: translateY(-3px);
+    background: black;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.25);
+  }
 }

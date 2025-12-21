@@ -5,12 +5,10 @@
 
   <aside class="flyout-panel">
     <header class="flyout-header">
-      <div class="header-title-pill">
-        <span>Tu Carrito</span>
-        <button class="close-button" (click)="closeCart()" appRipple>
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
+      <h2 class="flyout-title">Tu Carrito</h2>
+      <button class="close-button" (click)="closeCart()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </header>
 
     @if (cartService.totalItems() > 0) {
@@ -72,7 +70,7 @@
       <div class="cat-container">
         <!-- TU SVG - MODIFICADO CON IDs Y UN GRUPO <g> PARA LAS PUPILAS -->
         <img
-          src="icon-cat.gif"
+          src="icon-cat.png"
           alt="Tu carrito está vacío"
           class="cat-animation"
         />

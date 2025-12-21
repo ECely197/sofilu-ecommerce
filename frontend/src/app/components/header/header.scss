@@ -1,119 +1,90 @@
-/* ==========================================================================
-   1. IMPORTS Y CONFIGURACIÓN GENERAL
-   ========================================================================== */
-
 @use "../../../../buttons";
 
 :host {
   display: block;
-  height: calc(60px + 2rem);
-  @media (max-width: 991px) {
-    display: none;
+  height: 80px;
+  position: relative;
+  z-index: 1000;
+  // --- CORRECCIÓN: OCULTAR EN MÓVIL ---
+  @media (max-width: 767px) {
+    display: none !important;
   }
 }
-
-/* ==========================================================================
-   2. ESTRUCTURA PRINCIPAL DEL HEADER
-   ========================================================================== */
 
 .sofilu-header {
   position: fixed;
   top: 1rem;
   left: 0;
-  right: 0;
   width: 100%;
-  z-index: 1000;
   display: flex;
   justify-content: center;
+  pointer-events: none;
+  transition: top 0.3s ease;
+  
+  &.is-scrolled .header-pill {
+    width: 90%;
+    height: 55px;
+  }
 }
 
+/* ==========================================================================
+   EL EFECTO LIQUID GLASS (HEADER PRINCIPAL)
+   ========================================================================== */
 .header-pill {
-  height: 60px;
-  padding: 0 1rem 0 1.5rem;
+  pointer-events: auto;
+  width: 98%;
+  max-width: 1800px;
+  height: 65px;
+  
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 2rem;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0 1.5rem;
+  gap: 1rem;
+
+  background-color: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 9999px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
+  box-shadow: 
+    0 20px 40px -10px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    inset 0 10px 20px rgba(255, 255, 255, 0.5);
+
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================================
-   3. SECCIÓN IZQUIERDA: LOGO
+   LOGO
    ========================================================================== */
-
 .logo-wrapper {
-  position: absolute;
-  top: 50%;
-  top: 3.5rem;
-  left: 0rem;
-  transform: translateY(-50%);
-  z-index: 2;
-
-  .logo-link {
-    display: flex;
-    align-items: center;
-    transition: transform 0.3s;
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
+  display: flex;
+  align-items: center;
+  
+  .logo-link { display: flex; align-items: center; }
+  
   .logo-image {
-    height: 100px;
+    height: 45px;
     width: auto;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    &:hover { transform: scale(1.1) rotate(-3deg); }
   }
 }
 
 /* ==========================================================================
-   3. SECCIÓN CENTRAL: LOGO
+   NAVEGACIÓN CENTRAL (HORIZONTAL)
    ========================================================================== */
-
-.floating-brand-logo {
-  position: absolute;
-  top: -100;
-  left: 50%;
-  z-index: 1000;
-
-  // Posición inicial: oculto y desplazado hacia abajo
-  transform: translateX(-50%) translateY(80px);
-  opacity: 0;
-
-  // Apariencia
-  padding: 0.5rem 2rem;
-  width: 10.5rem;
-  background-color: var(--background-page); // El color de fondo de tu página
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  // Evita que se pueda interactuar con él cuando está oculto
-  pointer-events: none;
-
-  img {
-    height: 40px; // Altura del logo de texto
-    width: auto;
-  }
-}
-
-/* ==========================================================================
-   4. SECCIÓN CENTRAL: NAVEGACIÓN PRINCIPAL
-   ========================================================================== */
-
 .desktop-nav {
-  position: relative;
   display: flex;
   justify-content: center;
-  padding-left: 140px;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   height: 100%;
+  position: relative;
 }
 
 .nav-item-wrapper {
@@ -121,452 +92,286 @@
   height: 100%;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
+// PÍLDORA HORIZONTAL (NAV)
 .nav-pill {
   position: absolute;
-  top: 0.325rem;
+  top: 50%;
   left: 0;
-  height: 80%;
-  border-radius: 9999px;
-  background-color: var(--pastel-pink);
-  z-index: 0;
-  opacity: 0;
-}
-
-.nav-link {
-  position: relative;
-  display: block;
-  padding: 0.75rem 1.5rem;
-  text-decoration: none;
-  cursor: pointer;
-  line-height: 1.2;
-  overflow: hidden;
-  font-size: clamp(0.8rem, 1vw, 0.9rem);
-}
-
-.nav-text-original,
-.nav-text-reveal {
-  display: block;
-  font-weight: 600;
-}
-
-.nav-text-original {
-  color: var(--text-charcoal);
-}
-
-.nav-text-reveal {
-  position: absolute;
-  top: 10px;
-  left: 0;
-  width: 100%;
-  padding: inherit;
-  color: var(--soft-white);
-}
-
-.nav-link.active .nav-text-original {
-  color: var(--text-primary);
-}
-
-/* ==========================================================================
-   5. SECCIÓN DERECHA: ACCIONES (BÚSQUEDA, ICONOS, PERFIL)
-   ========================================================================== */
-
-.header-right {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.search-form {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  .search-icon {
-    position: absolute;
-    left: 0.75rem;
-    pointer-events: none;
-    color: var(--text-secondary);
-  }
-
-  .search-input {
-    width: 150px;
-    height: 40px;
-    border-radius: 9999px;
-    border: none;
-    background-color: rgba(0, 0, 0, 0.05);
-    padding: 0.5rem 1rem 0.5rem 2.5rem;
-    transition: all 0.3s ease;
-    font-size: clamp(0.8rem, 1vw, 0.9rem);
-
-    &:focus {
-      width: 220px;
-      background-color: white;
-      box-shadow: 0 0 0 2px var(--pastel-pink);
-      outline: none;
-    }
-  }
-}
-
-.icon-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-charcoal);
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  text-decoration: none;
-  position: relative;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-}
-
-.cart-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background-color: var(--pastel-pink);
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.profile-container {
-  position: relative;
-}
-
-.profile-button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: var(--pastel-pink);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.125rem;
-  border: none;
-  cursor: pointer;
-}
-
-.profile-menu {
-  position: absolute;
-  top: calc(100% + 1rem);
-  right: 0;
-  width: 280px;
-  background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--soft-gray);
-  overflow: hidden;
-  z-index: 10;
-}
-
-.menu-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--soft-gray);
-}
-
-.user-email {
-  font-weight: 500;
-  text-align: center;
-  word-break: break-all;
-}
-
-.menu-links {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem;
-
-  a {
-    padding: 0.75rem 1rem;
-    text-decoration: none;
-    color: var(--text-charcoal);
-    border-radius: 0.5rem;
-    transition: background-color 0.2s;
-    font-weight: 500;
-    &:hover {
-      background-color: var(--soft-gray);
-    }
-  }
-}
-
-.menu-footer {
-  margin-top: auto;
-  padding: 0.5rem;
-  border-top: 1px solid var(--soft-gray);
-}
-
-.logout-button {
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0.75rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  color: var(--text-charcoal);
-  border-radius: 0.5rem;
-  transition: all 0.2s;
-  font-weight: 500;
-  &:hover {
-    background-color: #fee2e2;
-    color: #b91c1c;
-  }
-}
-
-/* ==========================================================================
-   6. MEGA MENÚ FLOTANTE (ESTILO PREMIUM MEJORADO)
-   ========================================================================== */
-
-.mega-menu-container {
-  position: absolute;
-  top: 100%;
-  left: 320%;
-  transform: translateX(-50%);
-  width: max-content;
-  padding-top: 1rem;
-
-  opacity: 0;
-  transform: translateX(-50%) translateY(-10px) scale(0.98);
-  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-  pointer-events: none;
-
-  &.is-active {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
-    pointer-events: auto;
-  }
-}
-
-.mega-menu-card {
-  width: 100%;
-  max-width: 900px;
-  background-color: var(--background-card, white);
-  border: 1px solid rgba(0, 0, 0, 0.05); // Borde muy sutil
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-  border-radius: 1.5rem;
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 220px 1fr;
-}
-
-// --- Columna Izquierda: Subcategorías ---
-.sub-category-list {
-  position: relative; // Contexto para la píldora de hover
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.hover-pill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 0;
-  background-color: var(--primary-light);
-  border-radius: 0.75rem;
+  transform: translateY(-50%);
+  height: 42px;
+  border-radius: 21px;
+  background-color: var(--pastel-pink, #FFD1DC);
+  box-shadow: 0 4px 20px rgba(255, 182, 193, 0.6);
   z-index: 1;
   opacity: 0;
   pointer-events: none;
 }
 
-.sub-category-link {
-  width: 100%;
-  text-align: left;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 0.9rem;
+.nav-link {
+  position: relative;
+  padding: 0 1.5rem;
+  height: 42px;
+  z-index: 2;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
-
-  // Transición suave para el color de fondo
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-
-  color: var(--text-primary); // Color de texto normal
-  background-color: transparent; // Fondo transparente por defecto
-  border: none;
-  text-decoration: none;
-
-  // Estado activo o al pasar el ratón
-  &.active,
-  &:hover {
-    background-color: var(--pastel-pink); // Fondo rosa suave
-    color: var(--text-primary);
-  }
-}
-
-// --- Columna Derecha: Previsualización ---
-.product-preview-container {
-  background-color: var(--background-page, #faf7f5); // Fondo de color sutil
-  border-radius: 1rem;
-  padding: 1.5rem;
-}
-
-.product-preview-grid {
+  border-radius: 21px;
+  
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-}
+  place-items: center;
+  overflow: hidden;
 
-.preview-product-card {
-  text-decoration: none;
-  color: inherit;
-
-  .preview-image-wrapper {
-    overflow: hidden;
-    border-radius: 0.75rem;
-    margin-bottom: 0.75rem;
-    aspect-ratio: 1 / 1;
-    background-color: var(--soft-gray);
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease;
-    }
+  .nav-text-original {
+    grid-area: 1 / 1;
+    color: #4A4A4A;
+    transition: none;
   }
 
-  p {
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-align: center;
+  .nav-text-reveal {
+    grid-area: 1 / 1;
+    color: #ffffff;
+    font-weight: 800;
+    transform: translateY(100%);
+    transition: none;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
-
-  &:hover img {
-    transform: scale(1.05);
+  
+  &.active {
+    .nav-text-original { transform: translateY(-150%); }
+    .nav-text-reveal { transform: translateY(0); }
   }
 }
 
 /* ==========================================================================
-   6. Menu dividido por pildoras
+   MEGA MENÚ & SUB-CATEGORÍAS (VERTICAL) - ¡AQUÍ ESTÁ LA MAGIA NUEVA!
    ========================================================================== */
-
-// --- ESTADO INICIAL ---
-.header-pill-initial {
+.mega-menu-container {
   position: absolute;
-  width: 100%;
-  max-width: 1200px;
-  // Tus estilos existentes para `.header-pill` van aquí
-  height: 60px;
-  padding: 0 1rem 0 1.5rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 2rem;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 9999px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-// --- ESTADO "SCROLLED" ---
-.header-pills-scrolled {
-  position: absolute;
-  width: 100%;
-  max-width: 1200px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  // --- ¡POSICIÓN INICIAL PARA GSAP! ---
-  // GSAP controlará la opacidad y la visibilidad.
-  transform: translateY(-120px); // Empieza oculto arriba
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 10px);
+  padding-top: 1rem;
   opacity: 0;
   visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+  
+  &.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
 }
 
-// Estilo base para las píldoras pequeñas
-.nav-pill-scrolled,
-.logo-pill-scrolled,
-.actions-pill-scrolled {
-  height: 48px;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 9999px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+.mega-menu-card {
+  // Fondo más sólido para el menú
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 2rem;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
+  
+  padding: 2rem;
+  width: 800px;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+}
+
+// LISTA VERTICAL
+.sub-category-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem; /* Espacio interno para la píldora */
+}
+
+// PÍLDORA VERTICAL (Bonita y Líquida)
+.hover-pill {
+  position: absolute;
+  left: 0.5rem; /* Alineada con el padding */
+  width: calc(100% - 1rem); /* Ancho dinámico */
+  
+  // Altura y Top controlados por GSAP en TS
+  
+  // Estilo Premium (Gradiente y Sombra)
+  background: linear-gradient(135deg, var(--pastel-pink, #FFD1DC) 0%, #ffc3a0 100%);
+  border-radius: 16px;
+  z-index: 1; // Detrás del texto
+  opacity: 0;
+  pointer-events: none;
+  
+  box-shadow: 
+    0 4px 15px rgba(255, 160, 122, 0.4),
+    inset 0 2px 5px rgba(255, 255, 255, 0.4);
+}
+
+// ENLACE DE TEXTO (VERTICAL)
+.sub-category-link {
+  position: relative;
+  z-index: 2; /* Encima de la píldora */
   display: flex;
   align-items: center;
-  padding: 0 1rem;
+  width: 100%;
+  padding: 0.8rem 1.5rem; /* Padding generoso */
+  
   text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #666; /* Color GRIS por defecto */
+  
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 16px;
+  
+  // Transición suave para el cambio de color
+  transition: color 0.2s ease-out;
+
+  // --- LA LÓGICA DEL COLOR BLANCO ---
+  // Solo blanco al hacer HOVER (cuando la píldora está ahí)
+  // Quitamos &.active para que no se quede blanco si la píldora se va
+  &:hover {
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
 }
 
-// Píldora de Navegación (Izquierda)
-.nav-pill-scrolled {
-  position: relative;
-  .menu-button {
-    background: none;
-    border: none;
-    cursor: pointer;
+/* ==========================================================================
+   TARJETAS DE PRODUCTO (MEGA MENÚ) - ESTILO PREMIUM
+   ========================================================================== */
+
+.product-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; // Más espacio para que respiren
+  
+  .preview-product-card {
+    text-decoration: none;
+    color: inherit;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text-primary);
+    text-align: center;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); // Efecto rebote suave
+    
+    // Contenedor de Imagen
+    .preview-image-wrapper {
+      width: 100%;
+      aspect-ratio: 1 / 1; // Cuadrado perfecto
+      border-radius: 1.2rem; // Bordes muy suaves (coherente con el resto)
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+      background: white; // Fondo limpio para el producto
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05); // Sombra sutil inicial
+      border: 1px solid rgba(0,0,0,0.05); // Borde casi invisible
+      position: relative;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; // Muestra TODA la imagen sin recortar nada (ideal para sábanas/cajas)
+        padding: 0.5rem; // Aire para que no toque los bordes
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        will-change: transform;
+      }
+      
+      // Placeholder si no hay imagen
+      .image-placeholder {
+        width: 100%; height: 100%;
+        background: var(--soft-gray);
+      }
+    }
+    
+    // Nombre del Producto
+    p {
+      font-size: 0.9rem;
+      font-weight: 700; // Fuente gordita
+      color: #555;
+      line-height: 1.3;
+      margin: 0;
+      transition: color 0.2s;
+      
+      // Limitamos a 2 líneas para que no rompa el diseño
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    // --- ESTADO HOVER (INTERACCIÓN) ---
+    &:hover {
+      transform: translateY(-5px); // La tarjeta flota hacia arriba
+      
+      .preview-image-wrapper {
+        box-shadow: 0 10px 25px rgba(255, 182, 193, 0.3); // Sombra rosa suave al flotar
+        border-color: var(--pastel-pink, #FFD1DC); // Borde rosa sutil
+        
+        img {
+          transform: scale(1.1); // Zoom suave a la imagen
+        }
+      }
+      
+      p {
+        color: #333; // Texto se oscurece un poco
+      }
+    }
   }
 }
 
-// Píldora del Logo (Centro)
-.logo-pill-scrolled {
-  margin-top: -30px;
-  padding: 0 0.8rem;
-  border-radius: 0 0 14px 14px;
-  background-color: var(--soft-white);
-  img {
-    height: 32px;
-    width: auto;
+.header-right { display: flex; align-items: center; gap: 1rem; }
+.search-form {
+  position: relative;
+  .search-input {
+    background: rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); border-radius: 50px;
+    padding: 0.7rem 1rem 0.7rem 2.8rem; width: 40px; cursor: pointer; transition: all 0.4s;
+    &::placeholder { opacity: 0; transition: opacity 0.3s; }
+    &:focus, &:not(:placeholder-shown) {
+      background: white; width: 220px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: text; &::placeholder { opacity: 1; }
+    }
+  }
+  .search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.3rem; color: #666; pointer-events: none; }
+}
+.icon-button {
+  background: transparent; border: none; cursor: pointer; width: 48px; height: 48px; display: grid; place-items: center;
+  border-radius: 50%; position: relative; transition: all 0.3s;
+  &:hover { background: rgba(255, 255, 255, 0.5); box-shadow: 0 4px 10px rgba(0,0,0,0.05); transform: translateY(-2px); }
+  .material-symbols-outlined { font-size: 1.6rem; color: #444; }
+  .badge {
+    position: absolute; top: 4px; right: 4px; background: var(--pastel-pink, #FFD1DC); color: #fff;
+    font-size: 0.75rem; font-weight: 800; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
 }
-
-// Píldora de Acciones (Derecha)
-.actions-pill-scrolled {
-  // Reutilizamos los botones de la píldora grande
-  .icon-button,
-  .profile-container,
-  .login-button {
-    // Ajustes de tamaño si es necesario
-    transform: scale(0.9);
+.profile-button {
+  width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #FFD1DC, #E6E6FA);
+  color: #555; border: 2px solid white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s; &:hover { transform: scale(1.1); }
+}
+.profile-menu {
+  position: absolute; top: 120%; right: 0; width: 220px; background: white; border-radius: 1rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 0.5rem; z-index: 100;
+  .menu-header { padding: 1rem; border-bottom: 1px solid #eee; p { margin: 0; font-weight: 600; } }
+  a, button {
+    display: block; width: 100%; text-align: left; padding: 0.8rem 1rem; text-decoration: none; color: #333;
+    border-radius: 0.5rem; background: none; border: none; cursor: pointer; &:hover { background: #f5f5f5; }
   }
+  .logout-button { color: #e74c3c; &:hover { background: #fff0f0; } }
+}
+.login-button {
+  text-decoration: none; background: #333; color: white; padding: 0.6rem 1.2rem; border-radius: 50px; font-weight: 600; transition: transform 0.2s;
+  &:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 }
 
-.mega-menu-container.scrolled-version {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  left: 0;
-  transform: translateX(0);
-
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: auto;
-
-  animation: fadeInDown 0.3s ease-out forwards;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+:host-context(body.hide-header) .sofilu-header {
+  transform: translateY(-150%); // Sube hacia afuera de la pantalla
+  opacity: 0;
+  pointer-events: none;
 }

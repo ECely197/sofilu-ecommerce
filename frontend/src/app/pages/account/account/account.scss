@@ -1,26 +1,43 @@
-// Importamos nuestros botones compartidos
-@use "../../../../../buttons.scss";
+@use "../../../../../buttons";
 
 :host {
   display: block;
+  // Fondo base para que resalten los paneles de vidrio
+  padding-top: 6rem; // Espacio para el header flotante
+  min-height: 100vh;
 }
 
 .account-container {
-  max-width: 1280px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
   position: relative;
+  z-index: 2;
 }
 
 .page-title {
   font-family: "Baloo 2", serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  padding-left: 1rem;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 3rem;
+  text-align: center;
+  
+  // Subrayado decorativo
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+  
+  &::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 6px;
+    background: var(--pastel-pink, #FFD1DC);
+    border-radius: 3px;
+    margin: 0.5rem auto 0;
+  }
 }
 
 .account-layout {
@@ -29,83 +46,118 @@
   gap: 2rem;
 
   @media (min-width: 1024px) {
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 300px 1fr; // Sidebar fijo - Contenido fluido
+    gap: 4rem;
+    align-items: start;
   }
 }
 
-// --- Barra Lateral ---
+// --- BARRA LATERAL (GLASS PANEL) ---
 .account-sidebar {
   .sidebar-nav {
-    background-color: white;
-    padding: 1rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(30px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 2rem;
+    padding: 1.5rem;
+    
+    box-shadow: 
+      0 20px 40px -10px rgba(0,0,0,0.05),
+      inset 0 0 0 1px rgba(255,255,255,0.5);
+      
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.8rem;
     position: sticky;
-    top: 6rem; // Para que se quede fija al hacer scroll
+    top: 8rem; // Ajustado para el header
+    z-index: 10;
   }
 
   .nav-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 9999px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 1.5rem;
     text-decoration: none;
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-
+    color: #666;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid transparent;
+    
+    // Efecto Hover (Flotar)
     &:hover {
-      background-color: var(--soft-gray);
-      color: var(--text-charcoal);
+      background-color: rgba(255, 255, 255, 0.6);
+      transform: translateX(5px);
+      color: #333;
     }
+
+    // Estado Activo (Píldora Iluminada)
     &.active {
-      background-color: var(--pastel-pink);
-      color: var(--text-charcoal);
-      font-weight: 700;
+      background-color: white;
+      color: #333;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      border-color: white;
+      
+      .nav-icon {
+        color: var(--pastel-pink, #FFD1DC);
+        transform: scale(1.1);
+      }
     }
   }
+  
   .logout-button {
-    width: 100%; // Asegura que ocupe todo el ancho
+    width: 100%;
     background: none;
     border: none;
     cursor: pointer;
-
-    // Estilo de "peligro" al hacer hover
+    color: #e74c3c; // Rojo suave
+    
     &:hover {
-      background-color: #fee2e2; // Rojo claro
-      color: #991b1b; // Rojo oscuro
+      background-color: #fff5f5;
+      color: #c0392b;
+      transform: translateX(5px);
     }
   }
 
   .nav-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    transition: transform 0.3s ease;
   }
-}
-
-// --- Contenido Principal ---
-.account-content {
-  min-height: 50vh; // Para que tenga algo de altura
 }
 
 .nav-separator {
   height: 1px;
-  background-color: var(--soft-gray);
-  margin: 0.5rem 1rem; // Un poco de espacio vertical y horizontal
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+  margin: 0.5rem 1rem;
 }
 
 .admin-link {
-  // Un color de fondo sutil para que destaque
-  background-color: var(--soft-white);
-  color: #a855f7; // Un color morado para distinguirlo
-
+  background-color: rgba(168, 85, 247, 0.1); // Morado muy suave
+  color: #9333ea;
+  
   &:hover {
-    background-color: #f3e8ff; // Un morado más claro en hover
-    color: #9333ea;
+    background-color: rgba(168, 85, 247, 0.2);
+    color: #7e22ce;
   }
+  
+  &.active {
+    background-color: #9333ea;
+    color: white;
+    .nav-icon { color: white; }
+  }
+}
+
+// --- CONTENIDO PRINCIPAL ---
+.account-content {
+  min-height: 60vh;
+  // Animación de entrada suave para las sub-páginas
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

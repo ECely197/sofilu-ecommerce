@@ -1,67 +1,122 @@
+@use "../../../../../buttons";
+
 :host {
   display: block;
-  overflow: hidden;
-} // Overflow hidden para el carrusel infinito
-
-.experience-section {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 3rem 0;
-  background-color: var(--background-card);
-  border: 1px solid var(--border);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  width: 100%;
+  padding: 4rem 0;
+  overflow: hidden; // Esencial para el carrusel full-width
 }
 
-.section-title {
-  font-family: "Baloo 2", serif;
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
+.experience-section {
+  position: relative;
+  width: 100%;
   text-align: center;
 }
 
+// --- TÍTULO FLOTANTE ---
+.section-title {
+  font-family: "Baloo 2", serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+  
+  // Pequeño adorno
+  &::after {
+    content: "❤️";
+    font-size: 0.6em;
+    vertical-align: super;
+    margin-left: 0.5rem;
+  }
+}
+
+// --- SWIPER (Coverflow 3D) ---
 .swiper {
   width: 100%;
+  padding-bottom: 4rem; // Espacio para sombras y efecto 3D
+  overflow: visible !important; // Permite que las tarjetas sobresalgan
 }
 
 .swiper-slide {
-  width: 70%; // Cada slide ocupa el 70% del ancho
-  max-width: 350px;
-  transition: transform 0.4s ease, opacity 0.4s ease;
-  opacity: 0.5;
-  transform: scale(0.85);
+  width: 280px; // Ancho fijo tipo móvil
+  height: 500px; // Alto fijo
+  transition: all 0.5s ease;
+  
+  // Cuando NO es el activo, se ve borroso y más pequeño (Coverflow)
+  filter: blur(2px) grayscale(30%);
+  opacity: 0.7;
+  transform: scale(0.9);
 
   &.swiper-slide-active {
+    filter: blur(0) grayscale(0%);
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1.05);
+    z-index: 10; // Pasa al frente
   }
 }
 
+// --- TARJETA TIPO "STORIES" (Glass Phone) ---
 .experience-card {
   position: relative;
   width: 100%;
-  aspect-ratio: 9 / 16; // Formato vertical tipo "historia" de Instagram
-  border-radius: 1.5rem;
+  height: 100%;
+  border-radius: 2.5rem; // Bordes muy curvos
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-
-  img,
-  video {
+  
+  // Borde de Vidrio
+  border: 8px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 20px 50px -10px rgba(0,0,0,0.2), // Sombra profunda
+    inset 0 0 0 2px rgba(255,255,255,0.5); // Brillo interno
+    
+  background: #000; // Fondo negro para videos/fotos
+  
+  img, video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 5s ease; // Zoom lento automático
   }
-
-  .caption {
+  
+  // Gradiente para el texto
+  &::after {
+    content: "";
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 2rem 1rem 1rem;
-    background: linear-gradient(0deg, rgba(0, 0, 0, 0.6) 0%, transparent 100%);
-    color: white;
-    font-weight: 600;
-    text-align: left;
+    bottom: 0; left: 0; width: 100%; height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+    pointer-events: none;
+  }
+}
+
+// Zoom lento en la imagen activa
+.swiper-slide-active .experience-card img {
+  transform: scale(1.1);
+}
+
+.caption {
+  position: absolute;
+  bottom: 2rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  z-index: 2;
+  text-align: left;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  
+  // Icono de usuario o comillas
+  &::before {
+    content: "“";
+    display: block;
+    font-family: serif;
+    font-size: 3rem;
+    line-height: 0.5;
+    margin-bottom: 0.5rem;
+    color: var(--pastel-pink, #FFD1DC);
+    opacity: 0.8;
   }
 }

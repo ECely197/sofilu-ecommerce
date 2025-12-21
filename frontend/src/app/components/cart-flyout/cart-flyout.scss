@@ -1,308 +1,278 @@
-// Contenido completo y corregido para: src/app/components/cart-flyout/cart-flyout.scss
 @use "../../../../buttons";
 
 :host {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
+  inset: 0;
+  z-index: 2000;
   pointer-events: none;
+  font-family: "Baloo 2", sans-serif; // Forzamos la fuente en todo el componente
 }
 
 .flyout-container {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-// --- Overlay ---
+// --- OVERLAY ---
 .flyout-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(32, 34, 31, 0.4);
+  background: rgba(0, 0, 0, 0.2); // Más sutil
+  backdrop-filter: blur(8px); // Difumina TODA la web detrás
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
-// --- Panel Flotante del Carrito (VERSIÓN FLOTANTE) ---
+// --- PANEL PRINCIPAL ---
 .flyout-panel {
   position: absolute;
-  top: 1rem; // Margen superior
-  right: 1rem; // Margen derecho
-  bottom: 1rem; // Margen inferior
-  width: 420px;
+  top: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  width: 400px;
   max-width: calc(100% - 2rem);
-  max-height: calc(65% - 2rem);
-  background-color: var(--background);
-  border-radius: 1.5rem; // Bordes redondeados
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  
   display: flex;
   flex-direction: column;
-  overflow: hidden; // Clave para que el contenido no se salga de los bordes redondeados
+  overflow: hidden;
 
-  // Animación
-  transform: translateX(110%);
-  opacity: 0.8;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
-    opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  // VIDRIO REAL
+  background: rgba(255, 255, 255, 0.92); // Bastante transparente
+  backdrop-filter: blur(50px) saturate(180%); // Efecto grueso
+  -webkit-backdrop-filter: blur(50px) saturate(180%);
+  
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 2.5rem; // Curvas grandes tipo iOS
+  
+  box-shadow: 
+    -20px 0 50px rgba(0,0,0,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.5); // Brillo interno
+
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); // Movimiento muy suave
 }
 
-// --- ESTADO "ABIERTO" ---
 .flyout-container.is-open {
   pointer-events: auto;
-  .flyout-overlay {
-    opacity: 1;
-  }
-  .flyout-panel {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  .flyout-overlay { opacity: 1; }
+  .flyout-panel { transform: translateX(0); opacity: 1; }
 }
 
-// Nuevo header estilo "píldora"
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
 .flyout-header {
-  padding: 1rem;
+  padding: 1.5rem 2rem;
   flex-shrink: 0;
-}
-
-.header-title-pill {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--soft-white); // Un color ligeramente diferente
-  border-radius: 9999px;
-  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
-  font-weight: 600;
-  font-size: 1rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--soft-gray);
-}
-
-.close-button {
-  background-color: var(--soft-gray);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-
-  .material-symbols-outlined {
-    font-size: 20px;
-  }
-
-  &:hover {
-    transform: scale(1.1);
-    background-color: #dcd5cd;
-  }
+  border-bottom: 1px solid rgba(0,0,0,0.03);
 }
 
 .flyout-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-charcoal);
+  margin: 0;
+  letter-spacing: -0.5px;
 }
 
 .close-button {
-  background-color: var(--soft-gray);
-  border: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  background: rgba(0,0,0,0.05);
+  border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+  display: grid;
+  place-items: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #555;
 
   &:hover {
-    transform: scale(1.1);
-    background-color: #dcd5cd;
+    background: #ffefef;
+    color: #ff6b6b;
+    transform: rotate(90deg) scale(1.1);
   }
 }
 
+/* ==========================================================================
+   LISTA DE ITEMS
+   ========================================================================== */
 .items-list {
-  padding: 1rem 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 }
 
 .cart-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 80px 1fr auto;
   gap: 1rem;
-  align-items: center;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--soft-gray);
-  &:last-child {
-    border-bottom: none;
+  padding: 0.8rem;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.6); // Tarjetas semitransparentes
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: transform 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
   }
 }
 
 .item-image {
-  width: 72px;
-  height: 72px;
-  border-radius: 0.75rem;
+  width: 80px;
+  height: 80px;
+  border-radius: 1rem;
   object-fit: cover;
+  background: white;
 }
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .item-name {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.3rem;
+  line-height: 1.2;
 }
+
 .item-variants {
   font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-.item-actions {
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--soft-gray);
-  border-radius: 9999px;
-  padding: 0.25rem;
-}
-
-.quantity-btn {
-  background: none;
-  border: none;
-  width: 28px;
-  height: 28px;
-  cursor: pointer;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.quantity-value {
-  min-width: 2ch;
-  text-align: center;
+  color: #777;
   font-weight: 500;
 }
 
+// Controles de cantidad (Píldora compacta)
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 1rem;
+  height: 80px; // Altura completa de la tarjeta
+  padding: 0.2rem;
+  width: 36px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.quantity-btn {
+  width: 32px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #888;
+  border-radius: 0.8rem;
+  
+  &:hover { background: #f0f0f0; color: #333; }
+}
+
+.quantity-value {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
 .flyout-footer {
-  padding: 1.5rem;
-  border-top: 1px solid var(--soft-gray);
-  background-color: white;
-  flex-shrink: 0;
-  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  background: rgba(255,255,255,0.5);
+  border-top: 1px solid rgba(255,255,255,0.5);
 }
 
 .subtotal-row {
   display: flex;
   justify-content: space-between;
-  font-weight: 600;
+  align-items: center;
   margin-bottom: 1.5rem;
-  font-size: 1.125rem;
+  
+  span:first-child { font-size: 1.1rem; color: #666; font-weight: 600; }
+  span:last-child { font-size: 1.8rem; font-weight: 800; color: #333; }
 }
 
 .btn-material {
   @extend .btn-material;
   width: 100%;
+  padding: 1.2rem;
+  border-radius: 1.5rem;
+  font-size: 1.1rem;
+  background: var(--text-charcoal); // Negro suave para contraste fuerte
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: center;
   text-decoration: none;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  }
 }
 
-// --- ESTADO VACÍO Y EL GATO ---
+/* ==========================================================================
+   EMPTY STATE (Gato Flotante)
+   ========================================================================== */
 .empty-state {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
   text-align: center;
-  background-color: #fff5ee; // Un fondo suave
+  padding: 2rem;
+  color: var(--text-charcoal);
+  background: radial-gradient(circle at center, rgba(255, 209, 220, 0.4) 0%, transparent 70%);
 }
 
 .cat-container {
-  width: 100%;
-  max-width: 200px; // Un poco más grande
-  margin-bottom: 1.5rem;
-}
-
-.empty-state p {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-charcoal);
-  margin: 0;
-}
-
-.empty-state .subtitle {
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--text-secondary);
-}
-
-.activate-text {
-  margin-top: 0.5rem;
-  font-weight: 600;
-  color: var(--pastel-pink);
-  cursor: pointer;
-}
-
-.summary-item {
-  display: grid;
-  // Cambiamos el grid para tener dos áreas: imagen e info+precio
-  grid-template-columns: auto 1fr;
-  align-items: center;
-  gap: 1rem;
-}
-
-.item-image-container {
-  // Contenedor para la imagen y la cantidad
-  position: relative;
-}
-
-.item-image {
-  width: 72px;
-  height: 72px;
-  border-radius: 0.75rem;
-  object-fit: cover;
-}
-.item-quantity {
-  /* ... sin cambios ... */
-}
-
-.item-info {
-  // Nuevo contenedor para el nombre y las variantes
-  display: flex;
-  flex-direction: column;
-}
-
-.item-name {
-  font-weight: 600; // Un poco más de énfasis
-  margin-bottom: 0.25rem;
-}
-
-// --- ¡NUEVOS ESTILOS AQUÍ! ---
-.item-variants {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-
-  span:not(:last-child)::after {
-    content: " / "; // Separador entre variantes
-    margin: 0 0.25rem;
+  width: 200px;
+  margin-bottom: 2rem;
+  // Truco para que el gato no tenga fondo cuadrado si es un JPG/GIF con fondo blanco
+  // Si es PNG transparente, esto no afecta.
+  mix-blend-mode: multiply; 
+  
+  img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.15)); // Sombra flotante
+    animation: float 4s ease-in-out infinite;
   }
 }
 
-.item-price {
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.empty-state p {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state .subtitle {
+  font-size: 1rem;
+  color: #888;
   font-weight: 500;
-  text-align: right; // Alineamos el precio a la derecha
-  // Para que el precio se ubique a la derecha, lo sacamos del grid principal
-  // y lo ponemos al mismo nivel que summary-item. Lo corregiremos si es necesario.
-}
-
-// Este ajuste asegura que el precio se alinee correctamente
-.summary-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto; // Volvemos a 3 columnas
-  align-items: center;
-  gap: 1rem;
-}
-
-.cat-animation {
-  width: 100%;
-  height: auto;
 }

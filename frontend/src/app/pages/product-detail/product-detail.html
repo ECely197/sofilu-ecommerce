@@ -1,5 +1,5 @@
 <!-- ==========================================================================
-   PÁGINA DE DETALLE DE PRODUCTO (VERSIÓN FINAL CON GALERÍA RESPONSIVE)
+   PÁGINA DE DETALLE DE PRODUCTO
    ========================================================================== -->
 
 @if (product(); as currentProduct) {
@@ -11,7 +11,6 @@
     <!-- ======================== -->
     <div class="gallery-card card" data-aos="fade-right">
       <div class="desktop-gallery">
-        <!-- ¡CAMBIO! La lista de miniaturas ahora itera sobre `galleryImages()` -->
         @if (galleryImages().length > 1) {
         <div class="thumbnail-wrapper">
           @for (image of galleryImages(); track image) {
@@ -30,7 +29,6 @@
           }
         </div>
         }
-        <!-- La imagen principal no necesita cambios, ya que `selectedImage` se actualiza solo -->
         <div class="main-image-wrapper">
           @if (currentProduct.images && currentProduct.images.length > 0) {
           <img
@@ -44,7 +42,6 @@
         </div>
       </div>
 
-      <!-- Galería móvil también debe usar `galleryImages()` -->
       @if (galleryImages().length > 0) {
       <div class="mobile-swiper">
         <div class="swiper-wrapper">
@@ -77,13 +74,12 @@
         }
       </p>
 
+      <!-- Scroll container libre de max-height ahora -->
       <div class="variants-scroll-container">
         <div class="variants-container accordion">
           @for (variant of currentProduct.variants; track variant.name) {
           <div class="variant-group accordion-item">
-            <!-- CABECERA DEL ACORDEÓN (Siempre visible) -->
             <div class="accordion-header" (click)="toggleVariant(variant.name)">
-              <!-- Vista previa de la imagen de la variante -->
               @if (variantPreviewImages()[variant.name]) {
               <img
                 [src]="variantPreviewImages()[variant.name]"
@@ -94,7 +90,6 @@
               <div class="accordion-preview-placeholder"></div>
               }
 
-              <!-- Nombre y selección actual -->
               <div class="accordion-info">
                 <span class="variant-name">{{ variant.name }}</span>
                 <span class="variant-selection">{{
@@ -102,7 +97,6 @@
                 }}</span>
               </div>
 
-              <!-- Icono de despliegue -->
               <span
                 class="material-symbols-outlined accordion-icon"
                 [class.expanded]="expandedVariant() === variant.name"
@@ -110,7 +104,6 @@
               >
             </div>
 
-            <!-- CONTENIDO DEL ACORDEÓN (Desplegable) -->
             <div
               class="accordion-content"
               [@expandCollapse]="
@@ -159,39 +152,28 @@
 
       <div class="actions">
         <div class="quantity-selector">
-          <button (click)="decreaseQuantity()" class="quantity-btn" appRipple>
-            -
-          </button>
-          <span class="quantity-value">{{ quantity() }}</span>
-          <button (click)="increaseQuantity()" class="quantity-btn" appRipple>
-            +
-          </button>
+          <button (click)="decreaseQuantity()">-</button>
+          <span>{{ quantity() }}</span>
+          <button (click)="increaseQuantity()">+</button>
         </div>
+        
+        <!-- BOTÓN DE AÑADIR AL CARRITO -->
         <button
-          class="btn btn-primary add-to-cart-btn"
-          [disabled]="
-            !allVariantsSelected() || !isInStock() || justAddedToCart()
-          "
+          class="add-to-cart-btn"
+          [disabled]="!canAddToCart()"
           (click)="addToCart()"
           appRipple
         >
           @if(justAddedToCart()){
-          <span class="material-symbols-outlined">check</span>
-          <span>Añadido</span>
+            <span>¡Listo!</span>
           } @else {
-          <span>{{
-            canAddToCart() ? "Añadir al carrito" : "No disponible"
-          }}</span>
+            <!-- Si no se puede añadir, es porque está agotado (base o variante) -->
+            <span>{{ canAddToCart() ? 'Añadir al carrito' : 'Agotado' }}</span>
           }
         </button>
-        <button
-          class="btn btn-secondary wishlist-btn"
-          (click)="toggleWishlist()"
-          appRipple
-        >
-          <span class="material-symbols-outlined">{{
-            isProductInWishlist() ? "favorite" : "favorite_border"
-          }}</span>
+        
+        <button class="wishlist-btn" (click)="toggleWishlist()" appRipple>
+          <span class="material-symbols-outlined">{{ isProductInWishlist() ? "favorite" : "favorite_border" }}</span>
         </button>
       </div>
     </div>
@@ -304,8 +286,23 @@
     </div>
   </div>
 
-  <!-- 2. Carrusel de Categorías -->
-  <div data-aos="fade-up" data-aos-delay="100">
+  <!-- ======================== -->
+  <!-- NUEVA SECCIÓN: PRODUCTOS RELACIONADOS -->
+  <!-- ======================== -->
+  @if (relatedProducts().length > 0) {
+  <div class="related-products-section" data-aos="fade-up">
+    <app-product-carousel
+      title="También te podría gustar"
+      [products]="relatedProducts()"
+    ></app-product-carousel>
+  </div>
+  }
+
+  <!-- ======================== -->
+  <!-- NUEVA SECCIÓN: MÁS CATEGORÍAS -->
+  <!-- ======================== -->
+  <div data-aos="fade-up" data-aos-delay="100" style="margin-top: 3rem;">
+    <h2 class="product-title" style="text-align: center; margin-bottom: 2rem;">Explora más Categorías</h2>
     <app-categories-section
       [categories]="categories()"
     ></app-categories-section>

@@ -1,103 +1,122 @@
-// En: frontend/src/app/pages/home/home.scss
+@use "sass:math";
+
 :host {
   display: block;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem; // Espacio entre cada sección
-  padding-bottom: 3rem; // Espacio antes del footer
-}
-
-// Contenedor principal de la página
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-
-  // Usa Flexbox y 'gap' para un espaciado consistente y perfecto entre las tarjetas
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.carousel-section-wrapper {
   width: 100%;
-  max-width: 1440px; // Un poco más ancho que el contenido normal
-  margin: 0 auto;
-  padding: 0 1.5rem;
-}
-// Estilo base para todas las tarjetas de sección
-.card {
-  // Usa las variables de tema definidas en styles.scss
-  background-color: var(--background-card);
-  border: 1px solid var(--card-border);
-  margin-top: 1rem;
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-
-  // Transición suave para los cambios de color
-  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-// --- Estilos Específicos para la Sección HERO ---
-.hero-card {
+  min-height: 100vh;
   position: relative;
-  min-height: 550px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-  padding: 2rem;
+  overflow-x: clip; 
+  z-index: 1;
+  padding-bottom: 6rem;
+  
+  // Borde inferior redondeado para el efecto parallax sobre el footer
+  border-radius: 0 0 3rem 3rem;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.1);
+
+  // --- NUEVO FONDO: "AURORA DIURNA" ---
+  // Un cielo muy suave y luminoso
+  background: linear-gradient(180deg, #fff9f9 0%, #fff0f5 40%, #f3e5f5 100%);
+  color: var(--text-primary); // Volvemos a texto oscuro
 }
 
-.hero-background {
+// --- BLOBS (Manchas de Acuarela) ---
+// Ahora son más sutiles y pastel para no ensuciar el diseño
+:host::before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit; // Hereda el borde redondeado de la tarjeta
-  overflow: hidden; // ¡LA CLAVE! Recorta la imagen que se mueve
+  top: -10%; left: -10%;
+  width: 70vw; height: 70vw;
+  // Rosa amanecer
+  background: radial-gradient(circle, rgba(255, 200, 220, 0.4) 0%, transparent 60%);
+  filter: blur(100px);
+  z-index: -1;
+  animation: floatBlob1 25s infinite alternate ease-in-out;
+}
 
-  img {
-    width: 100%;
-    height: 120%; // Hacemos la imagen un poco más alta para que tenga espacio para moverse
-    object-fit: cover;
-    // La posición inicial es un poco hacia arriba para que el movimiento parallax sea visible
-    transform: translateY(0%);
+:host::after {
+  content: "";
+  position: absolute;
+  top: 30%; right: -20%;
+  width: 60vw; height: 60vw;
+  // Lavanda suave
+  background: radial-gradient(circle, rgba(220, 210, 255, 0.35) 0%, transparent 60%);
+  filter: blur(90px);
+  z-index: -1;
+  animation: floatBlob2 30s infinite alternate-reverse ease-in-out;
+}
+
+.page-container {
+  max-width: 1400px; 
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem; 
+  
+  // Mancha inferior (Azul cielo)
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 5%; left: 5%;
+    width: 50vw; height: 50vw;
+    background: radial-gradient(circle, rgba(200, 240, 255, 0.35) 0%, transparent 60%);
+    filter: blur(100px);
+    z-index: -1;
+    animation: floatBlob3 20s infinite alternate ease-in-out;
+    pointer-events: none;
   }
 }
 
-.hero-content {
-  position: relative;
-  z-index: 1;
+@keyframes floatBlob1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, 50px) scale(1.1); }
+}
+@keyframes floatBlob2 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-50px, 20px) rotate(10deg); }
+}
+@keyframes floatBlob3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -30px) scale(0.9); }
 }
 
-.hero-title {
-  font-family: "Baloo 2", serif;
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
-
-  font-weight: 700;
-  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
-  margin-bottom: 1rem;
-  line-height: 1.2;
-  max-width: 20ch; // Mantenemos el ancho máximo para una buena legibilidad
+// --- AJUSTE GLOBAL DE TARJETAS PARA FONDO CLARO ---
+// Sobrescribimos las tarjetas para que se vean bien sobre claro
+::ng-deep .card {
+  background: rgba(255, 255, 255, 0.65) !important; // Vidrio blanco lechoso
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important; // Borde blanco puro
+  box-shadow: 
+    0 20px 50px -10px rgba(200, 200, 230, 0.15), // Sombra de color (no negra)
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
+    
+  color: var(--text-charcoal) !important; // Texto oscuro
 }
 
-.hero-button {
-  margin-top: 2rem;
-  padding: 0.875rem 2rem;
-  border-radius: 9999px;
-  background-color: white;
-  color: var(--text-charcoal); // Color de texto principal
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s;
-  text-decoration: none; // Aseguramos que no tenga subrayado
+// Ajuste de textos dentro de tarjetas (Volvemos a oscuro)
+::ng-deep .card h2, ::ng-deep .card h3, ::ng-deep .card p {
+  color: var(--text-charcoal) !important;
+  text-shadow: none !important; // Quitamos la sombra de texto
+}
 
-  &:hover {
-    transform: scale(1.05);
+// Títulos principales
+::ng-deep .section-title, ::ng-deep .card-title {
+  color: #4a4a4a !important;
+}
+
+// Ajuste para la sección de "Trabaja con nosotros" (que ya tenía su propio fondo)
+::ng-deep app-work-with-us .content-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+// Animación Fade Up
+.fade-up {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s ease-out, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

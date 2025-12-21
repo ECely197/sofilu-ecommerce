@@ -7,7 +7,7 @@
       class="clear-cart-btn"
       appRipple
     >
-      Limpiar Carrito
+      Limpiar
     </button>
     }
   </div>
@@ -33,7 +33,7 @@
           </div>
           <p class="item-price-unit">
             {{ finalItemPrice(item) | currency : "COP" : "symbol" : "1.0-0" }} /
-            unidad
+            ud
           </p>
         </div>
         <div class="item-controls">
@@ -76,7 +76,7 @@
           </div>
           <div class="summary-row">
             <span>Envío</span>
-            <span class="summary-note">Calculado en el siguiente paso</span>
+            <span class="summary-note">Calculado después</span>
           </div>
         </div>
         <div class="summary-total">
@@ -85,7 +85,7 @@
             cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
-        <a routerLink="/checkout" class="btn-material checkout-button" appRipple
+        <a routerLink="/checkout" class="checkout-button" appRipple
           >Ir a Pagar</a
         >
       </div>
@@ -94,7 +94,7 @@
   } @else {
   <div class="empty-cart-message">
     <p>Tu carrito de sueños está vacío.</p>
-    <a routerLink="/" class="btn-material" appRipple>Explorar productos</a>
+    <a routerLink="/" class="explore-button" appRipple>Explorar productos</a>
   </div>
   }
 </div>

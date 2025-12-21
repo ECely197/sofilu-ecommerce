@@ -1,69 +1,167 @@
-// En: frontend/src/app/pages/account/my-details/my-details.scss
 @use "../../../../../buttons";
-@use "../../../../forms";
+@use "../../../../forms"; // Importante para los estilos de input
+
+:host {
+  display: block;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .account-section {
-  .section-title {
-    font-family: "Playfair Display", serif;
-    font-size: 1.875rem;
-    margin-bottom: 1.5rem;
-  }
-}
-
-.details-card {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  max-width: 600px;
-}
-
-.detail-row {
   display: flex;
-  justify-content: space-between;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
+  flex-direction: column;
+  align-items: center; // Centramos la tarjeta en la sección
+}
 
-  strong {
-    font-weight: 600;
-  }
-  span {
-    color: var(--text-secondary);
+.section-title {
+  font-family: "Baloo 2", serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 2rem;
+  align-self: flex-start; // Título alineado a la izquierda del contenedor
+  @media (max-width: 768px) { align-self: center; }
+}
+
+// --- TARJETA DE DETALLES (GLASS PANEL) ---
+.details-card {
+  width: 100%;
+  max-width: 700px; // Un poco más ancho para que respire
+  
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(30px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  
+  box-shadow: 
+    0 20px 50px -10px rgba(0,0,0,0.05),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
+    
+  transition: all 0.3s ease;
+}
+
+// --- MODO VISTA ---
+.view-mode {
+  .detail-row {
+    display: grid;
+    grid-template-columns: 120px 1fr; // Etiqueta fija, contenido fluido
+    padding: 1.2rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    align-items: center;
+
+    &:last-child { border-bottom: none; }
+
+    strong {
+      font-weight: 700;
+      color: #333;
+      font-size: 1.1rem;
+      font-family: "Baloo 2", sans-serif;
+    }
+    
+    span {
+      color: #666;
+      font-size: 1rem;
+    }
   }
 }
 
 .card-actions {
+  margin-top: 2.5rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+  align-items: center;
+  justify-content: space-between; // Botón a la derecha, link a la izquierda (o al revés)
+  gap: 1.5rem;
+  
+  .btn-material {
+    background: var(--text-charcoal);
+    color: white;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    font-weight: 700;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      transform: translateY(-3px);
+      background: black;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+  }
 
-.action-link {
-  color: var(--text-secondary);
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 0.875rem;
-  &:hover {
-    color: var(--text-charcoal);
+  .action-link {
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--pastel-pink, #FFD1DC);
+      border-bottom-color: var(--pastel-pink, #FFD1DC);
+    }
   }
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
+// --- MODO EDICIÓN (Formulario) ---
+.edit-mode {
+  background: rgba(255, 255, 255, 0.9); // Más opaco al editar para enfocar
 
-.material-input:disabled {
-  color: var(--text-secondary);
-  border-bottom-color: transparent;
-}
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    @media (max-width: 600px) { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+  
+  // Ajustes específicos para inputs disabled (email)
+  .material-input:disabled {
+    color: #999;
+    background: rgba(0,0,0,0.02);
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    border: none;
+    
+    + .material-label {
+      color: #aaa;
+      transform: translateY(-1.5rem) scale(0.8); // Forzar etiqueta arriba
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+    
+    .btn-secondary {
+      background: transparent; border: none; color: #666; font-weight: 600; cursor: pointer;
+      &:hover { color: #333; }
+    }
+    
+    .btn-material {
+      @extend .btn-material; // Hereda mixin global
+      background: var(--pastel-pink, #FFD1DC);
+      color: white;
+      
+      &:hover {
+        background: #ffc1cc;
+        box-shadow: 0 5px 15px rgba(255, 182, 193, 0.4);
+      }
+    }
+  }
 }

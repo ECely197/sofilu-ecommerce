@@ -5,6 +5,9 @@ import {
   signal,
   AfterViewInit,
   NgZone,
+  ElementRef,
+  ViewChildren,
+  QueryList
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -70,6 +73,7 @@ export class Home implements OnInit {
   private categoryService = inject(CategoryService);
   private zone = inject(NgZone);
   private specialEventService = inject(SpecialEventService);
+  private el = inject(ElementRef);
 
   // Signals para los datos
   categories = signal<Category[]>([]);
@@ -129,11 +133,29 @@ export class Home implements OnInit {
     });
   }
 
+   @ViewChildren('animateSection') sections!: QueryList<ElementRef>;
+
   ngAfterViewInit(): void {
-    // Esperamos un momento para que todos los componentes hijos se rendericen
+    // Configuramos el observador para la animación de entrada
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target); // Solo animar una vez
+        }
+      });
+    }, { threshold: 0.15 }); // Se activa cuando el 15% del elemento es visible
+
+    // Observamos cada sección marcada
+    this.sections.changes.subscribe(() => {
+      this.sections.forEach(sec => observer.observe(sec.nativeElement));
+    });
+    
+    // Primera carga manual
     setTimeout(() => {
-      this.initScrollAnimations();
-    }, 200);
+        const elements = this.el.nativeElement.querySelectorAll('.fade-up');
+        elements.forEach((el: HTMLElement) => observer.observe(el));
+    }, 100);
   }
 
   /**

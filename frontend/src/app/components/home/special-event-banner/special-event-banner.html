@@ -12,10 +12,10 @@
       }
     </div>
 
-    <!-- ¡NUEVO! Botón de Llamada a la Acción en lugar del carrusel -->
     @if (event.linkedProducts && event.linkedProducts.length > 0) {
     <div class="cta-container">
-      <button (click)="scrollToProducts()" class="btn-material" appRipple>
+      <!-- Usamos la nueva clase btn-glass -->
+      <button (click)="scrollToProducts()" class="btn-glass" appRipple>
         Ver Productos Sugeridos
       </button>
     </div>

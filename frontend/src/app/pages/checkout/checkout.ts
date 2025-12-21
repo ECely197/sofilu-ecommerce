@@ -130,10 +130,18 @@ export class checkout implements OnInit {
 
   private buildOrderData(): any | null {
     const selectedAddr = this.selectedAddress();
+    console.log('[checkout] buildOrderData - selectedAddr:', selectedAddr);
     if (!selectedAddr) {
+      console.log(
+        '[checkout] buildOrderData - no selectedAddr, returning null'
+      );
       console.error('BuildOrderData falló: No hay dirección seleccionada.');
       return null;
     }
+    console.log(
+      '[checkout] buildOrderData - building payload for:',
+      selectedAddr.email
+    );
 
     const customerInfoPayload = {
       name: selectedAddr.fullName,
@@ -144,6 +152,8 @@ export class checkout implements OnInit {
     const { _id, ...shippingAddressPayload } = selectedAddr;
 
     return {
+      // debug: estructura devuelta
+      __debug_buildOrderData_sample: true,
       customerInfo: customerInfoPayload,
       shippingAddress: shippingAddressPayload,
       items: this.cartService.cartItems().map((item) => ({
@@ -226,45 +236,75 @@ export class checkout implements OnInit {
    */
   async processPayment() {
     try {
+      console.log('[checkout] processPayment - start');
       this.isProcessingOrder.set(true);
       const selectedAddr = this.selectedAddress();
 
       if (!selectedAddr) {
+        console.log('[checkout] processPayment - no selected address -> throw');
         throw new Error('Por favor selecciona una dirección de envío');
       }
 
       const reference = `ORDER_${Date.now()}`;
+      console.log('[checkout] processPayment - reference:', reference);
       const orderData = this.buildOrderData();
+      console.log('[checkout] processPayment - orderData:', orderData);
 
-      if (!orderData) {
-        throw new Error('No se pudo recopilar la información del pedido');
-      }
+      // crear items legibles para Wompi (nombre, cantidad, price en cents)
+      // usar los items actuales del carrito (tienen product con name/description)
+      const wompiItems = this.cartService.cartItems().map((ci) => ({
+        name: ci.product?.name || 'Producto',
+        description: (ci.product?.description || '').slice(0, 120),
+        amount_in_cents: Math.round(this.finalItemPrice(ci) * 100),
+        quantity: ci.quantity,
+      }));
+      console.log('[checkout] processPayment - wompiItems:', wompiItems);
 
-      // Save order data in localStorage for later use
       localStorage.setItem('pendingOrderData', JSON.stringify(orderData));
+      console.log(
+        '[checkout] processPayment - pendingOrderData saved:',
+        localStorage.getItem('pendingOrderData')?.slice(0, 512)
+      );
 
-      // Create Wompi payment link
+      // Enviamos items para que Wompi muestre summary
       const response = await firstValueFrom(
         this.paymentService.createTransaction({
-          amount_in_cents: this.grandTotal() * 100,
+          amount_in_cents: Math.round(this.grandTotal() * 100),
           customer_email: selectedAddr.email,
           customer_name: selectedAddr.fullName,
           customer_phone: selectedAddr.phone,
           reference,
+          items: wompiItems,
         })
       );
 
+      console.log(
+        '[checkout] processPayment - createTransaction response:',
+        response
+      );
       if (!response?.redirectUrl) {
+        console.log(
+          '[checkout] processPayment - response missing redirectUrl -> throw'
+        );
         throw new Error('No se recibió URL de redirección válida');
       }
 
+      console.log(
+        '[checkout] processPayment - redirecting to:',
+        response.redirectUrl
+      );
       // Redirect to Wompi
       window.location.href = response.redirectUrl;
     } catch (error) {
-      console.error('Error al procesar el pago:', error);
+      console.error('[checkout] processPayment - error:', error);
       this.toastService.show(
         'Error al procesar el pago. Por favor intenta nuevamente.',
         'error'
+      );
+      this.isProcessingOrder.set(false);
+    } finally {
+      console.log(
+        '[checkout] processPayment - finally, resetting isProcessingOrder'
       );
       this.isProcessingOrder.set(false);
     }

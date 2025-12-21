@@ -1,182 +1,212 @@
-// Contenido completo y final para: src/app/pages/account/my-addresses/my-addresses.component.scss
 @use "../../../../../buttons";
-@use "../../../pages/admin/admin-shared";
 @use "../../../../forms";
+:host {
+  display: block;
+  // Animación de entrada
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .addresses-container {
-  max-width: 900px;
-  margin: auto;
+  max-width: 1000px;
+  // margin: auto; // Dejamos que el layout padre maneje el margen
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 
   h2 {
-    font-size: 1.75rem;
-    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    font-family: "Baloo 2", serif;
+    font-weight: 800;
     margin: 0;
+    color: #333;
+  }
+  
+  .btn-material {
+    @extend .btn-material; // Tu mixin global
+    background: linear-gradient(135deg, #333 0%, #000 100%);
+    color: white;
+    border-radius: 50px;
+    padding: 0.8rem 1.5rem;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
   }
 }
 
-// --- ESTILOS DEL FORMULARIO MODAL (LA PARTE QUE FALTABA) ---
-
-.form-overlay {
-  position: fixed;
-  inset: 0; // Abarca toda la pantalla
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  // Animación de aparición
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-.form-panel {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95); // Empieza ligeramente más pequeño
-  width: 90%;
-  max-width: 500px;
-  background-color: white;
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
-  // Animación de aparición
-  animation: fadeInScaleUp 0.3s ease-out forwards;
-
-  h3 {
-    font-family: "Playfair Display", serif;
-    text-align: center;
-    font-size: 1.5rem;
-    margin: 0 0 2rem 0;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInScaleUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-// --- FIN DE LOS ESTILOS DEL MODAL ---
-
+// --- GRID DE DIRECCIONES ---
 .addresses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
+// --- TARJETA DE DIRECCIÓN (GLASS CARD) ---
 .address-card {
-  border: 1px solid var(--soft-gray);
-  padding: 1.5rem;
-  border-radius: 1rem;
   position: relative;
-  transition: all 0.2s ease-in-out;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 2rem;
+  padding: 2rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  background-color: white;
+  &:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.1);
+  }
 
+  // Estado Preferido (Brillante)
   &.preferred {
-    border-color: var(--pastel-pink);
-    border-width: 2px;
-    box-shadow: 0 0 15px rgba(244, 194, 194, 0.5);
+    background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255, 240, 245, 0.8) 100%);
+    border: 2px solid var(--pastel-pink, #FFD1DC);
+    box-shadow: 0 10px 40px -5px rgba(255, 182, 193, 0.3);
+    
+    .preferred-badge {
+      opacity: 1; transform: scale(1);
+    }
   }
 
   h4 {
     margin: 0 0 0.5rem 0;
-    font-weight: 700;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #333;
+    font-family: "Baloo 2";
   }
+  
   p {
-    margin: 0.25rem 0;
-    color: var(--text-secondary);
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+    font-size: 0.95rem;
   }
 }
 
 .preferred-badge {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background-color: var(--pastel-pink);
+  top: 1.5rem; right: 1.5rem;
+  background: var(--pastel-pink, #FFD1DC);
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
+  opacity: 0; // Oculto si no es preferida (aunque el HTML lo controla)
+  transform: scale(0.8);
+  transition: all 0.3s;
 }
 
+// --- ACCIONES DE TARJETA ---
 .card-actions {
   margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--soft-gray);
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.05);
   display: flex;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 
   button {
-    background: none;
-    border: none;
-    cursor: pointer;
+    background: white;
+    border: 1px solid transparent;
+    border-radius: 50px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    font-size: 0.875rem;
-    padding: 0.5rem;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 
-    &:first-of-type {
-      margin-left: -0.5rem;
-    }
     &:hover {
-      color: var(--pastel-pink);
+      transform: translateY(-2px);
+      color: #333;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    
+    // Botón de eliminar
+    &:nth-child(2):hover { // Asumiendo que es el segundo
+       color: #e74c3c; background: #fff5f5;
+    }
+    
+    // Botón "Marcar como preferida"
+    &:last-child {
+      background: transparent; border: 1px solid #ddd; box-shadow: none;
+      &:hover { border-color: var(--pastel-pink); color: var(--pastel-pink); background: white; }
     }
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  border: 2px dashed var(--soft-gray);
-  border-radius: 1rem;
+// --- FORMULARIO MODAL (GLASS) ---
+.form-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out forwards;
+}
 
-  p {
-    color: var(--text-secondary);
+.form-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 90%; max-width: 600px;
+  
+  // Estilo Vidrio Sólido
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  box-shadow: 0 25px 60px -10px rgba(0,0,0,0.2);
+  z-index: 2001;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+
+  h3 {
+    font-family: "Baloo 2", serif; text-align: center; font-size: 2rem; font-weight: 800;
+    margin: 0 0 2.5rem 0; color: #333;
+  }
+
+  form { display: flex; flex-direction: column; gap: 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  
+  // Ajuste móvil para el grid
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  
+  .form-actions {
+    display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;
+    
+    .btn-secondary {
+      background: transparent; border: none; color: #666; font-weight: 600; cursor: pointer;
+      &:hover { color: #333; }
+    }
+    
+    .btn-material {
+      background: var(--text-charcoal); color: white; border-radius: 50px; padding: 0.8rem 2rem;
+      border: none; font-weight: 700; cursor: pointer;
+      &:disabled { background: #ccc; cursor: not-allowed; }
+    }
   }
 }
 
-// Botones
-.btn-material {
-  @extend .btn-material;
-}
-.btn-secondary {
-  @extend .btn-secondary;
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+// --- ESTADO VACÍO ---
+.empty-state {
+  text-align: center; padding: 4rem;
+  background: rgba(255,255,255,0.4); border: 2px dashed rgba(0,0,0,0.1); border-radius: 2rem;
+  p { color: #888; font-size: 1.1rem; }
 }

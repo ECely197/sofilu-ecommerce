@@ -2,45 +2,115 @@
 
 :host {
   display: block;
+  width: 100%;
+  padding: 0 1.5rem; // Margen lateral seguro
+  margin-bottom: 4rem;
 }
 
 .cta-section {
-  // Lo convertimos en una tarjeta contenida
-  max-width: 1200px;
+  position: relative;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 4rem 2rem;
-  background-color: var(--background-card);
-  border: 1px solid var(--border);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+  
+  // --- FONDO DEGRADADO ANIMADO ---
+  background: linear-gradient(135deg, #fff5f5 0%, #fce4ec 50%, #e8eaf6 100%);
+  background-size: 200% 200%;
+  animation: gradientFlow 10s ease infinite;
+  
+  // Efecto Vidrio Borde
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 3rem;
+  box-shadow: 
+    0 20px 60px -10px rgba(255, 182, 193, 0.3), // Sombra rosa
+    inset 0 0 0 2px rgba(255, 255, 255, 0.5); // Borde interno
+    
+  padding: 6rem 2rem;
   text-align: center;
+  overflow: hidden; // Para recortar las decoraciones
+}
 
-  @media (min-width: 768px) {
-    padding: 6rem;
-  }
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .cta-content {
-  max-width: 700px;
+  position: relative;
+  z-index: 2; // Encima de las decoraciones
+  max-width: 800px;
   margin: 0 auto;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .cta-title {
-  font-family: "Baloo 2", serif;
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  line-height: 1.2;
-  margin-bottom: 1rem;
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: #333;
+  
+  // Efecto de texto degradado sutil
+  background: linear-gradient(45deg, #333, #666);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  span {
+    display: block;
+    font-size: 0.6em; // "creado por ti" más pequeño
+    font-weight: 600;
+    color: var(--pastel-pink, #FFD1DC);
+    -webkit-text-fill-color: var(--pastel-pink, #FFD1DC); // Restaurar color
+    margin-top: 0.5rem;
+  }
 }
 
 .cta-subtitle {
-  font-size: 1.125rem;
-  color: var(--text-secondary);
-  margin-bottom: 2.5rem;
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 3rem;
+  max-width: 500px;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .btn-material {
   @extend .btn-material;
-  padding: 1rem 2.5rem;
-  font-size: 1rem;
+  padding: 1.2rem 3rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  background: white;
+  color: #333;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  font-weight: 800;
+  text-decoration: none;
+  display: inline-block;
+  
+  &:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 182, 193, 0.4);
+    color: var(--pastel-pink, #FFD1DC);
+  }
+}
+
+// --- DECORACIONES FLOTANTES (CSS PURO) ---
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+  backdrop-filter: blur(5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  animation: float 6s ease-in-out infinite;
+}
+
+.deco-1 { top: -10%; left: -5%; width: 200px; height: 200px; animation-delay: 0s; }
+.deco-2 { bottom: -20%; right: -5%; width: 300px; height: 300px; animation-delay: -2s; background: radial-gradient(circle at 30% 30%, var(--pastel-pink), transparent); opacity: 0.2; }
+.deco-3 { top: 20%; right: 10%; width: 80px; height: 80px; animation-delay: -4s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
 }

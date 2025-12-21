@@ -3,10 +3,7 @@
  */
 
 :host {
-  // Asegura que el componente raíz se comporte como un bloque en pantallas móviles.
-  @media (max-width: 767px) {
-    display: block;
-  }
+  display: block; // Importante
 }
 
 .app-container {
@@ -14,15 +11,18 @@
   flex-direction: column;
   min-height: 100vh;
   position: relative;
+  overflow-x: hidden; // Prevención global
 }
 
 .main-content {
   flex-grow: 1;
-  padding-top: 80px;
-
   position: relative;
-  z-index: 1;
-  background-color: var(--background-page);
+  z-index: 2; // Por encima del footer
+  background-color: transparent; // Dejamos que el fondo del body o de los componentes se vea
+  width: 100%;
+  
+  // Asegúrate de NO tener padding aquí
+  padding: 0; 
 }
 
 app-header {

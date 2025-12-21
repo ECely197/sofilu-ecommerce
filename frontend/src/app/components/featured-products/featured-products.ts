@@ -25,7 +25,7 @@ import {
 Swiper.use([Navigation]);
 
 @Component({
-  selector: 'app-featured-products', // <-- El único cambio real es este selector
+  selector: 'app-featured-products',
   standalone: true,
   imports: [CommonModule, ProductCard],
   templateUrl: './featured-products.html',
@@ -42,82 +42,58 @@ Swiper.use([Navigation]);
           paddingBottom: '0',
         })
       ),
-      state('expanded', style({ height: '*' })),
+      state('expanded', style({ height: '*', overflow: 'hidden', opacity: 1 })),
       transition('expanded <=> collapsed', [
         animate('400ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
-      ]),
-    ]),
-    trigger('fadeInOut', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0.8)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
-      ]),
-      transition(':leave', [
-        animate(
-          '200ms ease-in',
-          style({ opacity: 0, transform: 'scale(0.8)' })
-        ),
       ]),
     ]),
   ],
 })
 export class FeaturedProductsComponent implements AfterViewInit {
-  // --- @Inputs ---
   @Input() products: Product[] = [];
 
-  // --- Estado Interno ---
   private el = inject(ElementRef);
   uniqueId = `featured-${Math.random().toString(36).substring(2, 9)}`;
   isExpanded = signal(false);
-  isFloating = signal(false);
-  private timeoutId: any;
   private swiperInstance: Swiper | undefined;
 
   constructor() {
     effect(() => {
       if (this.products.length > 0) {
-        setTimeout(() => this.initOrUpdateSwiper(), 0);
+        setTimeout(() => this.initSwiper(), 50);
       }
     });
   }
 
   ngAfterViewInit() {}
 
-  private initOrUpdateSwiper(): void {
+  private initSwiper(): void {
     const swiperContainer = this.el.nativeElement.querySelector('.swiper');
     if (!swiperContainer) return;
 
     if (this.swiperInstance) {
-      this.swiperInstance.update();
-      return;
+      this.swiperInstance.destroy(true, true);
     }
+    
+    const nextEl = this.el.nativeElement.querySelector(`.swiper-button-next.${this.uniqueId}`);
+    const prevEl = this.el.nativeElement.querySelector(`.swiper-button-prev.${this.uniqueId}`);
 
     this.swiperInstance = new Swiper(swiperContainer, {
-      slidesPerView: 2,
-      spaceBetween: 16,
+      slidesPerView: 1.2,
+      spaceBetween: 20,
       navigation: {
-        nextEl: `.swiper-button-next.${this.uniqueId}`,
-        prevEl: `.swiper-button-prev.${this.uniqueId}`,
+        nextEl: nextEl,
+        prevEl: prevEl,
       },
       breakpoints: {
-        640: { slidesPerView: 2, spaceBetween: 20 },
-        768: { slidesPerView: 3, spaceBetween: 24 },
-        1024: { slidesPerView: 4, spaceBetween: 24 },
+        640: { slidesPerView: 2.2, spaceBetween: 20 },
+        1024: { slidesPerView: 3.2, spaceBetween: 30 },
+        1300: { slidesPerView: 4, spaceBetween: 30 },
       },
     });
   }
 
   toggleExplorer(): void {
     this.isExpanded.update((expanded) => !expanded);
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    if (!this.isExpanded()) return;
-    this.isFloating.set(true);
-    clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(() => {
-      this.isFloating.set(false);
-    }, 150);
   }
 }

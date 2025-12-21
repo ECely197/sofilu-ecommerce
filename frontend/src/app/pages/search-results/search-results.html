@@ -1,23 +1,18 @@
-<!-- En: search-results.component.html -->
 <div class="page-container">
   <header class="page-header">
     @if (searchTerm()) {
-    <h1>Resultados para: "{{ searchTerm() }}"</h1>
+    <h1>Resultados para "{{ searchTerm() }}"</h1>
     } @else {
-    <h1>Explorar todos los productos</h1>
+    <h1>Explorar todo</h1>
     }
   </header>
 
-  <!-- Barra de Filtros (basada en tu diseño) -->
+  <!-- Barra de Filtros -->
   <div class="filters-container">
     <div class="filter-buttons">
-      <!-- Estos botones abrirían modales en un futuro, por ahora son visuales -->
+      <!-- Botones visuales (funcionalidad futura) -->
       <button class="filter-btn" appRipple>
-        <span>Talla</span>
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <button class="filter-btn" appRipple>
-        <span>Color</span>
+        <span>Categoría</span>
         <span class="material-symbols-outlined">expand_more</span>
       </button>
       <button class="filter-btn" appRipple>
@@ -27,7 +22,7 @@
     </div>
 
     <div class="sort-selector">
-      <label for="sort">Ordenar por</label>
+      <label for="sort">Ordenar:</label>
       <select
         id="sort"
         class="sort-input"
@@ -39,8 +34,8 @@
         "
       >
         <option value="relevance,desc">Relevancia</option>
-        <option value="price,asc">Precio: de menor a mayor</option>
-        <option value="price,desc">Precio: de mayor a menor</option>
+        <option value="price,asc">Precio: Bajo a Alto</option>
+        <option value="price,desc">Precio: Alto a Bajo</option>
         <option value="name,asc">Nombre: A-Z</option>
         <option value="name,desc">Nombre: Z-A</option>
       </select>
@@ -49,7 +44,9 @@
 
   <!-- Resultados -->
   @if (isLoading()) {
-  <p>Buscando...</p>
+  <div class="loading-text">
+    <p>Buscando tesoros...</p>
+  </div>
   } @else if (products().length > 0) {
   <div class="products-grid">
     @for (product of products(); track product._id) {
@@ -58,12 +55,13 @@
   </div>
   } @else {
   <div class="empty-state">
-    <h2>No se encontraron resultados</h2>
+    <!-- Si tienes el gato del carrito, úsalo aquí también -->
+    <img src="assets/images/cat-sad.png" alt="No encontrado" style="width: 150px; margin-bottom: 1rem; opacity: 0.7;">
+    <h2>Ups, no encontramos nada</h2>
     <p>
-      No hemos encontrado productos para "{{ searchTerm() }}". Intenta con otra
-      palabra.
+      No hemos encontrado productos para "{{ searchTerm() }}". <br> Intenta buscar "oso", "gato" o navega por categorías.
     </p>
-    <a routerLink="/" class="btn-material">Volver al Inicio</a>
+    <a routerLink="/" class="btn-material" appRipple>Volver al inicio</a>
   </div>
   }
 </div>

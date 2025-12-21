@@ -1,78 +1,147 @@
+@use "../../../../../buttons";
+
 :host {
   display: block;
-}
-
-.card {
-  background-color: var(--background-card);
-  border: 1px solid var(--border);
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
-
-  @media (min-width: 768px) {
-    padding: 3rem;
-  }
+  width: 100%;
+  padding: 0 1.5rem;
+  margin-bottom: 4rem;
 }
 
 .store-info-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  align-items: center;
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  
+  // Fondo sutil
+  background: white;
+  border-radius: 3rem;
+  overflow: hidden;
+  box-shadow: 0 20px 50px -10px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
 
-  @media (min-width: 992px) {
-    grid-template-columns: 1fr 1fr;
+  display: grid;
+  grid-template-columns: 1fr; // Móvil: Columna
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: 40% 60%; // Desktop: Info - Mapa
+  }
+}
+
+// --- COLUMNA DE INFORMACIÓN ---
+.info-content {
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 2;
+  background: rgba(255,255,255,0.8); // Fondo semi-sólido en móvil
+  
+  @media (min-width: 1024px) {
+    padding: 4rem;
+    background: white; // Sólido en desktop
   }
 }
 
 .section-title {
-  font-family: "Baloo 2", serif;
-  font-size: 2.5rem;
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: #333;
   margin-bottom: 1rem;
+  line-height: 1.1;
 }
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: var(--text-secondary);
-  margin-bottom: 2.5rem;
-  max-width: 450px;
+  color: #666;
+  margin-bottom: 3rem;
+  line-height: 1.6;
 }
 
 .details {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .detail-item {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-
-  .material-symbols-outlined {
-    font-size: 24px;
-    color: var(--pastel-pink);
-    margin-top: 4px;
+  gap: 1.5rem;
+  
+  // Icono con fondo de burbuja
+  .icon-bubble {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #e0f7fa 0%, #e0f2fe 100%); // Azul cielo suave
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0284c7;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    &.location {
+      background: linear-gradient(135deg, #fff0f0 0%, #ffe4e6 100%); // Rosa suave
+      color: #e11d48;
+    }
+  }
+  
+  &:hover .icon-bubble {
+    transform: scale(1.1) rotate(5deg);
   }
 
-  p {
-    margin: 0;
-  }
-  strong {
-    font-weight: 700;
+  div {
+    strong {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 0.3rem;
+    }
+    p {
+      margin: 0;
+      color: #555;
+      font-size: 1rem;
+    }
   }
 }
 
+// --- COLUMNA DEL MAPA ---
 .map-container {
-  width: 100%;
+  position: relative;
   height: 400px;
-  border-radius: 1.5rem;
+  width: 100%;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  
+  @media (min-width: 1024px) {
+    height: 100%;
+    // Forma orgánica en el borde izquierdo (Desktop)
+    // Esto crea una curva suave que se mete en el mapa
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%); 
+    border-radius: 3rem 0 0 3rem; // Opcional si clip-path falla
+    margin-left: -3rem; // Superposición
+  }
 
   iframe {
     width: 100%;
     height: 100%;
     border: none;
+    filter: saturate(1.2) contrast(1.1); // Hacemos el mapa más vivo
+  }
+  
+  // Overlay para que no sea tan "Google Maps" plano
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,1) 0%, transparent 20%);
+    pointer-events: none; // Deja interactuar con el mapa
+    
+    @media (max-width: 1023px) {
+      background: linear-gradient(180deg, rgba(255,255,255,1) 0%, transparent 20%);
+    }
   }
 }
