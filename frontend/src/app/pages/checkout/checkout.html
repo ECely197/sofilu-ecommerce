@@ -177,13 +177,6 @@
         >
           {{ isProcessingOrder() ? "Procesando..." : "Finalizar Compra" }}
         </button>
-        <button
-          (click)="processPayment()"
-          [disabled]="isProcessingOrder()"
-          class="payment-button"
-        >
-          {{ isProcessingOrder() ? "Procesando..." : "Pagar ahora" }}
-        </button>
       </div>
     </div>
   </aside>

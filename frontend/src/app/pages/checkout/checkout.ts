@@ -166,6 +166,7 @@ export class checkout implements OnInit {
       items: this.cartService.cartItems().map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
+        price: this.finalItemPrice(item),
         selectedVariants: item.selectedVariants,
       })),
       appliedCoupon: this.appliedCoupon()?.code || null,
