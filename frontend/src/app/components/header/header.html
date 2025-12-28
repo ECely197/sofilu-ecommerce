@@ -1,7 +1,6 @@
 <header class="sofilu-header" data-lenis-prevent>
   <!-- Contenedor Principal "Liquid Glass" -->
   <div class="header-pill">
-    
     <!-- 1. LOGO (Izquierda) -->
     <div class="logo-wrapper">
       <a routerLink="/" class="logo-link">
@@ -98,9 +97,11 @@
       </form>
 
       <button (click)="uiStateService.openWishlistFlyout()" class="icon-button">
-        <span class="material-symbols-outlined">favorite</span>
+        <span class="material-symbols-outlined">favorit</span>
         @if (wishlistService.wishlistProductIds().length > 0) {
-        <span class="badge">{{ wishlistService.wishlistProductIds().length }}</span>
+        <span class="badge">{{
+          wishlistService.wishlistProductIds().length
+        }}</span>
         }
       </button>
 
@@ -118,13 +119,17 @@
         </button>
         @if (isProfileMenuOpen()) {
         <div #profileMenu class="profile-menu">
-          <div class="menu-header"><p>{{ user.email }}</p></div>
+          <div class="menu-header">
+            <p>{{ user.email }}</p>
+          </div>
           <div class="menu-links">
             <a routerLink="/account" (click)="toggleProfileMenu()">Mi Cuenta</a>
             @if(isAdmin$ | async) { <a routerLink="/admin">Panel Admin</a> }
           </div>
           <div class="menu-footer">
-            <button (click)="logout()" class="logout-button">Cerrar Sesión</button>
+            <button (click)="logout()" class="logout-button">
+              Cerrar Sesión
+            </button>
           </div>
         </div>
         }
