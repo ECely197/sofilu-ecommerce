@@ -103,18 +103,20 @@ router.post("/webhook", async (req, res) => {
 router.get("/check-status/:orderId", async (req, res) => {
   try {
     const { orderId } = req.params;
-    const order = await Order.findById(orderId);
+
+    // 1. AQUÍ ESTÁ LA CLAVE: .populate("items.product")
+    // Esto convierte el ID "65a..." en el objeto { name: "Cori...", images: [...] }
+    const order = await Order.findById(orderId).populate("items.product");
 
     if (!order) return res.status(404).json({ message: "Orden no encontrada" });
 
-    // Si ya está pagada, responder OK
+    // Si ya está pagada
     if (order.status === "Procesando" || order.status === "Enviado") {
       return res.json({ status: "APPROVED", order });
     }
 
     // Si sigue pendiente, CONSULTAMOS A WOMPI
     try {
-      // Usamos la llave PRIVADA para consultar (debe ser la correcta: test o prod)
       const response = await axios.get(
         `${WOMPI_API_URL}/transactions?reference=${orderId}`,
         {
@@ -124,29 +126,26 @@ router.get("/check-status/:orderId", async (req, res) => {
 
       const transactions = response.data.data;
       if (transactions && transactions.length > 0) {
-        // Tomamos la transacción más reciente
         const lastTransaction = transactions[0];
 
-        // Si Wompi dice que está aprobada, actualizamos nuestra BD
         if (lastTransaction.status === "APPROVED") {
           await processTransactionUpdate(
             orderId,
             lastTransaction.id,
             "APPROVED"
           );
-          // Recargamos la orden actualizada
-          const updatedOrder = await Order.findById(orderId);
+
+          // 2. AQUÍ TAMBIÉN: Recargamos la orden CON DETALLES
+          const updatedOrder = await Order.findById(orderId).populate(
+            "items.product"
+          );
           return res.json({ status: "APPROVED", order: updatedOrder });
         }
       }
     } catch (wompiError) {
-      console.error(
-        "Error consultando API Wompi:",
-        wompiError.response?.data || wompiError.message
-      );
+      console.error("Error consultando API Wompi:", wompiError.message);
     }
 
-    // Si llegamos aquí, sigue pendiente o fallida
     res.json({
       status: order.status === "Cancelado" ? "DECLINED" : "PENDING",
       order,

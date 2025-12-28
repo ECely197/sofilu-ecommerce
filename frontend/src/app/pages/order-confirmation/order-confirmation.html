@@ -1,75 +1,130 @@
-<div class="order-confirmation">
-  <ng-container *ngIf="isLoading()">
-    <div class="loading">
-      <span>Verificando tu pago...</span>
+<div class="confirmation-page">
+  <!-- Fondo Animado Aurora -->
+  <div class="aurora-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="glass-container fade-in">
+    <!-- Loading -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner-ring"></div>
+      <p>Confirmando transacción...</p>
     </div>
-  </ng-container>
+    }
 
-  <ng-container
-    *ngIf="!isLoading() && !error() && paymentStatus() === 'APPROVED'"
-  >
-    <div class="success-container">
-      <div class="icon-success">✓</div>
-      <h1>¡Gracias por tu compra!</h1>
-      <p>Tu pedido ha sido confirmado</p>
+    <!-- ÉXITO -->
+    @if (!isLoading() && !error() && paymentStatus() === 'APPROVED') {
+    <div class="success-content">
+      <!-- Header -->
+      <div class="celebration-header">
+        <div class="icon-circle">
+          <span class="material-symbols-outlined check-icon">check</span>
+          <div class="ripple-ring"></div>
+        </div>
+        <h1 class="title">¡Pago Exitoso!</h1>
+        <p class="subtitle">
+          Hemos enviado la confirmación a
+          <span class="highlight">{{
+            orderDetails().shippingAddress.email
+          }}</span>
+        </p>
+        <div class="order-id-pill">
+          Pedido #{{ orderId() | slice : -6 | uppercase }}
+        </div>
+      </div>
 
-      <div class="order-details" *ngIf="orderDetails()">
-        <h2>Resumen del pedido #{{ orderId() }}</h2>
-
-        <div class="shipping-info">
-          <h3>Información de envío</h3>
-          <p>{{ orderDetails().shippingAddress.fullName }}</p>
-          <p>{{ orderDetails().shippingAddress.streetAddress }}</p>
-          <p>
-            {{ orderDetails().shippingAddress.city }},
-            {{ orderDetails().shippingAddress.department }}
-          </p>
+      <div class="content-grid">
+        <!-- Columna Izquierda: Detalles Envío -->
+        <div class="details-card">
+          <h3>
+            <span class="material-symbols-outlined">local_shipping</span>
+            Envío
+          </h3>
+          <div class="address-info">
+            <strong>{{ orderDetails().shippingAddress.fullName }}</strong>
+            <p>{{ orderDetails().shippingAddress.streetAddress }}</p>
+            <p>{{ orderDetails().shippingAddress.city | titlecase }}</p>
+            <p class="phone">{{ orderDetails().shippingAddress.phone }}</p>
+          </div>
         </div>
 
-        <div class="items-list">
-          <h3>Productos</h3>
-          <div class="item" *ngFor="let item of orderDetails().items">
-            <span>{{ item.name }} x {{ item.quantity }}</span>
-            <span>{{
-              item.price * item.quantity
+        <!-- Columna Derecha: Productos -->
+        <div class="products-card">
+          <h3>
+            <span class="material-symbols-outlined">shopping_bag</span>
+            Resumen
+          </h3>
+
+          <div class="items-scroll">
+            @for (item of orderDetails().items; track item.product._id) {
+            <div class="product-row">
+              <!-- Imagen del producto -->
+              <div class="product-thumb">
+                <img [src]="item.product.images[0]" [alt]="item.product.name" />
+                <span class="qty-badge">{{ item.quantity }}</span>
+              </div>
+
+              <div class="product-info">
+                <span class="product-name">{{ item.product.name }}</span>
+
+                <!-- Variantes (Color, Talla, etc) -->
+                @if (item.selectedVariants) {
+                <div class="variants-list">
+                  @for (key of objectKeys(item.selectedVariants); track key) {
+                  <span class="variant-tag">{{
+                    item.selectedVariants[key]
+                  }}</span>
+                  }
+                </div>
+                }
+              </div>
+
+              <div class="product-price">
+                {{
+                  item.price * item.quantity
+                    | currency : "COP" : "symbol-narrow" : "1.0-0"
+                }}
+              </div>
+            </div>
+            }
+          </div>
+
+          <div class="total-row">
+            <span>Total</span>
+            <span class="total-value">{{
+              orderDetails().totalAmount
                 | currency : "COP" : "symbol-narrow" : "1.0-0"
             }}</span>
           </div>
         </div>
-
-        <div class="total">
-          <h3>Total</h3>
-          <p>
-            {{
-              orderDetails().total
-                | currency : "COP" : "symbol-narrow" : "1.0-0"
-            }}
-          </p>
-        </div>
       </div>
 
-      <p class="email-notice">
-        Hemos enviado un correo de confirmación a
-        {{ orderDetails()?.shippingAddress.email }}
-      </p>
-
-      <div class="actions">
-        <a routerLink="/" class="button">Volver a la tienda</a>
+      <div class="actions-bar">
+        <a routerLink="/" class="btn-glass primary" appRipple>
+          Seguir comprando
+        </a>
+        <a routerLink="/account/orders" class="btn-glass secondary">
+          Ver mi pedido
+        </a>
       </div>
     </div>
-  </ng-container>
+    }
 
-  <ng-container *ngIf="!isLoading() && error()">
-    <div class="error-container">
-      <div class="icon-error">✗</div>
-      <h1>Ha ocurrido un error</h1>
+    <!-- ERROR -->
+    @if (!isLoading() && error()) {
+    <div class="error-content">
+      <div class="icon-circle error">
+        <span class="material-symbols-outlined">priority_high</span>
+      </div>
+      <h2>Hubo un problema</h2>
       <p>{{ error() }}</p>
-      <div class="actions">
-        <a routerLink="/" class="button">Volver a la tienda</a>
-        <a href="mailto:soporte@sofilu.shop" class="button secondary"
-          >Contactar soporte</a
-        >
+      <div class="actions-bar">
+        <a routerLink="/cart" class="btn-glass primary">Volver al carrito</a>
       </div>
     </div>
-  </ng-container>
+    }
+  </div>
 </div>
