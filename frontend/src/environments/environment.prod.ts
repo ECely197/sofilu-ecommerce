@@ -1,12 +1,12 @@
 export const environment = {
   production: true,
-
-  // ¡La URL de tu API en Render!
+  // La URL de tu API desplegada en Render
   apiUrl: 'https://sofilu-ecommerce-api.onrender.com/api',
-  wompiPublicKey: 'pub_prod_ZGUAU2G2nYZoaxItyvFfTEojlb5qK303',
-  wompiMode: 'production',
 
-  // Las credenciales de Firebase son las mismas.
+  // ¡IMPORTANTE! PARA PROBAR USAMOS LA LLAVE DE PRUEBA TAMBIÉN AQUÍ
+  wompiPublicKey: 'pub_test_O2VfWK1UcliyRUOsAApOcVsHw34kJ49x',
+  wompiMode: 'test', // Opcional, solo para referencia visual
+
   firebase: {
     apiKey: 'AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM',
     authDomain: 'sofilu-ecommerce.firebaseapp.com',

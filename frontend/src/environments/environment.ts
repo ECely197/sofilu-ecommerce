@@ -1,11 +1,11 @@
 export const environment = {
   production: false,
-
-  // La URL de tu API cuando corres el backend en tu máquina local
+  // La URL de tu API local
   apiUrl: 'http://localhost:3000/api',
 
-  wompiPublicKey: 'pub_prod_ZGUAU2G2nYZoaxItyvFfTEojlb5qK303',
-  // Tus credenciales de Firebase. Son las mismas para desarrollo y producción.
+  // USAMOS LA LLAVE DE PRUEBA (pub_test_...)
+  wompiPublicKey: 'pub_test_O2VfWK1UcliyRUOsAApOcVsHw34kJ49x',
+
   firebase: {
     apiKey: 'AIzaSyDCyffcCt4y_PqIkatjtshtukWJftxqJXM',
     authDomain: 'sofilu-ecommerce.firebaseapp.com',

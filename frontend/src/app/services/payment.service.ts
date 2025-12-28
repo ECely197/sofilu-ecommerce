@@ -9,38 +9,21 @@ import { environment } from '../../environments/environment';
 export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/payments`;
-  private isProduction = environment.production;
 
   /**
-   * Pide al backend la firma de integridad para iniciar el checkout.
+   * Envía los datos de la orden al backend para que:
+   * 1. Guarde la orden en BD.
+   * 2. Calcule la firma de integridad SHA-256.
+   * Retorna los datos necesarios para abrir el Widget.
    */
-  getIntegritySignature(data: {
-    reference: string;
-    amount_in_cents: number;
-    currency: string;
-  }): Observable<{ signature: string }> {
-    return this.http.post<{ signature: string }>(
-      `${this.apiUrl}/create-signature`,
-      data
-    );
+  initWompiTransaction(orderData: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/init-transaction`, orderData);
   }
 
   /**
-   * Pide al backend que verifique el estado de una transacción.
+   * (Opcional) Verifica manualmente una transacción
    */
-  verifyTransaction(transactionId: string): Observable<{ status: string }> {
-    return this.http.get<{ status: string }>(
-      `${this.apiUrl}/verify-transaction-status/${transactionId}`
-    );
-  }
-
-  createTransaction(data: any): Observable<any> {
-    // Añadir indicador de producción
-    const payload = {
-      ...data,
-      mode: this.isProduction ? 'production' : 'test',
-    };
-
-    return this.http.post<any>(`${this.apiUrl}/create-transaction`, payload);
+  verifyTransaction(transactionId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/verify/${transactionId}`);
   }
 }
