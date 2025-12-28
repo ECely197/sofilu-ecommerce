@@ -10,20 +10,15 @@ export class PaymentService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/payments`;
 
-  /**
-   * Envía los datos de la orden al backend para que:
-   * 1. Guarde la orden en BD.
-   * 2. Calcule la firma de integridad SHA-256.
-   * Retorna los datos necesarios para abrir el Widget.
-   */
   initWompiTransaction(orderData: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/init-transaction`, orderData);
   }
 
-  /**
-   * (Opcional) Verifica manualmente una transacción
-   */
-  verifyTransaction(transactionId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/verify/${transactionId}`);
+  checkPaymentStatus(orderId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/check-status/${orderId}`);
+  }
+
+  createTransaction(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/create-transaction`, data);
   }
 }

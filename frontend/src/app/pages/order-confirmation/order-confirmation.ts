@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
-import { OrderService } from '../../services/order';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { PaymentService } from '../../services/payment.service'; // Usamos PaymentService
 import { CartService } from '../../services/cart';
 import { ToastService } from '../../services/toast.service';
 
@@ -15,80 +14,68 @@ import { ToastService } from '../../services/toast.service';
 })
 export class OrderConfirmation implements OnInit {
   private route = inject(ActivatedRoute);
-  private orderService = inject(OrderService);
+  private paymentService = inject(PaymentService);
   private cartService = inject(CartService);
-  private router = inject(Router);
   private toastService = inject(ToastService);
 
   orderId = signal<string | null>(null);
   isLoading = signal(true);
   error = signal<string | null>(null);
-  orderDetails = signal<any>(null);
+  orderDetails = signal<any>(null); // Guardará la orden que viene de la BD
   paymentStatus = signal<'APPROVED' | 'DECLINED' | 'PENDING' | null>(null);
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params) => {
-      const transactionId = params['id'];
+    // Obtenemos el ID de la URL (que Wompi nos envió como ?id=...)
+    // OJO: Wompi a veces manda ?id= (Transaction ID) o usamos la referencia.
+    // En nuestra integración, el 'reference' es el ID de la orden.
+    // El widget redirige con ?id=REFERENCIA si configuramos redirectUrl con query params,
+    // o Wompi añade ?id=TRANSACTION_ID por defecto.
 
-      if (transactionId) {
-        this.verifyAndCreateOrder(transactionId);
-      } else {
-        this.error.set('No se recibió información de la transacción');
-        this.isLoading.set(false);
-      }
-    });
-  }
+    // En checkout.ts configuramos: queryParams: { status: 'success', id: wompiParams.reference }
+    // Así que 'id' aquí es el ID DE LA ORDEN DE MONGO.
 
-  private async verifyAndCreateOrder(transactionId: string) {
-    try {
-      this.isLoading.set(true);
+    const id = this.route.snapshot.queryParams['id'];
 
-      // 1. Verificar el estado de la transacción
-      const transactionStatus = await firstValueFrom(
-        this.orderService.verifyWompiTransaction(transactionId)
-      );
-
-      this.paymentStatus.set(transactionStatus.status);
-
-      if (transactionStatus.status === 'APPROVED') {
-        // 2. Obtener datos del pedido guardados
-        const pendingOrderData = localStorage.getItem('pendingOrderData');
-        if (!pendingOrderData) {
-          throw new Error('No se encontraron los datos del pedido');
-        }
-
-        const orderData = JSON.parse(pendingOrderData);
-
-        // 3. Crear el pedido en la base de datos
-        const createdOrder = await firstValueFrom(
-          this.orderService.createOrder({
-            ...orderData,
-            paymentId: transactionId,
-            paymentStatus: transactionStatus.status,
-            paymentMethod: 'WOMPI',
-            status: 'Procesando', // Agregamos el estado inicial del pedido
-          })
-        );
-
-        // 4. Actualizar UI y limpiar datos temporales
-        this.orderDetails.set(createdOrder);
-        this.orderId.set(createdOrder._id);
-        this.cartService.clearCart();
-        localStorage.removeItem('pendingOrderData');
-
-        this.toastService.show('¡Compra realizada con éxito!', 'success');
-      } else {
-        this.error.set(
-          `El pago no fue aprobado. Estado: ${transactionStatus.status}`
-        );
-      }
-    } catch (error) {
-      console.error('Error al procesar la orden:', error);
-      this.error.set(
-        'Error al procesar la orden. Por favor contacta a soporte.'
-      );
-    } finally {
+    if (id) {
+      this.orderId.set(id);
+      this.verifyOrder(id);
+    } else {
+      this.error.set('No se recibió el número de orden.');
       this.isLoading.set(false);
     }
+  }
+
+  private verifyOrder(orderId: string) {
+    this.isLoading.set(true);
+
+    this.paymentService.checkPaymentStatus(orderId).subscribe({
+      next: (response) => {
+        // La respuesta del backend es: { status: 'APPROVED', order: {...} }
+        this.paymentStatus.set(response.status);
+        this.orderDetails.set(response.order);
+
+        if (response.status === 'APPROVED') {
+          // ¡Éxito! Limpiamos el carrito porque ya se pagó
+          this.cartService.clearCart();
+          localStorage.removeItem('pendingOrderData'); // Limpieza por si acaso
+          this.toastService.show('¡Tu pedido ha sido confirmado!', 'success');
+        } else if (response.status === 'PENDING') {
+          // A veces Wompi tarda unos segundos.
+          this.error.set(
+            'Tu pago está siendo procesado. Te avisaremos por correo cuando se confirme.'
+          );
+        } else {
+          this.error.set('El pago fue rechazado o anulado.');
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error verificando orden:', err);
+        this.error.set(
+          'No pudimos verificar el estado del pedido. Revisa tu correo o "Mis Pedidos".'
+        );
+        this.isLoading.set(false);
+      },
+    });
   }
 }
