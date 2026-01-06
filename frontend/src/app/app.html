@@ -1,6 +1,5 @@
 <!-- Contenedor principal -->
 <div class="app-container">
-  
   <!-- Header Global -->
   <app-header *ngIf="showGlobalHeaderAndFooter()"></app-header>
 
@@ -18,6 +17,7 @@
 
   <!-- Componentes Flotantes -->
   <app-cart-flyout></app-cart-flyout>
+  <!-- <app-cart-bottom-sheet></app-cart-bottom-sheet> -->
   <app-wishlist-flyout></app-wishlist-flyout>
   <app-bottom-nav-bar *ngIf="showGlobalHeaderAndFooter()"></app-bottom-nav-bar>
   <app-toast-container></app-toast-container>

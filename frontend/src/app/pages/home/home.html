@@ -4,22 +4,24 @@
 
   <!-- 1. Banner (Full Width) -->
   <app-special-event-banner [event]="activeEvent()"></app-special-event-banner>
-  
+
   <!-- 2. Categorías -->
   <app-categories-section [categories]="categories()"></app-categories-section>
 
   <!-- 4. Favoritos -->
-  <app-featured-products [products]="featuredProducts()"></app-featured-products>
+  <app-featured-products
+    [products]="featuredProducts()"
+  ></app-featured-products>
 
   <!-- 3. Carruseles por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-    <div [id]="categoryGroup.slug" class="category-section-wrapper">
-      <app-product-carousel
-        [title]="categoryGroup.name"
-        [products]="categoryGroup.products"
-        [categorySlug]="categoryGroup.slug"
-      ></app-product-carousel>
-    </div>
+  <div [id]="categoryGroup.slug" class="category-section-wrapper">
+    <app-product-carousel
+      [title]="categoryGroup.name"
+      [products]="categoryGroup.products"
+      [categorySlug]="categoryGroup.slug"
+    ></app-product-carousel>
+  </div>
   }
 
   <!-- Resto de secciones... -->
@@ -27,7 +29,7 @@
   <app-payment-methods></app-payment-methods>
   <app-work-with-us></app-work-with-us>
   <app-store-info></app-store-info>
-  <app-customer-experience></app-customer-experience>
+  <!-- <app-customer-experience></app-customer-experience> -->
   <app-how-to-buy></app-how-to-buy>
   <app-extra-info></app-extra-info>
 </div>

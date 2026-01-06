@@ -1,22 +1,25 @@
 @if (event) {
-<section class="event-banner-container" data-aos="fade-up">
+<!-- Quitamos data-aos, ahora lo controla GSAP -->
+<section #bannerContainer class="event-banner-container">
+  <!-- Imagen -->
   <div class="banner-background">
-    <img [src]="event.imageUrl" alt="{{ event.title }}" />
+    <img #bannerImage [src]="event.imageUrl" alt="{{ event.title }}" />
   </div>
 
+  <!-- Contenido -->
   <div class="banner-content">
     <div class="text-content">
-      <h1 class="event-title">{{ event.title }}</h1>
+      <!-- El título ahora tiene #eventTitle -->
+      <h1 #eventTitle class="event-title">{{ event.title }}</h1>
       @if(event.subtitle) {
-      <p class="event-subtitle">{{ event.subtitle }}</p>
+      <p #eventSubtitle class="event-subtitle">{{ event.subtitle }}</p>
       }
     </div>
 
     @if (event.linkedProducts && event.linkedProducts.length > 0) {
-    <div class="cta-container">
-      <!-- Usamos la nueva clase btn-glass -->
+    <div #ctaButton class="cta-container">
       <button (click)="scrollToProducts()" class="btn-glass" appRipple>
-        Ver Productos Sugeridos
+        Ver Productos
       </button>
     </div>
     }

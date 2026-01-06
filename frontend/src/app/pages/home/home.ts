@@ -7,7 +7,8 @@ import {
   NgZone,
   ElementRef,
   ViewChildren,
-  QueryList
+  QueryList,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -39,6 +40,7 @@ import {
 
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from '@studio-freight/lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -61,7 +63,6 @@ interface ProductsByCategory {
     PaymentMethods,
     WorkWithUs,
     StoreInfo,
-    CustomerExperience,
     ExtraInfo,
     FeaturedProductsComponent,
   ],
@@ -80,6 +81,8 @@ export class Home implements OnInit {
   featuredProducts = signal<Product[]>([]);
   productsByCategory = signal<ProductsByCategory[]>([]);
   activeEvent = signal<SpecialEvent | null>(null);
+
+  private lenis: Lenis | null = null;
 
   ngOnInit() {
     // Obtenemos los datos iniciales
@@ -133,28 +136,31 @@ export class Home implements OnInit {
     });
   }
 
-   @ViewChildren('animateSection') sections!: QueryList<ElementRef>;
+  @ViewChildren('animateSection') sections!: QueryList<ElementRef>;
 
   ngAfterViewInit(): void {
     // Configuramos el observador para la animación de entrada
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target); // Solo animar una vez
-        }
-      });
-    }, { threshold: 0.15 }); // Se activa cuando el 15% del elemento es visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target); // Solo animar una vez
+          }
+        });
+      },
+      { threshold: 0.15 }
+    ); // Se activa cuando el 15% del elemento es visible
 
     // Observamos cada sección marcada
     this.sections.changes.subscribe(() => {
-      this.sections.forEach(sec => observer.observe(sec.nativeElement));
+      this.sections.forEach((sec) => observer.observe(sec.nativeElement));
     });
-    
+
     // Primera carga manual
     setTimeout(() => {
-        const elements = this.el.nativeElement.querySelectorAll('.fade-up');
-        elements.forEach((el: HTMLElement) => observer.observe(el));
+      const elements = this.el.nativeElement.querySelectorAll('.fade-up');
+      elements.forEach((el: HTMLElement) => observer.observe(el));
     }, 100);
   }
 
