@@ -60,7 +60,11 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
 
+  // --- ESTADOS ---
   isProfileMenuOpen = signal(false);
+  isMobileMenuOpen = signal(false);
+  activeAccordion = signal<string | null>(null);
+
   navItems = signal<NavItem[]>([]);
   activeMenu = signal<NavItem | null>(null);
   activeSubCategory = signal<SubCategory | null>(null);
@@ -72,17 +76,25 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   private splitTexts: SplitText[] = [];
   private routerSub: Subscription | null = null;
 
+  constructor() {}
+
   ngOnInit() {
     this.navigationService.getNavigationData().subscribe((data) => {
       this.navItems.set(data);
-      setTimeout(() => this.setupNavAnimations(), 100);
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+        setTimeout(() => this.setupNavAnimations(), 100);
+      }
     });
 
     this.routerSub = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this.closeMegaMenu();
-        setTimeout(() => this.updatePillToActiveLink(), 200);
+        this.isMobileMenuOpen.set(false);
+        document.body.style.overflow = '';
+        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+          setTimeout(() => this.updatePillToActiveLink(), 200);
+        }
       });
   }
 
@@ -103,9 +115,45 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     const headerElement =
       this.elementRef.nativeElement.querySelector('.sofilu-header');
     if (headerElement) {
-      headerElement.classList.toggle('is-scrolled', scrollY > 50);
+      if (scrollY > 50) headerElement.classList.add('is-scrolled');
+      else headerElement.classList.remove('is-scrolled');
     }
   }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Si pasamos a móvil, limpiamos GSAP desktop
+    if (window.innerWidth < 1024) {
+      this.revertSplitText();
+    } else {
+      // Si volvemos a desktop, reiniciamos
+      this.setupNavAnimations();
+    }
+  }
+
+  // --- MÉTODOS MÓVIL ---
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.update((v) => !v);
+    if (this.isMobileMenuOpen()) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+  }
+
+  handleMobileSearch(event: Event, input: HTMLInputElement) {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (query) {
+      this.router.navigate(['/search'], { queryParams: { q: query } });
+      this.isMobileMenuOpen.set(false);
+      document.body.style.overflow = '';
+      input.value = '';
+    }
+  }
+
+  toggleAccordion(id: string): void {
+    this.activeAccordion.update((current) => (current === id ? null : id));
+  }
+
+  // --- MÉTODOS DESKTOP (Animaciones) ---
 
   private revertSplitText() {
     this.splitTexts.forEach((st) => st.revert());
@@ -113,8 +161,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setupNavAnimations(): void {
-    if (!this.navPill || !this.navLinks) return;
-
+    if (!this.navPill || !this.navLinks || window.innerWidth < 1024) return;
     this.revertSplitText();
     const pillEl = this.navPill.nativeElement;
 
@@ -124,27 +171,26 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
         '.nav-link'
       ) as HTMLElement;
       if (!linkAnchorEl) return;
-
       const originalText = linkAnchorEl.querySelector('.nav-text-original');
       const revealText = linkAnchorEl.querySelector('.nav-text-reveal');
 
       if (originalText && revealText) {
         const splitOriginal = new SplitText(originalText, { type: 'chars' });
         const splitReveal = new SplitText(revealText, { type: 'chars' });
-
         this.splitTexts.push(splitOriginal, splitReveal);
         gsap.set(splitReveal.chars, { yPercent: 100 });
 
         linkWrapperEl.onmouseenter = () => {
+          const targetX = linkWrapperEl.offsetLeft;
+          const targetWidth = linkWrapperEl.offsetWidth;
           gsap.to(pillEl, {
-            x: linkWrapperEl.offsetLeft,
-            width: linkWrapperEl.offsetWidth,
+            x: targetX,
+            width: targetWidth,
             opacity: 1,
             duration: 0.5,
             ease: 'elastic.out(1, 0.75)',
             overwrite: true,
           });
-
           gsap.to(splitOriginal.chars, {
             yPercent: -150,
             stagger: 0.02,
@@ -162,17 +208,33 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
         };
 
         linkWrapperEl.onmouseleave = () => {
-          this.updatePillToActiveLink(); // ¡CORRECCIÓN! Esta función ahora maneja el reseteo
+          if (!linkAnchorEl.classList.contains('active')) {
+            gsap.to(splitOriginal.chars, {
+              yPercent: 0,
+              stagger: 0.02,
+              duration: 0.3,
+              ease: 'power2.in',
+              overwrite: true,
+            });
+            gsap.to(splitReveal.chars, {
+              yPercent: 100,
+              stagger: 0.02,
+              duration: 0.3,
+              ease: 'power2.in',
+              overwrite: true,
+            });
+          }
+          this.updatePillToActiveLink();
         };
       }
     });
-
     this.updatePillToActiveLink();
   }
 
   updatePillToActiveLink(): void {
-    if (!this.navPill || !this.navLinks) return;
+    if (!this.navPill || !this.navLinks || window.innerWidth < 1024) return;
 
+    // CORRECCIÓN TYPESCRIPT (=== true)
     const activeLinkWrapper = this.navLinks.find(
       (linkRef) =>
         linkRef.nativeElement
@@ -190,42 +252,49 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
         ease: 'elastic.out(1, 0.75)',
         overwrite: 'auto',
       });
+
+      this.navLinks.forEach((wrapper) => {
+        const isActive = wrapper === activeLinkWrapper;
+        const anchor = wrapper.nativeElement.querySelector('.nav-link');
+        if (!anchor) return;
+        const originalText = anchor.querySelector('.nav-text-original');
+        const revealText = anchor.querySelector('.nav-text-reveal');
+        if (originalText && revealText) {
+          const charsOrig = originalText.querySelectorAll('div');
+          const charsReveal = revealText.querySelectorAll('div');
+          if (charsOrig.length > 0) {
+            if (isActive) {
+              gsap.to(charsOrig, {
+                yPercent: -150,
+                duration: 0.3,
+                overwrite: true,
+              });
+              gsap.to(charsReveal, {
+                yPercent: -100,
+                duration: 0.3,
+                overwrite: true,
+              });
+            } else {
+              gsap.to(charsOrig, {
+                yPercent: 0,
+                duration: 0.3,
+                overwrite: true,
+              });
+              gsap.to(charsReveal, {
+                yPercent: 100,
+                duration: 0.3,
+                overwrite: true,
+              });
+            }
+          }
+        }
+      });
     } else {
       gsap.to(this.navPill.nativeElement, { opacity: 0, duration: 0.3 });
     }
-
-    // --- LÓGICA DE TEXTO MEJORADA ---
-    // Recorremos TODOS los links después de mover la píldora
-    this.navLinks.forEach((wrapper) => {
-      const anchor = wrapper.nativeElement.querySelector('.nav-link');
-      if (!anchor) return;
-
-      const originalText = anchor.querySelector('.nav-text-original');
-      const revealText = anchor.querySelector('.nav-text-reveal');
-      if (!originalText || !revealText) return;
-
-      const charsOrig = originalText.querySelectorAll('div');
-      const charsReveal = revealText.querySelectorAll('div');
-      if (charsOrig.length === 0) return; // Si SplitText no ha corrido
-
-      // Si el link actual es el activo, se pone blanco. Si no, se pone oscuro.
-      if (wrapper === activeLinkWrapper) {
-        gsap.to(charsOrig, { yPercent: -150, duration: 0.3, overwrite: true });
-        gsap.to(charsReveal, {
-          yPercent: -100,
-          duration: 0.3,
-          overwrite: true,
-        });
-      } else {
-        gsap.to(charsOrig, { yPercent: 0, duration: 0.3, overwrite: true });
-        gsap.to(charsReveal, { yPercent: 100, duration: 0.3, overwrite: true });
-      }
-    });
   }
 
-  // --- MEGA MENÚ ---
   @ViewChild('subCategoryPill') subCategoryPill!: ElementRef<HTMLElement>;
-
   handleMouseEnter(item: NavItem): void {
     if (item.subCategories && item.subCategories.length > 0) {
       this.activeMenu.set(item);
@@ -234,16 +303,13 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       this.activeMenu.set(null);
     }
   }
-
   handleMouseLeave(): void {
     this.activeMenu.set(null);
     this.activeSubCategory.set(null);
   }
-
-  handleSubCategoryEnter(subCategory: SubCategory, event: MouseEvent): void {
-    this.activeSubCategory.set(subCategory);
+  handleSubCategoryEnter(sub: SubCategory, event: MouseEvent): void {
+    this.activeSubCategory.set(sub);
     const target = event.currentTarget as HTMLElement;
-
     this.zone.runOutsideAngular(() => {
       if (this.subCategoryPill) {
         gsap.to(this.subCategoryPill.nativeElement, {
@@ -256,7 +322,6 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-
   handleSubCategoryListLeave(): void {
     this.zone.runOutsideAngular(() => {
       if (this.subCategoryPill) {
@@ -272,6 +337,8 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     event.preventDefault();
     event.stopPropagation();
     this.closeMegaMenu();
+    this.isMobileMenuOpen.set(false);
+    document.body.style.overflow = '';
     if (this.router.url === '/') {
       this.scrollManager.requestScrollToCategory(subCategory.id);
     } else {
@@ -293,26 +360,21 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       searchInput.blur();
     }
   }
-
   toggleProfileMenu(event?: MouseEvent): void {
     event?.stopPropagation();
     this.isProfileMenuOpen.update((v) => !v);
   }
-
   closeMegaMenu(): void {
     this.activeMenu.set(null);
   }
   closeAllMenus(): void {
     this.isProfileMenuOpen.set(false);
   }
-
   logout(): void {
     this.closeAllMenus();
     this.authService.logout().then(() => this.router.navigate(['/']));
   }
-
-  @HostListener('document:click')
-  onDocumentClick(): void {
+  @HostListener('document:click') onDocumentClick(): void {
     this.isProfileMenuOpen.set(false);
   }
 }

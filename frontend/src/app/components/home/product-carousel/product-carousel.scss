@@ -3,26 +3,35 @@
 :host {
   display: block;
   position: relative;
-  margin: 4rem 0;
+  margin: 2rem 0; // Margen reducido en móvil
   width: 100%;
-  overflow-x: clip; // Evita scroll horizontal en la página
+
+  // Permitimos overflow-x en el host para que la sombra no se corte
+  // pero controlamos el ancho máximo en el hijo
 }
 
-// --- TARJETA CONTENEDORA (Panel de Vidrio) ---
+// --- TARJETA CONTENEDORA ---
 .card {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(30px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 3rem;
-  
-  box-shadow: 
-    0 20px 50px -10px rgba(0,0,0,0.05),
-    inset 0 0 0 1px rgba(255,255,255,0.5);
-    
-  max-width: 1400px;
-  margin: 0 auto;
-  padding-bottom: 1rem;
-  position: relative;
+  // En escritorio es una tarjeta cerrada
+  @media (min-width: 1024px) {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(30px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 3rem;
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.05);
+    padding-bottom: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  // En móvil es transparente para que los productos floten
+  @media (max-width: 1023px) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    border-radius: 0;
+  }
 }
 
 // --- CABECERA ---
@@ -30,128 +39,163 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2.5rem 3rem 1rem;
+  padding: 0 1.5rem 1rem; // Alineado con el resto
+
+  @media (min-width: 1024px) {
+    padding: 2.5rem 3rem 1rem;
+  }
 
   .card-title {
     font-family: "Baloo 2", serif;
-    font-size: 2.2rem;
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
     font-weight: 800;
     color: #333;
     margin: 0;
-    
-    // Detalle decorativo (Color dinámico según categoría si quisieras)
-    position: relative;
-    &::after {
-      content: "";
-      display: block;
-      width: 40%;
-      height: 6px;
-      background: var(--pastel-pink, #FFD1DC); // O variable de categoría
-      border-radius: 3px;
-      margin-top: 5px;
-      opacity: 0.8;
-    }
   }
 
   .btn-secondary {
-    background: white;
-    border: 1px solid rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     border-radius: 50px;
-    padding: 0.8rem 1.8rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: #555;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 
-    &:hover {
-      background: #333;
-      color: white;
-      transform: translateY(-2px);
+    &:active {
+      transform: scale(0.95);
     }
   }
 }
 
-// --- CARRUSEL ---
+// --- CARRUSEL (Swiper) ---
 .carousel-container {
   position: relative;
   width: 100%;
-  padding: 0 1.5rem;
 }
 
 .swiper {
   width: 100%;
-  padding: 1rem 1rem 3rem; // Espacio para sombras
+  padding: 1rem 1.5rem 3rem; // Padding para sombras y margen derecho
+
+  // En móvil, quitamos el padding derecho del contenedor
+  // para que los productos lleguen al borde de la pantalla
+  @media (max-width: 768px) {
+    padding-right: 0;
+  }
 }
 
 .swiper-slide {
   height: auto;
   display: flex;
   justify-content: center;
-  // Ancho base para cálculo de Swiper
-  width: 260px; 
+  width: auto; // Deja que el contenido defina el ancho (o usa breakpoints de JS)
+
+  // En móvil, las tarjetas deben ser un poco más pequeñas
+  @media (max-width: 768px) {
+    width: 240px !important; // Fuerza ancho fijo óptimo
+  }
 }
 
-// --- FLECHAS ---
-.swiper-button-next,
-.swiper-button-prev {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: white; box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  border: 1px solid rgba(0,0,0,0.05); color: #333;
-  top: 50%; margin-top: -26px; z-index: 20;
-  
-  &::after { font-size: 1.3rem; font-weight: bold; }
-  transition: all 0.3s; opacity: 0; transform: scale(0.8);
-
-  &:hover { background: var(--pastel-pink, #FFD1DC); color: white; transform: scale(1.1); }
+// Flechas (Solo Desktop)
+.swiper-button-prev,
+.swiper-button-next {
+  @media (max-width: 1023px) {
+    display: none;
+  } // Ocultas en móvil
 }
 
-.card:hover {
-  .swiper-button-prev { opacity: 1; transform: scale(1); left: 1rem; }
-  .swiper-button-next { opacity: 1; transform: scale(1); right: 1rem; }
-}
-
-// --- ACORDEÓN Y GRID ---
+// --- ACORDEÓN EXPANDIBLE ---
 .expanded-content {
   background-color: rgba(255, 255, 255, 0.4);
-  border-top: 1px solid rgba(0,0,0,0.03);
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
   position: relative;
-  padding-bottom: 4rem; // Espacio para el botón sticky
+  padding-bottom: 4rem;
 }
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  padding: 3rem;
-  
-  @media (min-width: 768px) { grid-template-columns: repeat(3, 1fr); }
-  @media (min-width: 1200px) { grid-template-columns: repeat(4, 1fr); }
+  grid-template-columns: repeat(2, 1fr); // 2 columnas en móvil
+  gap: 1rem;
+  padding: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-// --- BOTÓN FLOTANTE STICKY ---
 .floating-close-btn {
   position: sticky;
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
-  
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-  
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: #333;
   color: white;
   padding: 0.8rem 2rem;
   border-radius: 50px;
   border: none;
-  font-family: "Baloo 2", sans-serif;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  cursor: pointer;
-  transition: all 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
 
+// --- FLECHAS (Estilo Burbuja Glass) ---
+.swiper-button-next,
+.swiper-button-prev {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+
+  // Efecto Vidrio
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+  // Icono (Chevron)
+  color: #333; // Color oscuro para contraste
+
+  top: 50%;
+  transform: translateY(-50%); // Centrado vertical
+  z-index: 20;
+
+  &::after {
+    font-size: 1.2rem; // Tamaño del icono de flecha
+    font-weight: 900; // Más grueso
+  }
+
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0; // Ocultas por defecto
+
+  // Efecto Hover
   &:hover {
-    transform: translateX(-50%) translateY(-3px);
-    background: black;
+    background: white;
+    transform: translateY(-50%) scale(1.1); // Crece y se mantiene centrado
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  // Ocultar en móvil
+  @media (max-width: 1023px) {
+    display: none;
+  }
+}
+
+// Mostrar al hacer hover sobre la tarjeta principal (SOLO EN DESKTOP)
+.card:hover {
+  .swiper-button-prev {
+    opacity: 1;
+    left: 1.5rem;
+  }
+  .swiper-button-next {
+    opacity: 1;
+    right: 1.5rem;
   }
 }

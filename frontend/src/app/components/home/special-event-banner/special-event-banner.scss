@@ -9,20 +9,23 @@
 // --- EL TRUCO PARA EL ANCHO COMPLETO SIN SCROLLBAR ---
 .event-banner-container {
   position: relative;
-  width: 99.71vw; // Ancho de la ventana
-  left: 50%; // Mover al centro
-  margin-left: -50vw; // Compensar para centrar (Técnica estándar)
-  margin-right: -50vw;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  width: 100vw; // Asegura ancho total
+  left: 50%;
+  transform: translateX(-50%); // Centrado absoluto para romper contenedores
+
+  // En móvil, el banner debe tocar el top: 0
+  margin-top: 0;
+
   border-radius: 0 0 3rem 3rem;
   overflow: hidden;
   margin-bottom: 3rem;
 
   aspect-ratio: 16 / 7;
 
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
   @media (max-width: 768px) {
-    aspect-ratio: 4 / 5;
-    border-radius: 0 0 2rem 2rem;
+    aspect-ratio: 4 / 5; // Más alto en celular
+    border-radius: 0 0 2.5rem 2.5rem;
   }
 }
 

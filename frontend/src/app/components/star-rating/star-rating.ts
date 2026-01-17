@@ -18,13 +18,12 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 })
 export class StarRatingComponent implements ControlValueAccessor {
   @Input() maxRating = 5;
-  stars: number[] = [];
   @Input() rating: number = 0;
   @Input() readonly: boolean = false;
 
+  stars: number[] = [];
   hoveredRating = 0;
 
-  // --- Métodos requeridos por ControlValueAccessor ---
   onChange: (rating: number) => void = () => {};
   onTouched: () => void = () => {};
 
@@ -34,31 +33,34 @@ export class StarRatingComponent implements ControlValueAccessor {
       .map((_, i) => i + 1);
   }
 
-  // Escribe el valor que viene del FormGroup al componente
   writeValue(rating: number): void {
     this.rating = rating || 0;
   }
-  // Registra la función 'onChange' que notificará al FormGroup de los cambios
+
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
-  // Registra la función 'onTouched'
+
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
 
-  // --- Lógica de Interacción ---
+  // --- Lógica ---
+
   rate(rating: number): void {
+    if (this.readonly) return; // Bloquear si es solo lectura
     this.rating = rating;
-    this.onChange(this.rating); // Notifica al FormGroup del nuevo valor
+    this.onChange(this.rating);
     this.onTouched();
   }
 
   onStarEnter(rating: number): void {
+    if (this.readonly) return; // No hacer hover si es solo lectura
     this.hoveredRating = rating;
   }
 
   onStarLeave(): void {
-    this.hoveredRating = 0; // Resetea el hover al salir
+    if (this.readonly) return;
+    this.hoveredRating = 0;
   }
 }

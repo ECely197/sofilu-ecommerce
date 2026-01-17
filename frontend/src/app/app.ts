@@ -29,7 +29,6 @@ import { ConfirmationModalComponent } from './components/confirmation-modal/conf
 import { ProductExplorerModalComponent } from './components/product-explorer-modal/product-explorer-modal';
 import { CustomerDetailModalComponent } from './components/customer-detail-modal/customer-detail-modal';
 import { WishlistFlyoutComponent } from './components/wishlist-flyout/wishlist-flyout';
-import { CartBottomSheetComponent } from './components/cart-bottom-sheet/cart-bottom-sheet';
 
 // --- Servicios y Animaciones ---
 import { UiState } from './services/ui-state';
@@ -49,8 +48,6 @@ import { AosOptions } from 'aos';
     Header,
     Footer,
     CartFlyout,
-    // CartBottomSheetComponent,
-    BottomNavBarComponent,
     ToastContainerComponent,
     ConfirmationModalComponent,
     ProductExplorerModalComponent,

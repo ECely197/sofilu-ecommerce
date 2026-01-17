@@ -5,8 +5,6 @@ import {
   AfterViewInit,
   inject,
   signal,
-  OnInit,
-  HostListener,
   effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -60,7 +58,8 @@ export class FeaturedProductsComponent implements AfterViewInit {
   constructor() {
     effect(() => {
       if (this.products.length > 0) {
-        setTimeout(() => this.initSwiper(), 50);
+        // Damos un poco más de tiempo para asegurar que el DOM esté pintado
+        setTimeout(() => this.initSwiper(), 100);
       }
     });
   }
@@ -74,21 +73,34 @@ export class FeaturedProductsComponent implements AfterViewInit {
     if (this.swiperInstance) {
       this.swiperInstance.destroy(true, true);
     }
-    
-    const nextEl = this.el.nativeElement.querySelector(`.swiper-button-next.${this.uniqueId}`);
-    const prevEl = this.el.nativeElement.querySelector(`.swiper-button-prev.${this.uniqueId}`);
+
+    const nextEl = this.el.nativeElement.querySelector(
+      `.swiper-button-next.${this.uniqueId}`
+    );
+    const prevEl = this.el.nativeElement.querySelector(
+      `.swiper-button-prev.${this.uniqueId}`
+    );
 
     this.swiperInstance = new Swiper(swiperContainer, {
-      slidesPerView: 1.2,
-      spaceBetween: 20,
+      // --- CONFIGURACIÓN ROBUSTA (Igual a ProductCarousel) ---
+      // En móvil mostramos 1 tarjeta y un pedacito de la siguiente (1.3)
+      // Esto le indica al usuario visualmente que puede deslizar.
+      slidesPerView: 1.3,
+      spaceBetween: 16,
+      centeredSlides: false, // Alineado a la izquierda
+      observer: true, // Importante: Observa cambios en el DOM
+      observeParents: true,
+
       navigation: {
         nextEl: nextEl,
         prevEl: prevEl,
       },
+
       breakpoints: {
-        640: { slidesPerView: 2.2, spaceBetween: 20 },
-        1024: { slidesPerView: 3.2, spaceBetween: 30 },
-        1300: { slidesPerView: 4, spaceBetween: 30 },
+        500: { slidesPerView: 2.2, spaceBetween: 20 },
+        768: { slidesPerView: 3.2, spaceBetween: 24 }, // Tablet
+        1024: { slidesPerView: 3.5, spaceBetween: 30 }, // Desktop
+        1300: { slidesPerView: 4, spaceBetween: 30 }, // Pantalla grande
       },
     });
   }

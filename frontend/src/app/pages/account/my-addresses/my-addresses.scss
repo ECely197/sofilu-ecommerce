@@ -1,57 +1,100 @@
 @use "../../../../../buttons";
 @use "../../../../forms";
+
 :host {
   display: block;
-  // Animación de entrada
   animation: fadeInUp 0.6s ease-out;
+  padding-bottom: 6rem;
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .addresses-container {
   max-width: 1000px;
-  // margin: auto; // Dejamos que el layout padre maneje el margen
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+  }
 }
 
+// --- HEADER DE PÁGINA ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 
   h2 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
     font-family: "Baloo 2", serif;
     font-weight: 800;
     margin: 0;
     color: #333;
   }
-  
+
+  // Botón Añadir (CORREGIDO)
   .btn-material {
-    @extend .btn-material; // Tu mixin global
+    @extend .btn-material;
     background: linear-gradient(135deg, #333 0%, #000 100%);
     color: white;
     border-radius: 50px;
     padding: 0.8rem 1.5rem;
-    
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    // --- ESTILO MÓVIL (FAB - Círculo Perfecto) ---
+    @media (max-width: 768px) {
+      font-size: 0 !important; // Oculta el texto
+      gap: 0; // Quita el espacio del gap
+      padding: 0; // Quita el padding rectangular
+
+      // Dimensiones fijas para ser un círculo
+      width: 45px;
+      height: 45px;
+      min-width: 45px; // Evita que se aplaste
+      border-radius: 50%;
+
+      // Centrado Flex Estricto
+      justify-content: center;
+
+      span {
+        font-size: 1.6rem; // Tamaño del +
+        margin: 0;
+        line-height: 1; // Elimina espaciado vertical fantasma
+        display: block;
+      }
     }
   }
 }
 
-// --- GRID DE DIRECCIONES ---
+// --- GRID ---
 .addresses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
-// --- TARJETA DE DIRECCIÓN (GLASS CARD) ---
+// --- TARJETA DE DIRECCIÓN ---
 .address-card {
   position: relative;
   background: rgba(255, 255, 255, 0.6);
@@ -71,14 +114,16 @@
     box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.1);
   }
 
-  // Estado Preferido (Brillante)
   &.preferred {
-    background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255, 240, 245, 0.8) 100%);
-    border: 2px solid var(--pastel-pink, #FFD1DC);
-    box-shadow: 0 10px 40px -5px rgba(255, 182, 193, 0.3);
-    
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 240, 245, 0.8) 100%
+    );
+    border: 2px solid var(--pastel-pink, #ffd1dc);
     .preferred-badge {
-      opacity: 1; transform: scale(1);
+      opacity: 1;
+      transform: scale(1);
     }
   }
 
@@ -88,8 +133,10 @@
     font-size: 1.2rem;
     color: #333;
     font-family: "Baloo 2";
+    padding-right: 90px;
+    line-height: 1.3;
   }
-  
+
   p {
     margin: 0;
     color: #666;
@@ -100,24 +147,27 @@
 
 .preferred-badge {
   position: absolute;
-  top: 1.5rem; right: 1.5rem;
-  background: var(--pastel-pink, #FFD1DC);
+  top: 1.5rem;
+  right: 1.5rem;
+  background: var(--pastel-pink, #ffd1dc);
   color: white;
-  padding: 0.4rem 1rem;
+  padding: 0.3rem 0.8rem;
   border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   box-shadow: 0 4px 10px rgba(255, 182, 193, 0.4);
-  opacity: 0; // Oculto si no es preferida (aunque el HTML lo controla)
+  opacity: 0;
   transform: scale(0.8);
   transition: all 0.3s;
 }
 
-// --- ACCIONES DE TARJETA ---
+// --- ACCIONES ---
 .card-actions {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -126,87 +176,190 @@
     background: white;
     border: 1px solid transparent;
     border-radius: 50px;
-    padding: 0.5rem 1.2rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: #555;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    flex-grow: 1;
+    text-align: center;
 
     &:hover {
       transform: translateY(-2px);
       color: #333;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     }
-    
-    // Botón de eliminar
-    &:nth-child(2):hover { // Asumiendo que es el segundo
-       color: #e74c3c; background: #fff5f5;
+    &:nth-child(2):hover {
+      color: #e74c3c;
+      background: #fff5f5;
     }
-    
-    // Botón "Marcar como preferida"
     &:last-child {
-      background: transparent; border: 1px solid #ddd; box-shadow: none;
-      &:hover { border-color: var(--pastel-pink); color: var(--pastel-pink); background: white; }
+      background: transparent;
+      border: 1px solid #ddd;
+      box-shadow: none;
+      flex-basis: 100%;
+      &:hover {
+        border-color: var(--pastel-pink);
+        color: var(--pastel-pink);
+        background: white;
+      }
     }
   }
 }
 
-// --- FORMULARIO MODAL (GLASS) ---
+// --- FORMULARIO MODAL ---
 .form-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
   z-index: 2000;
   animation: fadeIn 0.3s ease-out forwards;
 }
 
 .form-panel {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 90%; max-width: 600px;
-  
-  // Estilo Vidrio Sólido
+  position: fixed;
+  z-index: 2001;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(30px);
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.2);
+
+  // Desktop
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
   border-radius: 2.5rem;
   padding: 3rem;
-  box-shadow: 0 25px 60px -10px rgba(0,0,0,0.2);
-  z-index: 2001;
   animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 
-  h3 {
-    font-family: "Baloo 2", serif; text-align: center; font-size: 2rem; font-weight: 800;
-    margin: 0 0 2.5rem 0; color: #333;
+  // Móvil
+  @media (max-width: 768px) {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 90vh;
+    border-radius: 2rem 2rem 0 0;
+    transform: translateY(100%);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+
+    form {
+      overflow-y: auto;
+      padding-bottom: 2rem;
+      padding-right: 5px;
+    }
   }
 
-  form { display: flex; flex-direction: column; gap: 1.5rem; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  
-  // Ajuste móvil para el grid
-  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
-  
-  .form-actions {
-    display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;
-    
-    .btn-secondary {
-      background: transparent; border: none; color: #666; font-weight: 600; cursor: pointer;
-      &:hover { color: #333; }
+  h3 {
+    font-family: "Baloo 2", serif;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0 0 2rem 0;
+    color: #333;
+    flex-shrink: 0;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 1rem;
     }
-    
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-shrink: 0;
+    button {
+      flex: 1;
+      padding: 1rem;
+      font-size: 1rem;
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      border: none;
+      color: #666;
+      font-weight: 600;
+      border-radius: 1rem;
+      &:hover {
+        background: #eee;
+      }
+    }
     .btn-material {
-      background: var(--text-charcoal); color: white; border-radius: 50px; padding: 0.8rem 2rem;
-      border: none; font-weight: 700; cursor: pointer;
-      &:disabled { background: #ccc; cursor: not-allowed; }
+      background: var(--text-charcoal);
+      color: white;
+      border-radius: 1rem;
+      border: none;
+      font-weight: 700;
+      &:disabled {
+        background: #ccc;
+      }
     }
   }
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+.material-input {
+  @media (max-width: 768px) {
+    padding: 1.2rem 1rem 0.5rem;
+    font-size: 1.1rem;
+  }
+}
 
-// --- ESTADO VACÍO ---
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
 .empty-state {
-  text-align: center; padding: 4rem;
-  background: rgba(255,255,255,0.4); border: 2px dashed rgba(0,0,0,0.1); border-radius: 2rem;
-  p { color: #888; font-size: 1.1rem; }
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 2rem;
+  p {
+    color: #888;
+    font-size: 1.1rem;
+  }
 }

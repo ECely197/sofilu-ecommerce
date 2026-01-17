@@ -1,4 +1,8 @@
-<div class="star-container" (mouseleave)="onStarLeave()">
+<div
+  class="star-container"
+  [class.readonly]="readonly"
+  (mouseleave)="onStarLeave()"
+>
   @for (star of stars; track star) {
   <span
     class="material-symbols-outlined star-icon"

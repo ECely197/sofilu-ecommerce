@@ -3,112 +3,99 @@
 :host {
   display: block;
   width: 100%;
+  margin-bottom: 3rem;
 }
 
-// -------------------------------------
-// CONTENEDOR PRINCIPAL (Sin borde, solo título y contenido)
-// -------------------------------------
 .section-container {
-  padding: 0 1.5rem; // Padding lateral para alinear con el resto
-  margin-bottom: 2rem;
+  padding: 0 1.5rem;
+  // En móvil, quitamos el padding derecho para que el scroll llegue al borde
+  @media (max-width: 768px) {
+    padding-right: 0;
+  }
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 2.5rem;
-  
+  margin-bottom: 2rem;
+
   .section-title {
     font-family: "Baloo 2", serif;
-    font-size: 2.5rem;
+    font-size: clamp(2rem, 5vw, 2.5rem);
     font-weight: 800;
     color: #333;
     margin: 0;
-    
-    // Efecto de texto degradado sutil
+    // Gradiente sutil
     background: linear-gradient(135deg, #333 0%, #555 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
 }
 
-// -------------------------------------
-// GRID DE CATEGORÍAS (Más dinámico que un carrusel)
-// -------------------------------------
-// Usamos un Grid flexible que se adapta mejor que un slider
+// --- GRID (Escritorio) / SCROLL (Móvil) ---
 .categories-grid {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  
-  // En móvil, si son muchas, permitimos scroll horizontal suave
+
+  // TRANSFORMACIÓN MÓVIL: Scroll Horizontal Snappy
   @media (max-width: 768px) {
     flex-wrap: nowrap;
     justify-content: flex-start;
     overflow-x: auto;
-    padding-bottom: 1.5rem; // Espacio para la sombra
+    padding-bottom: 2rem; // Espacio para la sombra
+    padding-right: 1.5rem; // Espacio final
     scroll-snap-type: x mandatory;
-    
+    -webkit-overflow-scrolling: touch; // Inercia nativa iOS
+
     // Ocultar scrollbar
-    &::-webkit-scrollbar { display: none; }
-    -ms-overflow-style: none; 
-    scrollbar-width: none; 
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    scrollbar-width: none;
   }
 }
 
-// -------------------------------------
-// TARJETA DE CATEGORÍA (Liquid Glass Bubble)
-// -------------------------------------
+// --- TARJETA DE CATEGORÍA (Burbuja) ---
 .category-card {
   position: relative;
   width: 160px;
   height: 160px;
   flex-shrink: 0;
-  scroll-snap-align: center;
-  
+  scroll-snap-align: center; // Se pega al centro al soltar
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  
+  gap: 0.8rem;
   text-decoration: none;
-  
-  // FORMA INICIAL: Redondeada pero simétrica
-  border-radius: 40px; 
-  
-  // --- MAGIA DE VIDRIO ---
+
+  // Forma orgánica inicial
+  border-radius: 40px;
+
+  // Estilo Glass
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(20px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  
-  box-shadow: 
-    0 10px 30px -5px rgba(0, 0, 0, 0.05),
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05),
     inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-    
-  cursor: pointer;
-  overflow: hidden;
 
-  // --- EL SECRETO DEL "SLIME" ---
-  // Una transición lenta (0.6s) con una curva que empieza rápido y frena muy suave
-  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); // Efecto rebote
 
-  // Icono
   .icon-container {
-    width: 60px;
-    height: 60px;
+    width: 65px;
+    height: 65px;
     display: flex;
     align-items: center;
     justify-content: center;
-    
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      // El icono flota con un ritmo diferente (más lento) para dar sensación de profundidad
-      transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+      transition: transform 0.4s ease;
+      filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.1));
     }
   }
 
@@ -118,43 +105,45 @@
     font-weight: 700;
     color: #666;
     margin: 0;
-    transition: color 0.4s ease;
-    position: relative;
-    z-index: 2;
+    transition: color 0.3s ease;
   }
 
-  // --- ESTADO HOVER (LA GOTA) ---
-  &:hover {
-    // 1. Movimiento: Sube y crece un poco
-    transform: translateY(-8px) scale(1.05);
-    
-    // 2. Morphing: Cambiamos los bordes para que parezca una forma orgánica (no cuadrada)
-    // Esto hace que se vea "blandito"
-    border-radius: 45% 55% 40% 60% / 55% 40% 60% 45%;
-    
-    // 3. Fondo: Se vuelve más "líquido" y blanco
-    background: rgba(255, 255, 255, 0.85);
+  // --- ESTADO HOVER (Desktop) & ACTIVE (Móvil) ---
+  &:hover,
+  &:active {
+    transform: translateY(-5px) scale(1.02);
+    background: rgba(255, 255, 255, 0.9);
     border-color: white;
-    
-    // 4. Sombra: Una sombra de color difusa grande (Glow)
-    box-shadow: 
-      0 20px 50px -10px var(--category-color-light, rgba(0,0,0,0.1)),
+
+    // Forma más líquida al interactuar
+    border-radius: 45% 55% 40% 60% / 55% 40% 60% 45%;
+
+    box-shadow: 0 15px 40px -5px var(--category-color-light, rgba(0, 0, 0, 0.15)),
       inset 0 0 20px rgba(255, 255, 255, 0.8);
 
     .icon-container img {
-      // El icono hace un "pop" suave y gira un poco
-      transform: scale(1.2) rotate(-8deg) translateY(-5px);
+      transform: scale(1.15) rotate(-5deg);
     }
-    
     .category-name {
       color: var(--category-color-dark, #333);
     }
   }
 }
 
-// Definimos los colores para que la "luz" de la gota sea del color de la categoría
-// Estos colores se inyectan en la variable --category-color-light del hover
-.peluches { --category-color-light: rgba(255, 182, 193, 0.6); --category-color-dark: #d946ef; }
-.halloween { --category-color-light: rgba(175, 138, 255, 0.6); --category-color-dark: #8b5cf6; }
-.cajas-sorpresa { --category-color-light: rgba(173, 216, 230, 0.6); --category-color-dark: #0284c7; }
-.sabanas { --category-color-light: rgba(144, 238, 144, 0.6); --category-color-dark: #22c55e; }
+// Colores Dinámicos
+.peluches {
+  --category-color-light: rgba(255, 182, 193, 0.5);
+  --category-color-dark: #d946ef;
+}
+.halloween {
+  --category-color-light: rgba(139, 92, 246, 0.4);
+  --category-color-dark: #8b5cf6;
+}
+.cajas-sorpresa {
+  --category-color-light: rgba(14, 165, 233, 0.4);
+  --category-color-dark: #0ea5e9;
+}
+.sabanas {
+  --category-color-light: rgba(34, 197, 94, 0.4);
+  --category-color-dark: #16a34a;
+}

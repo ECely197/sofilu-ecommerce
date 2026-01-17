@@ -1,20 +1,31 @@
 @use "../../../../../buttons";
-@use "../../../../forms"; // Importante para los estilos de input
+@use "../../../../forms";
 
 :host {
   display: block;
   animation: fadeInUp 0.6s ease-out;
+  width: 100%; // Asegura que ocupe todo el ancho disponible
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .account-section {
   display: flex;
   flex-direction: column;
-  align-items: center; // Centramos la tarjeta en la sección
+  align-items: center; // Centra todo horizontalmente
+  width: 100%;
+  max-width: 800px; // Limita el ancho máximo del contenido
+  margin: 0 auto; // Centra el bloque en la página
+  padding: 0 1rem; // Padding lateral para móvil
 }
 
 .section-title {
@@ -23,38 +34,67 @@
   font-weight: 800;
   color: #333;
   margin-bottom: 2rem;
-  align-self: flex-start; // Título alineado a la izquierda del contenedor
-  @media (max-width: 768px) { align-self: center; }
+  width: 100%; // Ocupa todo el ancho
+  text-align: center; // Centrado por defecto
+
+  // En pantallas grandes, alineado a la izquierda para coincidir con el diseño general
+  @media (min-width: 768px) {
+    text-align: left;
+    align-self: flex-start;
+  }
 }
 
 // --- TARJETA DE DETALLES (GLASS PANEL) ---
 .details-card {
-  width: 100%;
-  max-width: 700px; // Un poco más ancho para que respire
-  
+  width: 100%; // Ocupa todo el ancho del contenedor padre (max 800px)
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(30px) saturate(120%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 2.5rem;
   padding: 3rem;
-  
-  box-shadow: 
-    0 20px 50px -10px rgba(0,0,0,0.05),
-    inset 0 0 0 1px rgba(255,255,255,0.5);
-    
+
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+
   transition: all 0.3s ease;
+
+  // Ajuste de padding en móvil
+  @media (max-width: 600px) {
+    padding: 2rem 1.5rem;
+    border-radius: 2rem;
+  }
 }
 
 // --- MODO VISTA ---
 .view-mode {
   .detail-row {
     display: grid;
-    grid-template-columns: 120px 1fr; // Etiqueta fija, contenido fluido
+    grid-template-columns: 120px 1fr;
     padding: 1.2rem 0;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     align-items: center;
 
-    &:last-child { border-bottom: none; }
+    // En móvil, apilar etiqueta y valor
+    @media (max-width: 500px) {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+
+      strong {
+        margin-bottom: 0.2rem;
+        color: #888;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      span {
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
 
     strong {
       font-weight: 700;
@@ -62,7 +102,7 @@
       font-size: 1.1rem;
       font-family: "Baloo 2", sans-serif;
     }
-    
+
     span {
       color: #666;
       font-size: 1rem;
@@ -74,24 +114,25 @@
   margin-top: 2.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between; // Botón a la derecha, link a la izquierda (o al revés)
+  justify-content: space-between;
   gap: 1.5rem;
-  
+  flex-wrap: wrap; // Permitir que bajen si no caben
+
   .btn-material {
     background: var(--text-charcoal);
     color: white;
     border-radius: 50px;
     padding: 0.8rem 2rem;
     font-weight: 700;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
     transition: all 0.3s;
-    
+
     &:hover {
       transform: translateY(-3px);
       background: black;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
   }
 
@@ -103,17 +144,17 @@
     border-bottom: 1px solid transparent;
     transition: all 0.2s;
     cursor: pointer;
-    
+
     &:hover {
-      color: var(--pastel-pink, #FFD1DC);
-      border-bottom-color: var(--pastel-pink, #FFD1DC);
+      color: var(--pastel-pink, #ffd1dc);
+      border-bottom-color: var(--pastel-pink, #ffd1dc);
     }
   }
 }
 
 // --- MODO EDICIÓN (Formulario) ---
 .edit-mode {
-  background: rgba(255, 255, 255, 0.9); // Más opaco al editar para enfocar
+  background: rgba(255, 255, 255, 0.9);
 
   form {
     display: flex;
@@ -125,20 +166,21 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    @media (max-width: 600px) { grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
   }
-  
-  // Ajustes específicos para inputs disabled (email)
+
   .material-input:disabled {
     color: #999;
-    background: rgba(0,0,0,0.02);
+    background: rgba(0, 0, 0, 0.02);
     border-radius: 10px;
     padding: 0.5rem 1rem;
     border: none;
-    
     + .material-label {
       color: #aaa;
-      transform: translateY(-1.5rem) scale(0.8); // Forzar etiqueta arriba
+      transform: translateY(-1.5rem) scale(0.8);
     }
   }
 
@@ -147,17 +189,22 @@
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 1rem;
-    
+
     .btn-secondary {
-      background: transparent; border: none; color: #666; font-weight: 600; cursor: pointer;
-      &:hover { color: #333; }
+      background: transparent;
+      border: none;
+      color: #666;
+      font-weight: 600;
+      cursor: pointer;
+      &:hover {
+        color: #333;
+      }
     }
-    
+
     .btn-material {
-      @extend .btn-material; // Hereda mixin global
-      background: var(--pastel-pink, #FFD1DC);
+      @extend .btn-material;
+      background: var(--pastel-pink, #ffd1dc);
       color: white;
-      
       &:hover {
         background: #ffc1cc;
         box-shadow: 0 5px 15px rgba(255, 182, 193, 0.4);

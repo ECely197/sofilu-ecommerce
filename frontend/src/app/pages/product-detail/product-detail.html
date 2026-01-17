@@ -1,5 +1,5 @@
 <!-- ==========================================================================
-   PÁGINA DE DETALLE DE PRODUCTO
+   PÁGINA DE DETALLE DE PRODUCTO (FINAL)
    ========================================================================== -->
 
 @if (product(); as currentProduct) {
@@ -10,6 +10,7 @@
     <!-- COLUMNA 1: GALERÍA -->
     <!-- ======================== -->
     <div class="gallery-card card" data-aos="fade-right">
+      <!-- Galería Desktop (Grid) -->
       <div class="desktop-gallery">
         @if (galleryImages().length > 1) {
         <div class="thumbnail-wrapper">
@@ -17,13 +18,12 @@
           <div
             class="thumbnail"
             [class.active]="selectedImage() === image"
-            (click)="selectedImage.set(image)"
+            (click)="setImage(image)"
           >
             <img
               [src]="image"
               [alt]="'Thumbnail ' + currentProduct.name"
               loading="lazy"
-              decoding="async"
             />
           </div>
           }
@@ -35,6 +35,8 @@
             [src]="selectedImage()"
             [alt]="currentProduct.name"
             class="main-image"
+            [class.fade-out]="isAnimatingImage()"
+            [class.fade-in]="!isAnimatingImage()"
           />
           } @else {
           <div class="main-image placeholder-image"></div>
@@ -42,6 +44,7 @@
         </div>
       </div>
 
+      <!-- Galería Móvil (Swiper) -->
       @if (galleryImages().length > 0) {
       <div class="mobile-swiper">
         <div class="swiper-wrapper">
@@ -52,7 +55,6 @@
               [alt]="currentProduct.name"
               class="main-image-mobile"
               loading="lazy"
-              decoding="async"
             />
           </div>
           }
@@ -74,7 +76,7 @@
         }
       </p>
 
-      <!-- Scroll container libre de max-height ahora -->
+      <!-- Selector de Variantes (Acordeón) -->
       <div class="variants-scroll-container">
         <div class="variants-container accordion">
           @for (variant of currentProduct.variants; track variant.name) {
@@ -86,14 +88,12 @@
                 alt="{{ variant.name }}"
                 class="accordion-preview-image"
               />
-              } @else {
-              <div class="accordion-preview-placeholder"></div>
               }
 
               <div class="accordion-info">
                 <span class="variant-name">{{ variant.name }}</span>
                 <span class="variant-selection">{{
-                  selectedVariants()[variant.name] || ""
+                  selectedVariants()[variant.name] || "Seleccionar..."
                 }}</span>
               </div>
 
@@ -119,7 +119,7 @@
                   (click)="
                     !isOptionAvailable(option)
                       ? null
-                      : selectOption(variant.name, option.name)
+                      : selectOption(variant.name, option.name, option)
                   "
                 >
                   @if (option.image) {
@@ -128,8 +128,6 @@
                     alt="{{ option.name }}"
                     class="option-image"
                   />
-                  } @else {
-                  <div class="option-image-placeholder"></div>
                   }
                   <div class="option-details">
                     <span class="option-name">{{ option.name }}</span>
@@ -150,37 +148,39 @@
         </div>
       </div>
 
-      <div class="actions">
+      <!-- Acciones Desktop (Oculto en móvil) -->
+      <div class="actions desktop-only-actions">
         <div class="quantity-selector">
           <button (click)="decreaseQuantity()">-</button>
           <span>{{ quantity() }}</span>
           <button (click)="increaseQuantity()">+</button>
         </div>
-        
-        <!-- BOTÓN DE AÑADIR AL CARRITO -->
+
         <button
           class="add-to-cart-btn"
+          [class.success]="justAddedToCart()"
           [disabled]="!canAddToCart()"
           (click)="addToCart()"
           appRipple
         >
           @if(justAddedToCart()){
-            <span>¡Listo!</span>
-          } @else {
-            <!-- Si no se puede añadir, es porque está agotado (base o variante) -->
-            <span>{{ canAddToCart() ? 'Añadir al carrito' : 'Agotado' }}</span>
+          <span class="material-symbols-outlined">check</span> ¡Añadido! } @else
+          {
+          {{ canAddToCart() ? "Añadir al carrito" : "Agotado" }}
           }
         </button>
-        
+
         <button class="wishlist-btn" (click)="toggleWishlist()" appRipple>
-          <span class="material-symbols-outlined">{{ isProductInWishlist() ? "favorite" : "favorite_border" }}</span>
+          <span class="material-symbols-outlined">{{
+            isProductInWishlist() ? "favorite" : "favorite_border"
+          }}</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- ======================== -->
-  <!-- SECCIÓN DE DETALLES ADICIONALES -->
+  <!-- TABS: DESCRIPCIÓN Y OPINIONES -->
   <!-- ======================== -->
   <div class="details-card card" data-aos="fade-up">
     <div class="tab-header">
@@ -199,32 +199,44 @@
         Opiniones ({{ reviews().length }})
       </button>
     </div>
+
     <div class="tab-content">
+      <!-- Pestaña Descripción -->
       @if (activeTab() === 'description') {
       <div
         class="prose"
         [innerHTML]="currentProduct.description | safeHtml"
       ></div>
-      } @if (activeTab() === 'reviews') {
-      <div class="reviews-section">
+      }
+
+      <!-- Pestaña Opiniones -->
+      @if (activeTab() === 'reviews') {
+      <div class="reviews-section fade-in">
         <div class="reviews-summary">
-          <h3 class="reviews-summary-title">Opiniones de nuestros clientes</h3>
+          <h3 class="reviews-summary-title">Lo que dicen nuestros clientes</h3>
           @if(canWriteReview()){
           <button class="btn btn-secondary" (click)="scrollToReviewForm()">
             Escribir una reseña
           </button>
           }
         </div>
+
         <div class="reviews-list">
           @for (review of reviews(); track review._id) {
           <div class="review-card">
             <div class="review-header">
-              <span class="review-author">{{ review.author }}</span>
-              <span class="review-date">{{
-                review.createdAt | date : "longDate"
-              }}</span>
-            </div>
-            <div class="review-rating">
+              <div class="author-info">
+                <div class="avatar-placeholder">
+                  {{ review.author.charAt(0) }}
+                </div>
+                <div>
+                  <span class="review-author">{{ review.author }}</span>
+                  <span class="review-date">{{
+                    review.createdAt | date : "mediumDate"
+                  }}</span>
+                </div>
+              </div>
+              <!-- Estrellas (Solo lectura) -->
               <app-star-rating
                 [rating]="review.rating"
                 [readonly]="true"
@@ -234,19 +246,26 @@
             <p class="review-comment">{{ review.comment }}</p>
           </div>
           } @empty {
-          <p class="empty-reviews-message">
-            Este producto aún no tiene reseñas. ¡Sé el primero!
-          </p>
+          <div class="empty-reviews">
+            <span class="material-symbols-outlined icon">rate_review</span>
+            <p>
+              Aún no hay opiniones. ¡Sé el primero en compartir tu experiencia!
+            </p>
+          </div>
           }
         </div>
+
+        <!-- Formulario -->
         @if (canWriteReview()) {
-        <div class="review-form-container" #reviewFormElement>
+        <div class="review-form-container glass-panel" #reviewFormElement>
           <h3 class="review-form-title">Comparte tu opinión</h3>
           <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
             <div class="form-field rating-field">
-              <label>Calificación</label>
+              <label>Tu Calificación</label>
+              <!-- Estrellas Interactivas -->
               <app-star-rating formControlName="rating"></app-star-rating>
             </div>
+
             <div class="material-field">
               <input
                 id="title"
@@ -255,10 +274,9 @@
                 placeholder=" "
                 class="material-input"
               />
-              <label for="title" class="material-label"
-                >Título de tu reseña</label
-              >
+              <label for="title" class="material-label">Título breve</label>
             </div>
+
             <div class="material-field textarea-field">
               <textarea
                 id="comment"
@@ -268,15 +286,16 @@
                 class="material-input"
               ></textarea>
               <label for="comment" class="material-label"
-                >Cuéntanos más sobre tu experiencia...</label
+                >¿Qué tal te pareció el producto?</label
               >
             </div>
+
             <button
               type="submit"
               [disabled]="reviewForm.invalid"
-              class="btn btn-primary submit-review-btn"
+              class="btn btn-primary submit-review-btn full-width"
             >
-              Enviar mi reseña
+              Publicar Opinión
             </button>
           </form>
         </div>
@@ -287,7 +306,7 @@
   </div>
 
   <!-- ======================== -->
-  <!-- NUEVA SECCIÓN: PRODUCTOS RELACIONADOS -->
+  <!-- PRODUCTOS RELACIONADOS -->
   <!-- ======================== -->
   @if (relatedProducts().length > 0) {
   <div class="related-products-section" data-aos="fade-up">
@@ -299,17 +318,64 @@
   }
 
   <!-- ======================== -->
-  <!-- NUEVA SECCIÓN: MÁS CATEGORÍAS -->
+  <!-- MÁS CATEGORÍAS -->
   <!-- ======================== -->
-  <div data-aos="fade-up" data-aos-delay="100" style="margin-top: 3rem;">
-    <h2 class="product-title" style="text-align: center; margin-bottom: 2rem;">Explora más Categorías</h2>
-    <app-categories-section
-      [categories]="categories()"
-    ></app-categories-section>
+
+  @if (complementaryProducts().length > 0) {
+  <section class="complementary-section card" data-aos="fade-up">
+    <div class="complementary-header">
+      <span class="material-symbols-outlined icon">auto_awesome</span>
+      <h3>El Regalo Perfecto</h3>
+      <p>Añade un toque extra para hacerlo inolvidable.</p>
+    </div>
+
+    <div class="complementary-grid">
+      @for (product of complementaryProducts(); track product._id) {
+      <a [routerLink]="['/product', product._id]" class="complementary-card">
+        <div class="img-wrapper">
+          <img [src]="product.images[0]" [alt]="product.name" />
+        </div>
+        <div class="info">
+          <span class="name">{{ product.name }}</span>
+          <span class="price">{{
+            product.price | currency : "COP" : "symbol" : "1.0-0"
+          }}</span>
+        </div>
+      </a>
+      }
+    </div>
+  </section>
+  }
+  <!-- ======================== -->
+  <!-- BARRA FLOTANTE MÓVIL (STICKY) -->
+  <!-- ======================== -->
+  <div class="sticky-actions-bar">
+    <div class="qty-control">
+      <button (click)="decreaseQuantity()">-</button>
+      <span>{{ quantity() }}</span>
+      <button (click)="increaseQuantity()">+</button>
+    </div>
+    <div style="flex-grow: 1; display: flex; gap: 0.5rem">
+      <button
+        class="add-to-cart-btn"
+        [class.success]="justAddedToCart()"
+        [disabled]="!canAddToCart()"
+        (click)="addToCart()"
+        appRipple
+      >
+        {{
+          justAddedToCart()
+            ? "¡Listo!"
+            : "Añadir • " +
+              (finalPrice() * quantity()
+                | currency : "COP" : "symbol" : "1.0-0")
+        }}
+      </button>
+    </div>
   </div>
 </div>
 } @else {
 <div class="loading-container">
-  <p>Cargando detalles del producto...</p>
+  <p>Cargando detalles...</p>
 </div>
 }

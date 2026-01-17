@@ -3,146 +3,296 @@
 :host {
   display: block;
   min-height: 100vh;
-  padding-top: 4rem; // Espacio para el header
-  background-color: var(--background-page); // Fondo base
+  background-color: #f8f9fa;
 }
 
-.page-container {
+// --- FONDO AURORA (Copiado del home para consistencia) ---
+.aurora-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 15s infinite ease-in-out;
+}
+.blob-1 {
+  background: #ffdde1;
+  width: 50vw;
+  height: 50vw;
+  top: -10%;
+  left: -10%;
+}
+.blob-2 {
+  background: #ee9ca7;
+  width: 40vw;
+  height: 40vw;
+  bottom: -10%;
+  right: -10%;
+  animation-delay: -5s;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(30px, 50px);
+  }
+}
+
+// --- CONTENIDO ---
+.page-content {
+  position: relative;
+  z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 6rem;
-  position: relative;
-  z-index: 2;
+  padding: 8rem 1.5rem 4rem; // Padding top alto para el header fijo
 }
 
-// --- HEADER DE BÚSQUEDA ---
-.page-header {
-  text-align: center;
-  margin-bottom: 4rem;
-  
-  h1 {
-    font-family: "Baloo 2", serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    color: #333;
-    margin: 0;
-    
-    // Subrayado decorativo
-    display: inline-block;
-    position: relative;
-    &::after {
-      content: "";
-      display: block;
-      width: 60%;
-      height: 6px;
-      background: var(--pastel-pink, #FFD1DC);
-      border-radius: 3px;
-      margin: 5px auto 0;
-      opacity: 0.8;
-    }
-  }
-}
-
-// --- FILTROS Y ORDENAMIENTO ---
-.filters-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
+// --- HEADER Y TOOLBAR ---
+.results-header {
   margin-bottom: 3rem;
-  
-  // Panel de vidrio para los controles
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 1.5rem;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.03);
+  text-align: center;
+  position: relative;
+  z-index: 20;
 }
 
-.filter-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-
-.filter-btn {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  height: 44px; padding: 0 1.2rem;
-  background: white;
-  border: 1px solid rgba(0,0,0,0.05);
-  border-radius: 50px;
-  font-size: 0.9rem; font-weight: 700; color: #555;
-  cursor: pointer; transition: all 0.3s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-
-  &:hover {
-    background: #333; color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+.title-area {
+  margin-bottom: 2rem;
+  h1 {
+    font-family: "Playfair Display", serif;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+  }
+  .highlight {
+    color: var(--pastel-pink, #ff8fa3);
+  }
+  .subtitle {
+    color: #7f8c8d;
+    font-size: 1.1rem;
   }
 }
 
-.sort-selector {
-  display: flex; align-items: center; gap: 0.8rem;
-  
-  label { font-size: 0.9rem; font-weight: 700; color: #666; }
+// BARRA DE HERRAMIENTAS GLASS
+.toolbar-glass {
+  display: inline-flex;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  padding: 0.5rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
 
-  .sort-input {
-    appearance: none; // Quitamos estilo por defecto
-    border-radius: 50px;
-    border: 1px solid rgba(0,0,0,0.05);
-    padding: 0.6rem 2.5rem 0.6rem 1.2rem;
-    background-color: white;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.8rem center;
-    background-size: 1rem;
+.filter-group {
+  position: relative;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 50px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  &:hover,
+  &.active {
+    background: #333;
+    color: white;
+    transform: translateY(-2px);
+  }
+  .material-symbols-outlined {
+    font-size: 1.2rem;
+  }
+}
+
+// DROPDOWN MENU
+.dropdown-menu {
+  position: absolute;
+  top: 120%;
+  left: 0;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  padding: 0.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  &.right-aligned {
+    left: auto;
+    right: 0;
+  }
+
+  .menu-item {
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    color: #555;
     cursor: pointer;
-    font-family: "Baloo 2"; font-weight: 600; color: #333;
-    transition: all 0.3s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    
-    &:hover, &:focus {
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      outline: none;
+    &:hover {
+      background: #f1f2f6;
+      color: #333;
+    }
+    &.selected {
+      background: #e3f2fd;
+      color: #1976d2;
+      font-weight: 700;
     }
   }
 }
 
-// --- GRID DE RESULTADOS ---
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// CHIPS
+.active-filters {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #333;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+    &:hover {
+      background: #ff4757;
+    }
+    span {
+      font-size: 1rem;
+    }
+  }
+}
+
+// --- GRID PRODUCTOS ---
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-
-  @media (min-width: 768px) { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
-  @media (min-width: 1200px) { grid-template-columns: repeat(4, 1fr); gap: 2.5rem; }
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(260px, 1fr)
+  ); // Responsive automático
+  gap: 2rem;
 }
 
-// --- ESTADO VACÍO (Gato Triste) ---
+// --- EMPTY STATE ---
 .empty-state {
   text-align: center;
-  padding: 6rem 2rem;
-  background: rgba(255,255,255,0.4);
-  border-radius: 3rem;
-  border: 1px dashed rgba(0,0,0,0.1);
-  
-  h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; color: #333; }
-  p { max-width: 500px; margin: 0 auto 2.5rem; color: #666; font-size: 1.1rem; line-height: 1.5; }
-  
-  .btn-material {
-    @extend .btn-material;
-    padding: 1rem 2.5rem;
-    background: var(--pastel-pink);
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2rem;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+
+  .floating-img {
+    width: 150px;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+    animation: float 4s infinite ease-in-out;
+  }
+  h2 {
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  p {
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  .pill-btn {
+    background: var(--pastel-pink, #ff8fa3);
     color: white;
-    text-decoration: none;
-    &:hover { background: #ffb6c1; }
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(255, 143, 163, 0.4);
+    }
   }
 }
 
-// --- LOADING ---
-.loading-text {
-  text-align: center; font-size: 1.5rem; color: #888; margin-top: 4rem;
+// LOADING
+.loading-container {
+  text-align: center;
+  margin-top: 4rem;
+  color: #888;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top-color: #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// --- MEDIA QUERY MOBILE ---
+@media (max-width: 768px) {
+  .page-content {
+    padding-top: 6rem;
+  } // Header móvil es más pequeño
+  .toolbar-glass {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .tool-btn {
+    padding: 0.8rem;
+    span:not(.material-symbols-outlined) {
+      display: none;
+    }
+  } // Solo iconos en móvil
+  .active-filters {
+    flex-wrap: wrap;
+  }
 }

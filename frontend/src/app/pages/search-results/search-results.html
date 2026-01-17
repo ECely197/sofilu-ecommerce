@@ -1,67 +1,135 @@
-<div class="page-container">
-  <header class="page-header">
-    @if (searchTerm()) {
-    <h1>Resultados para "{{ searchTerm() }}"</h1>
+<div class="search-page">
+  <!-- Fondo Aurora -->
+  <div class="aurora-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="page-content">
+    <!-- HEADER Y BARRA DE HERRAMIENTAS -->
+    <header class="results-header fade-in">
+      <div class="title-area">
+        <h1>
+          @if (searchTerm()) { Resultados para "<span class="highlight">{{
+            searchTerm()
+          }}</span
+          >" } @else if (activeCategoryName()) { Explorando:
+          <span class="highlight">{{ activeCategoryName() }}</span> } @else {
+          Explorar Todo }
+        </h1>
+        <p class="subtitle">{{ products().length }} tesoros encontrados</p>
+      </div>
+
+      <!-- BARRA DE FILTROS (GLASS) -->
+      <div class="toolbar-glass">
+        <!-- Botón Filtro Categorías -->
+        <div class="filter-group">
+          <button
+            class="tool-btn"
+            [class.active]="showCategoryFilter()"
+            (click)="toggleCategoryFilter()"
+            appRipple
+          >
+            <span class="material-symbols-outlined">category</span>
+            <span>Categorías</span>
+            <span class="material-symbols-outlined small">expand_more</span>
+          </button>
+
+          @if (showCategoryFilter()) {
+          <div class="dropdown-menu glass-menu">
+            <button class="menu-item" (click)="selectCategory(null)">
+              Ver Todo
+            </button>
+            @for (cat of categories(); track cat._id) {
+            <button
+              class="menu-item"
+              [class.selected]="activeCategorySlug() === cat.slug"
+              (click)="selectCategory(cat.slug)"
+            >
+              {{ cat.name }}
+            </button>
+            }
+          </div>
+          }
+        </div>
+
+        <!-- Botón Ordenar -->
+        <div class="filter-group">
+          <button
+            class="tool-btn"
+            [class.active]="showSortFilter()"
+            (click)="toggleSortFilter()"
+            appRipple
+          >
+            <span class="material-symbols-outlined">sort</span>
+            <span>Ordenar</span>
+          </button>
+
+          @if (showSortFilter()) {
+          <div class="dropdown-menu glass-menu right-aligned">
+            <button class="menu-item" (click)="applySort('relevance,desc')">
+              Relevancia
+            </button>
+            <button class="menu-item" (click)="applySort('price,asc')">
+              Precio: Bajo a Alto
+            </button>
+            <button class="menu-item" (click)="applySort('price,desc')">
+              Precio: Alto a Bajo
+            </button>
+            <button class="menu-item" (click)="applySort('name,asc')">
+              Nombre: A-Z
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- CHIPS DE FILTROS ACTIVOS -->
+      @if (searchTerm() || activeCategorySlug()) {
+      <div class="active-filters">
+        @if (searchTerm()) {
+        <div class="chip" (click)="removeFilter('search')">
+          Búsqueda: {{ searchTerm() }}
+          <span class="material-symbols-outlined">close</span>
+        </div>
+        } @if (activeCategorySlug()) {
+        <div class="chip" (click)="removeFilter('category')">
+          Categoría: {{ activeCategoryName() }}
+          <span class="material-symbols-outlined">close</span>
+        </div>
+        }
+      </div>
+      }
+    </header>
+
+    <!-- RESULTADOS -->
+    @if (isLoading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Buscando...</p>
+    </div>
+    } @else if (products().length > 0) {
+    <div class="products-grid">
+      @for (product of products(); track product._id) {
+      <app-product-card [product]="product"></app-product-card>
+      }
+    </div>
     } @else {
-    <h1>Explorar todo</h1>
-    }
-  </header>
-
-  <!-- Barra de Filtros -->
-  <div class="filters-container">
-    <div class="filter-buttons">
-      <!-- Botones visuales (funcionalidad futura) -->
-      <button class="filter-btn" appRipple>
-        <span>Categoría</span>
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
-      <button class="filter-btn" appRipple>
-        <span>Precio</span>
-        <span class="material-symbols-outlined">expand_more</span>
-      </button>
+    <!-- EMPTY STATE -->
+    <div class="empty-state glass-card">
+      <img
+        src="assets/images/cat-sad.png"
+        alt="No encontrado"
+        class="floating-img"
+      />
+      <h2>Ups, no encontramos nada por aquí</h2>
+      <p>Intenta con otros términos o navega por nuestras categorías.</p>
+      <div class="suggestions">
+        <button class="pill-btn" (click)="selectCategory(null)">
+          Ver Todos los Productos
+        </button>
+      </div>
     </div>
-
-    <div class="sort-selector">
-      <label for="sort">Ordenar:</label>
-      <select
-        id="sort"
-        class="sort-input"
-        (change)="applySort($event)"
-        [value]="
-          (activeFilters()['sortBy'] || 'relevance') +
-          ',' +
-          (activeFilters()['sortOrder'] || 'desc')
-        "
-      >
-        <option value="relevance,desc">Relevancia</option>
-        <option value="price,asc">Precio: Bajo a Alto</option>
-        <option value="price,desc">Precio: Alto a Bajo</option>
-        <option value="name,asc">Nombre: A-Z</option>
-        <option value="name,desc">Nombre: Z-A</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Resultados -->
-  @if (isLoading()) {
-  <div class="loading-text">
-    <p>Buscando tesoros...</p>
-  </div>
-  } @else if (products().length > 0) {
-  <div class="products-grid">
-    @for (product of products(); track product._id) {
-    <app-product-card [product]="product"></app-product-card>
     }
   </div>
-  } @else {
-  <div class="empty-state">
-    <!-- Si tienes el gato del carrito, úsalo aquí también -->
-    <img src="assets/images/cat-sad.png" alt="No encontrado" style="width: 150px; margin-bottom: 1rem; opacity: 0.7;">
-    <h2>Ups, no encontramos nada</h2>
-    <p>
-      No hemos encontrado productos para "{{ searchTerm() }}". <br> Intenta buscar "oso", "gato" o navega por categorías.
-    </p>
-    <a routerLink="/" class="btn-material" appRipple>Volver al inicio</a>
-  </div>
-  }
 </div>
