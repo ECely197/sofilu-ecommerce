@@ -10,14 +10,14 @@ const socialLinkSchema = new Schema(
     platform: { type: String, required: true }, // ej: 'instagram', 'facebook', 'telegram'
     url: { type: String, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const settingSchema = new Schema({
   // Usamos una clave fija para encontrar siempre este único documento
   uniqueId: { type: String, default: "global-settings", unique: true },
 
-  // --- Información de la Tienda (Mi Sugerencia) ---
+  // --- Información de la Tienda ---
   storeName: { type: String, default: "Sofilu Store" },
   storeLogoUrl: { type: String, default: "" },
   contactEmail: { type: String, default: "" },
@@ -25,6 +25,9 @@ const settingSchema = new Schema({
   // --- Envíos ---
   shippingCostBogota: { type: Number, default: 0 },
   shippingCostNational: { type: Number, default: 0 },
+
+  // --- ¡AQUÍ ESTÁ LA LÍNEA QUE FALTABA! ---
+  customDeliveryCost: { type: Number, default: 0 },
 
   // --- Tarifas ---
   serviceFeePercentage: { type: Number, default: 0, min: 0, max: 100 },
