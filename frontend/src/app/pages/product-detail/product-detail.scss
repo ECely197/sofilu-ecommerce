@@ -699,59 +699,6 @@
   z-index: 1;
 }
 
-// --- FLECHAS (Estilo Burbuja Glass) ---
-.swiper-button-next,
-.swiper-button-prev {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-
-  // Efecto Vidrio
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-
-  // Icono (Chevron)
-  color: #333; // Color oscuro para contraste
-
-  top: 50%;
-  transform: translateY(-50%); // Centrado vertical
-  z-index: 20;
-
-  &::after {
-    font-size: 1.2rem; // Tamaño del icono de flecha
-    font-weight: 900; // Más grueso
-  }
-
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 0; // Ocultas por defecto
-
-  // Efecto Hover
-  &:hover {
-    background: white;
-    transform: translateY(-50%) scale(1.1); // Crece y se mantiene centrado
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  }
-
-  // Ocultar en móvil
-  @media (max-width: 1023px) {
-    display: none;
-  }
-}
-
-// Mostrar al hacer hover sobre la tarjeta principal (SOLO EN DESKTOP)
-.card:hover {
-  .swiper-button-prev {
-    opacity: 1;
-    left: 1.5rem;
-  }
-  .swiper-button-next {
-    opacity: 1;
-    right: 1.5rem;
-  }
-}
-
 // --- SECCIÓN DE PRODUCTOS COMPLEMENTARIOS ---
 .complementary-section {
   margin-top: 4rem;

@@ -24,6 +24,7 @@ import { filter } from 'rxjs/operators';
 import { User } from '@angular/fire/auth';
 
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 
 import { CartService } from '../../services/cart';
@@ -47,6 +48,7 @@ gsap.registerPlugin(SplitText);
   styleUrl: './header.scss',
 })
 export class Header implements OnInit, AfterViewInit, OnDestroy {
+  // --- Inyecciones y Propiedades (la mayoría se mantienen) ---
   public cartService = inject(CartService);
   public authService = inject(AuthService);
   public uiStateService = inject(UiState);
@@ -60,7 +62,6 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   public currentUser$: Observable<User | null> = this.authService.currentUser$;
   public isAdmin$: Observable<boolean> = this.authService.isAdmin$;
 
-  // --- ESTADOS ---
   isProfileMenuOpen = signal(false);
   isMobileMenuOpen = signal(false);
   activeAccordion = signal<string | null>(null);
@@ -71,10 +72,9 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChildren('navLink') navLinks!: QueryList<ElementRef<HTMLDivElement>>;
   @ViewChild('navPill') navPill!: ElementRef<HTMLElement>;
-  @ViewChild('navContainer') navContainer!: ElementRef<HTMLElement>;
 
-  private splitTexts: SplitText[] = [];
   private routerSub: Subscription | null = null;
+  private splitTexts: SplitText[] = [];
 
   constructor() {}
 
@@ -89,8 +89,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     this.routerSub = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
-        this.closeMegaMenu();
-        this.isMobileMenuOpen.set(false);
+        this.closeAllMenus();
         document.body.style.overflow = '';
         if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
           setTimeout(() => this.updatePillToActiveLink(), 200);
@@ -99,35 +98,55 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    // Correr toda la lógica de scroll fuera de Angular para máximo rendimiento
     this.zone.runOutsideAngular(() => {
-      this.onWindowScroll();
+      this.initSmartHeader(); // Lógica de ocultar/mostrar
     });
   }
 
   ngOnDestroy() {
     this.revertSplitText();
     if (this.routerSub) this.routerSub.unsubscribe();
+    // Limpiar todos los triggers de GSAP para evitar fugas de memoria
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
   }
 
-  @HostListener('window:scroll')
-  onWindowScroll() {
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
-    const headerElement =
+  // --- LÓGICA DE HEADER INTELIGENTE (SHY HEADER) ---
+  private initSmartHeader(): void {
+    const headerDesktop =
       this.elementRef.nativeElement.querySelector('.sofilu-header');
-    if (headerElement) {
-      if (scrollY > 50) headerElement.classList.add('is-scrolled');
-      else headerElement.classList.remove('is-scrolled');
-    }
-  }
+    const headerMobile = this.elementRef.nativeElement.querySelector(
+      '.mobile-floating-header'
+    );
+    const footer = document.querySelector('app-footer');
 
-  @HostListener('window:resize')
-  onResize() {
-    // Si pasamos a móvil, limpiamos GSAP desktop
-    if (window.innerWidth < 1024) {
-      this.revertSplitText();
-    } else {
-      // Si volvemos a desktop, reiniciamos
-      this.setupNavAnimations();
+    // 1. Ocultar al hacer scroll hacia abajo, mostrar al subir
+    ScrollTrigger.create({
+      start: 'top top-=' + (headerDesktop?.offsetHeight || 80),
+      end: 99999,
+      onUpdate: (self) => {
+        const isScrollingDown = self.direction === 1;
+        if (isScrollingDown) {
+          headerDesktop?.classList.add('is-hidden');
+          headerMobile?.classList.add('is-hidden');
+        } else {
+          headerDesktop?.classList.remove('is-hidden');
+          headerMobile?.classList.remove('is-hidden');
+        }
+      },
+    });
+
+    // 2. Ocultar cuando el footer es visible
+    if (footer) {
+      ScrollTrigger.create({
+        trigger: footer,
+        start: 'top bottom', // Cuando el top del footer toca el bottom de la pantalla
+        end: 'bottom top', // Cuando el bottom del footer deja el top de la pantalla
+        toggleClass: {
+          targets: 'body',
+          className: 'footer-visible',
+        },
+      });
     }
   }
 

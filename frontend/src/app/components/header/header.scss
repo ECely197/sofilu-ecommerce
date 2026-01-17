@@ -5,6 +5,20 @@
   z-index: 1000;
 }
 
+// --- LÓGICA DE HEADER INTELIGENTE ---
+// Define la transición suave
+.sofilu-header,
+.mobile-floating-header {
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+}
+
+// Clase que oculta el header
+.is-hidden {
+  transform: translateY(-120%); // Lo saca de la pantalla hacia arriba
+  opacity: 0;
+  pointer-events: none; // No se puede interactuar con él mientras está oculto
+}
+
 // ========================
 // CONTROL DE VISIBILIDAD
 // ========================
@@ -893,4 +907,12 @@
   &:active {
     transform: scale(0.98);
   }
+}
+
+// --- REGLA: Ocultar si hay un modal abierto ---
+:host-context(body.modal-is-open) .sofilu-header,
+:host-context(body.modal-is-open) .mobile-floating-header {
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
 }

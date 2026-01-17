@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { ViewChild } from '@angular/core';
 
 // Servicios
 import { CartService } from '../../services/cart';
@@ -11,6 +12,7 @@ import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { CartItem } from '../../interfaces/cart-item.interface';
 import { PaymentService } from '../../services/payment.service';
+import { AddressFormModalComponent } from '../../components/address-form-modal/address-form-modal';
 
 // Declaramos la variable global que inyecta el script de Wompi
 declare const WidgetCheckout: any;
@@ -18,7 +20,12 @@ declare const WidgetCheckout: any;
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RippleDirective],
+  imports: [
+    CommonModule,
+    RouterLink,
+    RippleDirective,
+    AddressFormModalComponent,
+  ],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -44,6 +51,9 @@ export class checkout implements OnInit {
 
   private appSettings: AppSettings | null = null;
 
+  @ViewChild(AddressFormModalComponent)
+  addressModal!: AddressFormModalComponent;
+
   grandTotal = computed(() => {
     const subtotal = this.cartService.subTotal();
     const shipping = this.shippingCost();
@@ -51,6 +61,17 @@ export class checkout implements OnInit {
     const fee = this.serviceFee();
     return Math.max(0, subtotal + shipping - discount + fee);
   });
+
+  openAddressModal() {
+    this.addressModal.open();
+  }
+
+  handleAddressCreated(newAddress: Address) {
+    // 1. Añadir la nueva dirección a la lista
+    this.addresses.update((current) => [...current, newAddress]);
+    // 2. Seleccionarla automáticamente
+    this.selectAddress(newAddress);
+  }
 
   ngOnInit(): void {
     if (this.cartService.totalItems() === 0) {

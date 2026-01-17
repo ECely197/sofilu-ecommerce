@@ -1,0 +1,121 @@
+@if (isOpen()) {
+<div [class.form-overlay]="true" (click)="close()"></div>
+
+<div [class.form-panel]="true">
+  <header class="panel-header">
+    <h3>Nueva Dirección de Envío</h3>
+    <button (click)="close()" class="close-btn" appRipple>
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </header>
+
+  <form
+    [formGroup]="addressForm"
+    (ngSubmit)="handleSubmit()"
+    class="form-content"
+  >
+    <div class="form-grid">
+      <div class="material-field">
+        <input
+          id="fullName"
+          type="text"
+          formControlName="fullName"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="fullName" class="material-label">Nombre Completo</label>
+      </div>
+      <div class="material-field">
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="phone" class="material-label">Teléfono</label>
+      </div>
+    </div>
+    <div class="material-field">
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="email" class="material-label">Email de Contacto</label>
+    </div>
+    <div class="material-field">
+      <input
+        id="streetAddress"
+        type="text"
+        formControlName="streetAddress"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="streetAddress" class="material-label"
+        >Dirección (Calle, Número, Barrio)</label
+      >
+    </div>
+    <div class="material-field">
+      <input
+        id="addressDetails"
+        type="text"
+        formControlName="addressDetails"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="addressDetails" class="material-label"
+        >Detalles Adicionales (Apto, Torre)</label
+      >
+    </div>
+    <div class="form-grid">
+      <div class="material-field">
+        <input
+          id="department"
+          type="text"
+          formControlName="department"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="department" class="material-label">Departamento</label>
+      </div>
+      <div class="material-field">
+        <input
+          id="city"
+          type="text"
+          formControlName="city"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="city" class="material-label">Ciudad</label>
+      </div>
+    </div>
+    <div class="material-field">
+      <input
+        id="postalCode"
+        type="text"
+        formControlName="postalCode"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="postalCode" class="material-label">Código Postal</label>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="close()" class="btn-secondary" appRipple>
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="addressForm.invalid"
+        class="btn-material"
+        appRipple
+      >
+        Guardar
+      </button>
+    </div>
+  </form>
+</div>
+}

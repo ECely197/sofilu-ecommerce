@@ -344,3 +344,18 @@ body.is-loading #preloader {
     opacity: 0.8;
   }
 }
+
+/* ==========================================================================
+   LÓGICA GLOBAL DE HEADER Y FOOTER
+   ========================================================================== */
+
+// Cuando el footer está visible, forzamos la ocultación del header
+// (tanto de escritorio como de móvil)
+body.footer-visible {
+  .sofilu-header,
+  .mobile-floating-header {
+    transform: translateY(-120%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}

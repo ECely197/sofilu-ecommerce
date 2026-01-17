@@ -25,6 +25,10 @@ export class UiState {
   /** Signal de solo lectura para saber si el flyout de la lista de deseos está visible. */
   public isWishlistFlyoutVisible = this._isWishlistFlyoutVisible.asReadonly();
 
+  // --- ¡SEÑAL GLOBAL PARA MODALES! ---
+  private _isModalOpen = signal(false);
+  public isModalOpen = this._isModalOpen.asReadonly();
+
   // --- Métodos Públicos para Mutar el Estado ---
   openCartFlyout(): void {
     this._isCartFlyoutVisible.set(true);
@@ -46,5 +50,8 @@ export class UiState {
   }
   closeWishlistFlyout(): void {
     this._isWishlistFlyoutVisible.set(false);
+  }
+  setModalState(isOpen: boolean): void {
+    this._isModalOpen.set(isOpen);
   }
 }

@@ -7,7 +7,14 @@
  * de alto nivel, como las animaciones de ruta y la inicialización de librerías.
  */
 
-import { Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  DOCUMENT,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Router,
@@ -69,6 +76,17 @@ export class App implements OnInit, OnDestroy {
   // --- Estado ---
   showGlobalHeaderAndFooter = signal(true);
 
+  constructor() {
+    // --- ¡EFECTO PARA EL MODAL! ---
+    // Este `effect` se ejecutará cada vez que la señal `isModalOpen` cambie.
+    effect(() => {
+      if (this.uiState.isModalOpen()) {
+        this.document.body.classList.add('modal-is-open');
+      } else {
+        this.document.body.classList.remove('modal-is-open');
+      }
+    });
+  }
   /**
    * Hook del ciclo de vida de Angular que se ejecuta una vez que el componente se ha inicializado.
    */

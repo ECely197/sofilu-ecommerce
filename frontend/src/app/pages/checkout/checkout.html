@@ -52,10 +52,10 @@
       </div>
       }
       <div class="step-actions">
-        <a routerLink="/account/addresses" class="add-link" appRipple>
+        <button (click)="openAddressModal()" class="add-link" appRipple>
           <span class="material-symbols-outlined">add_circle</span>
-          Administrar mis direcciones
-        </a>
+          Agregar Nueva Dirección
+        </button>
       </div>
     </div>
     }
@@ -180,4 +180,7 @@
       </div>
     </div>
   </aside>
+  <app-address-form-modal
+    (addressCreated)="handleAddressCreated($event)"
+  ></app-address-form-modal>
 </div>

@@ -11,6 +11,7 @@ import {
 import { Customer, Address } from '../../../services/customer'; // Asegúrate de que Address se importa
 import { ToastService } from '../../../services/toast.service';
 import { RippleDirective } from '../../../directives/ripple';
+import { UiState } from '../../../services/ui-state';
 
 @Component({
   selector: 'app-my-addresses',
@@ -23,6 +24,7 @@ export class MyAddressesComponent implements OnInit {
   private fb = inject(FormBuilder);
   private customerService = inject(Customer);
   private toastService = inject(ToastService);
+  private uiState = inject(UiState);
 
   addresses = signal<Address[]>([]);
   isLoading = signal(true);
@@ -57,6 +59,7 @@ export class MyAddressesComponent implements OnInit {
     this.editingAddressId.set(null);
     this.addressForm.reset();
     this.isFormVisible.set(true);
+    this.uiState.setModalState(true);
   }
 
   showEditForm(address: Address) {
@@ -64,10 +67,12 @@ export class MyAddressesComponent implements OnInit {
     this.editingAddressId.set(address._id);
     this.addressForm.patchValue(address);
     this.isFormVisible.set(true);
+    this.uiState.setModalState(true);
   }
 
   hideForm() {
     this.isFormVisible.set(false);
+    this.uiState.setModalState(false);
   }
 
   handleSubmit() {

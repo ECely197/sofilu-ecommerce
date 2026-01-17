@@ -1,12 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import {
-  CanActivate,
-  Router,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-} from '@angular/router';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
+import { map, skipWhile, take } from 'rxjs/operators';
 import { AuthService } from '../services/auth';
 
 @Injectable({
@@ -15,25 +10,16 @@ import { AuthService } from '../services/auth';
 export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean> {
-    console.log(
-      '--- AuthGuard: Se ha activado el guardia de la ruta /admin ---'
-    ); // LOG 1
+  canActivate(): Observable<boolean> {
     return this.authService.isAdmin$.pipe(
+      // Esperamos a que el valor inicial de `false` (mientras se verifica) pase
+      skipWhile((isAdmin) => isAdmin === false), // Esto puede necesitar ajuste si tienes lógica compleja
       take(1),
       map((isAdmin) => {
         if (isAdmin) {
-          console.log(
-            '--- AuthGuard: Acceso PERMITIDO (el usuario es admin) ---'
-          ); // LOG 2 (Éxito)
-          return true; // Puede pasar
+          return true; // Es admin, puede pasar.
         } else {
-          console.log(
-            '--- AuthGuard: Acceso DENEGADO (el usuario no es admin o no está logueado) ---'
-          );
+          // Si no es admin después de la verificación, lo mandamos al inicio.
           this.router.navigate(['/']);
           return false;
         }
