@@ -59,29 +59,30 @@ async function getAdminEmails() {
  * @param {object} order - El objeto de pedido completo de Mongoose.
  */
 async function sendOrderConfirmationEmail(order) {
-  try {
-    // 1. Obtenemos la lista de admins ANTES de enviar el correo
-    const adminRecipients = await getAdminEmails();
+  // --- CHIVATO #1: ¿Se está leyendo la API Key? ---
+  console.log("[Email Service] Verificando RESEND_API_KEY...");
+  if (!process.env.RESEND_API_KEY) {
+    console.error(
+      "[Email Service] ¡ERROR FATAL! La variable de entorno RESEND_API_KEY no fue encontrada."
+    );
+    return; // Detenemos la función si no hay clave
+  }
+  console.log("[Email Service] RESEND_API_KEY encontrada.");
 
-    // 2. Renderización de la plantilla EJS
+  try {
+    const adminRecipients = await getAdminEmails();
     const templatePath = path.join(
       __dirname,
       "../views/order-confirmation-email.ejs"
     );
-    const orderObject = order.toObject();
-    const html = await ejs.renderFile(templatePath, { order: orderObject });
+    const html = await ejs.renderFile(templatePath, {
+      order: order.toObject(),
+    });
 
-    // 3. Configuración de las opciones del correo (AHORA DINÁMICO)
     const mailOptions = {
-      // --- ¡CAMBIO CRÍTICO! ---
-      // Reemplaza 'ventas@sofilu.shop' por tu email verificado en Resend.
       from: "Sofilu Store <ventas@sofilu.shop>",
-
       to: order.customerInfo.email,
-
-      // La copia oculta ahora es la lista de admins
       bcc: adminRecipients,
-
       subject: `¡Nuevo Pedido Confirmado! #${order._id
         .toString()
         .slice(-6)
@@ -89,14 +90,22 @@ async function sendOrderConfirmationEmail(order) {
       html: html,
     };
 
-    // 4. Envío del correo
-    await transporter.sendMail(mailOptions);
+    // --- CHIVATO #2: ¿Qué se va a enviar? ---
     console.log(
-      `Correo de confirmación enviado a: ${order.customerInfo.email} y ${adminRecipients.length} admin(s).`
+      "[Email Service] Intentando enviar correo con las siguientes opciones:",
+      {
+        from: mailOptions.from,
+        to: mailOptions.to,
+        bcc: mailOptions.bcc,
+        subject: mailOptions.subject,
+      }
     );
+
+    await transporter.sendMail(mailOptions);
+    console.log(`[Email Service] ¡Correo enviado exitosamente a Resend!`);
   } catch (error) {
     console.error(
-      "ERROR: No se pudo enviar el correo de confirmación de pedido.",
+      "[Email Service] ERROR al intentar enviar con transporter.sendMail:",
       error
     );
   }
