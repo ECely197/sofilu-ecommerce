@@ -236,7 +236,8 @@
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 2.5rem;
   padding: 2.5rem;
-  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.08),
+  box-shadow:
+    0 20px 60px -10px rgba(0, 0, 0, 0.08),
     inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 
   display: flex;
@@ -462,4 +463,24 @@
   50% {
     opacity: 0.5;
   }
+}
+
+.cost-badge {
+  display: inline-block;
+  background-color: #e0f2fe; // Un azul muy claro
+  color: #0c4a6e; // Azul oscuro
+  padding: 0.1rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+// Estilos para los textarea de notas
+.material-field textarea.material-input {
+  height: auto;
+  padding-top: 1.5rem;
+  resize: vertical; // Permitir que el usuario agrande el campo si quiere
+  min-height: 80px;
 }

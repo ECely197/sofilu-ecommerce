@@ -1,20 +1,29 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  computed,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { ViewChild } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
-// Servicios
+// Servicios e Interfaces
 import { CartService } from '../../services/cart';
 import { Customer, Address } from '../../services/customer';
 import { SettingsService, AppSettings } from '../../services/settings.service';
 import { Coupon } from '../../services/coupon';
 import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
-import { CartItem } from '../../interfaces/cart-item.interface';
 import { PaymentService } from '../../services/payment.service';
+import { CartItem } from '../../interfaces/cart-item.interface';
+
+// Componente Modal
 import { AddressFormModalComponent } from '../../components/address-form-modal/address-form-modal';
 
-// Declaramos la variable global que inyecta el script de Wompi
+// Declaración para Wompi
 declare const WidgetCheckout: any;
 
 @Component({
@@ -24,12 +33,14 @@ declare const WidgetCheckout: any;
     CommonModule,
     RouterLink,
     RippleDirective,
+    ReactiveFormsModule,
     AddressFormModalComponent,
   ],
   templateUrl: './checkout.html',
-  styleUrl: './checkout.scss',
+  styleUrls: ['./checkout.scss'],
 })
 export class checkout implements OnInit {
+  // --- INYECCIÓN DE DEPENDENCIAS ---
   public cartService = inject(CartService);
   private router = inject(Router);
   private customerService = inject(Customer);
@@ -37,11 +48,19 @@ export class checkout implements OnInit {
   private couponService = inject(Coupon);
   private toastService = inject(ToastService);
   private paymentService = inject(PaymentService);
+  private fb = inject(FormBuilder);
 
+  // Referencia al Modal de Dirección
+  @ViewChild(AddressFormModalComponent)
+  addressModal!: AddressFormModalComponent;
+
+  // --- SIGNALS (ESTADO REACTIVO) ---
   addresses = signal<Address[]>([]);
   selectedAddress = signal<Address | null>(null);
   isLoading = signal(true);
   isProcessingOrder = signal(false);
+
+  // Resumen Financiero
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
@@ -49,64 +68,66 @@ export class checkout implements OnInit {
   couponError = signal<boolean>(false);
   serviceFee = signal(0);
 
+  // Opciones de Compra
+  deliveryType = signal<'Normal' | 'Personalizada'>('Normal');
+  customDeliveryCost = signal(0);
+  notesForm = this.fb.group({
+    orderNotes: [''],
+    deliveryNotes: [''],
+  });
+
   private appSettings: AppSettings | null = null;
 
-  @ViewChild(AddressFormModalComponent)
-  addressModal!: AddressFormModalComponent;
-
+  // --- COMPUTED: CÁLCULO DEL TOTAL FINAL ---
   grandTotal = computed(() => {
     const subtotal = this.cartService.subTotal();
     const shipping = this.shippingCost();
     const discount = this.discountAmount();
     const fee = this.serviceFee();
-    return Math.max(0, subtotal + shipping - discount + fee);
+    const customCost =
+      this.deliveryType() === 'Personalizada' ? this.customDeliveryCost() : 0;
+    return Math.max(0, subtotal + shipping - discount + fee + customCost);
   });
 
-  openAddressModal() {
-    this.addressModal.open();
-  }
-
-  handleAddressCreated(newAddress: Address) {
-    // 1. Añadir la nueva dirección a la lista
-    this.addresses.update((current) => [...current, newAddress]);
-    // 2. Seleccionarla automáticamente
-    this.selectAddress(newAddress);
-  }
-
+  // --- CICLO DE VIDA ---
   ngOnInit(): void {
     if (this.cartService.totalItems() === 0) {
       this.router.navigate(['/cart']);
       return;
     }
+    this.isLoading.set(true);
 
-    // Cargar direcciones
     this.customerService.getAddresses().subscribe({
       next: (addresses) => {
         this.addresses.set(addresses);
-        const preferred = addresses.find((a) => a.isPreferred) || addresses[0];
+        const preferred =
+          addresses.find((a) => a.isPreferred) ||
+          (addresses.length > 0 ? addresses[0] : null);
         if (preferred) this.selectAddress(preferred);
       },
-      error: () => {
-        this.toastService.show('Error al cargar direcciones.', 'error');
-        this.isLoading.set(false);
-      },
+      error: (err) => console.error('Error cargando direcciones:', err),
     });
 
-    // Cargar ajustes
     this.settingsService.getSettings().subscribe({
       next: (settings) => {
         this.appSettings = settings;
+        this.customDeliveryCost.set(settings.customDeliveryCost || 0);
         if (this.selectedAddress()) this.selectAddress(this.selectedAddress()!);
         if (settings.serviceFeePercentage > 0) {
           this.serviceFee.set(
-            this.cartService.subTotal() * (settings.serviceFeePercentage / 100)
+            this.cartService.subTotal() * (settings.serviceFeePercentage / 100),
           );
         }
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false),
+      error: (err) => {
+        console.error('Error cargando ajustes:', err);
+        this.isLoading.set(false);
+      },
     });
   }
+
+  // --- MÉTODOS DE INTERACCIÓN ---
 
   selectAddress(address: Address): void {
     this.selectedAddress.set(address);
@@ -115,7 +136,7 @@ export class checkout implements OnInit {
       this.shippingCost.set(
         isBogota
           ? this.appSettings.shippingCostBogota
-          : this.appSettings.shippingCostNational
+          : this.appSettings.shippingCostNational,
       );
     }
   }
@@ -124,66 +145,119 @@ export class checkout implements OnInit {
     if (!code.trim()) return;
     this.couponService.validateCoupon(code).subscribe({
       next: (coupon) => {
-        let base = this.cartService.subTotal();
-        if (coupon.appliesTo === 'Envío') base = this.shippingCost();
-        if (coupon.appliesTo === 'Todo') base += this.shippingCost();
-
-        let discount =
-          coupon.discountType === 'Porcentaje'
-            ? (base * coupon.value) / 100
-            : coupon.value;
-        this.discountAmount.set(Math.min(discount, base));
+        const subtotal = this.cartService.subTotal();
+        let discount = 0;
+        if (coupon.discountType === 'Porcentaje') {
+          discount = (subtotal * coupon.value) / 100;
+        } else {
+          discount = coupon.value;
+        }
+        this.discountAmount.set(discount);
         this.appliedCoupon.set(coupon);
-        this.couponMessage.set('Cupón aplicado con éxito');
+        this.couponMessage.set(`¡Cupón "${coupon.code}" aplicado!`);
         this.couponError.set(false);
       },
       error: (err) => {
         this.discountAmount.set(0);
         this.appliedCoupon.set(null);
-        this.couponMessage.set(err.error?.message || 'Cupón inválido');
+        this.couponMessage.set(err.error?.message || 'Error al aplicar cupón.');
         this.couponError.set(true);
       },
     });
   }
 
-  // --- MÉTODOS AUXILIARES (Restaurados) ---
+  // --- LÓGICA DEL MODAL ---
 
-  // Necesario para iterar sobre las variantes en el HTML
-  objectKeys(obj: object): string[] {
-    return obj ? Object.keys(obj) : [];
+  openAddressModal() {
+    this.addressModal.open();
   }
 
-  // Necesario para calcular el precio final con variantes en el HTML
-  finalItemPrice(item: CartItem): number {
-    let price = item.product.price;
-    if (item.selectedVariants && item.product.variants) {
-      for (const variantName in item.selectedVariants) {
-        const selectedOptionName = item.selectedVariants[variantName];
-        const variant = item.product.variants.find(
-          (v) => v.name === variantName
-        );
-        const option = variant?.options.find(
-          (o) => o.name === selectedOptionName
-        );
-        if (option?.price) {
-          price += option.price;
-        }
-      }
+  handleAddressCreated(newAddress: Address) {
+    this.addresses.update((current) => [...current, newAddress]);
+    this.selectAddress(newAddress);
+  }
+
+  // --- LÓGICA DE PAGO ---
+
+  processPayment() {
+    if (this.isProcessingOrder()) return;
+    this.isProcessingOrder.set(true);
+
+    const orderData = this.buildOrderData();
+    if (!orderData) {
+      this.isProcessingOrder.set(false);
+      return;
     }
-    return price;
+
+    this.paymentService.initWompiTransaction(orderData).subscribe({
+      next: (response) => {
+        if (!response.success || !response.wompiData) {
+          this.toastService.show('Error al iniciar el pago.', 'error');
+          this.isProcessingOrder.set(false);
+          return;
+        }
+        this.openWompiWidget(response.wompiData, orderData.customerInfo);
+      },
+      error: (err) => {
+        console.error('Error iniciando pago:', err);
+        this.toastService.show('Error de conexión con el servidor.', 'error');
+        this.isProcessingOrder.set(false);
+      },
+    });
   }
+
+  private openWompiWidget(wompiParams: any, customerInfo: any): void {
+    const checkout = new WidgetCheckout({
+      currency: wompiParams.currency,
+      amountInCents: wompiParams.amountInCents,
+      reference: wompiParams.reference,
+      publicKey: wompiParams.publicKey,
+      signature: { integrity: wompiParams.signature },
+      redirectUrl: wompiParams.redirectUrl,
+      customerData: {
+        email: customerInfo.email,
+        fullName: customerInfo.name,
+        phoneNumber: customerInfo.phone,
+        phoneNumberPrefix: '+57',
+      },
+    });
+
+    checkout.open((result: any) => {
+      const transaction = result.transaction;
+      if (transaction.status === 'APPROVED') {
+        this.toastService.show('¡Pago aprobado! Redirigiendo...', 'success');
+        this.cartService.clearCart();
+        setTimeout(() => {
+          this.router.navigate(['/order-confirmation'], {
+            queryParams: { status: 'success', id: wompiParams.reference },
+          });
+        }, 1500);
+      } else {
+        this.toastService.show('El pago fue rechazado o falló.', 'error');
+      }
+      this.isProcessingOrder.set(false);
+    });
+  }
+
+  // --- MÉTODOS AUXILIARES (HELPERS) ---
 
   private buildOrderData(): any | null {
-    const addr = this.selectedAddress();
-    if (!addr) return null;
+    const selectedAddr = this.selectedAddress();
+    if (!selectedAddr) {
+      this.toastService.show(
+        'Por favor, selecciona o añade una dirección.',
+        'error',
+      );
+      return null;
+    }
 
     return {
       customerInfo: {
-        name: addr.fullName,
-        email: addr.email,
-        phone: addr.phone,
+        name: selectedAddr.fullName,
+        email: selectedAddr.email,
+        phone: selectedAddr.phone,
       },
-      shippingAddress: addr,
+      shippingAddress: selectedAddr,
       items: this.cartService.cartItems().map((item) => ({
         product: item.product._id,
         quantity: item.quantity,
@@ -193,83 +267,26 @@ export class checkout implements OnInit {
       appliedCoupon: this.appliedCoupon()?.code || null,
       discountAmount: this.discountAmount(),
       totalAmount: this.grandTotal(),
+      deliveryType: this.deliveryType(),
+      orderNotes: this.notesForm.value.orderNotes || '',
+      deliveryNotes: this.notesForm.value.deliveryNotes || '',
     };
   }
 
-  // --- LÓGICA DE PAGO CON WOMPI WIDGET ---
-  processPayment() {
-    if (this.isProcessingOrder()) return;
-    this.isProcessingOrder.set(true);
-
-    const orderData = this.buildOrderData();
-    if (!orderData) {
-      this.toastService.show('Selecciona una dirección de envío.', 'error');
-      this.isProcessingOrder.set(false);
-      return;
+  public finalItemPrice(item: CartItem): number {
+    let price = item.product.price;
+    if (item.selectedVariants && item.product.variants) {
+      for (const variantName in item.selectedVariants) {
+        const option = item.product.variants
+          .find((v) => v.name === variantName)
+          ?.options.find((o) => o.name === item.selectedVariants[variantName]);
+        if (option?.price) price += option.price;
+      }
     }
+    return price;
+  }
 
-    // 1. Pedir al Backend que registre la orden y nos de la firma
-    this.paymentService.initWompiTransaction(orderData).subscribe({
-      next: (response) => {
-        if (!response.success) {
-          this.toastService.show('Error al iniciar el pago.', 'error');
-          this.isProcessingOrder.set(false);
-          return;
-        }
-
-        const wompiParams = response.wompiData;
-
-        // 2. Configurar el Widget con los datos SEGUROS
-        const checkout = new WidgetCheckout({
-          currency: wompiParams.currency,
-          amountInCents: wompiParams.amountInCents,
-          reference: wompiParams.reference,
-          publicKey: wompiParams.publicKey,
-          signature: { integrity: wompiParams.signature },
-          redirectUrl: wompiParams.redirectUrl,
-          customerData: {
-            email: orderData.customerInfo.email,
-            fullName: orderData.customerInfo.name,
-            phoneNumber: orderData.customerInfo.phone,
-            phoneNumberPrefix: '+57',
-            legalId: '123456789',
-            legalIdType: 'CC',
-          },
-        });
-
-        // 3. Abrir el Widget
-        checkout.open((result: any) => {
-          const transaction = result.transaction;
-          console.log('Wompi result:', transaction);
-
-          if (transaction.status === 'APPROVED') {
-            this.toastService.show(
-              '¡Pago aprobado! Redirigiendo...',
-              'success'
-            );
-            this.cartService.clearCart();
-            setTimeout(() => {
-              this.router.navigate(['/order-confirmation'], {
-                queryParams: { status: 'success', id: wompiParams.reference },
-              });
-            }, 1500);
-          } else if (
-            transaction.status === 'DECLINED' ||
-            transaction.status === 'ERROR'
-          ) {
-            this.toastService.show(
-              'El pago fue rechazado. Intenta nuevamente.',
-              'error'
-            );
-          }
-          this.isProcessingOrder.set(false);
-        });
-      },
-      error: (err) => {
-        console.error('Error iniciando pago:', err);
-        this.toastService.show('Error de conexión con el servidor.', 'error');
-        this.isProcessingOrder.set(false);
-      },
-    });
+  public objectKeys(obj: object): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 }

@@ -8,56 +8,120 @@
     </header>
 
     @if (isLoading()) {
-    <div class="loading-container">
-      <!-- Esqueleto de carga para una mejor UX -->
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-    </div>
+      <div class="loading-container">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
     } @else {
-    <div class="step-container">
-      <h2 class="step-title">¿Para quién y dónde es el envío?</h2>
-      @if (addresses().length > 0) {
-      <div class="selector-list">
-        @for (address of addresses(); track address._id) {
-        <div
-          class="card-selector"
-          [class.selected]="selectedAddress()?._id === address._id"
-          (click)="selectAddress(address)"
-          appRipple
-        >
-          <div class="radio-selector">
-            <div class="radio-dot"></div>
+      <!-- 1. DIRECCIONES -->
+      <div class="step-container">
+        <h2 class="step-title">¿Para quién y dónde es el envío?</h2>
+        @if (addresses().length > 0) {
+          <div class="selector-list">
+            @for (address of addresses(); track address._id) {
+              <div
+                class="card-selector"
+                [class.selected]="selectedAddress()?._id === address._id"
+                (click)="selectAddress(address)"
+                appRipple
+              >
+                <div class="radio-selector"><div class="radio-dot"></div></div>
+                <div class="card-details">
+                  <p class="card-title-text">{{ address.fullName }}</p>
+                  <p class="card-subtitle-text">
+                    {{ address.streetAddress }}, {{ address.city }}
+                  </p>
+                </div>
+                @if (address.isPreferred) {
+                  <div class="preferred-badge">Preferida</div>
+                }
+              </div>
+            }
           </div>
-          <div class="card-details">
-            <p class="card-title-text">{{ address.fullName }}</p>
-            <p class="card-subtitle-text">
-              {{ address.streetAddress }}, {{ address.city }}
-            </p>
-            <p class="card-contact-text">
-              {{ address.email }} &bull; {{ address.phone }}
-            </p>
-          </div>
-          @if(address.isPreferred) {
-          <div class="preferred-badge">Preferida</div>
-          }
-        </div>
         }
+        <div class="step-actions">
+          <button (click)="openAddressModal()" class="add-link" appRipple>
+            <span class="material-symbols-outlined">add_circle</span>
+            Agregar Nueva Dirección
+          </button>
+        </div>
       </div>
-      } @else {
-      <div class="no-items-message">
-        <h3>No tienes direcciones de envío</h3>
-        <p>
-          Añade una dirección en tu cuenta para poder continuar con la compra.
-        </p>
+
+      <!-- ======================== -->
+      <!-- 2. TIPO DE ENVÍO (NUEVO) -->
+      <!-- ======================== -->
+      <div class="step-container">
+        <h2 class="step-title">Tipo de Entrega</h2>
+        <div class="selector-list">
+          <div
+            class="card-selector"
+            [class.selected]="deliveryType() === 'Normal'"
+            (click)="deliveryType.set('Normal')"
+            appRipple
+          >
+            <div class="radio-selector"><div class="radio-dot"></div></div>
+            <div class="card-details">
+              <p class="card-title-text">Envío Estándar</p>
+              <p class="card-subtitle-text">
+                Tu pedido llegará por transportadora (Servientrega, etc.).
+              </p>
+            </div>
+          </div>
+          <div
+            class="card-selector"
+            [class.selected]="deliveryType() === 'Personalizada'"
+            (click)="deliveryType.set('Personalizada')"
+            appRipple
+          >
+            <div class="radio-selector"><div class="radio-dot"></div></div>
+            <div class="card-details">
+              <p class="card-title-text">
+                Entrega Personalizada
+                <span class="cost-badge"
+                  >+{{
+                    customDeliveryCost() | currency: "COP" : "symbol" : "1.0-0"
+                  }}</span
+                >
+              </p>
+              <p class="card-subtitle-text">
+                Nos encargamos nosotros. Ideal para entregar un mensaje especial
+                o una sorpresa.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      }
-      <div class="step-actions">
-        <button (click)="openAddressModal()" class="add-link" appRipple>
-          <span class="material-symbols-outlined">add_circle</span>
-          Agregar Nueva Dirección
-        </button>
+
+      <!-- ======================== -->
+      <!-- 3. NOTAS (NUEVO) -->
+      <!-- ======================== -->
+      <div class="step-container" [formGroup]="notesForm">
+        <h2 class="step-title">Detalles Adicionales</h2>
+        <div class="material-field">
+          <textarea
+            id="orderNotes"
+            formControlName="orderNotes"
+            class="material-input"
+            placeholder=" "
+            rows="2"
+          ></textarea>
+          <label for="orderNotes" class="material-label"
+            >Notas del Pedido (ej: "es un regalo")</label
+          >
+        </div>
+        <div class="material-field">
+          <textarea
+            id="deliveryNotes"
+            formControlName="deliveryNotes"
+            class="material-input"
+            placeholder=" "
+            rows="2"
+          ></textarea>
+          <label for="deliveryNotes" class="material-label"
+            >Instrucciones de Entrega (ej: "entregar en portería")</label
+          >
+        </div>
       </div>
-    </div>
     }
   </div>
 
@@ -72,32 +136,34 @@
       <!-- Lista de Items -->
       <div class="summary-items">
         @for (item of cartService.cartItems(); track item.id) {
-        <div class="summary-item">
-          <div class="item-image-wrapper">
-            <div
-              class="item-image"
-              [style.backgroundImage]="
-                'url(' + (item.product.images[0] || '') + ')'
-              "
-            ></div>
-            <span class="item-quantity">{{ item.quantity }}</span>
-          </div>
-          <div class="item-info">
-            <p class="item-name">{{ item.product.name }}</p>
-            <p class="item-variants">
-              @for (variantKey of objectKeys(item.selectedVariants); track
-              variantKey) {
-              <span>{{ item.selectedVariants[variantKey] }}</span>
-              }
+          <div class="summary-item">
+            <div class="item-image-wrapper">
+              <div
+                class="item-image"
+                [style.backgroundImage]="
+                  'url(' + (item.product.images[0] || '') + ')'
+                "
+              ></div>
+              <span class="item-quantity">{{ item.quantity }}</span>
+            </div>
+            <div class="item-info">
+              <p class="item-name">{{ item.product.name }}</p>
+              <p class="item-variants">
+                @for (
+                  variantKey of objectKeys(item.selectedVariants);
+                  track variantKey
+                ) {
+                  <span>{{ item.selectedVariants[variantKey] }}</span>
+                }
+              </p>
+            </div>
+            <p class="item-price">
+              {{
+                item.quantity * finalItemPrice(item)
+                  | currency: "COP" : "symbol" : "1.0-0"
+              }}
             </p>
           </div>
-          <p class="item-price">
-            {{
-              item.quantity * finalItemPrice(item)
-                | currency : "COP" : "symbol" : "1.0-0"
-            }}
-          </p>
-        </div>
         }
       </div>
 
@@ -119,10 +185,10 @@
             Aplicar
           </button>
         </div>
-        @if(couponMessage()){
-        <p class="coupon-message" [class.error]="couponError()">
-          {{ couponMessage() }}
-        </p>
+        @if (couponMessage()) {
+          <p class="coupon-message" [class.error]="couponError()">
+            {{ couponMessage() }}
+          </p>
         }
       </div>
 
@@ -131,39 +197,48 @@
         <div class="summary-row">
           <span>Subtotal</span>
           <span>{{
-            cartService.subTotal() | currency : "COP" : "symbol" : "1.0-0"
+            cartService.subTotal() | currency: "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
         @if (discountAmount() > 0) {
-        <div class="summary-row discount-row">
-          <span>Descuento ({{ appliedCoupon()?.code }})</span>
-          <span
-            >-
-            {{ discountAmount() | currency : "COP" : "symbol" : "1.0-0" }}</span
-          >
-        </div>
+          <div class="summary-row discount-row">
+            <span>Descuento ({{ appliedCoupon()?.code }})</span>
+            <span
+              >-
+              {{
+                discountAmount() | currency: "COP" : "symbol" : "1.0-0"
+              }}</span
+            >
+          </div>
         }
         <div class="summary-row">
           <span>Envío</span>
           <span>{{
-            shippingCost() | currency : "COP" : "symbol" : "1.0-0"
+            shippingCost() | currency: "COP" : "symbol" : "1.0-0"
           }}</span>
         </div>
 
-        @if(serviceFee() > 0) {
-        <div class="summary-row">
-          <span>Tarifa de Servicio</span>
-          <span>{{
-            serviceFee() | currency : "COP" : "symbol" : "1.0-0"
-          }}</span>
-        </div>
+        @if (serviceFee() > 0) {
+          <div class="summary-row">
+            <span>Tarifa de Servicio</span>
+            <span>{{
+              serviceFee() | currency: "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+        }
+
+        @if (deliveryType() === "Personalizada" && customDeliveryCost() > 0) {
+          <div class="summary-row">
+            <span>Entrega Especial</span>
+            <span>{{
+              customDeliveryCost() | currency: "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
         }
 
         <div class="summary-row total">
           <span>Total</span>
-          <span>{{
-            grandTotal() | currency : "COP" : "symbol" : "1.0-0"
-          }}</span>
+          <span>{{ grandTotal() | currency: "COP" : "symbol" : "1.0-0" }}</span>
         </div>
       </div>
 

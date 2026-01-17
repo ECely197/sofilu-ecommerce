@@ -15,6 +15,7 @@ export interface AppSettings {
   contactEmail: string;
   shippingCostBogota: number;
   shippingCostNational: number;
+  customDeliveryCost: number;
   serviceFeePercentage: number;
   socialLinks: { platform: string; url: string }[];
 }
