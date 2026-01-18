@@ -90,7 +90,7 @@ export class SpecialEvents implements OnInit {
     if (this.eventForm.invalid) {
       this.toastService.show(
         'Por favor, completa todos los campos requeridos.',
-        'error'
+        'error',
       );
       return;
     }
@@ -115,7 +115,7 @@ export class SpecialEvents implements OnInit {
   private saveEventData(): void {
     const selectedProductIds = this.eventForm.value.linkedProducts
       .map((checked: boolean, i: number) =>
-        checked ? this.allProducts()[i]._id : null
+        checked ? this.allProducts()[i]._id : null,
       )
       .filter((id: string | null) => id !== null);
 
@@ -134,7 +134,7 @@ export class SpecialEvents implements OnInit {
           `Evento ${
             this.editingEventId() ? 'actualizado' : 'creado'
           } con éxito.`,
-          'success'
+          'success',
         );
         this.resetForm();
         this.loadEvents();
@@ -150,7 +150,7 @@ export class SpecialEvents implements OnInit {
     this.imagePreview.set(event.imageUrl);
 
     this.productCheckboxes.controls.forEach((control) =>
-      control.setValue(false)
+      control.setValue(false),
     );
 
     const linkedIds = event.linkedProducts.map((p) => p._id);
@@ -173,7 +173,7 @@ export class SpecialEvents implements OnInit {
     this.imagePreview.set(null);
     this.eventForm.reset({ linkedProducts: [] });
     this.productCheckboxes.controls.forEach((control) =>
-      control.setValue(false)
+      control.setValue(false),
     );
   }
 
@@ -195,7 +195,7 @@ export class SpecialEvents implements OnInit {
       this.specialEventService.deleteEvent(eventId).subscribe({
         next: () => {
           this.events.update((current) =>
-            current.filter((e) => e._id !== eventId)
+            current.filter((e) => e._id !== eventId),
           );
           this.toastService.show('Evento eliminado con éxito.', 'success');
         },
@@ -206,10 +206,10 @@ export class SpecialEvents implements OnInit {
     }
   }
 
-  setActive(id: string): void {
-    this.specialEventService.setActive(id).subscribe((updatedEvents) => {
+  toggleActive(id: string): void {
+    this.specialEventService.toggleActive(id).subscribe((updatedEvents) => {
       this.events.set(updatedEvents);
-      this.toastService.show('Banner principal actualizado.', 'success');
+      this.toastService.show('Estado del evento actualizado.', 'success');
     });
   }
 }

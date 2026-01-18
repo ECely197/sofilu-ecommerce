@@ -1,8 +1,8 @@
 <header class="page-header">
-  <h1>Tus Productos</h1>
-  <a routerLink="/admin/products/new" class="add-button" appRipple>
+  <h1>Mis Productos</h1>
+  <a routerLink="/admin/products/new" class="btn-material icon-btn" appRipple>
     <span class="material-symbols-outlined">add</span>
-    Añadir Nuevo
+    <span class="text">Nuevo</span>
   </a>
 </header>
 
@@ -13,108 +13,111 @@
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre o descripción..."
+      placeholder="Buscar productos..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- Estado de Carga (Esqueleto) -->
   @if (isLoading()) {
-  <div class="skeleton-list">
-    @for (item of [1, 2, 3]; track item) {
-    <div class="skeleton-item">
-      <div class="skeleton-img"></div>
-      <div class="skeleton-text-group">
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text short"></div>
-      </div>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando inventario...</p>
     </div>
-    }
-  </div>
-  }
+  } @else {
+    <!-- GRID DE PRODUCTOS -->
+    <div class="admin-products-grid" [@listAnimation]="products().length">
+      @for (product of products(); track product._id) {
+        <div
+          class="product-card-admin"
+          [class.hidden-item]="product.status !== 'Activo'"
+        >
+          <!-- Imagen y Estado -->
+          <div class="img-wrapper">
+            @if (product.images && product.images.length > 0) {
+              <img
+                [src]="product.images[0]"
+                [alt]="product.name"
+                loading="lazy"
+              />
+            } @else {
+              <div class="placeholder-img"></div>
+            }
 
-  <!-- Lista de Productos (Tabla en Desktop, Tarjetas en Móvil) -->
-  @if (!isLoading() && products().length > 0) {
-  <div class="product-list" [@listAnimation]="products().length">
-    <!-- Cabecera de la tabla (solo visible en desktop) -->
-    <div class="product-item header">
-      <div class="cell">Imagen</div>
-      <div class="cell">Nombre del Producto</div>
-      <div class="cell">Precio & Stock</div>
-      <div class="cell" style="text-align: right">Acciones</div>
-    </div>
+            <!-- Badge de Estado -->
+            <div
+              class="status-pill"
+              [class.active]="product.status === 'Activo'"
+            >
+              {{ product.status === "Activo" ? "Visible" : "Oculto" }}
+            </div>
+          </div>
 
-    <!-- Filas de productos -->
-    @for (product of products(); track product._id) {
-    <div class="product-item">
-      <!-- Celda de Imagen (sin cambios) -->
-      <div class="cell" data-label="Imagen">
-        @if(product.images && product.images.length > 0) {
-        <img
-          [src]="product.images[0]"
-          [alt]="product.name"
-          class="product-thumbnail"
-        />
-        } @else {
-        <div class="product-thumbnail placeholder"></div>
-        }
-      </div>
+          <!-- Info -->
+          <div class="info-content">
+            <h3 class="product-name" [title]="product.name">
+              {{ product.name }}
+            </h3>
+            <p class="sku">SKU: {{ product.sku || "---" }}</p>
 
-      <div class="cell product-name" data-label="Nombre">
-        {{ product.name }}
-      </div>
+            <div class="metrics">
+              <div class="metric">
+                <span class="label">Precio</span>
+                <span class="value">{{
+                  product.price | currency: "COP" : "symbol" : "1.0-0"
+                }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Stock Total</span>
+                <!-- Usamos tu función calculateTotalStock -->
+                <span class="value">{{ calculateTotalStock(product) }}</span>
+              </div>
+            </div>
+          </div>
 
-      <div class="product-details-wrapper">
-        <div class="cell" data-label="Precio">
-          {{ product.price | currency : "COP" : "symbol" : "1.0-0" }}
+          <!-- Acciones -->
+          <div class="card-actions">
+            <!-- BOTÓN OCULTAR/MOSTRAR (OJO) -->
+            <button
+              (click)="toggleStatus(product)"
+              class="action-btn visibility"
+              [title]="product.status === 'Activo' ? 'Ocultar' : 'Mostrar'"
+              appRipple
+            >
+              <span class="material-symbols-outlined">
+                {{
+                  product.status === "Activo" ? "visibility" : "visibility_off"
+                }}
+              </span>
+            </button>
+
+            <!-- EDITAR -->
+            <a
+              [routerLink]="['/admin/products/edit', product._id]"
+              class="action-btn edit"
+              title="Editar"
+              appRipple
+            >
+              <span class="material-symbols-outlined">edit</span>
+            </a>
+
+            <!-- ELIMINAR -->
+            <button
+              (click)="deleteProduct(product._id)"
+              class="action-btn delete"
+              title="Eliminar"
+              appRipple
+            >
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
         </div>
-        <div class="cell" data-label="Stock">100</div>
-      </div>
-
-      <div class="cell" data-label="Acciones">
-        <div class="action-buttons">
-          <button
-            (click)="toggleStatus(product)"
-            class="action-button status"
-            [class.active]="product.status === 'Activo'"
-            [class.active]="getEffectiveStatus(product) === 'Activo'"
-            appRipple
-          >
-            <span class="material-symbols-outlined">
-              {{ product.status === "Activo" ? "toggle_on" : "toggle_off" }}
-            </span>
-            {{ product.status }}
-          </button>
-          <a
-            [routerLink]="['/admin/products/edit', product._id]"
-            class="action-button edit"
-            appRipple
-            >Editar</a
-          >
-          <button
-            (click)="deleteProduct(product._id)"
-            class="action-button delete"
-            appRipple
-          >
-            Eliminar
-          </button>
+      } @empty {
+        <div class="empty-state">
+          <p>No tienes productos. ¡Crea el primero!</p>
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
-  }
-
-  <!-- Estado Vacío -->
-  @if (!isLoading() && products().length === 0) {
-  <div class="empty-state">
-    <p>Aún no has creado ningún producto.</p>
-    <a routerLink="/admin/products/new" class="add-button" appRipple>
-      <span class="material-symbols-outlined">add</span>
-      Crear tu primer producto
-    </a>
-  </div>
   }
 </div>

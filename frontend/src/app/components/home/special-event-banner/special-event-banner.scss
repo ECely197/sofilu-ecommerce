@@ -2,33 +2,48 @@
 
 :host {
   display: block;
-  // IMPORTANTE: Para que el header quede encima, el banner debe empezar arriba
-  // Si el banner es lo primero, no necesita margen negativo arriba si el header es fixed.
 }
 
-// --- EL TRUCO PARA EL ANCHO COMPLETO SIN SCROLLBAR ---
-.event-banner-container {
+// Contenedor que rompe el ancho del padre para ser FULL WIDTH
+.banner-slider-container {
   position: relative;
-  width: 100vw; // Asegura ancho total
+  width: 100vw;
   left: 50%;
-  transform: translateX(-50%); // Centrado absoluto para romper contenedores
-
-  // En móvil, el banner debe tocar el top: 0
+  transform: translateX(-50%);
   margin-top: 0;
 
+  // Bordes redondeados inferiores GRANDES (Estilo App)
   border-radius: 0 0 3rem 3rem;
   overflow: hidden;
   margin-bottom: 3rem;
 
-  aspect-ratio: 16 / 7;
+  // Sombra suave inferior
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2);
 
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  // Relación de aspecto Cinemática (Desktop)
+  aspect-ratio: 16 / 7;
+  min-height: 500px;
+
+  // Relación de aspecto Historia (Móvil)
   @media (max-width: 768px) {
-    aspect-ratio: 4 / 5; // Más alto en celular
+    aspect-ratio: 4 / 5; // Más alto
+    min-height: 60vh;
     border-radius: 0 0 2.5rem 2.5rem;
   }
 }
 
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+// --- FONDO E IMAGEN ---
 .banner-background {
   position: absolute;
   top: 0;
@@ -37,98 +52,144 @@
   height: 100%;
   z-index: 0;
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    // Degradado suave para leer texto
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.2) 0%,
-      rgba(0, 0, 0, 0) 40%,
-      rgba(0, 0, 0, 0.4) 100%
-    );
-  }
-
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    // Efecto de Zoom lento (se puede animar con CSS keyframes si quieres)
+  }
+
+  // Overlay Gradiente: Oscuro abajo para que el texto resalte
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0) 40%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
   }
 }
 
+// --- CONTENIDO TEXTO ---
 .banner-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end; // Texto abajo
   align-items: center;
   text-align: center;
+  padding-bottom: 5rem; // Espacio para la paginación
   color: white;
-  padding-top: 4rem; // Espacio extra para que el header no tape el texto
+
+  @media (min-width: 1024px) {
+    justify-content: center; // En PC centrado
+    padding-bottom: 0;
+    padding-top: 4rem; // Compensa el header fijo
+  }
 }
 
 .event-title {
   font-family: "Baloo 2", serif;
-  font-size: clamp(3rem, 8vw, 5rem);
+  font-size: clamp(2.5rem, 6vw, 4.5rem); // Responsive fluido
   font-weight: 800;
-  line-height: 1;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); // Sombra para legibilidad
   margin-bottom: 0.5rem;
+  opacity: 0;
+  animation: slideUpFade 0.8s 0.3s forwards; // Animación CSS simple
 }
 
 .event-subtitle {
   font-size: clamp(1rem, 2vw, 1.5rem);
   font-weight: 500;
-  opacity: 0.9;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   margin-bottom: 2rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  max-width: 80%;
+  opacity: 0;
+  animation: slideUpFade 0.8s 0.5s forwards;
 }
 
-// --- BOTÓN LIQUID GLASS (Estilo Header) ---
+// --- BOTÓN GLASS ---
+.cta-container {
+  opacity: 0;
+  animation: slideUpFade 0.8s 0.7s forwards;
+}
+
 .btn-glass {
-  appearance: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border-radius: 50px;
 
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-  font-family: "Baloo 2", sans-serif;
+  // Efecto Vidrio Lechoso
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+
+  color: white;
+  font-family: "Baloo 2";
   font-weight: 700;
-  color: #333;
-
-  // MAGIA DE VIDRIO
-  background-color: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 9999px; // Píldora
-
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2),
-    // Sombra
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-    // Borde interno
-    inset 0 10px 20px rgba(255, 255, 255, 0.5); // Brillo superior
-
+  font-size: 1.1rem;
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.85); // Más blanco al hover
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    background: white;
+    color: #333;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   }
 
   &:active {
-    transform: translateY(-1px);
+    transform: scale(0.95);
   }
 }
 
-.event-title,
-.event-subtitle,
-.cta-container {
-  opacity: 0;
+// --- PAGINACIÓN SWIPER ---
+::ng-deep .swiper-pagination-bullet {
+  background: white;
+  opacity: 0.5;
+  width: 10px;
+  height: 10px;
+  transition: all 0.3s;
+}
+
+::ng-deep .swiper-pagination-bullet-active {
+  opacity: 1;
+  width: 25px;
+  border-radius: 5px; // Se alarga al activar
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+// Animación de entrada de elementos
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Animación Fade in del componente
+.fade-in {
+  animation: fadeIn 1s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -1,245 +1,317 @@
-// Contenido completo para: src/app/pages/admin/order-list/order-list.scss
 @use "../../../../../buttons";
+@use "../../../../forms";
 
-// --- Cabecera de la Página ---
+// --- HEADER ---
 .page-header {
   margin-bottom: 2rem;
   h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
+    font-size: 2.2rem;
+    font-family: "Baloo 2", serif;
+    color: #333;
+    margin: 0;
   }
 }
 
-// --- Contenedor Principal ---
-.table-container {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+// --- BUSCADOR ---
+.search-bar-wrapper {
+  margin-bottom: 2rem;
 }
-
-// --- Lista de Pedidos (Estilo Tabla en Desktop) ---
-.order-list {
+.search-field {
+  position: relative;
+  max-width: 400px;
+}
+.search-input {
   width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+  }
+}
+.search-field span {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
 }
 
+// --- CONTENEDOR TABLA ---
+.table-container {
+  // No ponemos fondo al contenedor para que las filas floten si queremos
+  // o podemos ponerlo glass.
+}
+
+// --- GRID (LISTA) ---
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// FILA / ITEM
 .order-item {
   display: grid;
-  // 6 columnas: pedido, fecha, cliente, total, estado, acciones
-  grid-template-columns: 1fr 1.5fr 1.5fr 1fr 1fr 1.5fr;
+  // Columnas: ID | Fecha | Cliente | Total | Estado | Acciones
+  grid-template-columns: 0.8fr 1fr 2fr 1fr 1fr 0.8fr;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
-  transition: background-color 0.2s ease-in-out;
+  padding: 1.2rem 1.5rem;
+  background: white;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
-  &:last-child {
-    border-bottom: none;
-  }
   &:not(.header):hover {
-    background-color: var(--background-sec);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+  }
+
+  // Header de la tabla
+  &.header {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 1.5rem 0.5rem;
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .cell {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
   }
 }
 
-// Cabecera de la tabla
-.order-item.header {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding-bottom: 1rem;
-}
-
-// Celdas
+// CELDAS Y DATOS
 .cell {
-  padding: 0 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &.align-right {
+    text-align: right;
+  }
 }
 
-.font-semibold {
-  font-weight: 600;
+.id-cell {
+  font-family: monospace;
+  font-weight: 700;
+  color: #555;
+  .hash {
+    color: #ccc;
+  }
 }
 
+.date-cell {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.client-info {
+  display: flex;
+  flex-direction: column;
+  .name {
+    font-weight: 700;
+    color: #333;
+    font-size: 0.95rem;
+  }
+  .email {
+    font-size: 0.8rem;
+    color: #999;
+  }
+}
+
+.total-cell {
+  font-weight: 700;
+  color: #333;
+  font-size: 1rem;
+}
+
+// BADGES DE ESTADO
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+
+  &.procesando {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #ffedd5;
+  }
+  &.enviado {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #dbeafe;
+  }
+  &.entregado {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #dcfce7;
+  }
+  &.cancelado {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fee2e2;
+  }
+  &.pendiente {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+  }
+}
+
+// ACCIONES (Burbujas)
 .action-buttons {
   display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 
-.action-button {
-  @extend .btn-secondary; // Usamos nuestro botón global
-  padding: 0.4rem 1rem;
-  font-size: 0.75rem;
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  // ¡SIN SUBRAYADO!
+  text-decoration: none;
+
+  span {
+    font-size: 1.2rem;
+  }
 
   &.details {
-    background-color: var(--soft-gray);
+    background: #f0f9ff;
+    color: #0284c7;
+    &:hover {
+      background: #0284c7;
+      color: white;
+    }
   }
+
   &.delete {
-    background-color: #fee2e2;
-    color: #b91c1c;
+    background: #fff1f2;
+    color: #e11d48;
+    &:hover {
+      background: #e11d48;
+      color: white;
+    }
   }
 }
 
-// --- Fichas de Estado (Status Chips) ---
-.status-chip {
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
-
-  // Clases basadas en el estado del pedido (en minúsculas)
-  &.procesando {
-    background-color: #fef3c7;
-    color: #92400e;
-  }
-  &.enviado {
-    background-color: #dbeafe;
-    color: #1e40af;
-  }
-  &.entregado {
-    background-color: #d1fae5;
-    color: #065f46;
-  }
-  &.cancelado {
-    background-color: #fee2e2;
-    color: #991b1b;
+// --- LOADING & EMPTY ---
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: #888;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top-color: #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-// --- MEDIA QUERY PARA MÓVIL (La transformación a tarjetas) ---
-@media (max-width: 991px) {
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 2rem;
+  border: 2px dashed #eee;
+  .icon {
+    font-size: 3rem;
+    color: #ddd;
+    margin-bottom: 0.5rem;
+  }
+  p {
+    color: #999;
+  }
+}
+
+// --- RESPONSIVE (Móvil) ---
+@media (max-width: 900px) {
   .order-item.header {
     display: none;
-  }
+  } // Ocultar cabecera
 
   .order-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 1fr; // Una sola columna
+    gap: 1rem;
     padding: 1.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--soft-gray);
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    background-color: white;
   }
 
   .cell {
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    padding: 0.5rem 0;
-    border-bottom: 1px dashed var(--soft-gray);
+    align-items: center;
+    border-bottom: 1px dashed #f0f0f0;
+    padding-bottom: 0.5rem;
 
-    // El pseudo-elemento actúa como el título de la columna
+    // Label generado por CSS
     &::before {
       content: attr(data-label);
       font-weight: 600;
-      color: var(--text-secondary);
-      margin-right: 1rem;
+      color: #999;
+      font-size: 0.85rem;
+    }
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
     }
   }
 
-  // Estilos especiales para la primera y última celda en la tarjeta
-  .cell:first-child {
-    font-size: 1.125rem;
-    padding-bottom: 1rem;
+  // Ajustes específicos móvil
+  .id-cell {
+    font-size: 1.2rem;
+    border-bottom: 2px solid #eee;
     margin-bottom: 0.5rem;
-    border-bottom: 1px solid var(--soft-gray); // Línea sólida para separar
+    padding-bottom: 0.8rem;
     &::before {
       display: none;
-    }
+    } // No mostrar label en el título
   }
 
-  .cell[data-label="Acciones"] {
-    border-bottom: none;
-    padding-top: 1.5rem;
+  .actions-cell {
+    margin-top: 0.5rem;
     justify-content: flex-end;
     &::before {
       display: none;
     }
   }
-}
 
-// --- Esqueleto de Carga ---
-.skeleton-list {
-  .skeleton-item {
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    background-color: white;
-    border-radius: 1rem;
-  }
-  .skeleton-text-group {
-    width: 100%;
-  }
-  .skeleton-text {
-    height: 1.25rem;
-    border-radius: 0.25rem;
-    background-color: var(--soft-gray);
-    margin-bottom: 0.75rem;
-  }
-  .skeleton-text.short {
-    width: 60%;
-  }
-
-  .skeleton-text {
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-// --- Estado Vacío ---
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  p {
-    color: var(--text-secondary);
-    font-size: 1.125rem;
-  }
-}
-
-// --- ¡NUEVOS ESTILOS DE BÚSQUEDA! ---
-.search-bar-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.search-field {
-  position: relative;
-  max-width: 400px; // Limita el ancho de la barra
-
-  .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 1rem;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
-  }
-}
-
-.search-input {
-  width: 100%;
-  height: 48px;
-  border-radius: 9999px;
-  border: 1px solid var(--soft-gray);
-  background-color: white;
-  padding: 0 1rem 0 3rem; // Espacio para el icono
-  font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  .client-info {
+    text-align: right;
   }
 }

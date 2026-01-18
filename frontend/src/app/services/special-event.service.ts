@@ -22,8 +22,8 @@ export class SpecialEventService {
   private apiUrl = `${environment.apiUrl}/special-events`;
 
   // --- RUTA PÚBLICA ---
-  getActiveEvent(): Observable<SpecialEvent | null> {
-    return this.http.get<SpecialEvent | null>(`${this.apiUrl}/active`);
+  getActiveEvents(): Observable<SpecialEvent[]> {
+    return this.http.get<SpecialEvent[]>(`${this.apiUrl}/active`);
   }
 
   // --- RUTAS DE ADMIN ---
@@ -44,10 +44,10 @@ export class SpecialEventService {
   }
 
   // Ruta especial para activar un evento (y desactivar los demás)
-  setActive(id: string): Observable<SpecialEvent[]> {
+  toggleActive(id: string): Observable<SpecialEvent[]> {
     return this.http.patch<SpecialEvent[]>(
-      `${this.apiUrl}/${id}/set-active`,
-      {}
+      `${this.apiUrl}/${id}/toggle-active`,
+      {},
     );
   }
 }

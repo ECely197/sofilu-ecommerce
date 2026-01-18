@@ -1,28 +1,46 @@
-@if (event) {
-<!-- Quitamos data-aos, ahora lo controla GSAP -->
-<section #bannerContainer class="event-banner-container">
-  <!-- Imagen -->
-  <div class="banner-background">
-    <img #bannerImage [src]="event.imageUrl" alt="{{ event.title }}" />
-  </div>
+@if (events.length > 0) {
+  <section class="banner-slider-container fade-in">
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        @for (event of events; track event._id) {
+          <div class="swiper-slide event-slide">
+            <!-- Imagen de Fondo con Overlay -->
+            <div class="banner-background">
+              <img [src]="event.imageUrl" [alt]="event.title" loading="lazy" />
+              <div class="overlay"></div>
+              <!-- Capa oscura para leer texto -->
+            </div>
 
-  <!-- Contenido -->
-  <div class="banner-content">
-    <div class="text-content">
-      <!-- El título ahora tiene #eventTitle -->
-      <h1 #eventTitle class="event-title">{{ event.title }}</h1>
-      @if(event.subtitle) {
-      <p #eventSubtitle class="event-subtitle">{{ event.subtitle }}</p>
-      }
-    </div>
+            <!-- Contenido Centrado -->
+            <div class="banner-content">
+              <div class="text-content">
+                <h1 class="event-title">{{ event.title }}</h1>
+                @if (event.subtitle) {
+                  <p class="event-subtitle">{{ event.subtitle }}</p>
+                }
+              </div>
 
-    @if (event.linkedProducts && event.linkedProducts.length > 0) {
-    <div #ctaButton class="cta-container">
-      <button (click)="scrollToProducts()" class="btn-glass" appRipple>
-        Ver Productos
-      </button>
+              @if (event.linkedProducts && event.linkedProducts.length > 0) {
+                <div class="cta-container">
+                  <button
+                    (click)="scrollToProducts(event)"
+                    class="btn-glass"
+                    appRipple
+                  >
+                    Ver Productos
+                    <span class="material-symbols-outlined"
+                      >arrow_downward</span
+                    >
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Paginación (Puntos Blancos) -->
+      <div class="swiper-pagination"></div>
     </div>
-    }
-  </div>
-</section>
+  </section>
 }

@@ -4,59 +4,39 @@ const SpecialEvent = require("../models/SpecialEvent");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
 // ==========================================================================
-// RUTA PÚBLICA (Para la Home Page)
+// RUTA PÚBLICA (Para el Home)
 // ==========================================================================
-
 /**
  * @route   GET /api/special-events/active
- * @desc    Obtener el banner de evento especial que esté actualmente activo.
- * @access  Public
+ * @desc    Obtener TODOS los eventos especiales activos (para el slider).
  */
 router.get("/active", async (req, res) => {
   try {
-    // --- ¡ESTA ES LA CONSULTA CORREGIDA! ---
-    const activeEvent = await SpecialEvent.findOne({ isActive: true }).populate(
-      {
-        path: "linkedProducts", // 1. Popula los productos vinculados
-        populate: {
-          path: "category", // 2. DENTRO de cada producto, popula su categoría
-          model: "Category", // Especificamos el modelo para la categoría
-        },
-      }
-    );
-
-    res.json(activeEvent);
+    // CAMBIO: find en lugar de findOne para traer array
+    const activeEvents = await SpecialEvent.find({ isActive: true }).populate({
+      path: "linkedProducts",
+      populate: { path: "category", model: "Category" },
+    });
+    res.json(activeEvents);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el evento activo." });
+    res.status(500).json({ message: "Error al obtener eventos activos." });
   }
 });
 
 // ==========================================================================
-// RUTAS DE ADMINISTRACIÓN (Protegidas)
+// RUTAS DE ADMINISTRACIÓN
 // ==========================================================================
-
-// Middleware que protege todas las rutas siguientes.
 router.use(authMiddleware, adminOnly);
 
-/**
- * @route   GET /api/special-events
- * @desc    Obtener todos los eventos especiales para el panel de admin.
- * @access  Admin
- */
 router.get("/", async (req, res) => {
   try {
-    const events = await SpecialEvent.find().sort({ createdAt: -1 }); // Ordena por más reciente
+    const events = await SpecialEvent.find().sort({ createdAt: -1 });
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener los eventos." });
   }
 });
 
-/**
- * @route   POST /api/special-events
- * @desc    Crear un nuevo evento especial.
- * @access  Admin
- */
 router.post("/", async (req, res) => {
   try {
     const newEvent = new SpecialEvent(req.body);
@@ -69,78 +49,53 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * @route   PUT /api/special-events/:id
- * @desc    Actualizar un evento especial existente.
- * @access  Admin
- */
 router.put("/:id", async (req, res) => {
   try {
     const updatedEvent = await SpecialEvent.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
-    if (!updatedEvent) {
+    if (!updatedEvent)
       return res.status(404).json({ message: "Evento no encontrado." });
-    }
     res.json(updatedEvent);
   } catch (error) {
-    res.status(400).json({
-      message: "Error al actualizar el evento.",
-      details: error.message,
-    });
+    res
+      .status(400)
+      .json({ message: "Error al actualizar.", details: error.message });
   }
 });
 
+// --- RUTA MODIFICADA PARA TOGGLE SIMPLE ---
 /**
- * @route   PATCH /api/special-events/:id/set-active
- * @desc    Activa un evento específico y desactiva todos los demás.
- * @access  Admin
+ * @route   PATCH /api/special-events/:id/toggle-active
+ * @desc    Alterna el estado activo de un evento sin afectar a los demás.
  */
-router.patch(
-  "/:id/set-active",
-  [authMiddleware, adminOnly],
-  async (req, res) => {
-    try {
-      const { id } = req.params;
+router.patch("/:id/toggle-active", async (req, res) => {
+  try {
+    const event = await SpecialEvent.findById(req.params.id);
+    if (!event)
+      return res.status(404).json({ message: "Evento no encontrado" });
 
-      // Paso 1: Desactivar cualquier otro evento que esté activo.
-      // `updateMany` afecta a todos los documentos que coincidan con el filtro.
-      await SpecialEvent.updateMany(
-        { isActive: true },
-        { $set: { isActive: false } }
-      );
+    event.isActive = !event.isActive; // Invertir estado
+    await event.save();
 
-      // Paso 2: Activar el evento seleccionado.
-      await SpecialEvent.updateOne({ _id: id }, { $set: { isActive: true } });
-
-      // Paso 3: Devolver la lista actualizada de todos los eventos.
-      const updatedEvents = await SpecialEvent.find().sort("-createdAt");
-      res.json(updatedEvents);
-    } catch (error) {
-      res.status(500).json({
-        message: "Error al activar el evento.",
-        details: error.message,
-      });
-    }
+    // Devolver la lista completa actualizada
+    const updatedEvents = await SpecialEvent.find().sort("-createdAt");
+    res.json(updatedEvents);
+  } catch (error) {
+    res.status(500).json({ message: "Error al cambiar estado." });
   }
-);
+});
 
-/**
- * @route   DELETE /api/special-events/:id
- * @desc    Eliminar un evento especial.
- * @access  Admin
- */
 router.delete("/:id", async (req, res) => {
   try {
     const deletedEvent = await SpecialEvent.findByIdAndDelete(req.params.id);
-    if (!deletedEvent) {
+    if (!deletedEvent)
       return res.status(404).json({ message: "Evento no encontrado." });
-    }
-    res.json({ message: "Evento eliminado con éxito." });
+    res.json({ message: "Evento eliminado." });
   } catch (error) {
-    res.status(500).json({ message: "Error al eliminar el evento." });
+    res.status(500).json({ message: "Error al eliminar." });
   }
 });
 

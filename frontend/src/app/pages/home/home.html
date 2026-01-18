@@ -3,7 +3,9 @@
   <!-- <div class="stars-overlay"></div> -->
 
   <!-- 1. Banner (Full Width) -->
-  <app-special-event-banner [event]="activeEvent()"></app-special-event-banner>
+  <app-special-event-banner
+    [events]="activeEvents()"
+  ></app-special-event-banner>
 
   <!-- 2. Categorías -->
   <app-categories-section
@@ -18,13 +20,13 @@
 
   <!-- 3. Carruseles por Categoría -->
   @for (categoryGroup of productsByCategory(); track categoryGroup.slug) {
-  <div [id]="categoryGroup.slug" class="category-section-wrapper">
-    <app-product-carousel
-      [title]="categoryGroup.name"
-      [products]="categoryGroup.products"
-      [categorySlug]="categoryGroup.slug"
-    ></app-product-carousel>
-  </div>
+    <div [id]="categoryGroup.slug" class="category-section-wrapper">
+      <app-product-carousel
+        [title]="categoryGroup.name"
+        [products]="categoryGroup.products"
+        [categorySlug]="categoryGroup.slug"
+      ></app-product-carousel>
+    </div>
   }
 
   <!-- Resto de secciones... -->

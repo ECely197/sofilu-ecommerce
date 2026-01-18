@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   trigger,
   transition,
@@ -9,17 +10,19 @@ import {
   query,
   stagger,
 } from '@angular/animations';
-
-import { ProductServices } from '../../../services/product';
-import { Product } from '../../../interfaces/product.interface';
-import { RippleDirective } from '../../../directives/ripple';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   debounceTime,
   distinctUntilChanged,
   switchMap,
   startWith,
 } from 'rxjs/operators';
+
+import { ProductServices } from '../../../services/product';
+import { Product } from '../../../interfaces/product.interface';
+import { RippleDirective } from '../../../directives/ripple';
+// Importamos los servicios de UI
+import { ToastService } from '../../../services/toast.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
 
 @Component({
   selector: 'app-product-list',
@@ -30,19 +33,18 @@ import {
   animations: [
     trigger('listAnimation', [
       transition('* => *', [
-        // Se activa en cualquier cambio
         query(
           ':enter',
           [
             style({ opacity: 0, transform: 'translateY(20px)' }),
-            stagger('80ms', [
+            stagger('50ms', [
               animate(
                 '400ms cubic-bezier(0.35, 0, 0.25, 1)',
-                style({ opacity: 1, transform: 'none' })
+                style({ opacity: 1, transform: 'none' }),
               ),
             ]),
           ],
-          { optional: true }
+          { optional: true },
         ),
       ]),
     ]),
@@ -50,15 +52,14 @@ import {
 })
 export class ProductList implements OnInit {
   private productService = inject(ProductServices);
+  private toastService = inject(ToastService); // Inyectar Toast
+  private confirmationService = inject(ConfirmationService); // Inyectar Confirmación
 
-  // Usamos signals para un manejo de estado más moderno
   products = signal<Product[]>([]);
   isLoading = signal<boolean>(true);
-
   searchControl = new FormControl('');
 
   ngOnInit() {
-    // La magia de la búsqueda reactiva
     this.searchControl.valueChanges
       .pipe(
         startWith(''),
@@ -69,7 +70,7 @@ export class ProductList implements OnInit {
           return this.productService.searchProducts({
             search: searchTerm || '',
           });
-        })
+        }),
       )
       .subscribe({
         next: (data) => {
@@ -84,90 +85,86 @@ export class ProductList implements OnInit {
   }
 
   fetchProducts(): void {
-    this.isLoading.set(true); // Inicia la carga
+    this.isLoading.set(true);
     this.productService.getProducts().subscribe({
       next: (data) => {
         this.products.set(data);
-        this.isLoading.set(false); // Finaliza la carga
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Error al obtener productos:', err);
-        this.isLoading.set(false); // Finaliza la carga incluso si hay error
+        this.isLoading.set(false);
       },
     });
   }
 
   /**
-   * Alterna el estado de un producto entre 'Activo' y 'Agotado'.
-   * @param product El objeto de producto completo.
+   * Cambia la visibilidad del producto (Ojo).
+   * 'Activo' = Visible, 'Agotado' = Oculto en este contexto de admin rápido.
    */
   toggleStatus(product: Product): void {
     const newStatus = product.status === 'Activo' ? 'Agotado' : 'Activo';
+    const msg = newStatus === 'Activo' ? 'Producto visible' : 'Producto oculto';
+
+    // Actualización optimista en la UI
+    this.products.update((current) =>
+      current.map((p) =>
+        p._id === product._id ? { ...p, status: newStatus } : p,
+      ),
+    );
 
     this.productService.updateProductStatus(product._id, newStatus).subscribe({
-      next: (updatedProduct) => {
-        // Actualizamos el signal para que la UI reaccione instantáneamente
-        this.products.update((currentProducts) =>
-          currentProducts.map((p) =>
-            p._id === product._id ? updatedProduct : p
-          )
-        );
-        // this.toastService.show(`Producto marcado como ${newStatus}.`); // Opcional: añadir feedback
+      next: () => {
+        this.toastService.show(msg, 'success');
       },
-      error: (err) => console.error('Error al cambiar el estado:', err),
+      error: (err) => {
+        // Revertir si falla
+        this.products.update((current) =>
+          current.map((p) => (p._id === product._id ? product : p)),
+        );
+        this.toastService.show('Error al cambiar estado.', 'error');
+        console.error(err);
+      },
     });
   }
 
-  deleteProduct(productId: string): void {
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+  async deleteProduct(productId: string): Promise<void> {
+    // Usamos el modal bonito en lugar de window.confirm
+    const confirmed = await this.confirmationService.confirm({
+      title: '¿Eliminar Producto?',
+      message: 'Esta acción no se puede deshacer. ¿Estás seguro?',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+    });
+
+    if (confirmed) {
       this.productService.deleteProduct(productId).subscribe({
         next: () => {
-          // Actualizamos el signal filtrando el producto eliminado
-          this.products.update((currentProducts) =>
-            currentProducts.filter((p) => p._id !== productId)
+          this.products.update((current) =>
+            current.filter((p) => p._id !== productId),
           );
+          this.toastService.show('Producto eliminado.', 'success');
         },
-        error: (err) => console.error('Error al eliminar el producto:', err),
+        error: (err) => {
+          this.toastService.show('Error al eliminar.', 'error');
+          console.error(err);
+        },
       });
     }
   }
 
-  /**
-   * Calcula el stock total de un producto, sumando el de todas sus variantes si las tiene.
-   * @param product El producto a calcular.
-   * @returns El stock total numérico.
-   */
   calculateTotalStock(product: Product): number {
-    // Si el producto no tiene variantes, devolvemos su stock principal.
     if (!product.variants || product.variants.length === 0) {
       return product.stock || 0;
     }
-    // Si tiene variantes, sumamos el stock de todas las opciones.
     return product.variants.reduce(
       (total, variant) =>
         total +
         variant.options.reduce(
           (subTotal, option) => subTotal + (option.stock || 0),
-          0
+          0,
         ),
-      0
+      0,
     );
-  }
-
-  // --- ¡NUEVO MÉTODO PARA LA PLANTILLA! ---
-  /**
-   * Determina el estado "efectivo" de un producto para mostrar en la UI.
-   * @param product El producto a evaluar.
-   * @returns 'Agotado' o 'Activo'.
-   */
-  getEffectiveStatus(product: Product): 'Activo' | 'Agotado' {
-    // El estado manual 'Agotado' siempre tiene prioridad.
-    if (product.status === 'Agotado') {
-      return 'Agotado';
-    }
-
-    // Si está 'Activo', verificamos el stock real.
-    const totalStock = this.calculateTotalStock(product);
-    return totalStock > 0 ? 'Activo' : 'Agotado';
   }
 }

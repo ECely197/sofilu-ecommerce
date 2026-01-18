@@ -44,16 +44,18 @@
           <label>Imagen del Banner</label>
           <div class="image-upload-area">
             @if (imagePreview()) {
-            <img
-              [src]="imagePreview()"
-              alt="Vista previa"
-              class="image-preview"
-            />
+              <img
+                [src]="imagePreview()"
+                alt="Vista previa"
+                class="image-preview"
+              />
             } @else {
-            <div class="image-placeholder">
-              <span class="material-symbols-outlined">add_photo_alternate</span>
-              <span>Subir imagen</span>
-            </div>
+              <div class="image-placeholder">
+                <span class="material-symbols-outlined"
+                  >add_photo_alternate</span
+                >
+                <span>Subir imagen</span>
+              </div>
             }
             <input
               id="image-upload"
@@ -75,22 +77,22 @@
 
           <!-- Contenedor con scroll para la lista de productos -->
           <div class="product-selector-list" formArrayName="linkedProducts">
-            @for(product of allProducts(); track product._id; let i = $index) {
-            <label class="product-selector-item" [for]="'product-' + i">
-              <input
-                [id]="'product-' + i"
-                type="checkbox"
-                [formControlName]="i"
-              />
-              <img
-                [src]="product.images[0]"
-                [alt]="product.name"
-                class="product-thumbnail-selector"
-              />
-              <span class="product-name-selector">{{ product.name }}</span>
-              <div class="checkbox-visual"></div>
-              <!-- Checkbox visual M3 -->
-            </label>
+            @for (product of allProducts(); track product._id; let i = $index) {
+              <label class="product-selector-item" [for]="'product-' + i">
+                <input
+                  [id]="'product-' + i"
+                  type="checkbox"
+                  [formControlName]="i"
+                />
+                <img
+                  [src]="product.images[0]"
+                  [alt]="product.name"
+                  class="product-thumbnail-selector"
+                />
+                <span class="product-name-selector">{{ product.name }}</span>
+                <div class="checkbox-visual"></div>
+                <!-- Checkbox visual M3 -->
+              </label>
             }
           </div>
         </div>
@@ -98,14 +100,14 @@
         <!-- Acciones del Formulario -->
         <div class="form-actions">
           @if (editingEventId()) {
-          <button
-            type="button"
-            (click)="resetForm()"
-            class="btn-secondary"
-            appRipple
-          >
-            Cancelar
-          </button>
+            <button
+              type="button"
+              (click)="resetForm()"
+              class="btn-secondary"
+              appRipple
+            >
+              Cancelar
+            </button>
           }
           <button
             type="submit"
@@ -117,8 +119,8 @@
               isSaving()
                 ? "Guardando..."
                 : editingEventId()
-                ? "Guardar Cambios"
-                : "Crear Evento"
+                  ? "Guardar Cambios"
+                  : "Crear Evento"
             }}
           </button>
         </div>
@@ -131,56 +133,60 @@
     <div class="card">
       <h2 class="card-title">Eventos Creados</h2>
       @if (isLoading()) {
-      <p>Cargando...</p>
+        <p>Cargando...</p>
       } @else {
-      <div class="events-list">
-        @for (event of events(); track event._id) {
-        <div class="event-item" [class.active]="event.isActive">
-          <img
-            [src]="event.imageUrl"
-            [alt]="event.title"
-            class="event-thumbnail"
-          />
-          <div class="event-info">
-            <p class="event-title">{{ event.title }}</p>
-            <p class="event-products">
-              {{ event.linkedProducts.length }} productos vinculados
+        <div class="events-list">
+          @for (event of events(); track event._id) {
+            <div class="event-item" [class.active]="event.isActive">
+              <img
+                [src]="event.imageUrl"
+                [alt]="event.title"
+                class="event-thumbnail"
+              />
+              <div class="event-info">
+                <p class="event-title">{{ event.title }}</p>
+                <p class="event-products">
+                  {{ event.linkedProducts.length }} productos vinculados
+                </p>
+              </div>
+              <div class="event-actions">
+                <!-- Botón para Activar -->
+                <!-- Botón para Activar/Desactivar (Toggle) -->
+                <button
+                  class="action-button activate-btn"
+                  [class.is-active]="event.isActive"
+                  (click)="toggleActive(event._id)"
+                  [attr.aria-label]="event.isActive ? 'Desactivar' : 'Activar'"
+                  title="Click para cambiar visibilidad"
+                >
+                  <span class="material-symbols-outlined">{{
+                    event.isActive ? "visibility" : "visibility_off"
+                  }}</span>
+                </button>
+                <!-- Botón para Editar -->
+                <button
+                  (click)="startEditing(event)"
+                  class="action-button edit-btn"
+                  aria-label="Editar"
+                >
+                  <span class="material-symbols-outlined">edit</span>
+                </button>
+                <!-- Botón para Eliminar -->
+                <button
+                  (click)="deleteEvent(event._id)"
+                  class="action-button delete-btn"
+                  aria-label="Eliminar"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <p class="empty-message">
+              Aún no has creado ningún evento especial.
             </p>
-          </div>
-          <div class="event-actions">
-            <!-- Botón para Activar -->
-            <button
-              class="action-button activate-btn"
-              [disabled]="event.isActive"
-              (click)="setActive(event._id)"
-              aria-label="Marcar como activo"
-            >
-              <span class="material-symbols-outlined">{{
-                event.isActive ? "check_circle" : "radio_button_unchecked"
-              }}</span>
-            </button>
-            <!-- Botón para Editar -->
-            <button
-              (click)="startEditing(event)"
-              class="action-button edit-btn"
-              aria-label="Editar"
-            >
-              <span class="material-symbols-outlined">edit</span>
-            </button>
-            <!-- Botón para Eliminar -->
-            <button
-              (click)="deleteEvent(event._id)"
-              class="action-button delete-btn"
-              aria-label="Eliminar"
-            >
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          </div>
+          }
         </div>
-        } @empty {
-        <p class="empty-message">Aún no has creado ningún evento especial.</p>
-        }
-      </div>
       }
     </div>
   </div>

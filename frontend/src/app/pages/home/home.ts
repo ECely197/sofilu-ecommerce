@@ -81,6 +81,7 @@ export class Home implements OnInit {
   featuredProducts = signal<Product[]>([]);
   productsByCategory = signal<ProductsByCategory[]>([]);
   activeEvent = signal<SpecialEvent | null>(null);
+  activeEvents = signal<SpecialEvent[]>([]);
 
   private lenis: Lenis | null = null;
 
@@ -99,22 +100,22 @@ export class Home implements OnInit {
       .pipe(
         switchMap((categories) => {
           const filteredCategories = categories.filter(
-            (cat) => cat.slug !== 'plumones'
+            (cat) => cat.slug !== 'plumones',
           ); // Filtra categorías si es necesario
           if (filteredCategories.length === 0) {
             return of({ productArrays: [], categories: [] });
           }
 
           const productRequests = filteredCategories.map((cat) =>
-            this.productService.getProductsByCategory(cat.slug)
+            this.productService.getProductsByCategory(cat.slug),
           );
 
           return forkJoin(productRequests).pipe(
             switchMap((productArrays) =>
-              of({ productArrays, categories: filteredCategories })
-            )
+              of({ productArrays, categories: filteredCategories }),
+            ),
           );
-        })
+        }),
       )
       .subscribe((result) => {
         const groupedProducts: ProductsByCategory[] = [];
@@ -131,8 +132,8 @@ export class Home implements OnInit {
         this.productsByCategory.set(groupedProducts);
       });
 
-    this.specialEventService.getActiveEvent().subscribe((event) => {
-      this.activeEvent.set(event);
+    this.specialEventService.getActiveEvents().subscribe((events) => {
+      this.activeEvents.set(events);
     });
   }
 
@@ -149,7 +150,7 @@ export class Home implements OnInit {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     ); // Se activa cuando el 15% del elemento es visible
 
     // Observamos cada sección marcada
@@ -171,7 +172,7 @@ export class Home implements OnInit {
     this.zone.runOutsideAngular(() => {
       // --- Animación para las tarjetas de secciones ---
       const sectionCards = gsap.utils.toArray(
-        'app-categories-section .card, app-featured-products .card, app-product-carousel .card, app-how-to-buy .card'
+        'app-categories-section .card, app-featured-products .card, app-product-carousel .card, app-how-to-buy .card',
       ) as HTMLElement[];
 
       sectionCards.forEach((card) => {
@@ -191,13 +192,13 @@ export class Home implements OnInit {
               start: 'top 90%', // Se activa un poco más tarde para que se note más
               toggleActions: 'play none none none',
             },
-          }
+          },
         );
       });
 
       // --- ¡NUEVO! Animación Parallax para la imagen del Hero ---
       const heroImage = document.querySelector(
-        '.hero-background img'
+        '.hero-background img',
       ) as HTMLElement;
       if (heroImage) {
         gsap.to(heroImage, {

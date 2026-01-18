@@ -1,427 +1,469 @@
 @use "../../../../../buttons";
 @use "../../../../forms";
-@use "../_admin-shared.scss";
+@use "../_admin-shared";
 
-// --- Estructura General del Formulario ---
-.form-container {
-  display: grid;
-  gap: 1.5rem;
-
-  // --- Mobile First: Por defecto es una columna ---
-  grid-template-columns: 1fr;
-  grid-template-areas:
-    "main"
-    "sidebar"
-    "actions";
-
-  // --- Layout de 2 columnas para Escritorio (lg y superior) ---
-  @media (min-width: 1024px) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    grid-template-areas:
-      "main sidebar"
-      "actions actions";
-  }
+:host {
+  display: block;
+  padding-bottom: 100px; // Espacio para el footer móvil
 }
 
-.main-column {
-  grid-area: main;
+// --- HEADER ---
+.page-header {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  min-width: 0; // Previene desbordamientos de flex/grid
-}
-
-.sidebar-column {
-  grid-area: sidebar;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.form-actions {
-  grid-area: actions;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-// --- Estilos de Tarjetas (Cards) ---
-.card {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.card-header {
-  display: flex;
-  flex-wrap: wrap; // ¡CAMBIO CLAVE! Permite que los elementos se envuelvan
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  gap: 1rem; // Añade espacio entre los elementos
+  margin-bottom: 2rem;
 
-  .template-selector {
-    margin-bottom: 0;
-    min-width: 200px;
-    flex-grow: 1; // Permite que el selector crezca
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    h1 {
+      font-family: "Baloo 2", serif;
+      font-size: 2rem;
+      margin: 0;
+    }
   }
-  .add-button-small {
-    flex-shrink: 0; // Evita que el botón se encoja
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #eee;
+    display: grid;
+    place-items: center;
+    color: #555;
+    transition: all 0.2s;
+    text-decoration: none;
+    &:hover {
+      background: #f5f5f5;
+      transform: scale(1.05);
+    }
   }
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.desktop-only {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+.mobile-only {
+  display: none;
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+// --- LAYOUT ---
+.form-container {
+  display: grid;
+  gap: 2rem;
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr; // Columna principal más ancha
+    align-items: start;
+  }
+}
+
+.main-column,
+.sidebar-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+// --- GLASS CARDS ---
+.glass-panel {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  font-family: "Baloo 2", serif;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-// --- Estilos de Campos de Formulario ---
-.form-field,
+// --- INPUTS & CAMPOS ---
 .material-field {
   margin-bottom: 1.5rem;
 }
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-// --- Sección de Variantes ---
-.add-button-small,
-.add-button-tiny {
-  background-color: var(--soft-gray);
-  color: var(--text-charcoal);
-  border: none;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  padding: 0.5rem 1rem;
-  &:hover {
-    background-color: #dcd5cd;
+.material-input {
+  @extend .material-input;
+  background: #f9f9f9;
+  border-color: transparent;
+  &:focus {
+    background: white;
+    border-color: var(--pastel-pink);
   }
 }
-.add-button-tiny {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  margin-top: 1rem;
-  display: inline-block;
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
-.variant-group {
-  background-color: var(--soft-white);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  margin-top: 1rem;
+// --- VARIANTES (DISEÑO TARJETA) ---
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+  .card-title {
+    margin: 0;
+    border: none;
+    padding: 0;
+  }
+}
+
+.template-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.select-wrapper {
+  position: relative;
+  select {
+    appearance: none;
+    background: #f0f0f0;
+    border: none;
+    padding: 0.5rem 2rem 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+  }
+  .chevron {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.2rem;
+    color: #777;
+  }
+}
+
+.variant-card {
+  background: #fcfcfc;
+  border: 1px solid #eee;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .variant-header {
   display: flex;
-  align-items: center; // Alinea verticalmente el input y el botón
   gap: 1rem;
-  margin-bottom: 1.25rem;
-
-  .form-input {
-    flex-grow: 1; // Hace que el input de nombre ocupe el espacio
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  .material-field {
+    flex-grow: 1;
+    margin: 0;
   }
 }
 
-.options-group {
-  padding-left: 1rem;
-  border-left: 2px solid var(--border);
-}
-
-.options-table-wrapper {
-  overflow-x: auto;
-  padding-bottom: 0.75rem;
-  &::-webkit-scrollbar {
-    height: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: var(--soft-white);
-    border-radius: 3px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: var(--soft-gray);
-    border-radius: 3px;
-  }
-  overflow-x: hidden;
-}
-
-.options-list {
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
   display: grid;
-  grid-template-columns: 3fr 1fr 2fr 2fr 2fr 1fr;
-  gap: 0.75rem;
-  align-items: center;
-  min-width: 650px;
-  .grid-header {
-    display: none;
+  place-items: center;
+  &.delete {
+    background: #fff1f2;
+    color: #e11d48;
+    &:hover {
+      background: #ffe4e6;
+    }
   }
 }
 
-.grid-header {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding-bottom: 0.5rem;
-  white-space: nowrap;
-  .grid-header {
-    display: none;
-  }
-}
-
-.option-row {
-  // En móvil, cada fila es una tarjeta apilada
+// Opciones de Variante (Grid)
+.options-grid {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
   margin-bottom: 1rem;
-  background-color: white;
-
-  // Creamos un layout interno para cada campo
-  > div {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    // Generamos un label a partir del atributo data-label
-    &::before {
-      content: attr(data-label);
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      padding-right: 1rem;
-    }
-  }
-
-  // Celda para el botón de eliminar
-  .action-cell {
-    justify-content: flex-end;
-    &::before {
-      display: none; // Sin label
-    }
-  }
-}
-
-@media (min-width: 768px) {
-  .options-table-wrapper {
-    // Activamos el scroll horizontal solo en pantallas más grandes
-    overflow-x: auto;
-    padding-bottom: 0.75rem;
-    &::-webkit-scrollbar {
-      height: 6px;
-    }
-    &::-webkit-scrollbar-track {
-      background: var(--soft-white);
-      border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: var(--soft-gray);
-      border-radius: 3px;
-    }
-  }
-
-  .options-list {
-    display: grid;
-    // Volvemos al layout de tabla con grid
-    grid-template-columns: 3fr 1fr 2fr 2fr 2fr 1fr;
-    gap: 0.75rem;
-    min-width: 800px; // Ancho mínimo para forzar scroll si es necesario
-
-    // Mostramos la cabecera
-    .grid-header {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-      padding-bottom: 0.5rem;
-      white-space: nowrap;
-    }
-  }
-
-  .option-row {
-    // Reseteamos los estilos de tarjeta de móvil
-    display: contents; // Los hijos se alinean con el grid padre
-    padding: 0;
-    border: none;
-    margin-bottom: 0;
-    background-color: transparent;
-
-    > div {
-      // Reseteamos los estilos de celda
-      &::before {
-        display: none;
-      }
-    }
-  }
 }
 
 .option-item {
-  display: grid;
-  grid-template-columns: 3fr 2fr 2fr 2fr 1fr;
-  gap: 0.75rem;
-  align-items: center;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 1rem;
+  position: relative;
 
-  &.header {
-    margin-bottom: 0.5rem;
-    padding: 0 0.5rem;
-    label {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      font-weight: 600;
-      white-space: nowrap;
+  .option-main {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    .material-field {
+      flex-grow: 1;
+      margin: 0;
+    }
+  }
+
+  .option-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.5rem;
+    .material-field {
+      margin: 0;
+    }
+    // En el contexto compacto, ocultamos labels o los hacemos pequeños
+    .material-label {
+      font-size: 0.7rem;
+      top: 0.4rem;
+    }
+    .material-input {
+      padding: 1.2rem 0.5rem 0.4rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .btn-remove-option {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: #e11d48;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    span {
+      font-size: 16px;
     }
   }
 }
 
-.form-input-small {
-  @extend .form-input;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  width: auto; // Para que flexbox funcione
-}
-
-.delete-button-small,
-.delete-button-tiny {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  flex-shrink: 0;
-  &:hover {
-    background-color: #fecaca;
-  }
-}
-.delete-button-small {
-  width: 32px;
-  height: 32px;
-}
-.delete-button-tiny {
-  width: 28px;
-  height: 28px;
-  font-size: 0.8rem;
-}
-
-// Clases de utilidad para el ancho de los inputs de variantes
-.flex-1 {
-  flex: 1;
-}
-.flex-2 {
-  flex: 2;
-}
-.flex-3 {
-  flex: 3;
-}
-
-// --- SECCIÓN DE IMÁGENES (REGLAS UNIFICADAS) ---
-
-.image-upload-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.image-preview-grid {
-  display: grid;
-  // Crea columnas de 80px hasta llenar el espacio, luego pasa a la siguiente fila
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.image-preview {
-  // Estilo único y correcto para la vista previa
-  width: 100%;
-  aspect-ratio: 1 / 1; // Las hace perfectamente cuadradas
-  object-fit: cover;
-  border-radius: 0.75rem;
-  border: 1px solid var(--soft-gray);
-}
-
-// Input de archivo oculto
-input[type="file"] {
-  display: none;
-}
-
-.upload-button {
-  // Usa nuestras clases de botón global
-  width: 100%;
-}
-
-.field-description {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  text-align: center;
-}
-.upload-button {
-  width: 100%;
-}
-
-.file-input {
-  display: none;
-}
-
-.textarea-field {
-  .material-input:focus + .material-label,
-  .material-input:not(:placeholder-shown) + .material-label {
-    transform: translateY(-1.25rem) scale(0.8);
-  }
-
-  .material-label {
-    top: 1rem;
-  }
-}
-
-textarea.material-input {
-  resize: vertical;
-  min-height: 150px;
-  line-height: 1.5;
-}
-
-.variant-image-preview-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+// Mini Uploader en opciones
+.mini-image-upload {
   width: 50px;
   height: 50px;
+  background: #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #999;
+  flex-shrink: 0;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  &:hover {
+    background: #e0e0e0;
+  }
 }
 
-.variant-image-preview {
+.btn-dashed {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
+  border: 2px dashed #ddd;
+  background: transparent;
+  padding: 0.8rem;
+  border-radius: 12px;
+  color: #777;
+  font-weight: 700;
+  cursor: pointer;
+  &:hover {
+    border-color: var(--pastel-pink);
+    color: var(--pastel-pink);
+    background: #fff5f8;
+  }
 }
 
-.variant-image-placeholder {
+// --- GALERÍA (SIDEBAR) ---
+.gallery-uploader {
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    .preview-item {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+
+  .upload-zone {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 2px dashed #ddd;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #f9f9f9;
+    transition: all 0.3s;
+
+    .icon {
+      font-size: 2.5rem;
+      color: #bbb;
+      margin-bottom: 0.5rem;
+    }
+    .text {
+      font-weight: 700;
+      color: #555;
+    }
+    .subtext {
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    &:hover {
+      border-color: var(--pastel-pink);
+      background: #fff5f8;
+      .icon {
+        color: var(--pastel-pink);
+      }
+    }
+
+    &.has-images {
+      aspect-ratio: auto;
+      padding: 1.5rem;
+    } // Se achica si ya hay fotos
+  }
+}
+
+// --- SELECTS ---
+.select-field {
+  margin-bottom: 1.5rem;
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #777;
+    margin-bottom: 0.5rem;
+  }
+  .select-wrapper {
+    position: relative;
+    select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: #f9f9f9;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      appearance: none;
+      &:focus {
+        outline: none;
+        background: white;
+        border-color: var(--pastel-pink);
+      }
+    }
+    .chevron {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #777;
+    }
+  }
+}
+
+// --- CHECKBOX PERSONALIZADO ---
+.checkbox-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: var(--soft-white);
-  border: 1px dashed var(--soft-gray);
-  border-radius: 0.5rem;
-
-  .material-symbols-outlined {
-    color: var(--soft-gray);
-    font-size: 24px;
+  gap: 0.8rem;
+  cursor: pointer;
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--pastel-pink);
   }
+  label {
+    cursor: pointer;
+    font-weight: 600;
+    color: #555;
+  }
+}
+
+.mt-2 {
+  margin-top: 1rem;
+}
+
+// --- FOOTER STICKY MÓVIL ---
+.sticky-footer-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 1rem;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 1rem;
+  z-index: 100;
+
+  button {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-secondary {
+    background: #f0f0f0;
+    color: #555;
+  }
+  .btn-material {
+    background: #333;
+    color: white;
+  }
+}
+
+// Botones globales
+.btn-secondary {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-material {
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  background: #333;
+  color: white;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
 }

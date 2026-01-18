@@ -1,18 +1,30 @@
 <header class="page-header">
-  <h1>{{ isEditMode() ? "Editar Producto" : "Crear Nuevo Producto" }}</h1>
+  <div class="header-title">
+    <a routerLink="/admin/products" class="back-btn" appRipple>
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1>{{ isEditMode() ? "Editar Producto" : "Nuevo Producto" }}</h1>
+  </div>
+
+  <!-- Acciones principales en el header para escritorio -->
+  <div class="header-actions desktop-only">
+    <a routerLink="/admin/products" class="btn-secondary">Cancelar</a>
+    <button
+      (click)="handleSubmit()"
+      [disabled]="productForm.invalid || isUploading()"
+      class="btn-material"
+    >
+      {{ isUploading() ? "Guardando..." : "Guardar Producto" }}
+    </button>
+  </div>
 </header>
 
-<form
-  [formGroup]="productForm"
-  (ngSubmit)="handleSubmit()"
-  class="form-container"
->
-  <!-- ======================== -->
-  <!-- Columna Principal -->
-  <!-- ======================== -->
+<form [formGroup]="productForm" class="form-container">
+  <!-- COLUMNA IZQUIERDA (Principal) -->
   <div class="main-column">
-    <div class="card">
-      <h2 class="card-title">Información Principal</h2>
+    <!-- Info Básica -->
+    <div class="card glass-panel">
+      <h2 class="card-title">Información General</h2>
 
       <div class="material-field">
         <input
@@ -22,7 +34,7 @@
           class="material-input"
           placeholder=" "
         />
-        <label for="name" class="material-label">Nombre del producto</label>
+        <label for="name" class="material-label">Nombre del Producto</label>
       </div>
 
       <div class="material-field textarea-field">
@@ -32,219 +44,213 @@
           class="material-input"
           rows="6"
           placeholder=" "
+        ></textarea>
+        <label for="description" class="material-label"
+          >Descripción Detallada</label
         >
-        </textarea>
-        <label for="description" class="material-label">Descripción</label>
       </div>
     </div>
 
-    <div class="card" formArrayName="variants">
-      <div class="card-header">
-        <h2 class="card-title">Variantes</h2>
+    <!-- Variantes (Diseño Mejorado) -->
+    <div class="card glass-panel" formArrayName="variants">
+      <div class="card-header-row">
+        <h2 class="card-title">Variantes y Opciones</h2>
 
-        <div class="template-selector form-field has-arrow">
-          <select
-            #templateSelect
-            (change)="onTemplateSelected($event); templateSelect.value = ''"
-            class="form-input"
-          >
-            <option value="" disabled selected>Plantilla</option>
-            @for (template of variantTemplates(); track template._id) {
-            <option [ngValue]="template">{{ template.templateName }}</option>
-            }
-          </select>
-        </div>
-
-        <button type="button" (click)="addVariant()" class="add-button-small">
-          + Añadir Variante
-        </button>
-      </div>
-
-      @for (variant of variants.controls; track variant; let i = $index) {
-      <div class="variant-group" [formGroupName]="i">
-        <div class="variant-header">
-          <input
-            type="text"
-            formControlName="name"
-            placeholder="Nombre de la variante (ej. Talla)"
-            class="form-input"
-          />
-          <button
-            type="button"
-            (click)="removeVariant(i)"
-            class="delete-button-small"
-          >
-            ✖
-          </button>
-        </div>
-
-        <div class="options-group" formArrayName="options">
-          <div class="options-table-wrapper">
-            <div class="options-list">
-              <!-- Cabecera y filas ahora son hijos directos del grid -->
-
-              <!-- Cabecera de la tabla -->
-              <label class="grid-header">Valor</label>
-              <label class="grid-header">Imagen</label>
-              <label class="grid-header">Modificador de Precio (+)</label>
-              <label class="grid-header">Stock</label>
-              <label class="grid-header">Costo</label>
-              <div class="grid-header"></div>
-              <!-- Celda vacía para el botón de eliminar -->
-
-              <!-- Iteramos sobre las opciones -->
-              @for (option of variantOptions(i).controls; track option; let j =
-              $index) {
-              <div class="option-row" [formGroupName]="j">
-                <input
-                  type="text"
-                  formControlName="name"
-                  placeholder="Valor"
-                  class="form-input-small"
-                />
-                <div class="variant-image-preview-container">
-                  @if (option.get('image')?.value) {
-                  <img
-                    [src]="option.get('image')?.value"
-                    alt="Vista previa de la variante"
-                    class="variant-image-preview"
-                  />
-                  } @else {
-                  <!-- Placeholder si no hay imagen -->
-                  <div class="variant-image-placeholder">
-                    <span class="material-symbols-outlined">photo_camera</span>
-                  </div>
-                  }
-                </div>
-
-                <input
-                  type="text"
-                  formControlName="price"
-                  placeholder="+ COP"
-                  class="form-input-small"
-                  appNumericFormat
-                />
-                <input
-                  type="text"
-                  formControlName="stock"
-                  placeholder="Cantidad"
-                  class="form-input-small"
-                  appNumericFormat
-                />
-                <input
-                  type="text"
-                  formControlName="costPrice"
-                  placeholder="Costo"
-                  class="form-input-small"
-                  appNumericFormat
-                />
-                <button
-                  type="button"
-                  (click)="removeVariantOption(i, j)"
-                  class="delete-button-tiny"
-                >
-                  ✖
-                </button>
-              </div>
+        <div class="template-actions">
+          <div class="select-wrapper">
+            <select
+              #templateSelect
+              (change)="onTemplateSelected($event); templateSelect.value = ''"
+              class="template-select"
+            >
+              <option value="" disabled selected>Usar Plantilla...</option>
+              @for (template of variantTemplates(); track template._id) {
+                <option [ngValue]="template">
+                  {{ template.templateName }}
+                </option>
               }
-            </div>
+            </select>
+            <span class="material-symbols-outlined chevron">expand_more</span>
           </div>
           <button
             type="button"
-            (click)="addVariantOption(i)"
-            class="add-button-tiny"
-            appRipple
+            (click)="addVariant()"
+            class="btn-secondary small"
           >
-            + Añadir opción
+            <span class="material-symbols-outlined">add</span> Variante
           </button>
         </div>
       </div>
-      }
+
+      <div class="variants-list">
+        @for (variant of variants.controls; track variant; let i = $index) {
+          <div class="variant-card" [formGroupName]="i">
+            <div class="variant-header">
+              <div class="material-field">
+                <input
+                  type="text"
+                  formControlName="name"
+                  class="material-input"
+                  placeholder=" "
+                />
+                <label class="material-label">Nombre (ej: Talla, Color)</label>
+              </div>
+              <button
+                type="button"
+                (click)="removeVariant(i)"
+                class="btn-icon delete"
+                title="Eliminar Variante"
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+
+            <div class="options-container" formArrayName="options">
+              <h4 class="options-title">Opciones</h4>
+
+              <div class="options-grid">
+                @for (
+                  option of variantOptions(i).controls;
+                  track option;
+                  let j = $index
+                ) {
+                  <div class="option-item" [formGroupName]="j">
+                    <!-- Fila 1: Valor e Imagen -->
+                    <div class="option-main">
+                      <div class="material-field compact">
+                        <input
+                          type="text"
+                          formControlName="name"
+                          class="material-input"
+                          placeholder=" "
+                        />
+                        <label class="material-label">Valor</label>
+                      </div>
+
+                      <!-- Mini Uploader para Opción -->
+                      <label class="mini-image-upload">
+                        @if (option.get("image")?.value) {
+                          <img
+                            [src]="option.get('image')?.value"
+                            class="preview"
+                          />
+                        } @else {
+                          <span class="material-symbols-outlined"
+                            >add_photo_alternate</span
+                          >
+                        }
+                        <input
+                          type="file"
+                          (change)="onVariantImageSelected($event, i, j)"
+                          accept="image/*"
+                          hidden
+                        />
+                      </label>
+                    </div>
+
+                    <!-- Fila 2: Precios y Stock -->
+                    <div class="option-details">
+                      <div class="material-field compact">
+                        <input
+                          type="text"
+                          formControlName="price"
+                          class="material-input"
+                          placeholder=" "
+                          appNumericFormat
+                        />
+                        <label class="material-label">+ Precio</label>
+                      </div>
+                      <div class="material-field compact">
+                        <input
+                          type="text"
+                          formControlName="stock"
+                          class="material-input"
+                          placeholder=" "
+                          appNumericFormat
+                        />
+                        <label class="material-label">Stock</label>
+                      </div>
+                      <div class="material-field compact">
+                        <input
+                          type="text"
+                          formControlName="costPrice"
+                          class="material-input"
+                          placeholder=" "
+                          appNumericFormat
+                        />
+                        <label class="material-label">Costo</label>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      (click)="removeVariantOption(i, j)"
+                      class="btn-remove-option"
+                    >
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <button
+                type="button"
+                (click)="addVariantOption(i)"
+                class="btn-dashed full-width"
+              >
+                + Añadir Opción
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-variants">
+            <p>Este producto no tiene variantes (es un producto simple).</p>
+          </div>
+        }
+      </div>
     </div>
   </div>
 
-  <!-- ======================== -->
-  <!-- Columna Lateral -->
-  <!-- ======================== -->
+  <!-- COLUMNA DERECHA (Lateral) -->
   <div class="sidebar-column">
-    <div class="card">
-      <h2 class="card-title">Imágenes del Producto</h2>
-      <div class="image-upload-area">
-        <div class="image-preview-grid">
-          @for(preview of imagePreviews(); track preview) {
-          <img [src]="preview" alt="Vista previa" class="image-preview" />
-          }
-        </div>
+    <!-- Imágenes -->
+    <div class="card glass-panel">
+      <h2 class="card-title">Galería</h2>
+      <div class="gallery-uploader">
+        <!-- Grid de previsualización -->
+        @if (imagePreviews().length > 0) {
+          <div class="preview-grid">
+            @for (preview of imagePreviews(); track preview) {
+              <div class="preview-item">
+                <img [src]="preview" alt="Preview" />
+                <!-- Aquí podrías añadir botón para quitar imagen individual -->
+              </div>
+            }
+          </div>
+        }
+
         <label
-          for="image-upload"
-          class="upload-button btn btn-secondary"
-          appRipple
+          class="upload-zone"
+          [class.has-images]="imagePreviews().length > 0"
         >
-          {{
-            imagePreviews().length > 0
-              ? "Cambiar Imágenes"
-              : "Seleccionar Imágenes"
-          }}
+          <span class="material-symbols-outlined icon">cloud_upload</span>
+          <span class="text">Click para subir imágenes</span>
+          <span class="subtext">Soporta múltiples archivos</span>
+          <input
+            type="file"
+            (change)="onFilesSelected($event)"
+            accept="image/*"
+            multiple
+            hidden
+          />
         </label>
-        <input
-          id="image-upload"
-          type="file"
-          (change)="onFilesSelected($event)"
-          accept="image/*"
-          multiple
-          class="file-input"
-        />
-        <small class="field-description"
-          >Puedes seleccionar varias imágenes a la vez.</small
-        >
       </div>
     </div>
 
-    <div class="card">
-      <h2 class="card-title">Organización</h2>
-      <div class="material-field">
-        <input
-          id="sku"
-          type="text"
-          formControlName="sku"
-          class="material-input"
-          placeholder=" "
-        />
-        <label for="sku" class="material-label">SKU (Código de Producto)</label>
-      </div>
-
-      <div class="form-field has-arrow">
-        <label for="vendor">Vendedor / Proveedor (Opcional)</label>
-        <select id="vendor" formControlName="vendor" class="form-input">
-          <option [ngValue]="null">Ninguno</option>
-          <!-- Opción para no asignar vendedor -->
-          @for (vend of vendors(); track vend._id) {
-          <option [value]="vend._id">{{ vend.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="form-field has-arrow">
-        <label for="category">Categoría</label>
-        <select id="category" formControlName="category" class="form-input">
-          <option [ngValue]="null" disabled>Selecciona una categoría</option>
-          @for (cat of categories(); track cat._id) {
-          <option [value]="cat._id">{{ cat.name }}</option>
-          }
-        </select>
-      </div>
-      <div class="checkbox-field">
-        <input id="isFeatured" type="checkbox" formControlName="isFeatured" />
-        <label for="isFeatured">Producto Destacado</label>
-      </div>
-      <div class="checkbox-field">
-        <input id="isOnSale" type="checkbox" formControlName="isOnSale" />
-        <label for="isOnSale">Producto en Oferta</label>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 class="card-title">Precio y Costo</h2>
-      <div class="form-grid">
+    <!-- Precio y Stock (Global) -->
+    <div class="card glass-panel">
+      <h2 class="card-title">Inventario Base</h2>
+      <div class="form-row">
         <div class="material-field">
           <input
             id="price"
@@ -254,67 +260,124 @@
             placeholder=" "
             appNumericFormat
           />
-          <label for="price" class="material-label">Precio de Venta</label>
+          <label for="price" class="material-label">Precio Venta</label>
         </div>
         <div class="material-field">
           <input
-            id="costPrice"
+            id="stock"
             type="text"
-            formControlName="costPrice"
+            formControlName="stock"
             class="material-input"
             placeholder=" "
             appNumericFormat
           />
-          <label for="costPrice" class="material-label">Costo (Interno)</label>
+          <label for="stock" class="material-label">Stock Total</label>
         </div>
       </div>
       <div class="material-field">
         <input
-          id="stock"
+          id="costPrice"
           type="text"
-          formControlName="stock"
+          formControlName="costPrice"
           class="material-input"
           placeholder=" "
           appNumericFormat
         />
-        <label for="stock" class="material-label">Stock (Inventario)</label>
+        <label for="costPrice" class="material-label">Costo Unitario</label>
       </div>
-      @if (productForm.get('isOnSale')?.value) {
-      <div class="material-field">
-        <input
-          id="salePrice"
-          type="text"
-          formControlName="salePrice"
-          class="material-input"
-          placeholder=" "
-          appNumericFormat
-        />
-        <label for="salePrice" class="material-label">Precio de Oferta</label>
+
+      <!-- Oferta -->
+      <div class="toggle-row">
+        <div class="checkbox-wrapper">
+          <input
+            id="isOnSale"
+            type="checkbox"
+            formControlName="isOnSale"
+            class="custom-checkbox"
+          />
+          <label for="isOnSale">¿En Oferta?</label>
+        </div>
       </div>
+
+      @if (productForm.get("isOnSale")?.value) {
+        <div class="material-field fade-in">
+          <input
+            id="salePrice"
+            type="text"
+            formControlName="salePrice"
+            class="material-input"
+            placeholder=" "
+            appNumericFormat
+          />
+          <label for="salePrice" class="material-label">Precio Oferta</label>
+        </div>
       }
     </div>
-  </div>
 
-  <!-- ======================== -->
-  <!-- Acciones del Formulario -->
-  <!-- ======================== -->
-  <div class="form-actions">
-    <a routerLink="/admin/products" class="btn btn-secondary" appRipple
-      >Cancelar</a
-    >
-    <button
-      type="submit"
-      [disabled]="productForm.invalid || isUploading()"
-      class="btn btn-primary"
-      appRipple
-    >
-      {{
-        isUploading()
-          ? "Guardando..."
-          : isEditMode()
-          ? "Guardar Cambios"
-          : "Guardar Producto"
-      }}
-    </button>
+    <!-- Organización -->
+    <div class="card glass-panel">
+      <h2 class="card-title">Organización</h2>
+      <div class="material-field">
+        <input
+          id="sku"
+          type="text"
+          formControlName="sku"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="sku" class="material-label">SKU</label>
+      </div>
+
+      <div class="select-field">
+        <label>Categoría</label>
+        <div class="select-wrapper">
+          <select formControlName="category">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            @for (cat of categories(); track cat._id) {
+              <option [value]="cat._id">{{ cat.name }}</option>
+            }
+          </select>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+      </div>
+
+      <div class="select-field">
+        <label>Vendedor</label>
+        <div class="select-wrapper">
+          <select formControlName="vendor">
+            <option [ngValue]="null">Ninguno</option>
+            @for (vend of vendors(); track vend._id) {
+              <option [value]="vend._id">{{ vend.name }}</option>
+            }
+          </select>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+      </div>
+
+      <div class="checkbox-wrapper mt-2">
+        <input
+          id="isFeatured"
+          type="checkbox"
+          formControlName="isFeatured"
+          class="custom-checkbox"
+        />
+        <label for="isFeatured">Producto Destacado</label>
+      </div>
+    </div>
   </div>
 </form>
+
+<!-- BARRA FLOTANTE MÓVIL (STICKY) -->
+<div class="sticky-footer-actions mobile-only">
+  <button type="button" routerLink="/admin/products" class="btn-secondary">
+    Cancelar
+  </button>
+  <button
+    type="button"
+    (click)="handleSubmit()"
+    [disabled]="productForm.invalid || isUploading()"
+    class="btn-material"
+  >
+    {{ isUploading() ? "..." : "Guardar" }}
+  </button>
+</div>

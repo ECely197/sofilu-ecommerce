@@ -1,93 +1,109 @@
-<!-- Contenido completo para: src/app/pages/admin/order-list/order-list.html -->
-
 <header class="page-header">
   <h1>Pedidos de Clientes</h1>
+  <!-- (Opcional: Si quisieras un botón de exportar, iría aquí) -->
 </header>
 
+<!-- BARRA DE BÚSQUEDA -->
 <div class="search-bar-wrapper">
   <div class="search-field">
     <span class="material-symbols-outlined">search</span>
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre o descripción..."
+      placeholder="Buscar por nombre, ID o email..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- Estado de Carga (Esqueleto) -->
+  <!-- LOADING -->
   @if (isLoading()) {
-  <div class="skeleton-list">
-    @for (item of [1, 2, 3, 4]; track item) {
-    <div class="skeleton-item">
-      <div class="skeleton-text-group">
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text short"></div>
-      </div>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando pedidos...</p>
     </div>
-    }
-  </div>
   }
 
-  <!-- Lista de Pedidos -->
-  @if (!isLoading() && orders().length > 0) {
-  <div class="order-list" [@listAnimation]="orders().length">
-    <!-- Cabecera de la tabla (solo visible en desktop) -->
-    <div class="order-item header">
-      <div class="cell">Nº Pedido</div>
-      <div class="cell">Fecha</div>
-      <div class="cell">Cliente</div>
-      <div class="cell">Total</div>
-      <div class="cell">Estado</div>
-      <div class="cell">Acciones</div>
-    </div>
+  <!-- LISTA DE PEDIDOS -->
+  @else if (orders().length > 0) {
+    <div class="order-list" [@listAnimation]="orders().length">
+      <!-- Header Tabla (Desktop) -->
+      <div class="order-item header">
+        <div class="cell">ID Pedido</div>
+        <div class="cell">Fecha</div>
+        <div class="cell">Cliente</div>
+        <div class="cell">Total</div>
+        <div class="cell">Estado</div>
+        <div class="cell align-right">Acciones</div>
+      </div>
 
-    <!-- Filas de pedidos -->
-    @for (order of orders(); track order._id) {
-    <div class="order-item">
-      <div class="cell font-semibold" data-label="Pedido">
-        #{{ order._id.slice(-6).toUpperCase() }}
-      </div>
-      <div class="cell" data-label="Fecha">
-        {{ order.createdAt | date : "short" }}
-      </div>
-      <div class="cell" data-label="Cliente">{{ order.customerInfo.name }}</div>
-      <div class="cell" data-label="Total">
-        {{ order.totalAmount | currency : "COP" : "symbol" : "1.0-0" }}
-      </div>
-      <div class="cell" data-label="Estado">
-        <span class="status-chip" [ngClass]="order.status.toLowerCase()">
-          {{ order.status }}
-        </span>
-      </div>
-      <div class="cell" data-label="Acciones">
-        <div class="action-buttons">
-          <a
-            [routerLink]="['/admin/orders', order._id]"
-            class="action-button details"
-            appRipple
-            >Detalles</a
-          >
-          <button
-            (click)="deleteOrder(order._id)"
-            class="action-button delete"
-            appRipple
-          >
-            Eliminar
-          </button>
+      <!-- Filas -->
+      @for (order of orders(); track order._id) {
+        <div class="order-item">
+          <!-- ID -->
+          <div class="cell id-cell" data-label="Pedido">
+            <span class="hash">#</span>{{ order._id.slice(-6).toUpperCase() }}
+          </div>
+
+          <!-- Fecha -->
+          <div class="cell date-cell" data-label="Fecha">
+            {{ order.createdAt | date: "mediumDate" }}
+          </div>
+
+          <!-- Cliente -->
+          <div class="cell client-cell" data-label="Cliente">
+            <div class="client-info">
+              <span class="name">{{ order.customerInfo.name }}</span>
+              <small class="email">{{ order.customerInfo.email }}</small>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="cell total-cell" data-label="Total">
+            {{ order.totalAmount | currency: "COP" : "symbol" : "1.0-0" }}
+          </div>
+
+          <!-- Estado -->
+          <div class="cell status-cell" data-label="Estado">
+            <span class="status-badge" [ngClass]="order.status.toLowerCase()">
+              {{ order.status }}
+            </span>
+          </div>
+
+          <!-- Acciones -->
+          <div class="cell actions-cell" data-label="Acciones">
+            <div class="action-buttons">
+              <!-- Botón Ver Detalles (Ojo) -->
+              <a
+                [routerLink]="['/admin/orders', order._id]"
+                class="action-btn details"
+                title="Ver Detalles"
+                appRipple
+              >
+                <span class="material-symbols-outlined">visibility</span>
+              </a>
+              <!-- Botón Eliminar -->
+              <button
+                (click)="deleteOrder(order._id)"
+                class="action-btn delete"
+                title="Eliminar"
+                appRipple
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
   }
 
-  <!-- Estado Vacío -->
-  @if (!isLoading() && orders().length === 0) {
-  <div class="empty-state">
-    <p>Aún no has recibido ningún pedido.</p>
-  </div>
+  <!-- EMPTY STATE -->
+  @else {
+    <div class="empty-state">
+      <span class="material-symbols-outlined icon">inbox</span>
+      <p>No se encontraron pedidos.</p>
+    </div>
   }
 </div>
