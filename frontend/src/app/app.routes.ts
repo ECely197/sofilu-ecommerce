@@ -49,6 +49,7 @@ import { VariantTemplatesComponent } from './pages/admin/variant-templates/varia
 import { SectionsComponent } from './pages/admin/sections/sections';
 import { VendorsComponent } from './pages/admin/vendors/vendors';
 import { SpecialEvents } from './pages/admin/special-events/special-events';
+import { DeliveryOptionsComponent } from './pages/admin/delivery-options/delivery-options';
 
 export const routes: Routes = [
   // ===================================
@@ -126,6 +127,7 @@ export const routes: Routes = [
       { path: 'sections', component: SectionsComponent },
       { path: 'vendors', component: VendorsComponent },
       { path: 'special-events', component: SpecialEvents },
+      { path: 'delivery-options', component: DeliveryOptionsComponent },
     ],
   },
 

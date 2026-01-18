@@ -484,3 +484,66 @@
   resize: vertical; // Permitir que el usuario agrande el campo si quiere
   min-height: 80px;
 }
+
+// --- ESTILOS PARA OPCIONES DE ENTREGA ESPECIAL ---
+.special-delivery-options {
+  display: grid;
+  // Animamos el grid-template-rows
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    grid-template-rows: 1fr;
+  }
+
+  // Contenedor que se expande
+  .options-inner-container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding-top: 1rem;
+  }
+}
+
+.no-options-msg {
+  padding: 1rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.option-card-small {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border-radius: 1rem;
+  padding: 0.8rem;
+  margin-top: 1rem;
+  border: 2px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .info {
+    strong {
+      display: block;
+      font-weight: 600;
+    }
+    span {
+      font-size: 0.9rem;
+      color: #666;
+    }
+  }
+
+  &.selected {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+  }
+}

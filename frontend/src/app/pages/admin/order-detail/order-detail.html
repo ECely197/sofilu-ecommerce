@@ -1,195 +1,234 @@
 @if (isLoading()) {
-<div class="loading-container">Cargando detalles del pedido...</div>
-} @if (order(); as currentOrder) {
-<div class="order-detail-container" @fadeInOut>
-  <header class="page-header">
-    <!-- ¡NUEVO! Contenedor para el Título y el Botón de Volver -->
-    <div class="header-title-wrapper">
-      <a routerLink="/admin/orders" class="back-button" appRipple>
-        <span class="material-symbols-outlined">arrow_back</span>
-      </a>
-      <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
-    </div>
-
-    <div class="header-actions">
-      <a
-        [routerLink]="['/invoice', currentOrder._id]"
-        target="_blank"
-        class="btn-secondary"
-        appRipple
-      >
-        Ver Factura
-      </a>
-    </div>
-  </header>
-
-  <div class="details-grid">
-    <!-- COLUMNA PRINCIPAL -->
-    <div class="main-content">
-      <div class="card">
-        <h2 class="card-title">
-          Artículos del Pedido ({{ currentOrder.items.length }})
-        </h2>
-        @for (item of currentOrder.items; track item._id) {
-        <div class="order-item">
-          <!-- Imagen Principal del Producto -->
-          <img
-            [src]="item.product?.images[0]"
-            [alt]="item.product?.name"
-            class="item-image"
-          />
-
-          <!-- Información del Producto -->
-          <div class="item-info">
-            <p class="item-name">
-              {{ item.product?.name || "Producto no disponible" }}
-            </p>
-            <p class="item-sku">SKU: {{ item.product?.sku || "N/A" }}</p>
-            <p class="item-price-quantity">
-              {{ item.quantity }} x
-              {{ item.price | currency : "COP" : "symbol" : "1.0-0" }}
-            </p>
-          </div>
-
-          <!-- Imágenes de las Variantes Seleccionadas -->
-          <div class="item-variants-images">
-            @for(variantName of objectKeys(item.selectedVariants); track
-            variantName) { @if (getVariantOptionImage(item, variantName); as
-            variantImage) {
-            <img
-              [src]="variantImage"
-              [alt]="item.selectedVariants[variantName]"
-              class="variant-image"
-            />
-            } }
-          </div>
-
-          <p class="item-total">
-            {{
-              item.quantity * item.price | currency : "COP" : "symbol" : "1.0-0"
-            }}
-          </p>
-        </div>
-        }
+  <div class="loading-state">Cargando detalles del pedido...</div>
+}
+@if (order(); as currentOrder) {
+  <div class="order-detail-container" @fadeInOut>
+    <header class="page-header">
+      <div class="header-title-wrapper">
+        <a routerLink="/admin/orders" class="back-button" appRipple>
+          <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
       </div>
-
-      <!-- Resumen de Costos -->
-      <div class="card">
-        <h2 class="card-title">Resumen Financiero</h2>
-        <div class="totals-summary">
-          <div class="total-row">
-            <span>Subtotal</span>
-            <span>{{
-              currentOrder.totalAmount +
-                (currentOrder.discountAmount || 0) -
-                10000 | currency : "COP" : "symbol" : "1.0-0"
-            }}</span>
-          </div>
-          @if(currentOrder.discountAmount > 0) {
-          <div class="total-row discount">
-            <span>Descuento ({{ currentOrder.appliedCoupon }})</span>
-            <span
-              >-
-              {{
-                currentOrder.discountAmount
-                  | currency : "COP" : "symbol" : "1.0-0"
-              }}</span
-            >
-          </div>
-          }
-          <div class="total-row">
-            <span>Envío</span>
-            <span>{{ 10000 | currency : "COP" : "symbol" : "1.0-0" }}</span>
-          </div>
-          <hr />
-          <div class="total-row grand-total">
-            <strong>Total Pagado</strong>
-            <strong>{{
-              currentOrder.totalAmount | currency : "COP" : "symbol" : "1.0-0"
-            }}</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- COLUMNA LATERAL -->
-    <aside class="sidebar-content">
-      <div class="card">
-        <h2 class="card-title">Estado del Pedido</h2>
-        @if (isEditingStatus()) {
-        <!-- VISTA DE EDICIÓN -->
-        <form
-          [formGroup]="statusForm"
-          (ngSubmit)="updateStatus()"
-          class="status-form"
+      <div class="header-actions">
+        <a
+          [routerLink]="['/invoice', currentOrder._id]"
+          target="_blank"
+          class="btn-secondary"
+          appRipple
         >
-          <div class="form-field has-arrow">
-            <label for="status">Cambiar Estado</label>
-            <select id="status" formControlName="status" class="form-input">
-              @for(status of orderStatuses; track status){
-              <option [value]="status">{{ status }}</option>
-              }
-            </select>
-          </div>
-          <div class="form-actions">
-            <button
-              type="button"
-              (click)="cancelEditMode()"
-              class="btn-secondary"
-              appRipple
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="btn-material"
-              [disabled]="statusForm.invalid || statusForm.pristine"
-              appRipple
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-        } @else {
-        <!-- VISTA DE LECTURA -->
-        <div class="status-display">
-          <span class="status-badge" [ngClass]="currentOrder.status">{{
-            currentOrder.status
-          }}</span>
-          <button (click)="enableEditMode()" class="edit-status-btn">
-            <span class="material-symbols-outlined">edit</span>
-          </button>
+          Ver Factura
+        </a>
+      </div>
+    </header>
+
+    <div class="details-grid">
+      <!-- COLUMNA PRINCIPAL -->
+      <div class="main-content">
+        <!-- TARJETA DE ARTÍCULOS -->
+        <div class="card">
+          <h2 class="card-title">
+            Artículos del Pedido ({{ currentOrder.items.length }})
+          </h2>
+          @for (item of currentOrder.items; track item.product._id) {
+            <div class="order-item">
+              <img
+                [src]="item.product?.images[0] || 'assets/placeholder.png'"
+                [alt]="item.product?.name"
+                class="item-image"
+              />
+              <div class="item-info">
+                <p class="item-name">
+                  {{ item.product?.name || "Producto no disponible" }}
+                </p>
+                <p class="item-sku">SKU: {{ item.product?.sku || "N/A" }}</p>
+
+                @if (objectKeys(item.selectedVariants).length > 0) {
+                  <div class="item-variants-list">
+                    @for (
+                      variantName of objectKeys(item.selectedVariants);
+                      track variantName
+                    ) {
+                      <div class="variant-chip">
+                        @if (
+                          getVariantOptionImage(item, variantName);
+                          as variantImage
+                        ) {
+                          <img
+                            [src]="variantImage"
+                            [alt]="item.selectedVariants[variantName]"
+                            class="variant-chip-img"
+                          />
+                        }
+                        <span>{{ item.selectedVariants[variantName] }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              <div class="item-pricing">
+                <p class="item-total">
+                  {{
+                    item.quantity * item.price
+                      | currency: "COP" : "symbol" : "1.0-0"
+                  }}
+                </p>
+                <p class="item-price-quantity">
+                  {{ item.quantity }} x
+                  {{ item.price | currency: "COP" : "symbol" : "1.0-0" }}
+                </p>
+              </div>
+            </div>
+          }
         </div>
-        }
+
+        <!-- RESUMEN FINANCIERO (DINÁMICO) -->
+        <div class="card">
+          <h2 class="card-title">Resumen Financiero</h2>
+          <div class="totals-summary">
+            <div class="total-row">
+              <span>Subtotal</span>
+              <span>{{
+                subtotal() | currency: "COP" : "symbol" : "1.0-0"
+              }}</span>
+            </div>
+            @if (currentOrder.discountAmount > 0) {
+              <div class="total-row discount">
+                <span>Descuento ({{ currentOrder.appliedCoupon }})</span>
+                <span
+                  >-
+                  {{
+                    currentOrder.discountAmount
+                      | currency: "COP" : "symbol" : "1.0-0"
+                  }}</span
+                >
+              </div>
+            }
+            <div class="total-row">
+              <span>Envío</span>
+              <span>{{
+                shippingCost() | currency: "COP" : "symbol" : "1.0-0"
+              }}</span>
+            </div>
+            <hr />
+            <div class="total-row grand-total">
+              <strong>Total Pagado</strong>
+              <strong>{{
+                currentOrder.totalAmount | currency: "COP" : "symbol" : "1.0-0"
+              }}</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="card">
-        <h2 class="card-title">Información de Envío</h2>
-        <div class="address-details">
-          <p>
-            <strong>{{ currentOrder.shippingAddress.fullName }}</strong>
-          </p>
-          <p>{{ currentOrder.shippingAddress.streetAddress }}</p>
-          @if(currentOrder.shippingAddress.addressDetails){
-          <p>{{ currentOrder.shippingAddress.addressDetails }}</p>
+      <!-- COLUMNA LATERAL -->
+      <aside class="sidebar-content">
+        <div class="card">
+          <h2 class="card-title">Estado del Pedido</h2>
+          @if (isEditingStatus()) {
+            <form
+              [formGroup]="statusForm"
+              (ngSubmit)="updateStatus()"
+              class="status-form"
+            >
+              <div class="form-field has-arrow">
+                <select id="status" formControlName="status" class="form-input">
+                  @for (status of orderStatuses; track status) {
+                    <option [value]="status">{{ status }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  (click)="cancelEditMode()"
+                  class="btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn-material"
+                  [disabled]="statusForm.invalid || statusForm.pristine"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="status-display">
+              <span
+                class="status-badge"
+                [ngClass]="currentOrder.status.toLowerCase()"
+                >{{ currentOrder.status }}</span
+              >
+              <button (click)="enableEditMode()" class="edit-status-btn">
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+            </div>
           }
-          <p>
-            {{ currentOrder.shippingAddress.city }},
-            {{ currentOrder.shippingAddress.department }}
-          </p>
-          <p>Código Postal: {{ currentOrder.shippingAddress.postalCode }}</p>
-          <hr />
-          <p>
-            <span class="material-symbols-outlined">mail</span>
-            {{ currentOrder.shippingAddress.email }}
-          </p>
-          <p>
-            <span class="material-symbols-outlined">phone</span>
-            {{ currentOrder.shippingAddress.phone }}
-          </p>
         </div>
-      </div>
-    </aside>
+
+        <div class="card">
+          <h2 class="card-title">Información de Envío</h2>
+          <div class="address-details">
+            <p>
+              <strong>{{ currentOrder.shippingAddress.fullName }}</strong>
+            </p>
+            <p>{{ currentOrder.shippingAddress.streetAddress }}</p>
+            @if (currentOrder.shippingAddress.addressDetails) {
+              <p>{{ currentOrder.shippingAddress.addressDetails }}</p>
+            }
+            <p>
+              {{ currentOrder.shippingAddress.city }},
+              {{ currentOrder.shippingAddress.department }}
+            </p>
+            <p>Código Postal: {{ currentOrder.shippingAddress.postalCode }}</p>
+            <hr />
+            <p>
+              <span class="material-symbols-outlined">mail</span>
+              {{ currentOrder.customerInfo.email }}
+            </p>
+            <p>
+              <span class="material-symbols-outlined">phone</span>
+              {{ currentOrder.customerInfo.phone }}
+            </p>
+          </div>
+        </div>
+
+        <!-- ¡NUEVA TARJETA DE NOTAS Y TIPO DE ENTREGA! -->
+        <div class="card">
+          <h2 class="card-title">Detalles Adicionales</h2>
+          <div class="notes-details">
+            <div class="note-group">
+              <strong>Tipo de Entrega:</strong>
+              <span
+                class="delivery-type-badge"
+                [ngClass]="currentOrder.deliveryType?.toLowerCase()"
+                >{{ currentOrder.deliveryType }}</span
+              >
+            </div>
+            @if (currentOrder.selectedDeliveryOption) {
+              <div class="note-group">
+                <strong>Opción Especial:</strong>
+                <p>{{ currentOrder.selectedDeliveryOption.name }}</p>
+              </div>
+            }
+            @if (currentOrder.orderNotes) {
+              <div class="note-group">
+                <strong>Notas del Pedido:</strong>
+                <p>{{ currentOrder.orderNotes }}</p>
+              </div>
+            }
+            @if (currentOrder.deliveryNotes) {
+              <div class="note-group">
+                <strong>Notas de Entrega:</strong>
+                <p>{{ currentOrder.deliveryNotes }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
   </div>
-</div>
 }

@@ -1,5 +1,7 @@
 <div class="checkout-layout">
-  <!-- Columna Izquierda -->
+  <!-- ======================== -->
+  <!-- COLUMNA IZQUIERDA: FORMULARIOS -->
+  <!-- ======================== -->
   <div class="form-column">
     <header class="logo-header">
       <a routerLink="/" class="logo-link">
@@ -11,9 +13,10 @@
       <div class="loading-container">
         <div class="skeleton-card"></div>
         <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
       </div>
     } @else {
-      <!-- 1. DIRECCIONES -->
+      <!-- 1. SELECCIÓN DE DIRECCIÓN -->
       <div class="step-container">
         <h2 class="step-title">¿Para quién y dónde es el envío?</h2>
         @if (addresses().length > 0) {
@@ -31,12 +34,20 @@
                   <p class="card-subtitle-text">
                     {{ address.streetAddress }}, {{ address.city }}
                   </p>
+                  <p class="card-contact-text">
+                    {{ address.email }} &bull; {{ address.phone }}
+                  </p>
                 </div>
                 @if (address.isPreferred) {
                   <div class="preferred-badge">Preferida</div>
                 }
               </div>
             }
+          </div>
+        } @else {
+          <div class="no-items-message">
+            <h3>No tienes direcciones de envío</h3>
+            <p>Añade una dirección para poder continuar con la compra.</p>
           </div>
         }
         <div class="step-actions">
@@ -47,54 +58,77 @@
         </div>
       </div>
 
-      <!-- ======================== -->
-      <!-- 2. TIPO DE ENVÍO (NUEVO) -->
-      <!-- ======================== -->
+      <!-- 2. TIPO DE ENTREGA -->
       <div class="step-container">
         <h2 class="step-title">Tipo de Entrega</h2>
         <div class="selector-list">
+          <!-- Opción 1: Envío Estándar -->
           <div
             class="card-selector"
             [class.selected]="deliveryType() === 'Normal'"
-            (click)="deliveryType.set('Normal')"
+            (click)="selectDeliveryType('Normal')"
             appRipple
           >
             <div class="radio-selector"><div class="radio-dot"></div></div>
             <div class="card-details">
               <p class="card-title-text">Envío Estándar</p>
               <p class="card-subtitle-text">
-                Tu pedido llegará por transportadora (Servientrega, etc.).
+                Llega por transportadora a todo el país.
               </p>
             </div>
           </div>
+          <!-- Opción 2: Envío Personalizado -->
           <div
             class="card-selector"
             [class.selected]="deliveryType() === 'Personalizada'"
-            (click)="deliveryType.set('Personalizada')"
+            (click)="selectDeliveryType('Personalizada')"
             appRipple
           >
             <div class="radio-selector"><div class="radio-dot"></div></div>
             <div class="card-details">
-              <p class="card-title-text">
-                Entrega Personalizada
-                <span class="cost-badge"
-                  >+{{
-                    customDeliveryCost() | currency: "COP" : "symbol" : "1.0-0"
-                  }}</span
-                >
-              </p>
+              <p class="card-title-text">Entrega Especial</p>
               <p class="card-subtitle-text">
-                Nos encargamos nosotros. Ideal para entregar un mensaje especial
-                o una sorpresa.
+                ¡Haz que sea inolvidable! Elige una de nuestras opciones.
               </p>
+            </div>
+          </div>
+
+          <!-- ACORDEÓN DE OPCIONES ESPECIALES -->
+          <div
+            class="special-delivery-options"
+            [class.open]="deliveryType() === 'Personalizada'"
+          >
+            <div class="options-inner-container">
+              @for (option of deliveryOptions(); track option._id) {
+                <div
+                  class="option-card-small"
+                  [class.selected]="
+                    selectedDeliveryOption()?._id === option._id
+                  "
+                  (click)="selectDeliveryOption(option)"
+                >
+                  <img [src]="option.imageUrl" [alt]="option.name" />
+                  <div class="info">
+                    <strong>{{ option.name }}</strong>
+                    <span
+                      >+{{
+                        option.cost | currency: "COP" : "symbol" : "1.0-0"
+                      }}</span
+                    >
+                  </div>
+                </div>
+              } @empty {
+                <p class="no-options-msg">
+                  No hay opciones de entrega especial disponibles por el
+                  momento.
+                </p>
+              }
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ======================== -->
-      <!-- 3. NOTAS (NUEVO) -->
-      <!-- ======================== -->
+      <!-- 3. NOTAS ADICIONALES -->
       <div class="step-container" [formGroup]="notesForm">
         <h2 class="step-title">Detalles Adicionales</h2>
         <div class="material-field">
@@ -106,7 +140,7 @@
             rows="2"
           ></textarea>
           <label for="orderNotes" class="material-label"
-            >Notas del Pedido (ej: "es un regalo")</label
+            >Notas del Pedido (opcional)</label
           >
         </div>
         <div class="material-field">
@@ -118,22 +152,22 @@
             rows="2"
           ></textarea>
           <label for="deliveryNotes" class="material-label"
-            >Instrucciones de Entrega (ej: "entregar en portería")</label
+            >Instrucciones de Entrega (opcional)</label
           >
         </div>
       </div>
     }
   </div>
 
-  <!-- Columna Derecha: Resumen del Pedido (VERSIÓN REDISEÑADA) -->
+  <!-- ======================== -->
+  <!-- COLUMNA DERECHA: RESUMEN -->
+  <!-- ======================== -->
   <aside class="summary-column">
     <div class="summary-card">
-      <!-- Logo -->
       <div class="summary-logo">
         <img src="/sofilu-logo-text.svg" alt="Sofilu Logo" />
       </div>
 
-      <!-- Lista de Items -->
       <div class="summary-items">
         @for (item of cartService.cartItems(); track item.id) {
           <div class="summary-item">
@@ -167,7 +201,6 @@
         }
       </div>
 
-      <!-- Sección de Cupón -->
       <div class="coupon-section">
         <div class="form-field">
           <input
@@ -192,7 +225,6 @@
         }
       </div>
 
-      <!-- Detalles del Total -->
       <div class="summary-details">
         <div class="summary-row">
           <span>Subtotal</span>
@@ -211,27 +243,17 @@
             >
           </div>
         }
-        <div class="summary-row">
-          <span>Envío</span>
-          <span>{{
-            shippingCost() | currency: "COP" : "symbol" : "1.0-0"
-          }}</span>
-        </div>
 
-        @if (serviceFee() > 0) {
+        <!-- LÓGICA DE ENVÍO CORREGIDA -->
+        @if (finalShippingCost() > 0) {
           <div class="summary-row">
-            <span>Tarifa de Servicio</span>
             <span>{{
-              serviceFee() | currency: "COP" : "symbol" : "1.0-0"
+              deliveryType() === "Normal"
+                ? "Envío Estándar"
+                : selectedDeliveryOption()?.name || "Entrega Especial"
             }}</span>
-          </div>
-        }
-
-        @if (deliveryType() === "Personalizada" && customDeliveryCost() > 0) {
-          <div class="summary-row">
-            <span>Entrega Especial</span>
             <span>{{
-              customDeliveryCost() | currency: "COP" : "symbol" : "1.0-0"
+              finalShippingCost() | currency: "COP" : "symbol" : "1.0-0"
             }}</span>
           </div>
         }
@@ -242,7 +264,6 @@
         </div>
       </div>
 
-      <!-- Botón Final (ahora fuera de 'summary-details') -->
       <div class="pay-button-container">
         <button
           class="btn-material pay-button"
@@ -255,6 +276,8 @@
       </div>
     </div>
   </aside>
+
+  <!-- MODAL PARA AÑADIR DIRECCIÓN -->
   <app-address-form-modal
     (addressCreated)="handleAddressCreated($event)"
   ></app-address-form-modal>

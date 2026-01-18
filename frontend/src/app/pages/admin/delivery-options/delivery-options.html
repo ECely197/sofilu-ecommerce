@@ -1,0 +1,147 @@
+<header class="page-header">
+  <h1>Gestionar Entregas Especiales</h1>
+  <button (click)="openForm()" class="btn-material" appRipple>
+    <span class="material-symbols-outlined">add</span>
+    Crear Nueva Opción
+  </button>
+</header>
+
+@if (isLoading()) {
+  <div class="loading-state">Cargando opciones...</div>
+} @else {
+  <div class="options-grid">
+    @for (option of options(); track option._id) {
+      <div class="option-card" [class.inactive]="!option.isActive">
+        <div class="card-img-wrapper">
+          <img [src]="option.imageUrl" [alt]="option.name" class="card-img" />
+        </div>
+        <div class="card-content">
+          <div class="card-header">
+            <h3 class="card-title">{{ option.name }}</h3>
+            <span class="cost-pill">{{
+              option.cost | currency: "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+          <p class="card-desc">{{ option.description }}</p>
+          <div class="card-actions">
+            <button (click)="openForm(option)" class="btn-secondary small">
+              Editar
+            </button>
+            <button (click)="handleDelete(option._id)" class="btn-danger small">
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-state">
+        Aún no has creado ninguna opción de entrega.
+      </div>
+    }
+  </div>
+}
+
+<!-- ======================== -->
+<!-- MODAL DE FORMULARIO CORREGIDO -->
+<!-- ======================== -->
+@if (isFormVisible()) {
+  <div class="form-overlay" (click)="closeForm()"></div>
+  <div class="form-panel">
+    <header class="panel-header">
+      <h3>
+        {{ editingOptionId() ? "Editar Opción" : "Nueva Opción de Entrega" }}
+      </h3>
+      <button (click)="closeForm()" class="close-btn" appRipple>
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
+
+    <div class="form-content">
+      <form [formGroup]="deliveryForm" (ngSubmit)="handleSubmit()">
+        <!-- UPLOADER DE IMAGEN VISUAL -->
+        <label class="image-uploader" for="file-input">
+          @if (imagePreview()) {
+            <img [src]="imagePreview()" class="image-preview" />
+          } @else {
+            <div class="uploader-placeholder">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+              <span>Subir Imagen</span>
+            </div>
+          }
+          @if (isUploading()) {
+            <div class="spinner-overlay"><div class="spinner"></div></div>
+          }
+          <input
+            id="file-input"
+            type="file"
+            (change)="onFileSelected($event)"
+            accept="image/*"
+            hidden
+          />
+        </label>
+
+        <!-- CAMPOS CON ESTRUCTURA MATERIAL -->
+        <div class="material-field">
+          <input
+            id="name"
+            formControlName="name"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="name" class="material-label"
+            >Nombre (ej: Entrega con Serenata)</label
+          >
+        </div>
+        <div class="material-field">
+          <textarea
+            id="description"
+            formControlName="description"
+            class="material-input"
+            placeholder=" "
+            rows="2"
+          ></textarea>
+          <label for="description" class="material-label"
+            >Descripción corta</label
+          >
+        </div>
+        <div class="material-field">
+          <input
+            id="cost"
+            type="text"
+            appNumericFormat
+            formControlName="cost"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="cost" class="material-label">Costo Adicional (COP)</label>
+        </div>
+
+        <!-- Toggle Switch -->
+        <div class="toggle-field">
+          <span>{{
+            deliveryForm.get("isActive")?.value
+              ? "Visible para clientes"
+              : "Oculto para clientes"
+          }}</span>
+          <label class="switch">
+            <input type="checkbox" formControlName="isActive" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="closeForm()" class="btn-secondary">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="deliveryForm.invalid || isSaving()"
+            class="btn-material"
+          >
+            {{ isSaving() ? "Guardando..." : "Guardar" }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

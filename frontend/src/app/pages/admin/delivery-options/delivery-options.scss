@@ -1,0 +1,366 @@
+@use "../../../../../buttons";
+@use "../../../../forms";
+@use "../admin-shared";
+
+:host {
+  padding-bottom: 8rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  h1 {
+    font-size: 2.25rem;
+    font-family: "Baloo 2", serif;
+  }
+  .btn-material {
+    @extend .btn-material;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.option-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  &.inactive {
+    opacity: 0.6;
+    .card-img {
+      filter: grayscale(80%);
+    }
+  }
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-img-wrapper {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+  }
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0;
+    line-height: 1.3;
+  }
+  .cost-pill {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+  .card-desc {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0.5rem 0 1.5rem;
+    flex-grow: 1;
+  }
+  .card-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: auto; // Empuja los botones al final de la tarjeta
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+
+    .btn-secondary,
+    .btn-danger {
+      flex: 1; // Ocupan el mismo espacio
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-danger {
+      background-color: #fff5f5;
+      color: #e74c3c;
+      border: 1px solid #fecaca;
+
+      &:hover {
+        background-color: #e74c3c;
+        color: white;
+      }
+    }
+  }
+}
+
+/* ==========================================================================
+   MODAL (CORREGIDO Y REFINADO)
+   ========================================================================== */
+.form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  animation: fadeIn 0.3s forwards;
+}
+
+.form-panel {
+  position: fixed;
+  z-index: 2001;
+  background: white;
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+
+  // Desktop
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  border-radius: 1.5rem;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  max-height: 90vh;
+
+  // Móvil
+  @media (max-width: 768px) {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 90vh;
+    border-radius: 1.5rem 1.5rem 0 0;
+    transform: translateY(100%);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+.panel-header {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  h3 {
+    font-family: "Baloo 2", serif;
+    font-size: 1.25rem;
+    margin: 0;
+    color: #333;
+  }
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f1f2f6; // Gris suave
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.3s;
+    color: #555;
+
+    .material-symbols-outlined {
+      font-size: 1.4rem;
+    }
+
+    &:hover {
+      background: #e74c3c; // Rojo al pasar el mouse
+      color: white;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.form-content {
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// UPLOADER DE IMAGEN
+.image-uploader {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 1rem;
+  border: 2px dashed #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--pastel-pink);
+    background-color: #fff9fb;
+  }
+}
+
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.uploader-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #aaa;
+  .material-symbols-outlined {
+    font-size: 2.5rem;
+  }
+  span {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+}
+
+// OTROS CAMPOS
+.toggle-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f1f2f6;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px; // Ancho
+  height: 32px; // Alto
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px; // Totalmente redondo
+
+    // El círculo interior
+    &::before {
+      position: absolute;
+      content: "";
+      height: 24px; // Más pequeño que el contenedor
+      width: 24px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); // Animación con rebote
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  input:checked + .slider {
+    background-color: var(
+      --pastel-pink,
+      #ffd1dc
+    ); // Color rosa cuando está activo
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px); // Movimiento del círculo
+  }
+}
+
+.spinner-overlay .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: var(--pastel-pink, #ffd1dc);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+// Animaciones
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}

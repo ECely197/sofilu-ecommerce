@@ -1,6 +1,4 @@
-// Contenido completo para: src/app/pages/admin/order-detail/order-detail.ts
-
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -27,13 +25,7 @@ import { ToastService } from '../../../services/toast.service';
         style({ opacity: 0, transform: 'translateY(10px)' }),
         animate(
           '300ms ease-out',
-          style({ opacity: 1, transform: 'translateY(0)' })
-        ),
-      ]),
-      transition(':leave', [
-        animate(
-          '300ms ease-in',
-          style({ opacity: 0, transform: 'translateY(10px)' })
+          style({ opacity: 1, transform: 'translateY(0)' }),
         ),
       ]),
     ]),
@@ -51,8 +43,28 @@ export class OrderDetail implements OnInit {
   orderStatuses = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
   isEditingStatus = signal<boolean>(false);
 
+  // --- COMPUTED SIGNALS PARA CÁLCULOS ---
+  subtotal = computed(() => {
+    const currentOrder = this.order();
+    if (!currentOrder || !currentOrder.items) return 0;
+    return currentOrder.items.reduce(
+      (sum: number, item: any) => sum + item.price * item.quantity,
+      0,
+    );
+  });
+
+  shippingCost = computed(() => {
+    const currentOrder = this.order();
+    if (!currentOrder) return 0;
+    // Calcula el costo de envío restando los otros componentes del total
+    return (
+      currentOrder.totalAmount -
+      this.subtotal() +
+      (currentOrder.discountAmount || 0)
+    );
+  });
+
   ngOnInit() {
-    // Inicializamos el formulario vacío para evitar errores
     this.statusForm = new FormGroup({
       status: new FormControl('', Validators.required),
     });
@@ -62,7 +74,6 @@ export class OrderDetail implements OnInit {
       this.fetchOrder(orderId);
     } else {
       this.isLoading.set(false);
-      // Aquí podrías redirigir o mostrar un mensaje de error
     }
   }
 
@@ -71,7 +82,6 @@ export class OrderDetail implements OnInit {
     this.orderService.getOrderById(orderId).subscribe({
       next: (data) => {
         this.order.set(data);
-        // Rellenamos el formulario con el valor del pedido cargado
         this.statusForm.patchValue({ status: data.status });
         this.isLoading.set(false);
       },
@@ -83,10 +93,7 @@ export class OrderDetail implements OnInit {
   }
 
   updateStatus(): void {
-    if (this.statusForm.invalid || !this.order()) {
-      return;
-    }
-
+    if (this.statusForm.invalid || !this.order()) return;
     const newStatus = this.statusForm.value.status;
     const currentOrder = this.order();
 
@@ -96,60 +103,36 @@ export class OrderDetail implements OnInit {
         .subscribe({
           next: (updatedOrder) => {
             this.order.set(updatedOrder);
-            this.statusForm.patchValue({ status: updatedOrder.status });
-            this.toastService.show('¡Estado del pedido actualizado con éxito!');
+            this.isEditingStatus.set(false); // Salir del modo edición
+            this.toastService.show('¡Estado actualizado!', 'success');
           },
-          error: (err) => {
-            console.error('Error al actualizar el estado:', err);
-            this.toastService.show(
-              'No se pudo actualizar el estado del pedido.'
-            );
-          },
+          error: (err) =>
+            this.toastService.show('No se pudo actualizar el estado.', 'error'),
         });
     }
   }
 
-  /** Activa el modo de edición para cambiar el estado. */
   enableEditMode(): void {
     this.isEditingStatus.set(true);
   }
-
-  /**
-   * Cancela la edición, resetea el formulario al estado original del pedido
-   * y sale del modo de edición.
-   */
   cancelEditMode(): void {
-    const currentStatus = this.order()?.status;
-    if (currentStatus) {
-      this.statusForm.patchValue({ status: currentStatus });
-    }
     this.isEditingStatus.set(false);
   }
 
-  /**
-   * ¡NUEVO! Helper para encontrar la imagen de una variante seleccionada.
-   * @param item El artículo del pedido.
-   * @param variantName El nombre de la variante (ej: "Empaque").
-   * @returns La URL de la imagen de la opción seleccionada, o undefined.
-   */
   getVariantOptionImage(item: any, variantName: string): string | undefined {
     const selectedOptionName = item.selectedVariants[variantName];
-    if (!item.product || !item.product.variants || !selectedOptionName) {
-      return undefined;
-    }
+    if (!item.product?.variants || !selectedOptionName) return undefined;
     const variant = item.product.variants.find(
-      (v: any) => v.name === variantName
+      (v: any) => v.name === variantName,
     );
     const option = variant?.options.find(
-      (o: any) => o.name === selectedOptionName
+      (o: any) => o.name === selectedOptionName,
     );
     return option?.image;
   }
 
   public objectKeys(obj: object): string[] {
-    if (!obj) {
-      return []; // Añadimos una guarda para evitar errores si el objeto es nulo
-    }
+    if (!obj) return [];
     return Object.keys(obj);
   }
 }

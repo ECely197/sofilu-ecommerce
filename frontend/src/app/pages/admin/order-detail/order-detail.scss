@@ -1,4 +1,4 @@
-@use "../../../../../buttons" as *; // El '*' hace que las clases estén disponibles
+@use "../../../../../buttons" as *;
 @use "../_admin-shared" as *;
 
 // --- Estilos Generales ---
@@ -11,16 +11,14 @@
   margin-bottom: 2rem;
 }
 
-// --- ¡NUEVOS ESTILOS! ---
 .header-title-wrapper {
   display: flex;
   align-items: center;
-  gap: 1rem; // Espacio entre el botón y el título
-
+  gap: 1rem;
   h1 {
-    font-size: 2.25rem;
+    font-size: 2rem;
     font-family: "Baloo 2", serif;
-    margin: 0; // Reseteamos el margen del h1
+    margin: 0;
   }
 }
 
@@ -35,7 +33,9 @@
   background-color: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
   &:hover {
     background-color: var(--soft-white);
@@ -53,90 +53,128 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   @media (min-width: 1024px) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
   }
 }
 
+// --- TARJETAS ESTILO GLASS ---
 .card {
-  background-color: white;
-  border-radius: 1rem;
+  background: white;
+  border-radius: 1.5rem;
   padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
   &:not(:last-child) {
     margin-bottom: 1.5rem;
   }
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--soft-gray);
+  margin: 0 0 1rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f0f0f0;
 }
-
-.customer-name {
-  font-weight: 600;
-}
-.customer-email {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-// --- Lista de Artículos ---
+// --- LISTA DE ARTÍCULOS ---
 .order-item {
   display: grid;
-  grid-template-columns: 64px 1fr auto auto;
+  grid-template-columns: 64px 1fr auto;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--border);
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f5f5f5;
   &:last-of-type {
     border-bottom: none;
   }
 }
 
-.item-image-wrapper {
-  grid-area: img;
+.item-image {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #f9f9f9;
+  padding: 5px;
 }
+
 .item-info {
   .item-name {
     font-weight: 600;
+    line-height: 1.3;
   }
   .item-sku {
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: #888;
+    margin-top: 2px;
+  }
+}
+
+.item-variants-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.variant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f1f2f6;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  color: #555;
+  .variant-chip-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  span {
+    font-weight: 500;
+  }
+}
+
+.item-pricing {
+  text-align: right;
+  .item-total {
+    font-weight: 700;
+    font-size: 1.1rem;
   }
   .item-price-quantity {
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #888;
   }
 }
 
-.item-variants-images {
+// --- RESUMEN FINANCIERO ---
+.totals-summary {
   display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-size: 0.95rem;
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    span:first-child {
+      color: #666;
+    }
+  }
+  .discount {
+    color: #059669;
+  }
+  hr {
+    border: 0;
+    border-top: 1px dashed #ddd;
+    margin: 0.5rem 0;
+  }
+  .grand-total {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #333;
+  }
 }
-
-.variant-image {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-}
-.item-variants {
-  grid-area: variants;
-}
-.item-price-quantity {
-  display: none;
-} // Oculto para un look más limpio
-.item-total {
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-align: right;
-  min-width: 120px;
-}
+// --- SIDEBAR ---
 
 .status-display {
   display: flex;
@@ -187,149 +225,49 @@
   }
 }
 
-// --- Media Query para Móvil ---
-@media (max-width: 767px) {
-  .order-item {
-    grid-template-columns: 64px 1fr auto; // Imagen | Info | Total
-    grid-template-areas:
-      "img info total"
-      "img variants variants";
-    row-gap: 0.5rem;
-  }
-  .item-variants-images {
-    grid-area: variants;
-    justify-content: flex-start;
-    padding-top: 0.5rem;
-  }
-}
-
-.item-image {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 0.75rem;
-}
-
-.item-name {
-  font-weight: 600;
-}
-.item-variants {
+.notes-details {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  padding-top: 0.25rem;
-}
-
-.totals-summary {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--soft-gray);
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-  &.discount {
-    color: #065f46; // Un color verde para indicar el ahorro
-    font-weight: 500;
-  }
-}
-.grand-total {
-  font-size: 1.5rem; // Hacemos el total final más grande
-}
-
-.form-field {
-  position: relative; // Necesario para el ícono de la flecha
-  margin-bottom: 1.5rem; // Más espacio
-
-  label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-  }
-
-  // Añadimos un ícono de flecha desplegable
-  &::after {
-    content: "expand_more"; // Nombre del ícono de Material Symbols
-    font-family: "Material Symbols Outlined";
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(25%); // Ajuste fino de la posición vertical
-    pointer-events: none; // Permite hacer clic a través del ícono
-    color: var(--text-secondary);
-  }
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--soft-gray);
-  border-radius: 0.75rem;
-  background-color: var(--soft-white);
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-
-  // Hacemos que el <select> parezca un input normal
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-
-  transition: all 0.2s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
-  }
-
-  option {
-    font-family: "Manrope", sans-serif;
-    color: var(--text-charcoal);
-    background-color: white;
-  }
-}
-
-// --- ¡SECCIÓN DE BOTONES LIMPIA! ---
-.btn-material {
-  @extend .btn-material;
-  width: 100%;
-  margin-top: 1rem;
-
-  &:disabled {
-    background-color: var(--soft-gray);
-    color: var(--text-secondary);
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-    &::before {
-      opacity: 0;
+  gap: 1rem;
+  .note-group {
+    strong {
+      display: block;
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    p {
+      margin: 0;
+      line-height: 1.5;
     }
   }
 }
 
-.btn-secondary {
-  @extend .btn-secondary;
+.delivery-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  &.normal {
+    background: #e0e7ff;
+    color: #3730a3;
+  }
+  &.personalizada {
+    background: #fef9c3;
+    color: #854d0e;
+  }
 }
 
 // --- Media Query para Móvil ---
-@media (max-width: 767px) {
+@media (max-width: 600px) {
   .order-item {
-    grid-template-columns: auto 1fr; // Imagen, Contenido
-    grid-template-areas:
-      "img info"
-      "img variants"
-      "img total";
-    row-gap: 0.5rem;
-  }
-  .item-total {
-    text-align: left;
-    padding-top: 0.5rem;
+    grid-template-columns: 50px 1fr;
+    grid-template-areas: "img info" "img pricing";
+    row-gap: 0;
+    .item-pricing {
+      text-align: left;
+      margin-top: 0.5rem;
+    }
   }
 }

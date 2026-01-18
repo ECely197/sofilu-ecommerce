@@ -9,8 +9,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-
-// Servicios e Interfaces
 import { CartService } from '../../services/cart';
 import { Customer, Address } from '../../services/customer';
 import { SettingsService, AppSettings } from '../../services/settings.service';
@@ -19,11 +17,12 @@ import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { PaymentService } from '../../services/payment.service';
 import { CartItem } from '../../interfaces/cart-item.interface';
-
-// Componente Modal
+import {
+  DeliveryOption,
+  DeliveryOptionService,
+} from '../../services/delivery-option.service.ts';
 import { AddressFormModalComponent } from '../../components/address-form-modal/address-form-modal';
 
-// Declaración para Wompi
 declare const WidgetCheckout: any;
 
 @Component({
@@ -40,7 +39,7 @@ declare const WidgetCheckout: any;
   styleUrls: ['./checkout.scss'],
 })
 export class checkout implements OnInit {
-  // --- INYECCIÓN DE DEPENDENCIAS ---
+  // --- Inyecciones ---
   public cartService = inject(CartService);
   private router = inject(Router);
   private customerService = inject(Customer);
@@ -49,52 +48,49 @@ export class checkout implements OnInit {
   private toastService = inject(ToastService);
   private paymentService = inject(PaymentService);
   private fb = inject(FormBuilder);
+  private deliveryOptionService = inject(DeliveryOptionService);
 
-  // Referencia al Modal de Dirección
   @ViewChild(AddressFormModalComponent)
   addressModal!: AddressFormModalComponent;
 
-  // --- SIGNALS (ESTADO REACTIVO) ---
+  // --- Signals ---
   addresses = signal<Address[]>([]);
   selectedAddress = signal<Address | null>(null);
   isLoading = signal(true);
   isProcessingOrder = signal(false);
-
-  // Resumen Financiero
   shippingCost = signal(0);
   appliedCoupon = signal<any | null>(null);
   discountAmount = signal<number>(0);
   couponMessage = signal<string>('');
   couponError = signal<boolean>(false);
-  serviceFee = signal(0);
 
-  // Opciones de Compra
+  // Opciones de Entrega
   deliveryType = signal<'Normal' | 'Personalizada'>('Normal');
-  customDeliveryCost = signal(0);
-  notesForm = this.fb.group({
-    orderNotes: [''],
-    deliveryNotes: [''],
-  });
+  deliveryOptions = signal<DeliveryOption[]>([]);
+  selectedDeliveryOption = signal<DeliveryOption | null>(null);
+
+  notesForm = this.fb.group({ orderNotes: [''], deliveryNotes: [''] });
 
   private appSettings: AppSettings | null = null;
 
-  // --- COMPUTED: CÁLCULO DEL TOTAL FINAL ---
-  grandTotal = computed(() => {
-    const subtotal = this.cartService.subTotal();
+  // --- COMPUTED SIGNALS (LÓGICA MEJORADA) ---
 
-    // AQUÍ ESTÁ LA LÓGICA: Si es personalizada, el envío normal es 0.
-    const shipping =
-      this.deliveryType() === 'Personalizada' ? 0 : this.shippingCost();
-
-    const discount = this.discountAmount();
-    const fee = this.serviceFee();
-    const customCost =
-      this.deliveryType() === 'Personalizada' ? this.customDeliveryCost() : 0;
-
-    return Math.max(0, subtotal + shipping - discount + fee + customCost);
+  // Calcula el costo de envío final basándose en la selección
+  finalShippingCost = computed(() => {
+    if (this.deliveryType() === 'Personalizada') {
+      return this.selectedDeliveryOption()?.cost ?? 0;
+    }
+    return this.shippingCost(); // Costo estándar
   });
 
-  // --- CICLO DE VIDA ---
+  grandTotal = computed(() => {
+    const subtotal = this.cartService.subTotal();
+    const shipping = this.finalShippingCost(); // Usa el nuevo computed
+    const discount = this.discountAmount();
+    return Math.max(0, subtotal + shipping - discount);
+  });
+
+  // --- Ciclo de Vida ---
   ngOnInit(): void {
     if (this.cartService.totalItems() === 0) {
       this.router.navigate(['/cart']);
@@ -105,30 +101,22 @@ export class checkout implements OnInit {
     this.customerService.getAddresses().subscribe({
       next: (addresses) => {
         this.addresses.set(addresses);
-        const preferred =
-          addresses.find((a) => a.isPreferred) ||
-          (addresses.length > 0 ? addresses[0] : null);
+        const preferred = addresses.find((a) => a.isPreferred) || addresses[0];
         if (preferred) this.selectAddress(preferred);
       },
-      error: (err) => console.error('Error cargando direcciones:', err),
     });
 
     this.settingsService.getSettings().subscribe({
       next: (settings) => {
         this.appSettings = settings;
-        this.customDeliveryCost.set(settings.customDeliveryCost || 0);
         if (this.selectedAddress()) this.selectAddress(this.selectedAddress()!);
-        if (settings.serviceFeePercentage > 0) {
-          this.serviceFee.set(
-            this.cartService.subTotal() * (settings.serviceFeePercentage / 100),
-          );
-        }
         this.isLoading.set(false);
       },
-      error: (err) => {
-        console.error('Error cargando ajustes:', err);
-        this.isLoading.set(false);
-      },
+    });
+
+    // Cargar opciones de entrega especial
+    this.deliveryOptionService.getActiveOptions().subscribe((options) => {
+      this.deliveryOptions.set(options);
     });
   }
 
@@ -171,12 +159,23 @@ export class checkout implements OnInit {
     });
   }
 
-  // --- LÓGICA DEL MODAL ---
+  selectDeliveryType(type: 'Normal' | 'Personalizada') {
+    this.deliveryType.set(type);
+    if (type === 'Normal') {
+      this.selectedDeliveryOption.set(null); // Limpiar selección si vuelven a normal
+    }
+  }
+
+  selectDeliveryOption(option: DeliveryOption) {
+    // Si tocan la misma, se deselecciona. Si es otra, se selecciona.
+    this.selectedDeliveryOption.update((current) =>
+      current?._id === option._id ? null : option,
+    );
+  }
 
   openAddressModal() {
     this.addressModal.open();
   }
-
   handleAddressCreated(newAddress: Address) {
     this.addresses.update((current) => [...current, newAddress]);
     this.selectAddress(newAddress);
@@ -275,6 +274,7 @@ export class checkout implements OnInit {
       deliveryType: this.deliveryType(),
       orderNotes: this.notesForm.value.orderNotes || '',
       deliveryNotes: this.notesForm.value.deliveryNotes || '',
+      selectedDeliveryOption: this.selectedDeliveryOption()?._id || null,
     };
   }
 

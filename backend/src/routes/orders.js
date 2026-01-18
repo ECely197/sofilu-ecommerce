@@ -324,7 +324,7 @@ router.get(
 
       const vendorPerformance = vendorInventory.map((inventoryData) => {
         const salesData = vendorSales.find(
-          (sale) => sale.vendorName === inventoryData.vendorName
+          (sale) => sale.vendorName === inventoryData.vendorName,
         );
         return {
           ...inventoryData,
@@ -341,7 +341,7 @@ router.get(
             acc[status._id] = status.count;
             return acc;
           },
-          { Procesando: 0, Enviado: 0, Entregado: 0, Cancelado: 0 }
+          { Procesando: 0, Enviado: 0, Entregado: 0, Cancelado: 0 },
         ),
         recentOrders,
         totalProducts: productStats[0]?.totalProducts || 0,
@@ -354,7 +354,7 @@ router.get(
       console.error("Error al obtener las estadísticas del dashboard:", error);
       res.status(500).json({ message: "Error al obtener las estadísticas" });
     }
-  }
+  },
 );
 
 /**
@@ -364,15 +364,15 @@ router.get(
  */
 router.get("/:id", [authMiddleware], async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate({
-      path: "items.product",
-      model: "Product",
-      select: "name sku images variants",
-    });
+    const order = await Order.findById(req.params.id)
+      .populate({
+        path: "items.product",
+        model: "Product",
+      })
+      .populate("selectedDeliveryOption");
 
-    if (!order) {
+    if (!order)
       return res.status(404).json({ message: "Pedido no encontrado" });
-    }
     res.json(order);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener el pedido" });
@@ -448,7 +448,7 @@ router.post("/", [authMiddleware], async (req, res) => {
         for (const variantName in item.selectedVariants) {
           const variant = product.variants.find((v) => v.name === variantName);
           const option = variant?.options.find(
-            (o) => o.name === item.selectedVariants[variantName]
+            (o) => o.name === item.selectedVariants[variantName],
           );
           if (!option || option.stock < item.quantity) {
             return res.status(400).json({
@@ -503,14 +503,14 @@ router.post("/", [authMiddleware], async (req, res) => {
                   { "v.name": variantName },
                   { "o.name": item.selectedVariants[variantName] },
                 ],
-              }
+              },
             );
           }
         } else {
           // Si no hay variantes, actualizamos el stock del producto principal
           await Product.updateOne(
             { _id: item.product },
-            { $inc: { stock: -item.quantity } }
+            { $inc: { stock: -item.quantity } },
           );
         }
       }
@@ -519,7 +519,7 @@ router.post("/", [authMiddleware], async (req, res) => {
       if (appliedCoupon) {
         await Coupon.updateOne(
           { code: appliedCoupon },
-          { $inc: { timesUsed: 1 } }
+          { $inc: { timesUsed: 1 } },
         );
       }
 
