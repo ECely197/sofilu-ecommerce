@@ -31,6 +31,7 @@ const sectionRoutes = require("./routes/sections");
 const vendorRoutes = require("./routes/vendors");
 const specialEventRoutes = require("./routes/specialEvents");
 const paymentRoutes = require("./routes/payments");
+const deliveryOptionRoutes = require("./routes/deliveryOptions");
 
 // --------------------------------------------------------------------------
 // 2. INICIALIZACIÓN Y CONFIGURACIÓN
@@ -43,7 +44,7 @@ try {
   const serviceAccountPath = path.join(
     __dirname,
     "..",
-    "serviceAccountKey.json"
+    "serviceAccountKey.json",
   );
   const serviceAccount = require(serviceAccountPath);
 
@@ -117,7 +118,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Conectado a MongoDB Atlas con éxito."))
   .catch((error) =>
-    console.error("Error fatal al conectar con MongoDB:", error)
+    console.error("Error fatal al conectar con MongoDB:", error),
   );
 
 // --------------------------------------------------------------------------
@@ -138,6 +139,7 @@ app.use(`${apiPrefix}/sections`, sectionRoutes);
 app.use(`${apiPrefix}/vendors`, vendorRoutes);
 app.use(`${apiPrefix}/special-events`, specialEventRoutes);
 app.use(`${apiPrefix}/payments`, paymentRoutes);
+app.use(`${apiPrefix}/delivery-options`, deliveryOptionRoutes);
 
 // Ruta raíz de bienvenida
 app.get("/", (req, res) => {

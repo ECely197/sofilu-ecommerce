@@ -40,7 +40,7 @@ const orderItemSchema = new Schema(
       required: false,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 /**
@@ -51,7 +51,7 @@ const orderSchema = new Schema({
   userId: {
     type: String,
     required: true,
-    index: true, // Indexar para búsquedas rápidas de pedidos por usuario
+    index: true,
   },
   customerInfo: {
     name: { type: String, required: true },
@@ -59,7 +59,7 @@ const orderSchema = new Schema({
     phone: { type: String, required: true },
   },
   shippingAddress: {
-    type: Object, // Se almacena una copia de la dirección para preservar el registro histórico
+    type: Object,
     required: true,
   },
   items: [orderItemSchema],
@@ -81,9 +81,45 @@ const orderSchema = new Schema({
     enum: ["Pendiente", "Procesando", "Enviado", "Entregado", "Cancelado"],
     default: "Pendiente",
   },
+
+  // --- CAMPOS NUEVOS Y CORREGIDOS ---
+
+  deliveryType: {
+    type: String,
+    enum: ["Normal", "Personalizada"],
+    default: "Normal",
+  },
+
+  selectedDeliveryOption: {
+    type: Schema.Types.ObjectId,
+    ref: "DeliveryOption",
+    default: null,
+  },
+
+  orderNotes: {
+    type: String,
+    default: "",
+  },
+
+  deliveryNotes: {
+    type: String,
+    default: "",
+  },
+
+  // --- Campos de Fecha y Pago ---
+
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  paymentId: {
+    type: String, // ID de la transacción de Wompi
+  },
+  paymentStatus: {
+    type: String, // APPROVED, DECLINED, etc.
+  },
+  paymentMethod: {
+    type: String, // Wompi Widget, etc.
   },
 });
 

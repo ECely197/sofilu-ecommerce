@@ -81,11 +81,16 @@ export class checkout implements OnInit {
   // --- COMPUTED: CÁLCULO DEL TOTAL FINAL ---
   grandTotal = computed(() => {
     const subtotal = this.cartService.subTotal();
-    const shipping = this.shippingCost();
+
+    // AQUÍ ESTÁ LA LÓGICA: Si es personalizada, el envío normal es 0.
+    const shipping =
+      this.deliveryType() === 'Personalizada' ? 0 : this.shippingCost();
+
     const discount = this.discountAmount();
     const fee = this.serviceFee();
     const customCost =
       this.deliveryType() === 'Personalizada' ? this.customDeliveryCost() : 0;
+
     return Math.max(0, subtotal + shipping - discount + fee + customCost);
   });
 
