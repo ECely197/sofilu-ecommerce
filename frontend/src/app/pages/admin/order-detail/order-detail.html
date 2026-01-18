@@ -5,9 +5,6 @@
   <div class="order-detail-container" @fadeInOut>
     <header class="page-header">
       <div class="header-title-wrapper">
-        <a routerLink="/admin/orders" class="back-button" appRipple>
-          <span class="material-symbols-outlined">arrow_back</span>
-        </a>
         <h1>Pedido #{{ currentOrder._id.slice(-6).toUpperCase() }}</h1>
       </div>
       <div class="header-actions">
@@ -82,7 +79,7 @@
           }
         </div>
 
-        <!-- RESUMEN FINANCIERO (DINÁMICO) -->
+        <!-- RESUMEN FINANCIERO -->
         <div class="card">
           <h2 class="card-title">Resumen Financiero</h2>
           <div class="totals-summary">
@@ -131,13 +128,35 @@
               (ngSubmit)="updateStatus()"
               class="status-form"
             >
-              <div class="form-field has-arrow">
-                <select id="status" formControlName="status" class="form-input">
-                  @for (status of orderStatuses; track status) {
-                    <option [value]="status">{{ status }}</option>
-                  }
-                </select>
+              <div class="custom-select-wrapper">
+                <!-- (Tu dropdown personalizado sigue aquí) -->
+                <button
+                  type="button"
+                  class="select-trigger"
+                  (click)="isStatusDropdownOpen.set(!isStatusDropdownOpen())"
+                >
+                  <span>{{ statusForm.value.status }}</span>
+                  <span
+                    class="material-symbols-outlined chevron"
+                    [class.open]="isStatusDropdownOpen()"
+                    >expand_more</span
+                  >
+                </button>
+                @if (isStatusDropdownOpen()) {
+                  <div class="select-options">
+                    @for (status of orderStatuses; track status) {
+                      <button
+                        type="button"
+                        (click)="selectStatus(status)"
+                        [class.selected]="status === statusForm.value.status"
+                      >
+                        {{ status }}
+                      </button>
+                    }
+                  </div>
+                }
               </div>
+
               <div class="form-actions">
                 <button
                   type="button"
@@ -146,16 +165,13 @@
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  class="btn-material"
-                  [disabled]="statusForm.invalid || statusForm.pristine"
-                >
-                  Guardar
-                </button>
+
+                <!-- CORRECCIÓN AQUÍ: type="submit" y quitamos disabled por seguridad de prueba -->
+                <button type="submit" class="btn-material">Guardar</button>
               </div>
             </form>
           } @else {
+            <!-- VISTA DE LECTURA -->
             <div class="status-display">
               <span
                 class="status-badge"
@@ -173,7 +189,7 @@
           <h2 class="card-title">Información de Envío</h2>
           <div class="address-details">
             <p>
-              <strong>{{ currentOrder.shippingAddress.fullName }}</strong>
+              <strong>{{ currentOrder.customerInfo.name }}</strong>
             </p>
             <p>{{ currentOrder.shippingAddress.streetAddress }}</p>
             @if (currentOrder.shippingAddress.addressDetails) {
@@ -196,7 +212,6 @@
           </div>
         </div>
 
-        <!-- ¡NUEVA TARJETA DE NOTAS Y TIPO DE ENTREGA! -->
         <div class="card">
           <h2 class="card-title">Detalles Adicionales</h2>
           <div class="notes-details">
@@ -211,7 +226,11 @@
             @if (currentOrder.selectedDeliveryOption) {
               <div class="note-group">
                 <strong>Opción Especial:</strong>
-                <p>{{ currentOrder.selectedDeliveryOption.name }}</p>
+                <p>
+                  {{ currentOrder.selectedDeliveryOption.name }} (+{{
+                    currentOrder.selectedDeliveryOption.cost | currency: "COP"
+                  }})
+                </p>
               </div>
             }
             @if (currentOrder.orderNotes) {

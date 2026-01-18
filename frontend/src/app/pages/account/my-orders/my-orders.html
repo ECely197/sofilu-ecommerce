@@ -1,193 +1,258 @@
-<section class="orders-section">
+<section class="account-section">
   <h2 class="section-title">Historial de Pedidos</h2>
 
-  <!-- Estado de Carga -->
-  @if (isLoadingOrders) {
-  <div class="loading-state">
-    <!-- Puedes añadir un esqueleto de carga aquí si lo deseas -->
-    Cargando tus pedidos...
-  </div>
-  }
-
-  <!-- Lista de Pedidos -->
-  @else if (orders.length > 0) {
-  <div class="orders-list">
-    @for (order of orders; track order._id) {
-    <div
-      class="order-card"
-      [class.is-expanded]="expandedOrderId() === order._id"
-    >
-      <!-- Cabecera de la Tarjeta de Pedido (Clickable para expandir) -->
-      <div class="order-card-header" (click)="toggleOrderDetails(order._id)">
-        <div class="header-info">
-          <p class="order-id">
-            Pedido #{{ order._id.slice(-6).toUpperCase() }}
-          </p>
-          <p class="order-date">{{ order.createdAt | date : "longDate" }}</p>
-        </div>
-        <div class="header-summary">
-          <span class="order-total">{{
-            order.totalAmount | currency : "COP" : "symbol" : "1.0-0"
-          }}</span>
-          <span class="status-chip" [ngClass]="order.status.toLowerCase()">{{
-            order.status
-          }}</span>
-          <span class="material-symbols-outlined expand-icon">expand_more</span>
-        </div>
-      </div>
-
-      <!-- Contenido Expandible con los Detalles del Pedido -->
-      <div
-        class="order-card-content"
-        [@expandCollapse]="
-          expandedOrderId() === order._id ? 'expanded' : 'collapsed'
-        "
-      >
-        <div class="content-inner">
-          <p class="content-title">Artículos en este pedido:</p>
-          <div class="order-items">
-            @for (item of order.items; track item._id) {
-            <div class="order-item">
-              @if (item.product?.images?.length > 0) {
-              <img
-                [src]="item.product.images[0]"
-                [alt]="item.product.name"
-                class="item-image"
-              />
-              } @else {
-              <div class="item-image placeholder"></div>
-              }
-              <div class="item-details">
-                <p class="item-name">
-                  {{ item.product?.name || "Producto no disponible" }} (x{{
-                    item.quantity
-                  }})
-                </p>
-                <div class="item-variants">
-                  @for (variantKey of objectKeys(item.selectedVariants); track
-                  variantKey) {
-                  <span
-                    >{{ variantKey }}:
-                    <strong>{{
-                      item.selectedVariants[variantKey]
-                    }}</strong></span
-                  >
-                  }
-                </div>
-              </div>
-              <p class="item-price">
-                {{
-                  item.price * item.quantity
-                    | currency : "COP" : "symbol" : "1.0-0"
+  @if (isLoadingOrders()) {
+    <div class="loading-state">Cargando tus pedidos...</div>
+  } @else if (orders().length > 0) {
+    <div class="orders-list">
+      <!-- CORRECCIÓN AQUÍ: orders() con paréntesis -->
+      @for (order of orders(); track order._id) {
+        <div
+          class="order-card card"
+          [class.is-expanded]="expandedOrderId() === order._id"
+        >
+          <!-- HEADER DEL PEDIDO (Clickeable para expandir) -->
+          <div
+            class="order-header"
+            (click)="toggleOrderDetails(order._id)"
+            appRipple
+          >
+            <div class="order-info-main">
+              <span class="order-id">
+                <span class="hash">#</span> Pedido #{{
+                  order._id.slice(-6).toUpperCase()
                 }}
-              </p>
+              </span>
+              <span class="order-date">{{
+                order.createdAt | date: "longDate"
+              }}</span>
             </div>
-            }
+
+            <div class="order-meta">
+              <span class="order-total">{{
+                order.totalAmount | currency: "COP" : "symbol" : "1.0-0"
+              }}</span>
+
+              <span class="status-badge" [ngClass]="order.status.toLowerCase()">
+                {{ order.status }}
+              </span>
+
+              <button class="expand-btn">
+                <span class="material-symbols-outlined icon">expand_more</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Sección de Acciones (Solo visible si el pedido está en 'Procesando') -->
-          @if (order.status === 'Procesando') {
-          <div class="order-actions">
-            <button
-              (click)="openEditModal(order)"
-              class="btn-secondary action-btn"
-              appRipple
-            >
-              Editar Pedido
-            </button>
-            <button
-              (click)="cancelOrder(order._id)"
-              class="btn-danger action-btn"
-              appRipple
-            >
-              Cancelar Pedido
-            </button>
+          <!-- DETALLES EXPANDIBLES -->
+          <div
+            class="order-details-wrapper"
+            [@expandCollapse]="
+              expandedOrderId() === order._id ? 'expanded' : 'collapsed'
+            "
+          >
+            <div class="order-details-content">
+              <h4 class="details-subtitle">Artículos en este pedido:</h4>
+              <div class="items-grid">
+                @for (item of order.items; track item.product._id) {
+                  <div class="order-item">
+                    <div class="img-container">
+                      <img
+                        [src]="item.product.images[0]"
+                        [alt]="item.product.name"
+                      />
+                    </div>
+                    <div class="item-text">
+                      <p class="name">{{ item.product.name }}</p>
+                      <div class="variants">
+                        @for (
+                          key of objectKeys(item.selectedVariants);
+                          track key
+                        ) {
+                          <span class="variant-tag">{{
+                            item.selectedVariants[key]
+                          }}</span>
+                        }
+                      </div>
+                      <p class="qty">x{{ item.quantity }}</p>
+                    </div>
+                    <p class="price">
+                      {{ item.price | currency: "COP" : "symbol" : "1.0-0" }}
+                    </p>
+                  </div>
+                }
+              </div>
+
+              <!-- BOTONES DE ACCIÓN -->
+              <div class="order-actions">
+                <!-- stopPropagation para que no cierre el acordeón al hacer clic -->
+                <button
+                  class="btn-secondary"
+                  (click)="$event.stopPropagation(); openEditModal(order)"
+                >
+                  Editar Envío
+                </button>
+
+                @if (
+                  order.status === "Procesando" || order.status === "Pendiente"
+                ) {
+                  <button
+                    class="btn-danger"
+                    (click)="$event.stopPropagation(); cancelOrder(order._id)"
+                  >
+                    Cancelar Pedido
+                  </button>
+                }
+              </div>
+            </div>
           </div>
-          }
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
-  }
-
-  <!-- Estado Vacío -->
-  @else {
-  <div class="empty-state">
-    <h3>Aún no has realizado ningún pedido.</h3>
-    <a routerLink="/products" class="explore-button" appRipple
-      >Empezar a comprar</a
-    >
-  </div>
+  } @else {
+    <div class="empty-state">
+      <img
+        src="assets/images/cat-sleep.png"
+        alt="Sin pedidos"
+        class="empty-img"
+      />
+      <p>Aún no has realizado ningún pedido.</p>
+      <a routerLink="/" class="btn-material">Ir a la tienda</a>
+    </div>
   }
 </section>
 
-<!-- 
-==========================================================================
-   MODAL DE EDICIÓN DE PEDIDO
-   - Se muestra por encima de todo cuando isEditModalVisible() es true
-========================================================================== 
--->
-@if (isEditModalVisible() && editingOrder(); as order) {
-<div class="modal-overlay" (click)="closeEditModal()"></div>
-<div class="edit-modal-panel">
-  <h2 class="modal-title">
-    Editar Pedido #{{ order._id.slice(-6).toUpperCase() }}
-  </h2>
+<!-- MODAL DE EDICIÓN -->
+@if (isEditModalVisible() && editingOrder()) {
+  <div class="modal-overlay" (click)="closeEditModal()"></div>
+  <div class="modal-panel">
+    <!-- Usamos el operador de navegación segura (?) por si acaso -->
+    <h3>Editar Envío - #{{ editingOrder()?._id?.slice(-6)?.toUpperCase() }}</h3>
 
-  <div class="modal-content">
-    @for (item of order.items; track item._id; let i = $index) {
-    <div class="edit-item">
-      @if (item.product?.images?.length > 0) {
-      <img [src]="item.product.images[0]" class="item-image" />
-      } @else {
-      <div class="item-image placeholder"></div>
-      }
-      <div class="item-details">
-        <p class="item-name">{{ item.product.name }}</p>
-        <div class="item-variants">
-          @for (variantKey of objectKeys(item.selectedVariants); track
-          variantKey) {
-          <span>{{ item.selectedVariants[variantKey] }}</span>
-          }
+    <form [formGroup]="editAddressForm" (ngSubmit)="saveAddressChanges()">
+      <div class="form-grid">
+        <div class="material-field">
+          <input
+            id="fullName"
+            type="text"
+            formControlName="fullName"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="fullName" class="material-label">Nombre Completo</label>
+        </div>
+        <div class="material-field">
+          <input
+            id="phone"
+            type="tel"
+            formControlName="phone"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="phone" class="material-label">Teléfono</label>
         </div>
       </div>
-      <div class="quantity-selector">
-        <button
-          (click)="updateItemQuantityInModal(i, -1)"
-          class="quantity-btn"
-          appRipple
+
+      <div class="material-field">
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="email" class="material-label">Email</label>
+      </div>
+
+      <div class="material-field">
+        <input
+          id="streetAddress"
+          type="text"
+          formControlName="streetAddress"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="streetAddress" class="material-label">Dirección</label>
+      </div>
+
+      <div class="material-field">
+        <input
+          id="addressDetails"
+          type="text"
+          formControlName="addressDetails"
+          class="material-input"
+          placeholder=" "
+        />
+        <label for="addressDetails" class="material-label"
+          >Detalles (Apto, Torre)</label
         >
-          -
+      </div>
+
+      <div class="form-grid">
+        <div class="material-field">
+          <input
+            id="department"
+            type="text"
+            formControlName="department"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="department" class="material-label">Departamento</label>
+        </div>
+        <div class="material-field">
+          <input
+            id="city"
+            type="text"
+            formControlName="city"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="city" class="material-label">Ciudad</label>
+        </div>
+      </div>
+
+      <!-- Campo Oculto para Código Postal (necesario para validación si es required) -->
+      <input type="hidden" formControlName="postalCode" />
+
+      <hr class="modal-divider" />
+
+      <div class="material-field">
+        <textarea
+          id="orderNotes"
+          formControlName="orderNotes"
+          class="material-input"
+          placeholder=" "
+          rows="2"
+        ></textarea>
+        <label for="orderNotes" class="material-label">Notas del Pedido</label>
+      </div>
+
+      <div class="material-field">
+        <textarea
+          id="deliveryNotes"
+          formControlName="deliveryNotes"
+          class="material-input"
+          placeholder=" "
+          rows="2"
+        ></textarea>
+        <label for="deliveryNotes" class="material-label"
+          >Instrucciones de Entrega</label
+        >
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeEditModal()">
+          Cancelar
         </button>
-        <span class="quantity-value">{{ item.quantity }}</span>
+        <!-- Quitamos 'editAddressForm.pristine' para permitir guardar siempre que sea válido -->
         <button
-          (click)="updateItemQuantityInModal(i, 1)"
-          class="quantity-btn"
+          type="submit"
+          [disabled]="editAddressForm.invalid"
+          class="btn-primary"
           appRipple
         >
-          +
+          Guardar Cambios
         </button>
       </div>
-      <button (click)="removeItemInModal(i)" class="remove-btn" appRipple>
-        <span class="material-symbols-outlined">delete</span>
-      </button>
-    </div>
-    } @if (order.items.length === 0) {
-    <p class="empty-modal-message">
-      Has eliminado todos los productos. Si guardas los cambios, deberías
-      cancelar el pedido.
-    </p>
-    }
+    </form>
   </div>
-
-  <div class="modal-actions">
-    <button (click)="closeEditModal()" class="btn-secondary" appRipple>
-      Cancelar
-    </button>
-    <button (click)="saveOrderChanges()" class="btn-material" appRipple>
-      Guardar Cambios
-    </button>
-  </div>
-</div>
 }

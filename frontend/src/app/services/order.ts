@@ -95,7 +95,14 @@ export class OrderService {
   /** Verifica una transacción de wompi. */
   verifyWompiTransaction(transactionId: string): Observable<any> {
     return this.http.get(
-      `${environment.apiUrl}/payments/verify/${transactionId}`
+      `${environment.apiUrl}/payments/verify/${transactionId}`,
     );
+  }
+
+  /**
+   * Actualiza la dirección de envío de un pedido existente.
+   */
+  updateOrderShipping(orderId: string, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${orderId}/shipping`, data);
   }
 }

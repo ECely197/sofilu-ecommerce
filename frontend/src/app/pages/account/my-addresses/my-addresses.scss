@@ -104,9 +104,13 @@
   padding: 2rem;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  // --- CAMBIOS PARA ALINEACIÓN ---
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  height: 100%; // 1. Obliga a la tarjeta a llenar la altura del grid
+  // -----------------------------
 
   &:hover {
     transform: translateY(-5px);
@@ -165,7 +169,10 @@
 
 // --- ACCIONES ---
 .card-actions {
-  margin-top: 1.5rem;
+  // --- CAMBIOS PARA ALINEACIÓN ---
+  margin-top: auto; // 2. ¡EL TRUCO! Empuja este bloque al fondo de la tarjeta
+  // -----------------------------
+
   padding-top: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
@@ -177,7 +184,7 @@
     border: 1px solid transparent;
     border-radius: 50px;
     padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: #555;
     cursor: pointer;

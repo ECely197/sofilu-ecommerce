@@ -42,8 +42,9 @@ export class OrderDetail implements OnInit {
   statusForm!: FormGroup;
   orderStatuses = ['Procesando', 'Enviado', 'Entregado', 'Cancelado'];
   isEditingStatus = signal<boolean>(false);
+  isStatusDropdownOpen = signal<boolean>(false);
 
-  // --- COMPUTED SIGNALS PARA CÁLCULOS ---
+  // --- COMPUTED SIGNALS PARA CÁLCULOS DINÁMICOS ---
   subtotal = computed(() => {
     const currentOrder = this.order();
     if (!currentOrder || !currentOrder.items) return 0;
@@ -93,22 +94,31 @@ export class OrderDetail implements OnInit {
   }
 
   updateStatus(): void {
-    if (this.statusForm.invalid || !this.order()) return;
-    const newStatus = this.statusForm.value.status;
-    const currentOrder = this.order();
+    if (this.statusForm.invalid || !this.order()) {
+      return;
+    }
 
-    if (newStatus && currentOrder) {
-      this.orderService
-        .updateOrderStatus(currentOrder._id, newStatus)
-        .subscribe({
-          next: (updatedOrder) => {
-            this.order.set(updatedOrder);
-            this.isEditingStatus.set(false); // Salir del modo edición
-            this.toastService.show('¡Estado actualizado!', 'success');
-          },
-          error: (err) =>
-            this.toastService.show('No se pudo actualizar el estado.', 'error'),
-        });
+    const newStatus = this.statusForm.value.status;
+    const orderId = this.order()?._id;
+
+    if (newStatus && orderId) {
+      this.orderService.updateOrderStatus(orderId, newStatus).subscribe({
+        next: () => {
+          // --- ¡LÓGICA DE RECARGA! ---
+          // 1. Cerramos el modo edición
+          this.isEditingStatus.set(false);
+
+          // 2. Mostramos una notificación de éxito
+          this.toastService.show('¡Estado actualizado!', 'success');
+
+          // 3. Volvemos a llamar a la API para obtener los datos más recientes
+          this.fetchOrder(orderId);
+        },
+        error: (err) => {
+          console.error('Error al actualizar el estado:', err);
+          this.toastService.show('No se pudo actualizar el estado del pedido.');
+        },
+      });
     }
   }
 
@@ -134,5 +144,10 @@ export class OrderDetail implements OnInit {
   public objectKeys(obj: object): string[] {
     if (!obj) return [];
     return Object.keys(obj);
+  }
+
+  selectStatus(status: string) {
+    this.statusForm.patchValue({ status: status });
+    this.isStatusDropdownOpen.set(false);
   }
 }

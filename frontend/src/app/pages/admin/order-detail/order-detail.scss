@@ -1,46 +1,48 @@
 @use "../../../../../buttons" as *;
 @use "../_admin-shared" as *;
 
-// --- Estilos Generales ---
 .page-header {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .header-title-wrapper {
   display: flex;
   align-items: center;
   gap: 1rem;
+
   h1 {
     font-size: 2rem;
     font-family: "Baloo 2", serif;
     margin: 0;
+    color: #2c3e50;
   }
 }
 
 .back-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: none;
-  background-color: transparent;
-  color: var(--text-secondary);
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #555;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    color 0.2s;
+  transition: all 0.2s;
 
   &:hover {
-    background-color: var(--soft-white);
-    color: var(--text-primary);
+    background-color: #f8f9fa;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   }
+}
+.back-button .material-symbols-outlined {
+  font-size: 1.6rem;
 }
 
 .header-actions {
@@ -51,62 +53,58 @@
 .details-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
   @media (min-width: 1024px) {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr);
   }
 }
 
-// --- TARJETAS ESTILO GLASS ---
 .card {
   background: white;
   border-radius: 1.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
   &:not(:last-child) {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 }
 
 .card-title {
   font-size: 1.2rem;
   font-weight: 700;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1.5rem 0;
   padding-bottom: 1rem;
   border-bottom: 1px solid #f0f0f0;
 }
-// --- LISTA DE ARTÍCULOS ---
+
 .order-item {
   display: grid;
-  grid-template-columns: 64px 1fr auto;
+  grid-template-columns: 60px 1fr auto;
   align-items: center;
   gap: 1.5rem;
   padding: 1rem 0;
-  border-bottom: 1px solid #f5f5f5;
-  &:last-of-type {
-    border-bottom: none;
+  &:not(:last-child) {
+    border-bottom: 1px solid #f5f5f5;
   }
 }
 
 .item-image {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f9f9f9;
   padding: 5px;
 }
 
-.item-info {
-  .item-name {
-    font-weight: 600;
-    line-height: 1.3;
-  }
-  .item-sku {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 2px;
-  }
+.item-info .item-name {
+  font-weight: 600;
+  line-height: 1.3;
+}
+.item-info .item-sku {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 2px;
 }
 
 .item-variants-list {
@@ -147,21 +145,28 @@
   }
 }
 
-// --- RESUMEN FINANCIERO ---
 .totals-summary {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-family: "Manrope";
   .total-row {
     display: flex;
     justify-content: space-between;
     span:first-child {
       color: #666;
+      font-weight: 500;
+    }
+    span:last-child {
+      font-weight: 600;
+      color: #333;
     }
   }
   .discount {
-    color: #059669;
+    span {
+      color: #16a34a;
+    }
   }
   hr {
     border: 0;
@@ -169,105 +174,203 @@
     margin: 0.5rem 0;
   }
   .grand-total {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 800;
-    color: #333;
+    color: #2c3e50;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #333;
   }
 }
-// --- SIDEBAR ---
 
 .status-display {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; // ¡CLAVE PARA CENTRAR EL LÁPIZ!
 }
-
 .edit-status-btn {
-  background: none;
+  background: #f1f2f6;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: #555;
   padding: 0.5rem;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  display: grid;
+  place-items: center;
+  gap: 1rem;
   &:hover {
-    background-color: var(--soft-white);
-    color: var(--text-primary);
+    background-color: #e2e8f0;
+    color: #000;
   }
 }
 
+.custom-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+
+  .chevron {
+    transition: transform 0.3s ease;
+    color: #999;
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #eee;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+    &.selected {
+      background: #eef2ff;
+      color: #4338ca;
+      font-weight: 700;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-form .form-field {
+  position: relative;
+  &::after {
+    content: "expand_more";
+    font-family: "Material Symbols Outlined";
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #999;
+  }
+}
+.status-form .form-input {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:focus {
+    outline: 2px solid var(--pastel-pink);
+  }
+}
 .status-form .form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
+  gap: 0.8rem;
   margin-top: 1rem;
+  button {
+    flex: 1;
+    padding: 0.8rem;
+    font-weight: 700;
+    border-radius: 12px;
+  }
 }
 
-// --- Tarjeta de Dirección de Envío ---
-.address-details {
-  p {
-    margin: 0.5rem 0;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    strong {
-      color: var(--text-primary);
-    }
-    .material-symbols-outlined {
-      font-size: 1rem;
-    }
-  }
-  hr {
-    margin: 1rem 0;
-    border-color: var(--border);
-    border-style: dashed;
+.btn-material {
+  @extend .btn-material;
+  background: #333;
+  color: white;
+}
+.btn-secondary {
+  @extend .btn-secondary;
+}
+.btn-danger {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecaca;
+  &:hover {
+    background: #e11d48;
+    color: white;
   }
 }
 
 .notes-details {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.2rem;
   .note-group {
     strong {
       display: block;
       font-size: 0.8rem;
       color: #888;
       margin-bottom: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
     p {
       margin: 0;
       line-height: 1.5;
+      color: #444;
     }
   }
 }
-
 .delivery-type-badge {
   display: inline-block;
-  padding: 0.2rem 0.8rem;
+  padding: 0.3rem 1rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   &.normal {
-    background: #e0e7ff;
-    color: #3730a3;
+    background: #f0f9ff;
+    color: #0284c7;
   }
   &.personalizada {
-    background: #fef9c3;
-    color: #854d0e;
-  }
-}
-
-// --- Media Query para Móvil ---
-@media (max-width: 600px) {
-  .order-item {
-    grid-template-columns: 50px 1fr;
-    grid-template-areas: "img info" "img pricing";
-    row-gap: 0;
-    .item-pricing {
-      text-align: left;
-      margin-top: 0.5rem;
-    }
+    background: #fefce8;
+    color: #a16207;
   }
 }
