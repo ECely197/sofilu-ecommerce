@@ -5,7 +5,8 @@ import {
   ElementRef,
   NgZone,
   OnDestroy,
-  effect,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -14,7 +15,7 @@ import { RippleDirective } from '../../../directives/ripple';
 import Swiper from 'swiper';
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
 
-// Registrar módulos de Swiper
+// Registrar módulos globalmente (por si acaso)
 Swiper.use([Autoplay, EffectFade, Pagination]);
 
 @Component({
@@ -24,8 +25,7 @@ Swiper.use([Autoplay, EffectFade, Pagination]);
   templateUrl: './special-event-banner.html',
   styleUrls: ['./special-event-banner.scss'],
 })
-export class SpecialEventBanner implements OnDestroy {
-  // Ahora recibe un array de eventos
+export class SpecialEventBanner implements OnChanges, OnDestroy {
   @Input() events: SpecialEvent[] = [];
 
   private router = inject(Router);
@@ -33,14 +33,12 @@ export class SpecialEventBanner implements OnDestroy {
   private zone = inject(NgZone);
   private swiperInstance: Swiper | undefined;
 
-  constructor() {
-    effect(() => {
-      // Si llegan eventos, iniciamos el slider
-      if (this.events.length > 0) {
-        // Timeout para asegurar que el HTML se renderizó
-        setTimeout(() => this.initSwiper(), 50);
-      }
-    });
+  // Detectamos cuando llegan los datos del Home
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['events'] && this.events.length > 0) {
+      // Reiniciamos el Swiper cuando los eventos cambian/llegan
+      this.initSwiper();
+    }
   }
 
   ngOnDestroy(): void {
@@ -50,37 +48,50 @@ export class SpecialEventBanner implements OnDestroy {
   }
 
   private initSwiper() {
+    // Ejecutamos fuera de Angular para mejorar rendimiento
     this.zone.runOutsideAngular(() => {
-      const container = this.el.nativeElement.querySelector('.swiper');
-      if (!container) return;
+      // Damos un pequeño respiro para que el HTML se pinte
+      setTimeout(() => {
+        const container = this.el.nativeElement.querySelector('.swiper');
+        if (!container) return;
 
-      if (this.swiperInstance) this.swiperInstance.destroy(true, true);
+        // Si ya existe, lo destruimos para recrearlo limpio
+        if (this.swiperInstance) this.swiperInstance.destroy(true, true);
 
-      this.swiperInstance = new Swiper(container, {
-        modules: [Autoplay, EffectFade, Pagination],
-        effect: 'fade', // Transición de desvanecimiento elegante
-        fadeEffect: { crossFade: true },
-        speed: 1000, // Transición lenta (1 segundo)
-        loop: this.events.length > 1, // Loop solo si hay más de 1
-        autoplay: {
-          delay: 5000, // 5 segundos por slide
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        },
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-          dynamicBullets: true, // Puntos dinámicos si hay muchos
-        },
-      });
+        this.swiperInstance = new Swiper(container, {
+          // Importante: pasar los módulos aquí también
+          modules: [Autoplay, EffectFade, Pagination],
+
+          // --- CONFIGURACIÓN DE AUTOPLAY CORREGIDA ---
+          observer: true, // ¡CLAVE! Observa cambios en el DOM
+          observeParents: true,
+          effect: 'fade',
+          fadeEffect: { crossFade: true },
+          speed: 1500, // Transición suave (1.5 seg)
+          loop: this.events.length > 1, // Solo loop si hay más de 1
+
+          autoplay: {
+            delay: 4000, // 4 segundos por banner
+            disableOnInteraction: false, // No detener si el usuario toca
+            pauseOnMouseEnter: false, // No pausar con el mouse (opcional)
+          },
+
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+            dynamicBullets: true,
+          },
+
+          // Deshabilitar swipe si solo hay 1 evento
+          allowTouchMove: this.events.length > 1,
+        });
+      }, 50);
     });
   }
 
   scrollToProducts(event: SpecialEvent): void {
     if (!event.linkedProducts || event.linkedProducts.length === 0) return;
 
-    // Obtenemos el slug de la categoría del primer producto vinculado
-    // (Asumiendo que el populate del backend funcionó)
     const category = event.linkedProducts[0].category as any;
     const categorySlug = category?.slug;
 

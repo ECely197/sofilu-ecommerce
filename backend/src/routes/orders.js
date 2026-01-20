@@ -9,6 +9,8 @@ const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 const { sendOrderConfirmationEmail } = require("../services/emailService");
+const Category = require("../models/Category");
+const Vendor = require("../models/Vendor");
 
 // ==========================================================================
 // RUTAS DE ADMINISTRACIÓN
@@ -32,17 +34,153 @@ router.get("/", [authMiddleware, adminOnly], async (req, res) => {
 });
 
 // Dashboard Summary
+/**
+ * @route   GET /api/orders/dashboard-summary
+ * @desc    Obtener un resumen completo de estadísticas (BI).
+ */
 router.get(
   "/dashboard-summary",
   [authMiddleware, adminOnly],
   async (req, res) => {
-    // ... (Tu lógica del dashboard existente se mantiene aquí, la resumo para no ocupar espacio)
-    // Si necesitas el código completo del dashboard házmelo saber, pero asumo que ya lo tienes.
     try {
-      // (Lógica de agregación compleja...)
-      res.json({}); // Placeholder para este ejemplo, NO borres tu lógica real si ya la tienes.
+      const { startDate, endDate } = req.query;
+
+      // Filtro de fecha inteligente
+      const dateFilter = {};
+      if (startDate && endDate) {
+        dateFilter.createdAt = {
+          $gte: new Date(startDate),
+          $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+        };
+      }
+
+      // 1. VENTAS TOTALES Y RECUENTO
+      const salesStats = await Order.aggregate([
+        { $match: { ...dateFilter, status: { $ne: "Cancelado" } } }, // Ignorar cancelados para ingresos
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: "$totalAmount" },
+            totalOrders: { $sum: 1 },
+            avgOrderValue: { $avg: "$totalAmount" }, // Ticket promedio
+          },
+        },
+      ]);
+
+      // 2. PEDIDOS POR ESTADO (Incluye cancelados)
+      const statusStats = await Order.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]);
+
+      // 3. PRODUCTOS MÁS VENDIDOS (Top 5)
+      const topProducts = await Order.aggregate([
+        { $match: { ...dateFilter, status: "Entregado" } }, // Solo ventas reales
+        { $unwind: "$items" },
+        {
+          $group: {
+            _id: "$items.product",
+            totalSold: { $sum: "$items.quantity" },
+            revenue: {
+              $sum: { $multiply: ["$items.price", "$items.quantity"] },
+            },
+          },
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 5 },
+        {
+          $lookup: {
+            from: "products",
+            localField: "_id",
+            foreignField: "_id",
+            as: "productInfo",
+          },
+        },
+        { $unwind: "$productInfo" },
+        { $project: { name: "$productInfo.name", totalSold: 1, revenue: 1 } },
+      ]);
+
+      // 4. VENTAS POR CATEGORÍA (¡Nuevo!)
+      // Esto requiere un doble lookup: Order -> Product -> Category
+      const categoryStats = await Order.aggregate([
+        { $match: { ...dateFilter, status: "Entregado" } },
+        { $unwind: "$items" },
+        {
+          $lookup: {
+            from: "products",
+            localField: "items.product",
+            foreignField: "_id",
+            as: "product",
+          },
+        },
+        { $unwind: "$product" },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "product.category",
+            foreignField: "_id",
+            as: "category",
+          },
+        },
+        { $unwind: "$category" },
+        {
+          $group: {
+            _id: "$category.name",
+            totalRevenue: {
+              $sum: { $multiply: ["$items.price", "$items.quantity"] },
+            },
+            itemsSold: { $sum: "$items.quantity" },
+          },
+        },
+        { $sort: { totalRevenue: -1 } },
+      ]);
+
+      // 5. RENDIMIENTO DE CUPONES
+      const couponStats = await Order.aggregate([
+        { $match: { ...dateFilter, appliedCoupon: { $ne: null } } },
+        {
+          $group: {
+            _id: "$appliedCoupon",
+            count: { $sum: 1 },
+            discountGiven: { $sum: "$discountAmount" },
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+
+      // 6. INVENTARIO (Valor total)
+      const inventoryStats = await Product.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalStock: { $sum: "$stock" }, // Debería sumar variantes también si es complejo
+            totalValue: { $sum: { $multiply: ["$price", "$stock"] } },
+          },
+        },
+      ]);
+
+      res.json({
+        sales: salesStats[0] || {
+          totalRevenue: 0,
+          totalOrders: 0,
+          avgOrderValue: 0,
+        },
+        status: statusStats.reduce(
+          (acc, curr) => ({ ...acc, [curr._id]: curr.count }),
+          {},
+        ),
+        topProducts,
+        categoryStats,
+        couponStats,
+        inventory: inventoryStats[0] || { totalStock: 0, totalValue: 0 },
+        recentOrders: await Order.find(dateFilter)
+          .sort("-createdAt")
+          .limit(5)
+          .select("totalAmount status createdAt customerInfo"),
+      });
     } catch (error) {
-      res.status(500).json({ message: "Error stats" });
+      console.error("Error en dashboard:", error);
+      res.status(500).json({ message: "Error calculando estadísticas." });
     }
   },
 );

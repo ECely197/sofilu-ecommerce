@@ -12,21 +12,20 @@
   transform: translateX(-50%);
   margin-top: 0;
 
-  // Bordes redondeados inferiores GRANDES (Estilo App)
+  // Bordes redondeados inferiores GRANDES
   border-radius: 0 0 3rem 3rem;
   overflow: hidden;
   margin-bottom: 3rem;
 
-  // Sombra suave inferior
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2);
 
-  // Relación de aspecto Cinemática (Desktop)
+  // Aspect Ratio Desktop
   aspect-ratio: 16 / 7;
   min-height: 500px;
 
-  // Relación de aspecto Historia (Móvil)
+  // Aspect Ratio Móvil
   @media (max-width: 768px) {
-    aspect-ratio: 4 / 5; // Más alto
+    aspect-ratio: 4 / 5;
     min-height: 60vh;
     border-radius: 0 0 2.5rem 2.5rem;
   }
@@ -56,18 +55,17 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    // Efecto de Zoom lento (se puede animar con CSS keyframes si quieres)
   }
 
-  // Overlay Gradiente: Oscuro abajo para que el texto resalte
   .overlay {
     position: absolute;
     inset: 0;
+    // Gradiente un poco más fuerte abajo para que el botón resalte
     background: linear-gradient(
       180deg,
       rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0) 40%,
-      rgba(0, 0, 0, 0.6) 100%
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0.7) 100%
     );
   }
 }
@@ -77,56 +75,71 @@
   position: relative;
   z-index: 2;
   height: 100%;
+  width: 100%;
+
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; // Texto abajo
+  justify-content: center; // Centra el texto verticalmente en el espacio disponible
   align-items: center;
   text-align: center;
-  padding-bottom: 5rem; // Espacio para la paginación
   color: white;
 
-  @media (min-width: 1024px) {
-    justify-content: center; // En PC centrado
-    padding-bottom: 0;
-    padding-top: 4rem; // Compensa el header fijo
-  }
+  // Padding para que el texto no toque los bordes ni el botón
+  padding: 4rem 2rem 8rem 2rem;
+}
+
+.text-content {
+  max-width: 900px;
+  // Asegura que el texto esté centrado visualmente
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .event-title {
   font-family: "Baloo 2", serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem); // Responsive fluido
+  font-size: clamp(2.5rem, 6vw, 5rem);
   font-weight: 800;
   line-height: 1.1;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4); // Sombra para legibilidad
-  margin-bottom: 0.5rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  margin-bottom: 1rem;
   opacity: 0;
-  animation: slideUpFade 0.8s 0.3s forwards; // Animación CSS simple
+  animation: slideUpFade 0.8s 0.3s forwards;
 }
 
 .event-subtitle {
   font-size: clamp(1rem, 2vw, 1.5rem);
   font-weight: 500;
-  margin-bottom: 2rem;
+  margin-bottom: 0; // El margen lo maneja el posicionamiento absoluto del botón
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  max-width: 80%;
+  max-width: 800px;
   opacity: 0;
   animation: slideUpFade 0.8s 0.5s forwards;
 }
 
-// --- BOTÓN GLASS ---
+// --- BOTÓN (POSICIÓN FIJA ABSOLUTA) ---
 .cta-container {
+  position: absolute; // ¡ESTA ES LA CLAVE!
+  bottom: 15%; // Fijo al 15% desde abajo
+  left: 50%;
+  transform: translateX(-50%); // Centrado horizontal
+  z-index: 10;
+
   opacity: 0;
   animation: slideUpFade 0.8s 0.7s forwards;
+
+  @media (max-width: 768px) {
+    bottom: 12%; // Un poco más abajo en móvil
+  }
 }
 
 .btn-glass {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem 2rem;
+  padding: 1rem 2.5rem;
   border-radius: 50px;
 
-  // Efecto Vidrio Lechoso
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
@@ -152,7 +165,7 @@
   }
 }
 
-// --- PAGINACIÓN SWIPER ---
+// --- PAGINACIÓN ---
 ::ng-deep .swiper-pagination-bullet {
   background: white;
   opacity: 0.5;
@@ -163,25 +176,29 @@
 
 ::ng-deep .swiper-pagination-bullet-active {
   opacity: 1;
-  width: 25px;
-  border-radius: 5px; // Se alarga al activar
+  width: 30px;
+  border-radius: 5px;
   background: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-// Animación de entrada de elementos
+// Posicionamos la paginación un poco más arriba del borde
+::ng-deep .swiper-pagination {
+  bottom: 20px !important;
+}
+
+// Animaciones
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(30px);
-  }
+    transform: translate(-50%, 30px);
+  } // Ajustado para mantener el centro X
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, 0);
   }
 }
 
-// Animación Fade in del componente
 .fade-in {
   animation: fadeIn 1s ease-out;
 }
