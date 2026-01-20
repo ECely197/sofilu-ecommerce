@@ -1,92 +1,130 @@
-<!-- Contenido completo para: src/app/layouts/admin-layout.html -->
+<!-- Contenedor Principal con estado dinámico -->
+<div class="admin-layout" [class.menu-open]="isSidebarVisible()">
+  <!-- OVERLAY MÓVIL (Fondo oscuro borroso) -->
+  <div class="mobile-overlay" (click)="closeSidebar()"></div>
 
-<!-- El contenedor principal ahora tiene una clase dinámica -->
-<div class="admin-container" [class.sidebar-is-open]="isSidebarVisible()">
-  <!-- Barra de Navegación Lateral (Sidebar) -->
-  <aside class="sidebar">
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside class="sidebar glass-panel">
     <div class="sidebar-header">
-      <h1 class="sidebar-logo">Sofilu Admin</h1>
+      <img src="/sofilu-logo.svg" alt="Sofilu Admin" class="logo" />
+      <button class="close-menu-btn" (click)="closeSidebar()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
-    <nav class="sidebar-nav">
+
+    <nav class="sidebar-nav custom-scroll">
+      <!-- DASHBOARD -->
       <a
         routerLink="/admin/dashboard"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Dashboard</a
       >
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+
+      <div class="nav-section-label">Tienda</div>
       <a
         routerLink="/admin/products"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Productos</a
       >
-      <a
-        routerLink="/admin/categories"
-        routerLinkActive="active"
-        (click)="closeSidebar()"
-        >Categorías</a
-      >
-      <a
-        routerLink="/admin/sections"
-        routerLinkActive="active"
-        (click)="closeSidebar()"
-        >Secciones</a
-      >
+        <span class="material-symbols-outlined">inventory_2</span> Productos
+      </a>
       <a
         routerLink="/admin/orders"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Pedidos</a
       >
+        <span class="material-symbols-outlined">shopping_bag</span> Pedidos
+      </a>
       <a
         routerLink="/admin/customers"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Clientes</a
       >
+        <span class="material-symbols-outlined">group</span> Clientes
+      </a>
+
+      <div class="nav-section-label">Catálogo</div>
+      <a
+        routerLink="/admin/categories"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">category</span> Categorías
+      </a>
+      <a
+        routerLink="/admin/sections"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">view_agenda</span> Secciones
+      </a>
+      <a
+        routerLink="/admin/variant-templates"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">style</span> Variantes
+      </a>
+
+      <div class="nav-section-label">Marketing & Config</div>
       <a
         routerLink="/admin/coupons"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Cupones</a
       >
-      <a routerLink="/admin/vendors" routerLinkActive="active">Vendedores</a>
+        <span class="material-symbols-outlined">local_activity</span> Cupones
+      </a>
+      <a
+        routerLink="/admin/special-events"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">campaign</span> Eventos
+      </a>
+      <a
+        routerLink="/admin/vendors"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">storefront</span> Vendedores
+      </a>
+      <a
+        routerLink="/admin/delivery-options"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+      >
+        <span class="material-symbols-outlined">local_shipping</span> Envíos
+      </a>
       <a
         routerLink="/admin/settings"
         routerLinkActive="active"
         (click)="closeSidebar()"
-        >Ajustes</a
       >
-      <a routerLink="/admin/variant-templates" routerLinkActive="active"
-        >Plantillas de Variantes</a
-      >
-      <a routerLink="/admin/special-events" routerLinkActive="active"
-        >Eventos Especiales</a
-      >
-      <a routerLink="delivery-options" routerLinkActive="active">
-        <span class="material-symbols-outlined">local_shipping</span>
-        Entregas Especiales
+        <span class="material-symbols-outlined">settings</span> Ajustes Globales
       </a>
-      <a routerLink="/" routerLinkActive="active">Visual Clientes</a>
+
+      <div class="nav-divider"></div>
+      <a routerLink="/" class="back-home">
+        <span class="material-symbols-outlined">arrow_back</span> Ver Tienda
+      </a>
     </nav>
   </aside>
 
-  <!-- Overlay para el fondo en móvil (solo visible cuando el menú está abierto) -->
-  <div class="sidebar-overlay" (click)="closeSidebar()"></div>
-
-  <!-- Área de Contenido Principal -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="main-content">
-    <!-- Header para móvil con el botón de hamburguesa -->
-    <header class="mobile-header">
-      <button class="hamburger-button" (click)="toggleSidebar()">
-        <!-- Usamos el icono de 'menu' de Material Symbols -->
+    <!-- Header Móvil -->
+    <header class="mobile-top-bar glass-panel">
+      <button class="menu-trigger" (click)="toggleSidebar()">
         <span class="material-symbols-outlined">menu</span>
       </button>
-      <h1 class="mobile-logo">Sofilu Admin</h1>
+      <span class="mobile-title">Panel Admin</span>
+      <div class="spacer"></div>
+      <!-- Para centrar el título -->
     </header>
 
-    <!-- El contenido de la página se renderiza aquí -->
-    <div class="page-content-wrapper">
+    <div class="page-wrapper">
       <router-outlet></router-outlet>
     </div>
   </main>

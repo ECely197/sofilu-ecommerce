@@ -22,7 +22,7 @@ import { ConfirmationService } from '../../../services/confirmation.service';
 @Component({
   selector: 'app-special-events',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './special-events.html',
   styleUrls: ['./special-events.scss'],
 })

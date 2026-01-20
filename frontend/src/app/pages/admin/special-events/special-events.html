@@ -1,17 +1,47 @@
 <header class="page-header">
-  <h1>Gestionar Banners de Eventos</h1>
+  <h1>Eventos Especiales (Banners)</h1>
 </header>
 
 <div class="events-layout">
-  <!-- COLUMNA DEL FORMULARIO -->
+  <!-- COLUMNA IZQUIERDA: FORMULARIO -->
   <div class="form-column">
-    <div class="card">
+    <div class="card glass-panel sticky-card">
       <h2 class="card-title">
-        {{ editingEventId() ? "Editar Evento" : "Crear Nuevo Evento" }}
+        {{ editingEventId() ? "Editar Evento" : "Nuevo Evento" }}
       </h2>
 
       <form [formGroup]="eventForm" (ngSubmit)="handleSubmit()">
-        <!-- Campo Título -->
+        <!-- Uploader de Imagen (Protagonista) -->
+        <div class="form-section">
+          <label class="section-label">Imagen del Banner (Escritorio)</label>
+          <label class="image-uploader" for="banner-upload">
+            @if (imagePreview()) {
+              <img [src]="imagePreview()" class="image-preview" />
+              <div class="overlay-hover">
+                <span class="material-symbols-outlined">edit</span>
+              </div>
+            } @else {
+              <div class="uploader-placeholder">
+                <span class="material-symbols-outlined icon"
+                  >add_photo_alternate</span
+                >
+                <span>Subir Imagen (1920x800 recomendado)</span>
+              </div>
+            }
+            @if (isSaving() && !imagePreview()) {
+              <div class="spinner-overlay"><div class="spinner"></div></div>
+            }
+            <input
+              id="banner-upload"
+              type="file"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+              hidden
+            />
+          </label>
+        </div>
+
+        <!-- Textos -->
         <div class="material-field">
           <input
             id="title"
@@ -20,12 +50,9 @@
             class="material-input"
             placeholder=" "
           />
-          <label for="title" class="material-label"
-            >Título del Banner (ej. ¡Feliz Día, Mamá!)</label
-          >
+          <label for="title" class="material-label">Título Principal</label>
         </div>
 
-        <!-- Campo Subtítulo -->
         <div class="material-field">
           <input
             id="subtitle"
@@ -35,156 +62,135 @@
             placeholder=" "
           />
           <label for="subtitle" class="material-label"
-            >Subtítulo (opcional)</label
+            >Subtítulo (Opcional)</label
           >
         </div>
 
-        <!-- Campo de Imagen -->
-        <div class="form-field">
-          <label>Imagen del Banner</label>
-          <div class="image-upload-area">
-            @if (imagePreview()) {
-              <img
-                [src]="imagePreview()"
-                alt="Vista previa"
-                class="image-preview"
-              />
-            } @else {
-              <div class="image-placeholder">
-                <span class="material-symbols-outlined"
-                  >add_photo_alternate</span
-                >
-                <span>Subir imagen</span>
-              </div>
-            }
-            <input
-              id="image-upload"
-              type="file"
-              (change)="onFileSelected($event)"
-              accept="image/*"
-              class="file-input"
-            />
-            <label for="image-upload" class="upload-button-overlay"></label>
-          </div>
-        </div>
-
-        <!-- Campo de Productos Vinculados (Multi-select) -->
-        <div class="form-field">
-          <label>Productos Sugeridos (opcional)</label>
-          <p class="field-description">
-            Selecciona los productos que aparecerán en el carrusel del banner.
+        <!-- Selector de Productos Vinculados -->
+        <div class="form-section">
+          <label class="section-label">Productos Vinculados (Carrusel)</label>
+          <p class="helper-text">
+            Selecciona los productos que aparecerán al dar clic en el banner.
           </p>
 
-          <!-- Contenedor con scroll para la lista de productos -->
-          <div class="product-selector-list" formArrayName="linkedProducts">
-            @for (product of allProducts(); track product._id; let i = $index) {
-              <label class="product-selector-item" [for]="'product-' + i">
-                <input
-                  [id]="'product-' + i"
-                  type="checkbox"
-                  [formControlName]="i"
-                />
-                <img
-                  [src]="product.images[0]"
-                  [alt]="product.name"
-                  class="product-thumbnail-selector"
-                />
-                <span class="product-name-selector">{{ product.name }}</span>
-                <div class="checkbox-visual"></div>
-                <!-- Checkbox visual M3 -->
-              </label>
+          <div
+            class="products-selector custom-scroll"
+            formArrayName="linkedProducts"
+          >
+            @if (allProducts().length > 0) {
+              @for (
+                product of allProducts();
+                track product._id;
+                let i = $index
+              ) {
+                <label
+                  class="product-option"
+                  [class.selected]="productCheckboxes.at(i).value"
+                >
+                  <input type="checkbox" [formControlName]="i" hidden />
+                  <div class="checkbox-circle">
+                    <span class="material-symbols-outlined check-icon"
+                      >check</span
+                    >
+                  </div>
+                  <img
+                    [src]="product.images[0]"
+                    [alt]="product.name"
+                    class="prod-thumb"
+                  />
+                  <span class="prod-name">{{ product.name }}</span>
+                </label>
+              }
+            } @else {
+              <div class="empty-products">Cargando productos...</div>
             }
           </div>
         </div>
 
-        <!-- Acciones del Formulario -->
+        <!-- Acciones -->
         <div class="form-actions">
           @if (editingEventId()) {
-            <button
-              type="button"
-              (click)="resetForm()"
-              class="btn-secondary"
-              appRipple
-            >
+            <button type="button" (click)="resetForm()" class="btn-secondary">
               Cancelar
             </button>
           }
           <button
             type="submit"
             [disabled]="eventForm.invalid || isSaving()"
-            class="btn-material"
-            appRipple
+            class="btn-material full-width"
           >
-            {{
-              isSaving()
-                ? "Guardando..."
-                : editingEventId()
-                  ? "Guardar Cambios"
-                  : "Crear Evento"
-            }}
+            {{ isSaving() ? "Guardando..." : "Guardar Evento" }}
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- COLUMNA DE LA LISTA -->
+  <!-- COLUMNA DERECHA: LISTA DE EVENTOS -->
   <div class="list-column">
-    <div class="card">
-      <h2 class="card-title">Eventos Creados</h2>
+    <div class="card glass-panel">
+      <h2 class="card-title">Banners Activos</h2>
+
       @if (isLoading()) {
-        <p>Cargando...</p>
+        <div class="loading-state"><div class="spinner"></div></div>
       } @else {
-        <div class="events-list">
+        <div class="events-grid">
           @for (event of events(); track event._id) {
-            <div class="event-item" [class.active]="event.isActive">
-              <img
-                [src]="event.imageUrl"
-                [alt]="event.title"
-                class="event-thumbnail"
-              />
-              <div class="event-info">
-                <p class="event-title">{{ event.title }}</p>
-                <p class="event-products">
-                  {{ event.linkedProducts.length }} productos vinculados
-                </p>
+            <div class="event-card" [class.active-banner]="event.isActive">
+              <!-- Imagen Banner -->
+              <div class="banner-preview">
+                <img [src]="event.imageUrl" [alt]="event.title" />
+                <div class="status-badge" [class.on]="event.isActive">
+                  {{ event.isActive ? "Visible" : "Oculto" }}
+                </div>
               </div>
-              <div class="event-actions">
-                <!-- Botón para Activar -->
-                <!-- Botón para Activar/Desactivar (Toggle) -->
+
+              <!-- Info -->
+              <div class="card-content">
+                <h3 class="event-name">{{ event.title }}</h3>
+                <p class="event-sub">{{ event.subtitle || "Sin subtítulo" }}</p>
+                <div class="meta-info">
+                  <span class="material-symbols-outlined">inventory_2</span>
+                  {{ event.linkedProducts.length }} productos
+                </div>
+              </div>
+
+              <!-- Acciones -->
+              <div class="card-actions">
+                <!-- Toggle Visibilidad -->
                 <button
-                  class="action-button activate-btn"
-                  [class.is-active]="event.isActive"
+                  class="action-btn toggle"
+                  [class.active]="event.isActive"
                   (click)="toggleActive(event._id)"
-                  [attr.aria-label]="event.isActive ? 'Desactivar' : 'Activar'"
-                  title="Click para cambiar visibilidad"
+                  title="Cambiar Visibilidad"
                 >
                   <span class="material-symbols-outlined">{{
                     event.isActive ? "visibility" : "visibility_off"
                   }}</span>
                 </button>
-                <!-- Botón para Editar -->
+
                 <button
                   (click)="startEditing(event)"
-                  class="action-button edit-btn"
-                  aria-label="Editar"
+                  class="action-btn edit"
+                  title="Editar"
                 >
                   <span class="material-symbols-outlined">edit</span>
                 </button>
-                <!-- Botón para Eliminar -->
+
                 <button
                   (click)="deleteEvent(event._id)"
-                  class="action-button delete-btn"
-                  aria-label="Eliminar"
+                  class="action-btn delete"
+                  title="Eliminar"
                 >
                   <span class="material-symbols-outlined">delete</span>
                 </button>
               </div>
             </div>
           } @empty {
-            <p class="empty-message">
-              Aún no has creado ningún evento especial.
-            </p>
+            <div class="empty-state">
+              <span class="material-symbols-outlined icon">campaign</span>
+              <p>No hay eventos creados.</p>
+            </div>
           }
         </div>
       }

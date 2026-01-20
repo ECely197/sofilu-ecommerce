@@ -1,92 +1,82 @@
-<!-- Contenido completo para: src/app/pages/admin/category-form/category-form.component.html -->
-
 <header class="page-header">
-  <h1>{{ isEditMode() ? "Editar Categoría" : "Crear Nueva Categoría" }}</h1>
+  <div class="header-title">
+    <a routerLink="/admin/categories" class="back-btn" appRipple>
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1>{{ isEditMode() ? "Editar Categoría" : "Nueva Categoría" }}</h1>
+  </div>
 </header>
 
 <form
   [formGroup]="categoryForm"
   (ngSubmit)="handleSubmit()"
-  class="form-container"
+  class="form-grid-layout"
 >
-  <!-- Columna Principal -->
-  <div class="main-column">
-    <div class="card">
-      <h2 class="card-title">Detalles de la Categoría</h2>
+  <!-- TARJETA PRINCIPAL -->
+  <div class="card glass-panel">
+    <h2 class="card-title">Información Básica</h2>
 
-      <div class="form-field">
-        <label for="name">Nombre de la categoría</label>
-        <input
-          id="name"
-          type="text"
-          formControlName="name"
-          class="form-input"
-        />
-      </div>
+    <div class="material-field">
+      <input
+        id="name"
+        type="text"
+        formControlName="name"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="name" class="material-label">Nombre de la Categoría</label>
+    </div>
 
-      <!-- ¡NUEVO SELECTOR DE SECCIÓN! -->
-      <div class="form-field has-arrow">
-        <label for="section">Asignar a Sección</label>
-        <select id="section" formControlName="section" class="form-input">
-          <option [ngValue]="null" disabled>Selecciona una sección...</option>
+    <div class="select-field">
+      <label>Sección (Dónde aparecerá)</label>
+      <div class="select-wrapper">
+        <select formControlName="section">
+          <option [ngValue]="null" disabled>Seleccionar...</option>
           @for (sec of sections(); track sec._id) {
-          <option [value]="sec._id">{{ sec.name }}</option>
+            <option [value]="sec._id">{{ sec.name }}</option>
           }
         </select>
+        <span class="material-symbols-outlined chevron">expand_more</span>
       </div>
     </div>
   </div>
 
-  <!-- Columna Lateral -->
-  <div class="sidebar-column">
-    <div class="card">
-      <h2 class="card-title">Imagen de la Categoría</h2>
-      <div class="image-upload-area">
-        <!-- Vista previa de la imagen -->
-        @if (imagePreview()) {
-        <img
-          [src]="imagePreview()"
-          alt="Vista previa de la categoría"
-          class="image-preview"
-        />
-        } @else {
-        <div class="image-placeholder">
-          <span class="material-symbols-outlined">image</span>
+  <!-- TARJETA IMAGEN -->
+  <div class="card glass-panel">
+    <h2 class="card-title">Imagen Representativa</h2>
+
+    <!-- UPLOADER VISUAL -->
+    <label class="image-uploader" for="file-input">
+      @if (imagePreview()) {
+        <img [src]="imagePreview()" class="image-preview" />
+      } @else {
+        <div class="uploader-placeholder">
+          <span class="material-symbols-outlined">add_photo_alternate</span>
+          <span>Subir Icono/Imagen</span>
         </div>
-        }
-        <!-- Botón que activa el input de archivo -->
-        <label for="image-upload" class="upload-button" appRipple>
-          {{ imagePreview() ? "Cambiar Imagen" : "Seleccionar Imagen" }}
-        </label>
-        <!-- Input de archivo real, pero oculto -->
-        <input
-          id="image-upload"
-          type="file"
-          (change)="onFileSelected($event)"
-          accept="image/png, image/jpeg, image/webp, image/svg+xml"
-        />
-      </div>
-    </div>
+      }
+      @if (isUploading()) {
+        <div class="spinner-overlay"><div class="spinner"></div></div>
+      }
+      <input
+        id="file-input"
+        type="file"
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        hidden
+      />
+    </label>
   </div>
 
-  <!-- Acciones del Formulario -->
+  <!-- ACCIONES FLOTANTES (Móvil) / ESTÁTICAS (Desktop) -->
   <div class="form-actions">
-    <a routerLink="/admin/categories" class="btn-secondary" appRipple
-      >Cancelar</a
-    >
+    <a routerLink="/admin/categories" class="btn-secondary">Cancelar</a>
     <button
       type="submit"
       [disabled]="categoryForm.invalid || isUploading()"
       class="btn-material"
-      appRipple
     >
-      {{
-        isUploading()
-          ? "Subiendo imagen..."
-          : isEditMode()
-          ? "Guardar Cambios"
-          : "Guardar Categoría"
-      }}
+      {{ isUploading() ? "Guardando..." : "Guardar Categoría" }}
     </button>
   </div>
 </form>

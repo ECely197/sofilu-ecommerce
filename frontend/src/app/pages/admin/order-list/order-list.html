@@ -1,109 +1,98 @@
 <header class="page-header">
   <h1>Pedidos de Clientes</h1>
-  <!-- (Opcional: Si quisieras un botón de exportar, iría aquí) -->
 </header>
 
-<!-- BARRA DE BÚSQUEDA -->
 <div class="search-bar-wrapper">
   <div class="search-field">
     <span class="material-symbols-outlined">search</span>
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre, ID o email..."
+      placeholder="Buscar por nombre o número de pedido..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- LOADING -->
   @if (isLoading()) {
     <div class="loading-state">
       <div class="spinner"></div>
       <p>Cargando pedidos...</p>
     </div>
-  }
-
-  <!-- LISTA DE PEDIDOS -->
-  @else if (orders().length > 0) {
-    <div class="order-list" [@listAnimation]="orders().length">
-      <!-- Header Tabla (Desktop) -->
-      <div class="order-item header">
-        <div class="cell">ID Pedido</div>
-        <div class="cell">Fecha</div>
-        <div class="cell">Cliente</div>
-        <div class="cell">Total</div>
-        <div class="cell">Estado</div>
-        <div class="cell align-right">Acciones</div>
-      </div>
-
-      <!-- Filas -->
-      @for (order of orders(); track order._id) {
-        <div class="order-item">
-          <!-- ID -->
-          <div class="cell id-cell" data-label="Pedido">
-            <span class="hash">#</span>{{ order._id.slice(-6).toUpperCase() }}
-          </div>
-
-          <!-- Fecha -->
-          <div class="cell date-cell" data-label="Fecha">
-            {{ order.createdAt | date: "mediumDate" }}
-          </div>
-
-          <!-- Cliente -->
-          <div class="cell client-cell" data-label="Cliente">
-            <div class="client-info">
-              <span class="name">{{ order.customerInfo.name }}</span>
-              <small class="email">{{ order.customerInfo.email }}</small>
-            </div>
-          </div>
-
-          <!-- Total -->
-          <div class="cell total-cell" data-label="Total">
-            {{ order.totalAmount | currency: "COP" : "symbol" : "1.0-0" }}
-          </div>
-
-          <!-- Estado -->
-          <div class="cell status-cell" data-label="Estado">
-            <span class="status-badge" [ngClass]="order.status.toLowerCase()">
-              {{ order.status }}
-            </span>
-          </div>
-
-          <!-- Acciones -->
-          <div class="cell actions-cell" data-label="Acciones">
-            <div class="action-buttons">
-              <!-- Botón Ver Detalles (Ojo) -->
-              <a
-                [routerLink]="['/admin/orders', order._id]"
-                class="action-btn details"
-                title="Ver Detalles"
-                appRipple
-              >
-                <span class="material-symbols-outlined">visibility</span>
-              </a>
-              <!-- Botón Eliminar -->
-              <button
-                (click)="deleteOrder(order._id)"
-                class="action-btn delete"
-                title="Eliminar"
-                appRipple
-              >
-                <span class="material-symbols-outlined">delete</span>
-              </button>
-            </div>
-          </div>
+  } @else {
+    @if (orders().length > 0) {
+      <div class="order-list-grid" [@listAnimation]="orders().length">
+        <!-- CABECERA (Solo Desktop) -->
+        <div class="order-row header">
+          <div class="col">Nº Pedido</div>
+          <div class="col">Fecha</div>
+          <div class="col">Cliente</div>
+          <div class="col text-right">Total</div>
+          <div class="col center">Estado</div>
+          <div class="col right">Acciones</div>
         </div>
-      }
-    </div>
-  }
 
-  <!-- EMPTY STATE -->
-  @else {
-    <div class="empty-state">
-      <span class="material-symbols-outlined icon">inbox</span>
-      <p>No se encontraron pedidos.</p>
-    </div>
+        <!-- FILAS DE PEDIDOS -->
+        @for (order of orders(); track order._id) {
+          <div class="order-row item">
+            <!-- ID -->
+            <div class="col id-col" data-label="Pedido">
+              <span class="hash">#</span>{{ order._id.slice(-6).toUpperCase() }}
+            </div>
+
+            <!-- Fecha -->
+            <div class="col date-col" data-label="Fecha">
+              {{ order.createdAt | date: "mediumDate" }}
+            </div>
+
+            <!-- Cliente -->
+            <div class="col client-col" data-label="Cliente">
+              {{ order.customerInfo.name }}
+            </div>
+
+            <!-- Total -->
+            <div class="col total-col text-right" data-label="Total">
+              {{ order.totalAmount | currency: "COP" : "symbol" : "1.0-0" }}
+            </div>
+
+            <!-- Estado -->
+            <div class="col status-col center" data-label="Estado">
+              <span class="status-pill" [ngClass]="order.status.toLowerCase()">
+                {{ order.status }}
+              </span>
+            </div>
+
+            <!-- Acciones -->
+            <div class="col actions-col right" data-label="Acciones">
+              <div class="actions-wrapper">
+                <a
+                  [routerLink]="['/admin/orders', order._id]"
+                  class="btn-icon details"
+                  title="Ver Detalles"
+                  appRipple
+                >
+                  <span class="material-symbols-outlined">visibility</span>
+                  <span class="btn-text">Detalles</span>
+                </a>
+                <button
+                  (click)="deleteOrder(order._id)"
+                  class="btn-icon delete"
+                  title="Eliminar"
+                  appRipple
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                  <span class="btn-text">Eliminar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p>No se encontraron pedidos.</p>
+      </div>
+    }
   }
 </div>

@@ -1,69 +1,78 @@
-// En: frontend/src/app/components/customer-detail-modal/customer-detail-modal.component.scss
+@use "../../../../buttons";
 
 :host {
-  // ¡CLAVE! Hacemos que el componente host sea el contenedor fijo a pantalla completa.
   position: fixed;
   inset: 0;
-  z-index: 2000; // Un z-index alto para estar por encima de todo en el admin
+  z-index: 3000; // Por encima de todo
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
-  pointer-events: none; // No se puede interactuar con el contenedor por defecto
+  pointer-events: none;
 }
 
 .modal-overlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
-  pointer-events: auto; // El overlay sí es interactivo (para cerrarlo)
+  pointer-events: auto;
+  animation: fadeIn 0.3s forwards;
 }
 
-// El 'sheet' es la ventana flotante
 .modal-sheet {
   position: relative;
-  z-index: 1; // Por encima del overlay
-  width: 100%;
-  max-width: 800px; // Un ancho generoso para los detalles
-  max-height: 90vh; // Limita la altura
-  background-color: var(--background);
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  pointer-events: auto;
-  overflow: hidden; // Para que el scroll interno funcione bien
+  overflow: hidden;
+
+  // Desktop
+  width: 90%;
+  max-width: 500px;
+  border-radius: 2rem;
+  max-height: 85vh;
+
+  // Mobile
+  @media (max-width: 768px) {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 2rem 2rem 0 0;
+    max-height: 90vh;
+  }
 }
 
 .modal-header {
+  padding: 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
-}
-
-.modal-title {
-  font-family: "Playfair Display", serif;
-  font-size: 1.5rem;
-}
-
-.close-btn {
-  // Reutilizamos el estilo de otros botones de admin
-  width: 36px;
-  height: 36px;
-  border: none;
-  background-color: var(--soft-gray);
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  &:hover {
-    background-color: #dcd5cd;
+  .modal-title {
+    font-family: "Baloo 2", serif;
+    font-size: 1.5rem;
+    margin: 0;
+    color: #333;
+  }
+  .close-btn {
+    width: 36px;
+    height: 36px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: #555;
+    &:hover {
+      background: #e5e5e5;
+    }
   }
 }
 
@@ -71,100 +80,174 @@
   flex-grow: 1;
   overflow-y: auto;
   padding: 1.5rem;
-}
-
-// Estilos específicos para los detalles del cliente
-.details-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
-.detail-card {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  border: 1px solid var(--border);
+// PERFIL
+.profile-header-card {
+  text-align: center;
+  margin-bottom: 1rem;
+  .avatar-large {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd1dc, #e6e6fa);
+    color: #555;
+    font-size: 2rem;
+    font-weight: 800;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  }
   h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.25rem;
+    margin: 0;
+    font-size: 1.4rem;
+    color: #333;
   }
-  p {
-    margin: 0.25rem 0;
-    color: var(--text-secondary);
-  }
-  h4 {
-    margin-bottom: 1rem;
-  }
-
-  &.full-width {
-    grid-column: 1 / -1;
+  .email {
+    color: #888;
+    margin: 0.5rem 0;
   }
 }
 
 .badges {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
-
 .badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  &.active {
+    background: #dcfce7;
+    color: #166534;
+  }
   &.admin {
-    background-color: #dbeafe;
+    background: #dbeafe;
     color: #1e40af;
   }
   &.disabled {
-    background-color: #fee2e2;
+    background: #fee2e2;
     color: #991b1b;
   }
 }
 
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-  &:last-child {
-    border-bottom: none;
-  }
-  strong {
-    font-size: 1.5rem;
-    font-weight: 700;
+// ESTADÍSTICAS
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  .stat-box {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    .label {
+      display: block;
+      font-size: 0.8rem;
+      color: #888;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #333;
+    }
   }
 }
 
+// TARJETAS DETALLE
+.detail-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 1rem;
+  padding: 1.2rem;
+  h4 {
+    margin: 0 0 0.8rem;
+    font-size: 1rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  p {
+    margin: 0;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+// CUPONES
 .coupon-item {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px dashed #eee;
   &:last-child {
     border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+  }
+
+  .code {
+    font-family: monospace;
+    font-weight: 700;
+    background: #eee;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: #333;
+  }
+  .meta {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666;
+  }
+  .saving {
+    color: #059669;
+    font-weight: 600;
   }
 }
 
-.coupon-code {
-  font-family: monospace;
-  font-weight: 700;
-  background-color: var(--soft-gray);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+.empty-text,
+.error-state {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.empty-message {
-  color: var(--text-secondary);
-  font-style: italic;
-  text-align: center;
-  padding: 1rem;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

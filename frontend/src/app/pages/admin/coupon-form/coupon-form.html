@@ -1,107 +1,108 @@
-<!-- Contenido completo para: src/app/pages/admin/coupon-form/coupon-form.html -->
-
 <header class="page-header">
-  <h1>{{ isEditMode() ? "Editar Cupón" : "Crear Nuevo Cupón" }}</h1>
+  <div class="header-title">
+    <a routerLink="/admin/coupons" class="back-btn" appRipple>
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <h1>{{ isEditMode() ? "Editar Cupón" : "Nuevo Cupón" }}</h1>
+  </div>
 </header>
 
 <form
   [formGroup]="couponForm"
   (ngSubmit)="handleSubmit()"
-  class="form-container"
-  @formAnimation
+  class="form-grid-layout"
 >
-  <!-- Columna Principal -->
-  <div class="main-column">
-    <div class="card">
-      <h2 class="card-title">Información General</h2>
-      <div class="form-field">
-        <label for="code">Código del cupón (ej: VERANO20)</label>
-        <input
-          id="code"
-          type="text"
-          formControlName="code"
-          class="form-input"
-        />
-      </div>
+  <!-- TARJETA PRINCIPAL -->
+  <div class="card glass-panel">
+    <h2 class="card-title">Configuración del Descuento</h2>
+
+    <div class="material-field">
+      <input
+        id="code"
+        type="text"
+        formControlName="code"
+        class="material-input code-input"
+        placeholder=" "
+      />
+      <label for="code" class="material-label">Código (ej: VERANO20)</label>
+      <span class="input-hint"
+        >Se convertirá a mayúsculas automáticamente.</span
+      >
     </div>
 
-    <div class="card">
-      <h2 class="card-title">Restricciones de Uso</h2>
-      <div class="form-field">
-        <label for="usageLimit"
-          >Límite total de usos (dejar en blanco para ilimitado)</label
-        >
-        <input
-          id="usageLimit"
-          type="number"
-          formControlName="usageLimit"
-          class="form-input"
-        />
+    <div class="form-row">
+      <div class="select-field">
+        <label>Tipo de Descuento</label>
+        <div class="select-wrapper">
+          <select formControlName="discountType">
+            <option value="Porcentaje">Porcentaje (%)</option>
+            <option value="Monto Fijo">Monto Fijo ($)</option>
+          </select>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
       </div>
-      <div class="form-field">
-        <label for="expirationDate">Fecha de expiración (opcional)</label>
-        <input
-          id="expirationDate"
-          type="date"
-          formControlName="expirationDate"
-          class="form-input"
-        />
-      </div>
-    </div>
-  </div>
 
-  <!-- Columna Lateral -->
-  <div class="sidebar-column">
-    <div class="card">
-      <h2 class="card-title">Datos del Cupón</h2>
-      <div class="form-field has-arrow">
-        <label for="discountType">Tipo de descuento</label>
-        <select
-          id="discountType"
-          formControlName="discountType"
-          class="form-input"
-          as="select"
-        >
-          <option value="Porcentaje">Porcentaje</option>
-          <option value="Monto Fijo">Monto Fijo</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label for="value">Valor del descuento</label>
+      <div class="material-field">
         <input
           id="value"
           type="number"
           formControlName="value"
-          class="form-input"
+          class="material-input"
+          placeholder=" "
         />
+        <label for="value" class="material-label">Valor</label>
       </div>
+    </div>
 
-      <div class="form-field has-arrow">
-        <label for="appliesTo">Aplicar descuento a</label>
-        <select
-          id="appliesTo"
-          formControlName="appliesTo"
-          class="form-input"
-          as="select"
-        >
+    <div class="select-field">
+      <label>Aplicar a</label>
+      <div class="select-wrapper">
+        <select formControlName="appliesTo">
           <option value="Subtotal">Subtotal de productos</option>
           <option value="Envío">Costo de envío</option>
-          <option value="Todo">Toda la orden</option>
+          <option value="Todo">Total del pedido</option>
         </select>
+        <span class="material-symbols-outlined chevron">expand_more</span>
       </div>
     </div>
   </div>
 
-  <!-- Acciones del Formulario -->
+  <!-- TARJETA LATERAL (Restricciones) -->
+  <div class="card glass-panel sidebar-card">
+    <h2 class="card-title">Límites y Fechas</h2>
+
+    <div class="material-field">
+      <input
+        id="usageLimit"
+        type="number"
+        formControlName="usageLimit"
+        class="material-input"
+        placeholder=" "
+      />
+      <label for="usageLimit" class="material-label"
+        >Límite de Usos (Opcional)</label
+      >
+    </div>
+
+    <div class="material-field">
+      <!-- Input de fecha nativo pero estilizado -->
+      <input
+        id="expirationDate"
+        type="date"
+        formControlName="expirationDate"
+        class="material-input date-input"
+      />
+      <label for="expirationDate" class="material-label static"
+        >Fecha de Expiración</label
+      >
+    </div>
+  </div>
+
+  <!-- ACCIONES -->
   <div class="form-actions">
-    <a routerLink="/admin/coupons" class="btn-secondary" appRipple>Descartar</a>
-    <button
-      type="submit"
-      [disabled]="couponForm.invalid"
-      class="btn-material"
-      appRipple
-    >
-      {{ isEditMode() ? "Guardar Cambios" : "Guardar Cupón" }}
+    <a routerLink="/admin/coupons" class="btn-secondary">Cancelar</a>
+    <button type="submit" [disabled]="couponForm.invalid" class="btn-material">
+      {{ isEditMode() ? "Guardar Cambios" : "Crear Cupón" }}
     </button>
   </div>
 </form>

@@ -1,78 +1,111 @@
 <!-- La condición @if principal controla la visibilidad del modal -->
 @if (customerDetailModalService.activeCustomerId()) {
-<div class="modal-overlay" (click)="customerDetailModalService.close()"></div>
+  <div class="modal-overlay" (click)="customerDetailModalService.close()"></div>
 
-<div class="modal-sheet" @flyInOut>
-  <header class="modal-header">
-    <h2 class="modal-title">Detalles del Cliente</h2>
-    <button (click)="customerDetailModalService.close()" class="close-btn">
-      <span class="material-symbols-outlined">close</span>
-    </button>
-  </header>
+  <div class="modal-sheet" @flyInOut>
+    <header class="modal-header">
+      <h2 class="modal-title">Detalles del Cliente</h2>
+      <button
+        (click)="customerDetailModalService.close()"
+        class="close-btn"
+        appRipple
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </header>
 
-  <div class="modal-content">
-    <!-- 1. Primer @if interno: Maneja el estado de CARGA -->
-    @if (isLoading()) {
-    <p>Cargando detalles...</p>
-    }
-    <!-- 2. @else: Se ejecuta cuando la carga ha terminado -->
-    @else {
-    <!-- 3. Segundo @if interno: Verifica si tenemos datos y crea el alias 'details' -->
-    @if (customerDetails(); as details) {
-    <div class="details-grid">
-      <!-- Tarjeta de Información Principal -->
-      <div class="detail-card">
-        <h3>{{ details.firstName }} {{ details.lastName }}</h3>
-        <p>{{ details.email }}</p>
-        <p>{{ details.phone || "Teléfono no especificado" }}</p>
-        <div class="badges">
-          <span class="badge" [class.admin]="details.isAdmin">{{
-            details.isAdmin ? "Administrador" : "Cliente"
-          }}</span>
-          <span class="badge" [class.disabled]="details.isDisabled">{{
-            details.isDisabled ? "Deshabilitado" : "Activo"
-          }}</span>
+    <div class="modal-content custom-scroll">
+      <!-- 1. ESTADO DE CARGA -->
+      @if (isLoading()) {
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando detalles...</p>
         </div>
-      </div>
+      }
+      <!-- 2. NO ESTÁ CARGANDO -->
+      @else {
+        <!-- 3. VERIFICAMOS SI HAY DATOS (ANIDADO) -->
+        @if (customerDetails(); as details) {
+          <!-- HEADER PERFIL -->
+          <div class="profile-header-card">
+            <div class="avatar-large">
+              {{ (details.firstName || details.email).charAt(0).toUpperCase() }}
+            </div>
+            <div class="profile-info">
+              <h3>{{ details.firstName }} {{ details.lastName }}</h3>
+              <p class="email">{{ details.email }}</p>
+              <div class="badges">
+                @if (details.isAdmin) {
+                  <span class="badge admin">Administrador</span>
+                }
+                @if (details.isDisabled) {
+                  <span class="badge disabled">Cuenta Bloqueada</span>
+                }
+                @if (!details.isAdmin && !details.isDisabled) {
+                  <span class="badge active">Cliente Activo</span>
+                }
+              </div>
+            </div>
+          </div>
 
-      <!-- Tarjeta de Estadísticas de Compra -->
-      <div class="detail-card">
-        <div class="stat-item">
-          <span>Pedidos Totales</span>
-          <strong>{{ details.totalOrders }}</strong>
-        </div>
-        <div class="stat-item">
-          <span>Gasto Total</span>
-          <strong>{{
-            details.totalSpent | currency : "COP" : "symbol" : "1.0-0"
-          }}</strong>
-        </div>
-      </div>
+          <!-- ESTADÍSTICAS -->
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="label">Total Pedidos</span>
+              <span class="value">{{ details.totalOrders }}</span>
+            </div>
+            <div class="stat-box">
+              <span class="label">Total Gastado</span>
+              <span class="value">{{
+                details.totalSpent | currency: "COP" : "symbol" : "1.0-0"
+              }}</span>
+            </div>
+          </div>
 
-      <!-- Tarjeta de Cupones Usados -->
-      <div class="detail-card full-width">
-        <h4>Cupones Utilizados</h4>
-        @for(coupon of details.usedCoupons; track coupon.code) {
-        <div class="coupon-item">
-          <span class="coupon-code">{{ coupon.code }}</span>
-          <span>Usado {{ coupon.timesUsed }} veces</span>
-          <span
-            >Descuento total:
-            {{
-              coupon.totalDiscount | currency : "COP" : "symbol" : "1.0-0"
-            }}</span
-          >
-        </div>
-        } @empty {
-        <p class="empty-message">Este cliente no ha utilizado ningún cupón.</p>
+          <!-- INFORMACIÓN EXTRA -->
+          <div class="detail-card">
+            <h4>
+              <span class="material-symbols-outlined">call</span> Contacto
+            </h4>
+            <p>{{ details.phone || "No registrado" }}</p>
+          </div>
+
+          <!-- CUPONES USADOS -->
+          <div class="detail-card">
+            <h4>
+              <span class="material-symbols-outlined">local_activity</span>
+              Historial de Cupones
+            </h4>
+            @if (details.usedCoupons.length > 0) {
+              <div class="coupons-list">
+                @for (coupon of details.usedCoupons; track coupon.code) {
+                  <div class="coupon-item">
+                    <div class="code">{{ coupon.code }}</div>
+                    <div class="meta">
+                      <span>{{ coupon.timesUsed }} usos</span>
+                      <span class="saving"
+                        >Ahorro:
+                        {{
+                          coupon.totalDiscount
+                            | currency: "COP" : "symbol" : "1.0-0"
+                        }}</span
+                      >
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="empty-text">No ha usado cupones aún.</p>
+            }
+          </div>
         }
-      </div>
+        <!-- 4. SI NO HAY DATOS (ERROR O NULL) -->
+        @else {
+          <div class="error-state">
+            <p>No se pudo cargar la información del cliente.</p>
+          </div>
+        }
+      }
     </div>
-    }
-    <!-- 4. @else del segundo @if: Si la carga terminó pero no hay datos -->
-    @else {
-    <p>No se pudieron cargar los detalles.</p>
-    } }
   </div>
-</div>
 }

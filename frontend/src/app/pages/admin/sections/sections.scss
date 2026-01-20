@@ -1,78 +1,164 @@
 @use "../../../../../buttons";
 @use "../../../../forms";
-@use "../_admin-shared.scss";
+
+.page-header {
+  margin-bottom: 2rem;
+  h1 {
+    font-family: "Baloo 2", serif;
+    font-size: 2.2rem;
+    color: #333;
+    margin: 0;
+  }
+}
 
 .sections-layout {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 2rem;
 
-  @media (min-width: 768px) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  @media (min-width: 900px) {
+    grid-template-columns: 1fr 1.5fr; // Formulario más angosto que la lista
+    align-items: start;
+  }
+}
+
+// --- TARJETAS ---
+.glass-panel {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+}
+
+// --- FORMULARIO ---
+.sticky-card {
+  @media (min-width: 900px) {
+    position: sticky;
+    top: 2rem; // Se queda fijo al hacer scroll
   }
 }
 
 .form-description {
   font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin: -1rem 0 1.5rem 0;
+  color: #666;
+  margin-bottom: 1.5rem;
   line-height: 1.5;
 }
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
+.material-field {
+  margin-bottom: 1.5rem;
 }
 
-.sections-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.btn-material {
+  @extend .btn-material;
+  width: 100%; // Botón ancho
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: var(--text-charcoal);
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+
+  &:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
 }
 
-.section-item {
+// --- GRID DE SECCIONES ---
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.section-card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background-color: var(--soft-white);
+  background: #fdfdfd;
+  border: 1px solid #eee;
+  border-radius: 1rem;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    background: white;
+    .icon-wrapper {
+      background: var(--pastel-pink);
+      color: white;
+    }
+  }
+}
+
+.icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f0f0f0;
+  color: #999;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
 }
 
 .section-name {
+  flex-grow: 1;
   font-weight: 600;
+  color: #555;
+  font-size: 1rem;
 }
 
-.empty-message {
-  color: var(--text-secondary);
-  font-style: italic;
-  text-align: center;
-  padding: 2rem 0;
-}
-.delete-button-tiny {
-  background-color: #fee2e2; // Rojo claro
-  color: #b91c1c; // Rojo oscuro
-  border: none;
+.delete-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: #ccc;
   cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  font-size: 0.7rem;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
 
   &:hover {
-    background-color: #fecaca;
+    background: #fff5f5;
+    color: #e11d48;
   }
-
-  &:disabled {
-    background-color: var(--soft-gray);
-    color: var(--text-secondary);
-    cursor: not-allowed;
+  span {
+    font-size: 1.2rem;
   }
 }
+
+// LOADING & EMPTY
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: #888;
+}
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #eee;
+  border-top: 3px solid #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s infinite;
+}
+@keyfra;

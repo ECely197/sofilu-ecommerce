@@ -1,167 +1,268 @@
-// Contenido completo para: src/app/pages/admin/category-list/category-list.component.scss
 @use "../../../../../buttons";
+@use "../../../../forms";
 
-// --- Estilos Generales ---
+// --- HEADER ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
+    font-size: 2.2rem;
+    color: #333;
+    margin: 0;
+  }
+
+  .btn-material {
+    @extend .btn-material; // Hereda del global
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 50px;
+    background: #333;
+    color: white;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .text {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
   }
 }
 
-.add-button {
-  @extend .btn-material;
-  display: inline-flex;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+// --- BUSCADOR ---
+.search-bar-wrapper {
+  margin-bottom: 2rem;
 }
-
-.table-container {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+.search-field {
+  position: relative;
+  max-width: 400px;
 }
-
-// --- Lista de Categorías (Tabla en Desktop) ---
-.category-item {
-  display: grid;
-  grid-template-columns: 80px 2fr 2fr 1.5fr;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
-  transition: background-color 0.2s ease-in-out;
-  &:last-child {
-    border-bottom: none;
-  }
-  &:not(.header):hover {
-    background-color: var(--background-sec);
+.search-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
   }
 }
-
-.category-item.header {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  font-weight: 600;
+.search-field span {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
 }
 
-.category-image {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 0.75rem;
-}
-
-.category-name {
-  font-weight: 600;
-}
-
-.action-buttons {
+// --- LISTA GRID ---
+.category-list-grid {
   display: flex;
-  gap: 0.5rem;
-}
-.action-button {
-  @extend .btn-secondary;
-  padding: 0.4rem 1rem;
-  font-size: 0.75rem;
-  border: none;
-  &.edit {
-    background-color: var(--soft-gray);
-  }
-  &.delete {
-    background-color: #fee2e2;
-    color: #b91c1c;
-  }
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
-// --- MEDIA QUERY PARA MÓVIL (Tarjetas) ---
-@media (max-width: 767px) {
-  .category-item.header {
-    display: none;
+// FILA
+.category-row {
+  display: grid;
+  // Columnas: Imagen | Nombre | Slug | Acciones
+  grid-template-columns: 80px 1.5fr 1.5fr 1fr;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &.item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    z-index: 1;
   }
 
-  .category-item {
-    grid-template-columns: 80px 1fr;
-    grid-template-areas:
-      "img name"
-      "img slug"
-      "actions actions";
-    row-gap: 0.25rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--soft-gray);
-    border-radius: 1rem;
+  &.header {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding-bottom: 0.5rem;
+    .col {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
+}
 
-  .cell[data-label="Imagen"] {
-    grid-area: img;
-  }
-  .cell.category-name {
-    grid-area: name;
-    font-size: 1.125rem;
-  }
-  .cell[data-label="Slug"] {
-    grid-area: slug;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-  }
-  .cell[data-label="Acciones"] {
-    grid-area: actions;
-    padding-top: 1rem;
-  }
-
-  .action-buttons {
+// CELDAS
+.col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  color: #555;
+  &.right {
+    display: flex;
     justify-content: flex-end;
   }
 }
 
-// --- Esqueleto y Estado Vacío ---
-.skeleton-list,
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-}
-// (Puedes añadir estilos más detallados para el esqueleto si lo deseas)
-
-// --- ¡NUEVOS ESTILOS DE BÚSQUEDA! ---
-.search-bar-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.search-field {
-  position: relative;
-  max-width: 400px; // Limita el ancho de la barra
-
-  .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 1rem;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
+.img-col .img-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #f9f9f9;
+  padding: 5px;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 }
 
-.search-input {
-  width: 100%;
-  height: 48px;
-  border-radius: 9999px;
-  border: 1px solid var(--soft-gray);
-  background-color: white;
-  padding: 0 1rem 0 3rem; // Espacio para el icono
+.name-col {
+  font-weight: 700;
+  color: #333;
   font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s;
+}
 
-  &:focus {
-    outline: none;
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+.url-badge {
+  background: #f0f9ff;
+  color: #0284c7;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+// ACCIONES
+.actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+
+  &.edit {
+    background: #eff6ff;
+    color: #2563eb;
+    &:hover {
+      background: #dbeafe;
+    }
+  }
+  &.delete {
+    background: #fff1f2;
+    color: #e11d48;
+    &:hover {
+      background: #ffe4e6;
+    }
+  }
+}
+
+// RESPONSIVE (MÓVIL)
+@media (max-width: 768px) {
+  .category-row.header {
+    display: none;
+  }
+  .category-row.item {
+    grid-template-columns: 60px 1fr; // Imagen | Info
+    grid-template-areas:
+      "img name"
+      "img slug"
+      "actions actions";
+    gap: 0.5rem 1rem;
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .img-col {
+    grid-area: img;
+  }
+  .name-col {
+    grid-area: name;
+    font-size: 1.1rem;
+    align-self: end;
+  }
+  .slug-col {
+    grid-area: slug;
+    align-self: start;
+  }
+
+  .actions-col {
+    grid-area: actions;
+    margin-top: 1rem;
+    justify-content: flex-end;
+    border-top: 1px dashed #eee;
+    padding-top: 1rem;
+    width: 100%;
+  }
+}
+
+// LOADING & EMPTY
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: #888;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 1.5rem;
+  color: #999;
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .btn-link {
+    color: var(--pastel-pink);
+    font-weight: 700;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    display: inline-block;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

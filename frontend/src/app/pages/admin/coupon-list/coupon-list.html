@@ -1,10 +1,8 @@
-<!-- Contenido completo para: src/app/pages/admin/coupon-list/coupon-list.html -->
-
 <header class="page-header">
   <h1>Cupones de Descuento</h1>
-  <a routerLink="/admin/coupons/new" class="add-button" appRipple>
+  <a routerLink="/admin/coupons/new" class="btn-material icon-btn" appRipple>
     <span class="material-symbols-outlined">add</span>
-    Crear Cupón
+    <span class="text">Crear Cupón</span>
   </a>
 </header>
 
@@ -14,85 +12,105 @@
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre o descripción..."
+      placeholder="Buscar cupón..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- Estado de Carga -->
   @if (isLoading()) {
-  <div class="skeleton-list">
-    @for (item of [1, 2, 3]; track item) {
-    <div class="skeleton-item"></div>
-    }
-  </div>
-  }
-
-  <!-- Lista de Cupones -->
-  @if (!isLoading() && coupons().length > 0) {
-  <div class="coupon-list" [@listAnimation]="coupons().length">
-    <div class="coupon-item header">
-      <div class="cell">Código</div>
-      <div class="cell">Tipo</div>
-      <div class="cell">Valor</div>
-      <div class="cell">Usos</div>
-      <div class="cell">Expiración</div>
-      <div class="cell">Acciones</div>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando cupones...</p>
     </div>
+  } @else if (coupons().length > 0) {
+    <div class="coupon-list-grid" [@listAnimation]="coupons().length">
+      <!-- CABECERA (SOLO DESKTOP) -->
+      <div class="coupon-row header">
+        <div class="col code-col">Código</div>
+        <div class="col type-col">Descuento</div>
+        <div class="col usage-col center">Usos</div>
+        <div class="col date-col">Vence</div>
+        <div class="col actions-col right">Acciones</div>
+      </div>
 
-    @for (coupon of coupons(); track coupon._id) {
-    <div class="coupon-item">
-      <div class="cell coupon-code" data-label="Código">{{ coupon.code }}</div>
-      <div class="cell" data-label="Tipo">{{ coupon.discountType }}</div>
-      <div class="cell" data-label="Valor">
-        {{
-          coupon.discountType === "Porcentaje"
-            ? coupon.value + "%"
-            : (coupon.value | currency : "COP" : "symbol" : "1.0-0")
-        }}
-      </div>
-      <div class="cell" data-label="Usos">
-        {{ coupon.timesUsed }} / {{ coupon.usageLimit || "∞" }}
-      </div>
-      <div class="cell" data-label="Expiración">
-        {{
-          coupon.expirationDate
-            ? (coupon.expirationDate | date : "mediumDate")
-            : "Nunca"
-        }}
-      </div>
-      <div class="cell" data-label="Acciones">
-        <div class="action-buttons">
-          <a
-            [routerLink]="['/admin/coupons/edit', coupon._id]"
-            class="action-button edit"
-            appRipple
-            >Editar</a
-          >
-          <button
-            (click)="deleteCoupon(coupon._id)"
-            class="action-button delete"
-            appRipple
-          >
-            Eliminar
-          </button>
+      <!-- FILAS -->
+      @for (coupon of coupons(); track coupon._id) {
+        <div class="coupon-row item">
+          <!-- Código (Estilo Cupón) -->
+          <div class="col code-col" data-label="Código">
+            <div class="coupon-badge">
+              <span class="material-symbols-outlined icon">local_activity</span>
+              <span class="code-text">{{ coupon.code }}</span>
+            </div>
+          </div>
+
+          <!-- Valor del Descuento -->
+          <div class="col type-col" data-label="Descuento">
+            <div class="discount-value">
+              @if (coupon.discountType === "Porcentaje") {
+                <span class="percent">{{ coupon.value }}%</span> OFF
+              } @else {
+                <span class="amount">{{
+                  coupon.value | currency: "COP" : "symbol" : "1.0-0"
+                }}</span>
+                OFF
+              }
+              <small class="target">en {{ coupon.appliesTo }}</small>
+            </div>
+          </div>
+
+          <!-- Usos -->
+          <div class="col usage-col center" data-label="Usos">
+            <span
+              class="usage-pill"
+              [class.limit-reached]="
+                coupon.usageLimit && coupon.timesUsed >= coupon.usageLimit
+              "
+            >
+              {{ coupon.timesUsed }} / {{ coupon.usageLimit || "∞" }}
+            </span>
+          </div>
+
+          <!-- Expiración -->
+          <div class="col date-col" data-label="Vence">
+            @if (coupon.expirationDate) {
+              {{ coupon.expirationDate | date: "mediumDate" }}
+            } @else {
+              <span class="no-expire">Nunca</span>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="col actions-col right" data-label="Acciones">
+            <div class="actions-wrapper">
+              <a
+                [routerLink]="['/admin/coupons/edit', coupon._id]"
+                class="action-btn edit"
+                title="Editar"
+                appRipple
+              >
+                <span class="material-symbols-outlined">edit</span>
+              </a>
+              <button
+                (click)="deleteCoupon(coupon._id)"
+                class="action-btn delete"
+                title="Eliminar"
+                appRipple
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
-  }
-
-  <!-- Estado Vacío -->
-  @if (!isLoading() && coupons().length === 0) {
-  <div class="empty-state">
-    <p>No has creado ningún cupón de descuento todavía.</p>
-    <a routerLink="/admin/coupons/new" class="add-button" appRipple>
-      <span class="material-symbols-outlined">add</span>
-      Crear tu primer cupón
-    </a>
-  </div>
+  } @else {
+    <div class="empty-state">
+      <span class="material-symbols-outlined icon">savings</span>
+      <p>No tienes cupones activos.</p>
+      <a routerLink="/admin/coupons/new" class="btn-link">Crear uno nuevo</a>
+    </div>
   }
 </div>

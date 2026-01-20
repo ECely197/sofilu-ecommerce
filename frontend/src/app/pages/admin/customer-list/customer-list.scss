@@ -1,227 +1,294 @@
-// Contenido completo para: src/app/pages/admin/customer-list/customer-list.scss
 @use "../../../../../buttons";
+@use "../../../../forms";
 
-// --- Cabecera de la Página ---
+// --- HEADER ---
 .page-header {
   margin-bottom: 2rem;
   h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
+    font-size: 2.2rem;
+    color: #333;
+    margin: 0;
   }
 }
 
-// --- Contenedor Principal ---
-.table-container {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-// --- Lista de Clientes (Estilo Tabla en Desktop) ---
-.customer-list {
-  width: 100%;
-}
-
-.customer-item {
-  display: grid;
-  // 4 columnas: email, nombre, fecha, acciones
-  grid-template-columns: 2fr 1.5fr 1.5fr 1fr;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
-  transition: background-color 0.2s ease-in-out;
-
-  &:last-child {
-    border-bottom: none;
-  }
-  &:not(.header):hover {
-    background-color: var(--background-sec);
-  }
-}
-
-// Cabecera de la tabla
-.customer-item.header {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding-bottom: 1rem;
-}
-
-// Celdas
-.cell {
-  padding: 0 0.5rem;
-}
-
-.customer-email {
-  font-weight: 600;
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: flex-start;
-  gap: 0.5rem;
-}
-
-.action-button {
-  @extend .btn-secondary;
-  padding: 0.4rem 1rem;
-  font-size: 0.75rem;
-  border: none;
-  background-color: var(--soft-gray);
-}
-
-// --- MEDIA QUERY PARA MÓVIL (La transformación a tarjetas) ---
-@media (max-width: 767px) {
-  // Ocultamos la cabecera de la tabla, es innecesaria en la vista de tarjetas
-  .customer-item.header {
-    display: none;
-  }
-
-  // Convertimos cada fila en una tarjeta
-  .customer-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem; // Padding M3
-    margin-bottom: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 1rem; // Bordes redondeados M3
-    background-color: white;
-    // Quitamos `box-shadow` para un look más plano y moderno
-  }
-
-  // Estilo para cada celda/fila dentro de la tarjeta
-  .cell {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; // Alinea verticalmente label y valor
-    width: 100%;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
-
-    &:last-child {
-      border-bottom: none; // Sin borde para la última fila (acciones)
-    }
-
-    // El label ("Nombre", "Fecha")
-    &::before {
-      content: attr(data-label);
-      font-weight: 500; // Un peso más ligero
-      color: var(--text-secondary);
-      margin-right: 1rem;
-    }
-  }
-
-  // Hacemos que el email sea el título de la tarjeta
-  .customer-email {
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding-bottom: 0.75rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-primary);
-
-    &::before {
-      display: none; // No mostramos el label "Email"
-    }
-  }
-
-  // Ajustamos los botones de acción
-  .action-buttons {
-    width: 100%;
-    margin-top: 1rem;
-    justify-content: flex-end; // Alineados a la derecha
-    flex-wrap: wrap; // Permite que se apilen si no caben
-  }
-}
-
-// --- Esqueleto de Carga ---
-.skeleton-list {
-  .skeleton-item {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--soft-gray);
-  }
-  .skeleton-text-group {
-    width: 100%;
-  }
-  .skeleton-text {
-    height: 1.25rem;
-    border-radius: 0.25rem;
-    background-color: var(--soft-gray);
-    margin-bottom: 0.75rem;
-  }
-  .skeleton-text.short {
-    width: 60%;
-  }
-
-  .skeleton-text {
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-// --- Estado Vacío ---
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  p {
-    color: var(--text-secondary);
-    font-size: 1.125rem;
-  }
-}
-
+// --- BUSCADOR ---
 .search-bar-wrapper {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
-
 .search-field {
   position: relative;
-  max-width: 400px; // Limita el ancho de la barra
-
-  .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 1rem;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
-  }
+  max-width: 400px;
 }
-
 .search-input {
   width: 100%;
-  height: 48px;
-  border-radius: 9999px;
-  border: 1px solid var(--soft-gray);
-  background-color: white;
-  padding: 0 1rem 0 3rem; // Espacio para el icono
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+  background: white;
   font-size: 1rem;
-  font-family: inherit;
   transition: all 0.2s;
-
   &:focus {
     outline: none;
     border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
+  }
+}
+.search-field span {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+// --- LISTA GRID ---
+.customer-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+// FILA
+.customer-row {
+  display: grid;
+  // Columnas: Usuario | Email | Fecha | Rol | Acciones
+  grid-template-columns: 1.5fr 1.5fr 1fr 0.8fr 1fr;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+
+  &.item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    z-index: 1;
+  }
+
+  &.disabled-row {
+    opacity: 0.6;
+    background: #fafafa;
+  }
+
+  &.header {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding-bottom: 0.5rem;
+    .col {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
 }
 
-.action-button.admin {
-  background-color: #dbeafe;
-  color: #1e40af;
+// CELDAS
+.col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  color: #555;
+  &.center {
+    text-align: center;
+  }
+  &.right {
+    display: flex;
+    justify-content: flex-end;
+  }
 }
-.action-button.danger {
-  background-color: #fee2e2;
-  color: #b91c1c;
+
+// User Avatar
+.user-col {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  .avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0369a1;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    font-size: 0.9rem;
+  }
+  .name {
+    font-weight: 700;
+    color: #333;
+  }
+}
+
+.email-col {
+  color: #666;
+  font-size: 0.9rem;
+}
+.date-col {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+// BADGES
+.badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  &.admin {
+    background: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+  }
+  &.banned {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+  &.user {
+    background: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+  }
+}
+
+// ACCIONES
+.actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.details {
+    background: #f0f9ff;
+    color: #0284c7;
+    &:hover {
+      background: #0284c7;
+      color: white;
+    }
+  }
+
+  &.role {
+    background: #fdf4ff;
+    color: #a21caf;
+    &:hover {
+      background: #a21caf;
+      color: white;
+    }
+    &.active {
+      background: #a21caf;
+      color: white;
+    }
+  }
+
+  &.block {
+    background: #fff1f2;
+    color: #be123c;
+    &:hover {
+      background: #be123c;
+      color: white;
+    }
+    &.active {
+      background: #be123c;
+      color: white;
+    } // Estado bloqueado
+  }
+}
+
+// RESPONSIVE (MÓVIL)
+@media (max-width: 900px) {
+  .customer-row.header {
+    display: none;
+  }
+  .customer-row.item {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    padding: 1.5rem;
+    position: relative;
+  }
+  .col {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: 1px dashed #f5f5f5;
+    padding-bottom: 0.5rem;
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #999;
+      font-size: 0.85rem;
+    }
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+  .user-col {
+    border-bottom: 2px solid #eee;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.8rem;
+    &::before {
+      display: none;
+    }
+  }
+  .actions-col {
+    margin-top: 1rem;
+    justify-content: flex-end;
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// LOADING & EMPTY
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: #888;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  background: white;
+  border-radius: 1.5rem;
+  color: #999;
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+  }
 }

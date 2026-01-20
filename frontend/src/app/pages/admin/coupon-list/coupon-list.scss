@@ -1,207 +1,314 @@
-// Contenido para: src/app/pages/admin/coupon-list/coupon-list.scss
 @use "../../../../../buttons";
+@use "../../../../forms";
 
-// --- Cabecera y Contenedor (reutilizamos el patrón) ---
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
+    font-family: "Baloo 2", serif;
+    font-size: 2.2rem;
+    margin: 0;
+    color: #333;
+  }
+
+  .btn-material {
+    @extend .btn-material;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 50px;
+    background: #333;
+    color: white;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .text {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
   }
 }
 
-.add-button {
-  @extend .btn-material;
-  display: inline-flex;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+// BUSCADOR
+.search-bar-wrapper {
+  margin-bottom: 2rem;
 }
-
-.table-container {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+.search-field {
+  position: relative;
+  max-width: 400px;
 }
-
-// --- Lista de Cupones (Tabla en Desktop) ---
-.coupon-list {
+.search-input {
   width: 100%;
-}
-
-.coupon-item {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr 1.5fr;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--soft-gray);
-  transition: background-color 0.2s ease-in-out;
-
-  &:last-child {
-    border-bottom: none;
-  }
-  &:not(.header):hover {
-    background-color: var(--background-sec);
+  padding: 0.8rem 1rem 0.8rem 3rem;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
   }
 }
-
-.coupon-item.header {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding-bottom: 1rem;
+.search-field span {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
 }
 
-.cell {
-  padding: 0 0.5rem;
-}
-
-.coupon-code {
-  font-weight: 700;
-  font-family: monospace;
-  background-color: var(--soft-white);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  display: inline-block;
-}
-
-.action-buttons {
+// --- LISTA GRID ---
+.coupon-list-grid {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
-.action-button {
-  @extend .btn-secondary;
-  padding: 0.4rem 1rem;
-  font-size: 0.75rem;
-  border: none;
-  &.edit {
-    background-color: var(--soft-gray);
-  }
-  &.delete {
-    background-color: #fee2e2;
-    color: #b91c1c;
-  }
-}
+// FILA
+.coupon-row {
+  display: grid;
+  // Columnas: Código | Descuento | Usos | Fecha | Acciones
+  grid-template-columns: 1.5fr 1.5fr 1fr 1fr 0.8fr;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
-// --- MEDIA QUERY PARA MÓVIL (Transformación a tarjetas) ---
-@media (max-width: 991px) {
-  .coupon-item.header {
-    display: none;
-  }
-
-  .coupon-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid var(--soft-gray);
-    border-radius: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  &.item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    z-index: 1;
   }
 
-  .cell {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.5rem 0;
-
-    &::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-right: 1rem;
+  &.header {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding-bottom: 0.5rem;
+    .col {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+    &:hover {
+      transform: none;
+      box-shadow: none;
     }
   }
+}
 
-  .coupon-code {
-    font-size: 1.25rem;
-    padding: 0.5rem 0.75rem;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid var(--soft-gray);
-    width: 100%;
+// CELDAS
+.col {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  color: #555;
+  &.center {
     text-align: center;
-    &::before {
-      display: none;
-    }
   }
-
-  .action-buttons {
-    width: 100%;
-    margin-top: 1rem;
+  &.right {
+    display: flex;
     justify-content: flex-end;
   }
 }
 
-// --- Esqueleto y Estado Vacío (reutilizamos el patrón) ---
-.skeleton-list {
-  .skeleton-item {
-    height: 50px;
-    background-color: var(--soft-gray);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+// BADGE DE CÓDIGO (Estilo Ticket)
+.coupon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff0f5;
+  border: 1px dashed var(--pastel-pink);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  color: #d63384;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  .icon {
+    font-size: 1.1rem;
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
+// VALOR DEL DESCUENTO
+.discount-value {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  .percent,
+  .amount {
+    font-weight: 800;
+    color: #333;
+    font-size: 1.1rem;
   }
-  50% {
-    opacity: 0.6;
+  .target {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: lowercase;
+  }
+}
+
+// PILL DE USOS
+.usage-pill {
+  background: #f3f4f6;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  &.limit-reached {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+}
+
+.no-expire {
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+// ACCIONES
+.actions-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+.action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  &.edit {
+    background: #f0f9ff;
+    color: #0284c7;
+    &:hover {
+      background: #e0f2fe;
+    }
+  }
+  &.delete {
+    background: #fff1f2;
+    color: #e11d48;
+    &:hover {
+      background: #ffe4e6;
+    }
+  }
+}
+
+// RESPONSIVE (MÓVIL)
+@media (max-width: 768px) {
+  .coupon-row.header {
+    display: none;
+  }
+  .coupon-row.item {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    padding: 1.5rem;
+    position: relative;
+    grid-template-areas: "code" "discount" "usage" "date" "actions";
+  }
+
+  .col {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: 1px dashed #f5f5f5;
+    padding-bottom: 0.5rem;
+    &::before {
+      content: attr(data-label);
+      font-weight: 600;
+      color: #999;
+      font-size: 0.85rem;
+    }
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  .code-col {
+    grid-area: code;
+    justify-content: center;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 0.5rem;
+    padding-bottom: 1rem;
+    &::before {
+      display: none;
+    }
+    .coupon-badge {
+      font-size: 1.2rem;
+      padding: 0.6rem 1.2rem;
+    }
+  }
+
+  .actions-col {
+    grid-area: actions;
+    margin-top: 1rem;
+    justify-content: flex-end;
+    &::before {
+      display: none;
+    }
+  }
+}
+
+// LOADING & EMPTY
+.loading-state {
+  text-align: center;
+  padding: 4rem;
+  color: #888;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #eee;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
 .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
-  p {
-    color: var(--text-secondary);
-    font-size: 1.125rem;
-    margin-bottom: 1.5rem;
+  padding: 4rem;
+  background: white;
+  border-radius: 1.5rem;
+  color: #999;
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
   }
-}
-
-.search-bar-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-.search-field {
-  position: relative;
-  max-width: 400px; // Limita el ancho de la barra
-
-  .material-symbols-outlined {
-    position: absolute;
-    top: 50%;
-    left: 1rem;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-    pointer-events: none;
-  }
-}
-
-.search-input {
-  width: 100%;
-  height: 48px;
-  border-radius: 9999px;
-  border: 1px solid var(--soft-gray);
-  background-color: white;
-  padding: 0 1rem 0 3rem; // Espacio para el icono
-  font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: var(--pastel-pink);
-    box-shadow: 0 0 0 3px rgba(244, 194, 194, 0.4);
+  .btn-link {
+    color: var(--pastel-pink);
+    font-weight: 700;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    display: inline-block;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

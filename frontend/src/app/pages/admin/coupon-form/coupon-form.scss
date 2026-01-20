@@ -1,63 +1,196 @@
-// Contenido para: src/app/pages/admin/coupon-form/coupon-form.scss
 @use "../../../../../buttons";
-@use "../_admin-shared.scss";
+@use "../../../../forms";
 
-// --- Estructura General ---
 .page-header {
-  margin-bottom: 2rem;
-  h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
-  }
-}
-
-.form-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-
-  @media (min-width: 1024px) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  }
-}
-
-.main-column,
-.sidebar-column {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  h1 {
+    font-family: "Baloo 2", serif;
+    font-size: 2rem;
+    margin: 0;
+    color: #333;
+  }
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #eee;
+    display: grid;
+    place-items: center;
+    color: #555;
+    transition: all 0.2s;
+    &:hover {
+      background: #f5f5f5;
+      transform: scale(1.05);
+    }
+  }
 }
 
-.card {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+// LAYOUT
+.form-grid-layout {
+  display: grid;
+  gap: 2rem;
+  @media (min-width: 900px) {
+    grid-template-columns: 2fr 1fr; // Principal | Lateral
+    align-items: start;
+  }
+}
+
+// GLASS CARDS
+.glass-panel {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  font-family: "Playfair Display", serif;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
 }
 
-// --- Acciones del Formulario ---
+// INPUTS
+.material-field {
+  margin-bottom: 1.5rem;
+}
+.material-input {
+  @extend .material-input;
+  background: #f9f9f9;
+  border-color: transparent;
+  &:focus {
+    background: white;
+    border-color: var(--pastel-pink);
+  }
+}
+
+// Input de código (Monospace y uppercase)
+.code-input {
+  font-family: monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: #333;
+}
+.input-hint {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.3rem;
+  display: block;
+}
+
+// Date Input
+.date-input {
+  padding-top: 1.2rem;
+}
+.material-label.static {
+  transform: translateY(-1.2rem) scale(0.8);
+  color: var(--pastel-pink);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+// SELECT
+.select-field {
+  margin-bottom: 1.5rem;
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #777;
+    margin-bottom: 0.5rem;
+  }
+  .select-wrapper {
+    position: relative;
+    select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: #f9f9f9;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      appearance: none;
+      &:focus {
+        outline: none;
+        background: white;
+        border-color: var(--pastel-pink);
+      }
+    }
+    .chevron {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #777;
+    }
+  }
+}
+
+// ACCIONES
 .form-actions {
-  grid-column: 1 / -1; // Ocupa todo el ancho
+  grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
-}
-
-.btn-material {
-  @extend .btn-material;
-  &:disabled {
-    /* ... (estilos de deshabilitado) */
+  .btn-secondary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-material {
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    background: #333;
+    color: white;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    &:disabled {
+      background: #ccc;
+    }
   }
 }
 
-.btn-secondary {
-  @extend .btn-secondary;
+// Mobile Sticky Actions
+@media (max-width: 768px) {
+  :host {
+    padding-bottom: 80px;
+  }
+  .form-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    margin: 0;
+    button,
+    a {
+      flex: 1;
+      text-align: center;
+    }
+  }
 }

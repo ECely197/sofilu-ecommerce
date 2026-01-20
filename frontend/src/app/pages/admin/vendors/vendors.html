@@ -1,16 +1,18 @@
 <header class="page-header">
-  <h1>Gestionar Vendedores / Proveedores</h1>
+  <h1>Gestionar Vendedores</h1>
 </header>
 
 <div class="vendors-layout">
-  <!-- Columna del Formulario -->
+  <!-- COLUMNA IZQUIERDA: FORMULARIO -->
   <div class="form-column">
-    <div class="card">
-      <h2 class="card-title">Añadir Nuevo Vendedor</h2>
+    <div class="card glass-panel sticky-card">
+      <h2 class="card-title">Nuevo Vendedor</h2>
+
       <form [formGroup]="vendorForm" (ngSubmit)="handleSubmit()">
         <p class="form-description">
-          Registra los diferentes proveedores o marcas de tus productos.
+          Registra tus proveedores o marcas para organizar mejor el inventario.
         </p>
+
         <div class="material-field">
           <input
             id="name"
@@ -21,11 +23,12 @@
           />
           <label for="name" class="material-label">Nombre del Vendedor</label>
         </div>
+
         <div class="form-actions">
           <button
             type="submit"
             [disabled]="vendorForm.invalid || isSaving()"
-            class="btn btn-primary"
+            class="btn-material full-width"
             appRipple
           >
             {{ isSaving() ? "Guardando..." : "Guardar Vendedor" }}
@@ -34,26 +37,47 @@
       </form>
     </div>
   </div>
-  <hr />
-  <!-- Columna de la Lista -->
+
+  <!-- COLUMNA DERECHA: LISTA -->
   <div class="list-column">
-    <div class="card">
-      <h2 class="card-title">Vendedores Existentes</h2>
+    <div class="card glass-panel">
+      <h2 class="card-title">Vendedores Activos ({{ vendors().length }})</h2>
+
       @if (isLoading()) {
-      <p>Cargando...</p>
-      } @else {
-      <div class="vendors-list">
-        @for (vendor of vendors(); track vendor._id) {
-        <div class="vendor-item">
-          <span class="vendor-name">{{ vendor.name }}</span>
-          <button (click)="deleteVendor(vendor)" class="delete-button-tiny">
-            ✖
-          </button>
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando lista...</p>
         </div>
-        } @empty {
-        <p class="empty-message">No has registrado ningún vendedor.</p>
-        }
-      </div>
+      } @else {
+        <div class="vendors-grid">
+          @for (vendor of vendors(); track vendor._id) {
+            <div class="vendor-card">
+              <!-- Icono Generado con la Inicial -->
+              <div class="vendor-avatar">
+                {{ vendor.name.charAt(0).toUpperCase() }}
+              </div>
+
+              <div class="vendor-info">
+                <span class="vendor-name">{{ vendor.name }}</span>
+                <!-- Opcional: Podrías mostrar cuántos productos tiene este vendedor aquí si el backend lo enviara -->
+              </div>
+
+              <button
+                (click)="deleteVendor(vendor)"
+                class="delete-btn"
+                title="Eliminar Vendedor"
+                appRipple
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          } @empty {
+            <div class="empty-state">
+              <span class="material-symbols-outlined icon">storefront</span>
+              <p>No tienes vendedores registrados.</p>
+            </div>
+          }
+        </div>
       }
     </div>
   </div>

@@ -25,6 +25,8 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getStorage, provideStorage } from '@angular/fire/storage';
 
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+
 // --- Componentes y Servicios de la Aplicación ---
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth-interceptor';
@@ -50,6 +52,8 @@ export const appConfig: ApplicationConfig = {
     // --- Módulo de Animaciones ---
     // Habilita el sistema de animaciones de Angular.
     provideAnimations(),
+
+    provideCharts(withDefaultRegisterables()),
 
     // --- Integración con Firebase ---
     // Inicializa y provee los servicios de Firebase (App, Auth, Storage)

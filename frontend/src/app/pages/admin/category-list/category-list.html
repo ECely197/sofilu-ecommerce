@@ -1,95 +1,95 @@
-<!-- Contenido completo para: src/app/pages/admin/category-list/category-list.component.html -->
-
 <header class="page-header">
   <h1>Categorías</h1>
-  <a routerLink="/admin/categories/new" class="add-button" appRipple>
+  <a routerLink="/admin/categories/new" class="btn-material icon-btn" appRipple>
     <span class="material-symbols-outlined">add</span>
-    Crear Categoría
+    <span class="text">Nueva</span>
   </a>
 </header>
 
-<!-- ¡NUEVA BARRA DE BÚSQUEDA! -->
+<!-- BARRA DE BÚSQUEDA FLOTANTE -->
 <div class="search-bar-wrapper">
   <div class="search-field">
     <span class="material-symbols-outlined">search</span>
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre o descripción..."
+      placeholder="Buscar categoría..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- Estado de Carga -->
   @if (isLoading()) {
-  <div class="skeleton-list">
-    @for (item of [1, 2, 3]; track item) {
-    <div class="skeleton-item">
-      <div class="skeleton-img"></div>
-      <div class="skeleton-text-group">
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text short"></div>
-      </div>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando catálogo...</p>
     </div>
-    }
-  </div>
-  }
-
-  <!-- Lista de Categorías -->
-  @if (!isLoading() && categories().length > 0) {
-  <div class="category-list" [@listAnimation]="categories().length">
-    <div class="category-item header">
-      <div class="cell">Imagen</div>
-      <div class="cell">Nombre</div>
-      <div class="cell">Slug (URL)</div>
-      <div class="cell">Acciones</div>
-    </div>
-
-    @for (category of categories(); track category._id) {
-    <div class="category-item">
-      <div class="cell" data-label="Imagen">
-        <img
-          [src]="category.imageUrl"
-          [alt]="category.name"
-          class="category-image"
-        />
+  } @else if (categories().length > 0) {
+    <div class="category-list-grid" [@listAnimation]="categories().length">
+      <!-- CABECERA (SOLO DESKTOP) -->
+      <div class="category-row header">
+        <div class="col img-col">Imagen</div>
+        <div class="col name-col">Nombre</div>
+        <div class="col slug-col">Slug (URL)</div>
+        <div class="col actions-col right">Acciones</div>
       </div>
-      <div class="cell category-name" data-label="Nombre">
-        {{ category.name }}
-      </div>
-      <div class="cell" data-label="Slug">/category/{{ category.slug }}</div>
-      <div class="cell" data-label="Acciones">
-        <div class="action-buttons">
-          <a
-            [routerLink]="['/admin/categories/edit', category._id]"
-            class="action-button edit"
-            appRipple
-            >Editar</a
-          >
-          <button
-            (click)="deleteCategory(category._id)"
-            class="action-button delete"
-            appRipple
-          >
-            Eliminar
-          </button>
+
+      <!-- FILAS -->
+      @for (category of categories(); track category._id) {
+        <div class="category-row item">
+          <!-- Imagen -->
+          <div class="col img-col">
+            <div class="img-wrapper">
+              <img
+                [src]="category.imageUrl"
+                [alt]="category.name"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="col name-col" data-label="Nombre">
+            {{ category.name }}
+          </div>
+
+          <!-- Slug -->
+          <div class="col slug-col" data-label="URL">
+            <span class="url-badge">/{{ category.slug }}</span>
+          </div>
+
+          <!-- Acciones -->
+          <div class="col actions-col right" data-label="Acciones">
+            <div class="actions-wrapper">
+              <a
+                [routerLink]="['/admin/categories/edit', category._id]"
+                class="action-btn edit"
+                title="Editar"
+                appRipple
+              >
+                <span class="material-symbols-outlined">edit</span>
+              </a>
+              <button
+                (click)="deleteCategory(category._id)"
+                class="action-btn delete"
+                title="Eliminar"
+                appRipple
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
-  }
-
-  <!-- Estado Vacío -->
-  @if (!isLoading() && categories().length === 0) {
-  <div class="empty-state">
-    <p>Aún no has creado ninguna categoría.</p>
-    <a routerLink="/admin/categories/new" class="add-button" appRipple>
-      <span class="material-symbols-outlined">add</span>
-      Crear tu primera categoría
-    </a>
-  </div>
+  } @else {
+    <div class="empty-state">
+      <span class="material-symbols-outlined icon">category</span>
+      <p>No has creado ninguna categoría.</p>
+      <a routerLink="/admin/categories/new" class="btn-link"
+        >Crear la primera</a
+      >
+    </div>
   }
 </div>

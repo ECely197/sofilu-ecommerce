@@ -1,99 +1,230 @@
-// Contenido completo para: src/app/pages/admin/category-form/category-form.scss
 @use "../../../../../buttons";
-@use "../_admin-shared.scss";
+@use "../../../../forms";
 
-// --- Estructura General (similar a otros formularios) ---
+// --- HEADER ---
 .page-header {
-  margin-bottom: 2rem;
-  h1 {
-    font-size: 2.25rem;
-    font-family: "Playfair Display", serif;
-  }
-}
-
-.form-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-
-  @media (min-width: 1024px) {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  }
-}
-
-.main-column,
-.sidebar-column {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  h1 {
+    font-family: "Baloo 2", serif;
+    font-size: 2rem;
+    margin: 0;
+    color: #333;
+  }
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #eee;
+    display: grid;
+    place-items: center;
+    color: #555;
+    transition: all 0.2s;
+    text-decoration: none;
+    &:hover {
+      background: #f5f5f5;
+      transform: scale(1.05);
+    }
+  }
 }
 
-.card {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+// --- LAYOUT ---
+.form-grid-layout {
+  display: grid;
+  gap: 2rem;
+  @media (min-width: 900px) {
+    grid-template-columns: 1.5fr 1fr; // Info | Imagen
+    align-items: start;
+  }
+}
+
+// --- TARJETAS ---
+.glass-panel {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+// --- INPUTS ---
+.material-field {
   margin-bottom: 1.5rem;
-  font-family: "Playfair Display", serif;
 }
-
-// --- Estilos Específicos para la Carga de Imagen ---
-.image-upload-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.image-preview,
-.image-placeholder {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 0.75rem;
-  object-fit: cover;
-  border: 2px dashed var(--soft-gray);
-}
-
-.image-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--soft-white);
-
-  .material-symbols-outlined {
-    font-size: 48px;
-    color: var(--soft-gray);
+.material-input {
+  @extend .material-input;
+  background: #f9f9f9;
+  border-color: transparent;
+  &:focus {
+    background: white;
+    border-color: var(--pastel-pink);
   }
 }
 
-// Ocultamos el input de archivo real
-input[type="file"] {
-  display: none;
+// --- SELECT ---
+.select-field {
+  margin-bottom: 1rem;
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #777;
+    margin-bottom: 0.5rem;
+  }
+  .select-wrapper {
+    position: relative;
+    select {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: #f9f9f9;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      appearance: none;
+      &:focus {
+        outline: none;
+        background: white;
+        border-color: var(--pastel-pink);
+      }
+    }
+    .chevron {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #777;
+    }
+  }
 }
 
-// Estilizamos el label para que parezca un botón
-.upload-button {
-  @extend .btn-secondary;
+// --- UPLOADER IMAGEN (REUTILIZADO) ---
+.image-uploader {
   width: 100%;
+  aspect-ratio: 1;
+  border-radius: 1rem;
+  border: 2px dashed #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--pastel-pink);
+    background-color: #fff9fb;
+  }
 }
 
-// --- Acciones del Formulario ---
+.image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 1rem;
+} // Contain para logos
+
+.uploader-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #aaa;
+  span {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .material-symbols-outlined {
+    font-size: 2.5rem;
+  }
+}
+
+.spinner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: grid;
+  place-items: center;
+}
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #eee;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 1s infinite;
+}
+
+// --- ACCIONES ---
 .form-actions {
   grid-column: 1 / -1;
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
+
+  .btn-secondary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-material {
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    background: #333;
+    color: white;
+    border: none;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    &:disabled {
+      background: #ccc;
+    }
+  }
 }
 
-.btn-material {
-  @extend .btn-material;
-}
-.btn-secondary {
-  @extend .btn-secondary;
+// Mobile Sticky Actions
+@media (max-width: 768px) {
+  :host {
+    padding-bottom: 80px;
+  }
+  .form-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    margin: 0;
+
+    button,
+    a {
+      flex: 1;
+      text-align: center;
+    }
+  }
 }

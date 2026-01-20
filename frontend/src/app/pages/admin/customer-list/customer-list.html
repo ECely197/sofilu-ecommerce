@@ -1,89 +1,117 @@
-<!-- Contenido completo para: src/app/pages/admin/customer-list/customer-list.html -->
-
 <header class="page-header">
   <h1>Clientes Registrados</h1>
 </header>
 
+<!-- BARRA DE BÚSQUEDA -->
 <div class="search-bar-wrapper">
   <div class="search-field">
     <span class="material-symbols-outlined">search</span>
     <input
       type="text"
       [formControl]="searchControl"
-      placeholder="Buscar por nombre o descripción..."
+      placeholder="Buscar por nombre o email..."
       class="search-input"
     />
   </div>
 </div>
 
 <div class="table-container">
-  <!-- Estado de Carga (Esqueleto) -->
   @if (isLoading()) {
-  <div class="skeleton-list">
-    @for (item of [1, 2, 3, 4]; track item) {
-    <div class="skeleton-item">
-      <div class="skeleton-text-group">
-        <div class="skeleton-text"></div>
-        <div class="skeleton-text short"></div>
-      </div>
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando clientes...</p>
     </div>
-    }
-  </div>
-  }
+  } @else if (customers().length > 0) {
+    <div class="customer-list-grid" [@listAnimation]="customers().length">
+      <!-- CABECERA (SOLO DESKTOP) -->
+      <div class="customer-row header">
+        <div class="col">Usuario</div>
+        <div class="col">Email</div>
+        <div class="col">Registro</div>
+        <div class="col center">Rol</div>
+        <div class="col right">Acciones</div>
+      </div>
 
-  <!-- Lista de Clientes -->
-  @if (!isLoading() && customers().length > 0) {
-  <div class="customer-list" [@listAnimation]="customers().length">
-    <!-- Cabecera de la tabla (solo visible en desktop) -->
-    <div class="customer-item header">
-      <div class="cell">Email</div>
-      <div class="cell">Nombre</div>
-      <div class="cell">Fecha de Registro</div>
-      <div class="cell">Acciones</div>
-    </div>
+      <!-- FILAS -->
+      @for (customer of customers(); track customer.uid) {
+        <div class="customer-row item" [class.disabled-row]="customer.disabled">
+          <!-- Usuario (Avatar + Nombre) -->
+          <div class="col user-col" data-label="Usuario">
+            <div class="avatar-circle">
+              {{
+                (customer.displayName || customer.email).charAt(0).toUpperCase()
+              }}
+            </div>
+            <span class="name">{{ customer.displayName || "Sin nombre" }}</span>
+          </div>
 
-    <!-- Filas de clientes -->
-    @for (customer of customers(); track customer.uid) {
-    <div class="customer-item">
-      <div class="cell customer-email" data-label="Email">
-        {{ customer.email }}
-      </div>
-      <div class="cell" data-label="Nombre">
-        {{ customer.displayName || "No especificado" }}
-      </div>
-      <div class="cell" data-label="Fecha de Registro">
-        {{ customer.creationTime | date : "medium" }}
-      </div>
-      <div class="cell" data-label="Acciones">
-        <div class="action-buttons">
-          <button (click)="viewDetails(customer)" class="action-button details">
-            Detalles
-          </button>
-          <button
-            (click)="toggleAdmin(customer)"
-            class="action-button"
-            [class.admin]="customer.isAdmin"
-          >
-            {{ customer.isAdmin ? "Quitar Admin" : "Hacer Admin" }}
-          </button>
-          <button
-            (click)="toggleDisable(customer)"
-            class="action-button"
-            [class.danger]="!customer.disabled"
-          >
-            {{ customer.disabled ? "Habilitar" : "Deshabilitar" }}
-          </button>
+          <!-- Email -->
+          <div class="col email-col" data-label="Email">
+            {{ customer.email }}
+          </div>
+
+          <!-- Fecha -->
+          <div class="col date-col" data-label="Registro">
+            {{ customer.creationTime | date: "mediumDate" }}
+          </div>
+
+          <!-- Rol / Estado -->
+          <div class="col role-col center" data-label="Estado">
+            @if (customer.isAdmin) {
+              <span class="badge admin">Admin</span>
+            }
+            @if (customer.disabled) {
+              <span class="badge banned">Deshabilitado</span>
+            }
+            @if (!customer.isAdmin && !customer.disabled) {
+              <span class="badge user">Cliente</span>
+            }
+          </div>
+
+          <!-- Acciones -->
+          <div class="col actions-col right" data-label="Acciones">
+            <div class="actions-wrapper">
+              <button
+                (click)="viewDetails(customer)"
+                class="action-btn details"
+                title="Ver Detalles"
+                appRipple
+              >
+                <span class="material-symbols-outlined">visibility</span>
+              </button>
+
+              <button
+                (click)="toggleAdmin(customer)"
+                class="action-btn role"
+                [title]="customer.isAdmin ? 'Quitar Admin' : 'Hacer Admin'"
+                [class.active]="customer.isAdmin"
+                appRipple
+              >
+                <span class="material-symbols-outlined"
+                  >admin_panel_settings</span
+                >
+              </button>
+
+              <button
+                (click)="toggleDisable(customer)"
+                class="action-btn block"
+                [title]="customer.disabled ? 'Habilitar' : 'Bloquear'"
+                [class.active]="customer.disabled"
+                appRipple
+              >
+                <span class="material-symbols-outlined">{{
+                  customer.disabled ? "lock_open" : "block"
+                }}</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      }
     </div>
-    }
-  </div>
-  }
-
-  <!-- Estado Vacío -->
-  @if (!isLoading() && customers().length === 0) {
-  <div class="empty-state">
-    <p>Aún no tienes ningún cliente registrado.</p>
-  </div>
+  } @else {
+    <div class="empty-state">
+      <span class="material-symbols-outlined icon">group_off</span>
+      <p>No se encontraron clientes.</p>
+    </div>
   }
 </div>

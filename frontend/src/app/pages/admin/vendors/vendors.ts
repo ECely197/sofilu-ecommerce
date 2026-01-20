@@ -1,4 +1,3 @@
-// En: frontend/src/app/pages/admin/vendors/vendors.component.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -7,13 +6,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-
-// Servicios
 import { VendorService, Vendor } from '../../../services/vendor.service';
 import { ToastService } from '../../../services/toast.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
-
-// Directivas y Componentes
 import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
@@ -21,7 +16,7 @@ import { RippleDirective } from '../../../directives/ripple';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './vendors.html',
-  styleUrl: './vendors.scss', // Apuntará a su propio archivo SCSS
+  styleUrl: './vendors.scss',
 })
 export class VendorsComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -49,7 +44,7 @@ export class VendorsComponent implements OnInit {
         this.isLoading.set(false);
       },
       error: () => {
-        this.toastService.show('Error al cargar los vendedores.', 'error');
+        this.toastService.show('Error al cargar vendedores.', 'error');
         this.isLoading.set(false);
       },
     });
@@ -57,26 +52,26 @@ export class VendorsComponent implements OnInit {
 
   handleSubmit(): void {
     if (this.vendorForm.invalid) {
-      this.toastService.show('El nombre del vendedor es requerido.', 'error');
+      this.toastService.show('El nombre es requerido.', 'error');
       return;
     }
     this.isSaving.set(true);
     this.vendorService.createVendor(this.vendorForm.value).subscribe({
       next: (newVendor) => {
         this.vendors.update((current) =>
-          [...current, newVendor].sort((a, b) => a.name.localeCompare(b.name))
+          [...current, newVendor].sort((a, b) => a.name.localeCompare(b.name)),
         );
         this.toastService.show(
-          `Vendedor "${newVendor.name}" creado con éxito.`,
-          'success'
+          `Vendedor "${newVendor.name}" creado.`,
+          'success',
         );
         this.vendorForm.reset();
         this.isSaving.set(false);
       },
       error: (err) => {
         this.toastService.show(
-          err.error?.message || 'No se pudo crear el vendedor.',
-          'error'
+          err.error?.message || 'Error al crear.',
+          'error',
         );
         this.isSaving.set(false);
       },
@@ -85,8 +80,8 @@ export class VendorsComponent implements OnInit {
 
   async deleteVendor(vendor: Vendor): Promise<void> {
     const confirmed = await this.confirmationService.confirm({
-      title: '¿Confirmar Eliminación?',
-      message: `¿Estás seguro de que quieres eliminar al vendedor "${vendor.name}"?`,
+      title: '¿Eliminar Vendedor?',
+      message: `¿Seguro que quieres eliminar a "${vendor.name}"?`,
       confirmText: 'Sí, eliminar',
     });
 
@@ -94,14 +89,14 @@ export class VendorsComponent implements OnInit {
       this.vendorService.deleteVendor(vendor._id).subscribe({
         next: () => {
           this.vendors.update((current) =>
-            current.filter((v) => v._id !== vendor._id)
+            current.filter((v) => v._id !== vendor._id),
           );
-          this.toastService.show('Vendedor eliminado con éxito.', 'success');
+          this.toastService.show('Vendedor eliminado.', 'success');
         },
         error: () => {
           this.toastService.show(
-            'No se pudo eliminar el vendedor. Es posible que tenga productos asociados.',
-            'error'
+            'No se pudo eliminar (puede tener productos asociados).',
+            'error',
           );
         },
       });

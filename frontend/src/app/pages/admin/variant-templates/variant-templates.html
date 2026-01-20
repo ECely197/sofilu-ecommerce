@@ -3,13 +3,15 @@
 </header>
 
 <div class="templates-layout">
-  <!-- ============================================= -->
-  <!-- Columna del Formulario de Creación -->
-  <!-- ============================================= -->
+  <!-- COLUMNA IZQUIERDA: FORMULARIO -->
   <div class="form-column">
-    <div class="card">
-      <h2 class="card-title">Crear Nueva Plantilla</h2>
+    <div class="card glass-panel sticky-card">
+      <h2 class="card-title">
+        {{ editingTemplateId() ? "Editar Plantilla" : "Crear Nueva Plantilla" }}
+      </h2>
+
       <form [formGroup]="templateForm" (ngSubmit)="handleSubmit()">
+        <!-- Nombre de la Plantilla -->
         <div class="material-field">
           <input
             id="templateName"
@@ -19,10 +21,11 @@
             placeholder=" "
           />
           <label for="templateName" class="material-label"
-            >Nombre de la Plantilla (ej. Tallas de Ropa)</label
+            >Nombre de la Plantilla (ej. Tallas Camisetas)</label
           >
         </div>
 
+        <!-- Nombre de la Variante -->
         <div class="material-field">
           <input
             id="variantName"
@@ -36,114 +39,127 @@
           >
         </div>
 
-        <div class="options-group" formArrayName="options">
-          <label class="options-label">Opciones</label>
-
-          <!-- Cabecera de la tabla (SOLO VISIBLE EN ESCRITORIO) -->
-          <div class="option-row header">
-            <span>Valor</span>
-            <span>Imagen</span>
-            <span>Mod. Precio</span>
-            <span>Stock</span>
-            <span>Costo</span>
-            <span></span>
+        <!-- OPCIONES DINÁMICAS -->
+        <div class="options-section" formArrayName="options">
+          <div class="section-header-row">
+            <h3 class="section-subtitle">Opciones</h3>
+            <button
+              type="button"
+              (click)="addOption()"
+              class="btn-dashed small"
+            >
+              + Añadir Valor
+            </button>
           </div>
 
-          <!-- Filas/Tarjetas de opciones dinámicas -->
-          @for (option of options.controls; track option; let i = $index) {
-          <!-- ¡CAMBIO CLAVE! Cada opción es ahora una tarjeta con su propio layout interno en móvil -->
-          <div class="option-row" [formGroupName]="i">
-            <!-- Cada input ahora tiene su propio label visible en móvil -->
-            <div class="form-cell" data-label="Valor">
-              <input
-                type="text"
-                formControlName="name"
-                class="form-input"
-                placeholder="Nombre"
-              />
+          <div class="options-list">
+            <!-- CABECERA DE TABLA (SOLO DESKTOP) -->
+            <div class="option-row header desktop-only-flex">
+              <span class="col-img">Img</span>
+              <span class="col-name">Valor</span>
+              <span class="col-price">Precio (+)</span>
+              <span class="col-stock">Stock</span>
+              <span class="col-cost">Costo</span>
+              <span class="col-action"></span>
             </div>
 
-            <div class="form-cell" data-label="Imagen">
-              <div class="variant-image-uploader">
-                <label [for]="'option-image-' + i" class="uploader-label">
-                  @if (option.get('imagePreview')?.value) {
-                  <img
-                    [src]="option.get('imagePreview')?.value"
-                    alt="Vista previa"
-                    class="variant-image-preview"
+            <!-- FILAS DE OPCIONES -->
+            @for (option of options.controls; track option; let i = $index) {
+              <div class="option-row item" [formGroupName]="i">
+                <!-- 1. Imagen (Mini Uploader) -->
+                <div class="col-img" data-label="Imagen">
+                  <label [for]="'opt-img-' + i" class="mini-uploader">
+                    @if (option.get("imagePreview")?.value) {
+                      <img
+                        [src]="option.get('imagePreview')?.value"
+                        class="preview"
+                      />
+                    } @else {
+                      <span class="material-symbols-outlined icon"
+                        >add_photo_alternate</span
+                      >
+                    }
+                    <input
+                      [id]="'opt-img-' + i"
+                      type="file"
+                      (change)="onOptionImageSelected($event, i)"
+                      accept="image/*"
+                      hidden
+                    />
+                  </label>
+                </div>
+
+                <!-- 2. Nombre (Valor) -->
+                <div class="col-name" data-label="Valor">
+                  <input
+                    type="text"
+                    formControlName="name"
+                    class="simple-input"
+                    placeholder="Ej: Rojo / XL"
                   />
-                  } @else {
-                  <span class="material-symbols-outlined placeholder-icon"
-                    >add_photo_alternate</span
+                </div>
+
+                <!-- 3. Precio -->
+                <div class="col-price" data-label="Modificador Precio">
+                  <input
+                    type="number"
+                    formControlName="price"
+                    class="simple-input"
+                    placeholder="0"
+                  />
+                </div>
+
+                <!-- 4. Stock -->
+                <div class="col-stock" data-label="Stock">
+                  <input
+                    type="number"
+                    formControlName="stock"
+                    class="simple-input"
+                    placeholder="0"
+                  />
+                </div>
+
+                <!-- 5. Costo -->
+                <div class="col-cost" data-label="Costo">
+                  <input
+                    type="number"
+                    formControlName="costPrice"
+                    class="simple-input"
+                    placeholder="0"
+                  />
+                </div>
+
+                <!-- 6. Eliminar -->
+                <div class="col-action">
+                  <button
+                    type="button"
+                    (click)="removeOption(i)"
+                    class="btn-icon delete"
+                    [disabled]="options.length <= 1"
                   >
-                  }
-                </label>
-                <input
-                  [id]="'option-image-' + i"
-                  type="file"
-                  class="file-input"
-                  (change)="onOptionImageSelected($event, i)"
-                  accept="image/*"
-                />
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div class="form-cell" data-label="Mod. Precio">
-              <input
-                type="number"
-                formControlName="price"
-                class="form-input"
-                placeholder="+ COP"
-              />
-            </div>
-
-            <div class="form-cell" data-label="Stock">
-              <input
-                type="number"
-                formControlName="stock"
-                class="form-input"
-                placeholder="Cantidad"
-              />
-            </div>
-
-            <div class="form-cell" data-label="Costo">
-              <input
-                type="number"
-                formControlName="costPrice"
-                class="form-input"
-                placeholder="Costo"
-              />
-            </div>
-
-            <div class="form-cell action-cell">
-              <button
-                type="button"
-                (click)="removeOption(i)"
-                class="delete-button-tiny"
-                [disabled]="options.controls.length <= 1"
-              >
-                ✖
-              </button>
-            </div>
+            }
           </div>
-          }
-
-          <button
-            type="button"
-            (click)="addOption()"
-            class="add-button-tiny"
-            appRipple
-          >
-            + Añadir valor
-          </button>
         </div>
 
+        <!-- ACCIONES -->
         <div class="form-actions">
+          @if (editingTemplateId()) {
+            <button
+              type="button"
+              (click)="cancelEditing()"
+              class="btn-secondary"
+            >
+              Cancelar
+            </button>
+          }
           <button
             type="submit"
             [disabled]="templateForm.invalid || isSaving()"
-            class="btn btn-primary"
-            appRipple
+            class="btn-material full-width"
           >
             {{ isSaving() ? "Guardando..." : "Guardar Plantilla" }}
           </button>
@@ -152,43 +168,44 @@
     </div>
   </div>
 
-  <!-- ============================================= -->
-  <!-- Columna de la Lista de Plantillas Existentes -->
-  <!-- ============================================= -->
+  <!-- COLUMNA DERECHA: LISTA -->
   <div class="list-column">
-    <div class="card">
-      <h2 class="card-title">Plantillas Existentes</h2>
+    <div class="card glass-panel">
+      <h2 class="card-title">Plantillas Guardadas</h2>
+
       @if (isLoading()) {
-      <p>Cargando...</p>
+        <div class="loading-state"><div class="spinner"></div></div>
       } @else {
-      <div class="templates-list">
-        @for (template of templates(); track template._id) {
-        <div class="template-item">
-          <div class="template-info">
-            <p class="template-name">{{ template.templateName }}</p>
-            <p class="template-details">
-              <strong>{{ template.variantName }}:</strong>
-              {{ getOptionNames(template.options) }}
-            </p>
-          </div>
-          <button
-            (click)="startEditing(template)"
-            class="action-button edit-btn"
-          >
-            <span class="material-symbols-outlined">edit</span>
-          </button>
-          <button
-            (click)="deleteTemplate(template)"
-            class="delete-button-small"
-            appRipple
-          >
-            ✖
-          </button>
+        <div class="templates-grid">
+          @for (template of templates(); track template._id) {
+            <div class="template-card">
+              <div class="card-header">
+                <span class="template-name">{{ template.templateName }}</span>
+                <div class="actions">
+                  <button
+                    (click)="startEditing(template)"
+                    class="btn-icon edit"
+                  >
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button
+                    (click)="deleteTemplate(template)"
+                    class="btn-icon delete"
+                  >
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <span class="label">{{ template.variantName }}:</span>
+                <p class="values">{{ getOptionNames(template.options) }}</p>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state">No hay plantillas.</div>
+          }
         </div>
-        } @empty {
-        <p class="empty-message">No has creado ninguna plantilla todavía.</p>
-        }
-      </div>
       }
     </div>
   </div>
