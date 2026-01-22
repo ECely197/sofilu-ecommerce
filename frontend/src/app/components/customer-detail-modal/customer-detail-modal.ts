@@ -1,8 +1,16 @@
-// En: customer-detail-modal.component.ts
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CustomerDetailModalService } from '../../services/customer-detail-modal.service';
 import { Customer } from '../../services/customer';
+import { Coupon } from '../../services/coupon'; // Importamos CouponService
+import { ToastService } from '../../services/toast.service';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { RippleDirective } from '../../directives/ripple'; // Importamos Ripple
 import {
   trigger,
   state,
@@ -14,11 +22,9 @@ import {
 @Component({
   selector: 'app-customer-detail-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './customer-detail-modal.html',
   styleUrl: './customer-detail-modal.scss',
-
-  // --- ¡AÑADE ESTE BLOQUE COMPLETO! ---
   animations: [
     trigger('flyInOut', [
       state('void', style({ transform: 'translateY(100%)', opacity: 0.5 })),
@@ -26,15 +32,15 @@ import {
         'void => *',
         animate(
           '400ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-          style({ transform: 'translateY(0)', opacity: 1 })
-        )
+          style({ transform: 'translateY(0)', opacity: 1 }),
+        ),
       ),
       transition(
         '* => void',
         animate(
           '300ms cubic-bezier(0.4, 0.0, 0.2, 1)',
-          style({ transform: 'translateY(100%)', opacity: 0 })
-        )
+          style({ transform: 'translateY(100%)', opacity: 0 }),
+        ),
       ),
     ]),
   ],
@@ -42,30 +48,83 @@ import {
 export class CustomerDetailModalComponent {
   public customerDetailModalService = inject(CustomerDetailModalService);
   private customerService = inject(Customer);
+  private couponService = inject(Coupon); // Inyectar CouponService
+  private toastService = inject(ToastService);
+  private fb = inject(FormBuilder);
 
   customerDetails = signal<any | null>(null);
   isLoading = signal(false);
+  isCreatingCoupon = signal(false); // Controla si se muestra el formulario
+
+  // Formulario para el cupón rápido
+  couponForm: FormGroup;
 
   constructor() {
-    // Usamos 'effect' para reaccionar cuando el ID del cliente activo cambia
+    this.couponForm = this.fb.group({
+      code: ['', Validators.required],
+      discountType: ['Porcentaje', Validators.required],
+      value: [10, [Validators.required, Validators.min(1)]],
+      appliesTo: ['Subtotal', Validators.required],
+    });
+
     effect(() => {
       const uid = this.customerDetailModalService.activeCustomerId();
       if (uid) {
         this.isLoading.set(true);
+        this.isCreatingCoupon.set(false); // Reset al abrir
         this.customerService.getCustomerDetails(uid).subscribe({
           next: (details) => {
             this.customerDetails.set(details);
             this.isLoading.set(false);
+            // Pre-llenar código sugerido
+            const namePart = (details.firstName || 'CLIENTE')
+              .split(' ')[0]
+              .toUpperCase();
+            this.couponForm.patchValue({
+              code: `${namePart}-REGALO`,
+            });
           },
           error: () => {
             this.isLoading.set(false);
-            // Aquí podrías usar tu toast service para mostrar un error
-            console.error('No se pudieron cargar los detalles del cliente.');
           },
         });
       } else {
-        this.customerDetails.set(null); // Limpiamos los datos cuando se cierra el modal
+        this.customerDetails.set(null);
       }
+    });
+  }
+
+  toggleCouponForm() {
+    this.isCreatingCoupon.update((v) => !v);
+  }
+
+  createExclusiveCoupon() {
+    if (this.couponForm.invalid) return;
+
+    const details = this.customerDetails();
+    if (!details) return;
+
+    const payload = {
+      ...this.couponForm.value,
+      allowedUsers: [details.uid], // ¡AQUÍ ESTÁ LA MAGIA!
+      usageLimit: 1, // Por defecto, uso único
+    };
+
+    this.couponService.createCoupon(payload).subscribe({
+      next: () => {
+        this.toastService.show(
+          `Cupón exclusivo enviado a ${details.firstName || 'cliente'}.`,
+          'success',
+        );
+        this.isCreatingCoupon.set(false);
+        // Opcional: Recargar detalles para ver si quieres mostrarlo en una lista
+      },
+      error: (err) => {
+        this.toastService.show(
+          err.error?.message || 'Error creando cupón',
+          'error',
+        );
+      },
     });
   }
 }

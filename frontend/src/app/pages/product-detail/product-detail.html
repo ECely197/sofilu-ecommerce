@@ -3,159 +3,347 @@
    ========================================================================== -->
 
 @if (product(); as currentProduct) {
-<div class="page-container">
-  <!-- LAYOUT PRINCIPAL: GALERÍA E INFORMACIÓN -->
-  <div class="product-detail-layout">
-    <!-- ======================== -->
-    <!-- COLUMNA 1: GALERÍA -->
-    <!-- ======================== -->
-    <div class="gallery-card card" data-aos="fade-right">
-      <!-- Galería Desktop (Grid) -->
-      <div class="desktop-gallery">
-        @if (galleryImages().length > 1) {
-        <div class="thumbnail-wrapper">
-          @for (image of galleryImages(); track image) {
-          <div
-            class="thumbnail"
-            [class.active]="selectedImage() === image"
-            (click)="setImage(image)"
-          >
-            <img
-              [src]="image"
-              [alt]="'Thumbnail ' + currentProduct.name"
-              loading="lazy"
-            />
-          </div>
-          }
-        </div>
-        }
-        <div class="main-image-wrapper">
-          @if (currentProduct.images && currentProduct.images.length > 0) {
-          <img
-            [src]="selectedImage()"
-            [alt]="currentProduct.name"
-            class="main-image"
-            [class.fade-out]="isAnimatingImage()"
-            [class.fade-in]="!isAnimatingImage()"
-          />
-          } @else {
-          <div class="main-image placeholder-image"></div>
-          }
-        </div>
-      </div>
-
-      <!-- Galería Móvil (Swiper) -->
-      @if (galleryImages().length > 0) {
-      <div class="mobile-swiper">
-        <div class="swiper-wrapper">
-          @for(image of galleryImages(); track image) {
-          <div class="swiper-slide">
-            <img
-              [src]="image"
-              [alt]="currentProduct.name"
-              class="main-image-mobile"
-              loading="lazy"
-            />
-          </div>
-          }
-        </div>
-        <div class="swiper-pagination"></div>
-      </div>
-      }
-    </div>
-
-    <!-- ======================== -->
-    <!-- COLUMNA 2: INFORMACIÓN Y ACCIONES -->
-    <!-- ======================== -->
-    <div class="info-card card" data-aos="fade-left" data-aos-delay="100">
-      <h1 class="product-title">{{ currentProduct.name }}</h1>
-      <p class="product-price">
-        {{ finalPrice() | currency : "COP" : "symbol" : "1.0-0" }}
-        @if(currentProduct.variants.length > 0 && !allVariantsSelected()) {
-        <span class="price-suffix">Desde</span>
-        }
-      </p>
-
-      <!-- Selector de Variantes (Acordeón) -->
-      <div class="variants-scroll-container">
-        <div class="variants-container accordion">
-          @for (variant of currentProduct.variants; track variant.name) {
-          <div class="variant-group accordion-item">
-            <div class="accordion-header" (click)="toggleVariant(variant.name)">
-              @if (variantPreviewImages()[variant.name]) {
-              <img
-                [src]="variantPreviewImages()[variant.name]"
-                alt="{{ variant.name }}"
-                class="accordion-preview-image"
-              />
-              }
-
-              <div class="accordion-info">
-                <span class="variant-name">{{ variant.name }}</span>
-                <span class="variant-selection">{{
-                  selectedVariants()[variant.name] || "Seleccionar..."
-                }}</span>
-              </div>
-
-              <span
-                class="material-symbols-outlined accordion-icon"
-                [class.expanded]="expandedVariant() === variant.name"
-                >expand_more</span
-              >
-            </div>
-
-            <div
-              class="accordion-content"
-              [@expandCollapse]="
-                expandedVariant() === variant.name ? 'expanded' : 'collapsed'
-              "
-            >
-              <div class="variant-options-grid">
-                @for (option of variant.options; track option.name) {
+  <div class="page-container">
+    <!-- LAYOUT PRINCIPAL: GALERÍA E INFORMACIÓN -->
+    <div class="product-detail-layout">
+      <!-- ======================== -->
+      <!-- COLUMNA 1: GALERÍA -->
+      <!-- ======================== -->
+      <div class="gallery-card card" data-aos="fade-right">
+        <!-- Galería Desktop (Grid) -->
+        <div class="desktop-gallery">
+          @if (galleryImages().length > 1) {
+            <div class="thumbnail-wrapper">
+              @for (image of galleryImages(); track image) {
                 <div
-                  class="option-card"
-                  [class.active]="isSelected(variant.name, option.name)"
-                  [class.unavailable]="!isOptionAvailable(option)"
-                  (click)="
-                    !isOptionAvailable(option)
-                      ? null
-                      : selectOption(variant.name, option.name, option)
+                  class="thumbnail"
+                  [class.active]="selectedImage() === image"
+                  (click)="setImage(image)"
+                >
+                  <img
+                    [src]="image"
+                    [alt]="'Thumbnail ' + currentProduct.name"
+                    loading="lazy"
+                  />
+                </div>
+              }
+            </div>
+          }
+          <div class="main-image-wrapper">
+            @if (currentProduct.images && currentProduct.images.length > 0) {
+              <img
+                [src]="selectedImage()"
+                [alt]="currentProduct.name"
+                class="main-image"
+                [class.fade-out]="isAnimatingImage()"
+                [class.fade-in]="!isAnimatingImage()"
+              />
+            } @else {
+              <div class="main-image placeholder-image"></div>
+            }
+          </div>
+        </div>
+
+        <!-- Galería Móvil (Swiper) -->
+        @if (galleryImages().length > 0) {
+          <div class="mobile-swiper">
+            <div class="swiper-wrapper">
+              @for (image of galleryImages(); track image) {
+                <div class="swiper-slide">
+                  <img
+                    [src]="image"
+                    [alt]="currentProduct.name"
+                    class="main-image-mobile"
+                    loading="lazy"
+                  />
+                </div>
+              }
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
+        }
+      </div>
+
+      <!-- ======================== -->
+      <!-- COLUMNA 2: INFORMACIÓN Y ACCIONES -->
+      <!-- ======================== -->
+      <div class="info-card card" data-aos="fade-left" data-aos-delay="100">
+        <h1 class="product-title">{{ currentProduct.name }}</h1>
+        <p class="product-price">
+          {{ finalPrice() | currency: "COP" : "symbol" : "1.0-0" }}
+          @if (currentProduct.variants.length > 0 && !allVariantsSelected()) {
+            <span class="price-suffix">Desde</span>
+          }
+        </p>
+
+        <!-- Selector de Variantes (Acordeón) -->
+        <div class="variants-scroll-container">
+          <div class="variants-container accordion">
+            @for (variant of currentProduct.variants; track variant.name) {
+              <div class="variant-group accordion-item">
+                <div
+                  class="accordion-header"
+                  (click)="toggleVariant(variant.name)"
+                >
+                  @if (variantPreviewImages()[variant.name]) {
+                    <img
+                      [src]="variantPreviewImages()[variant.name]"
+                      alt="{{ variant.name }}"
+                      class="accordion-preview-image"
+                    />
+                  }
+
+                  <div class="accordion-info">
+                    <span class="variant-name">{{ variant.name }}</span>
+                    <span class="variant-selection">{{
+                      selectedVariants()[variant.name] || "Seleccionar..."
+                    }}</span>
+                  </div>
+
+                  <span
+                    class="material-symbols-outlined accordion-icon"
+                    [class.expanded]="expandedVariant() === variant.name"
+                    >expand_more</span
+                  >
+                </div>
+
+                <div
+                  class="accordion-content"
+                  [@expandCollapse]="
+                    expandedVariant() === variant.name
+                      ? 'expanded'
+                      : 'collapsed'
                   "
                 >
-                  @if (option.image) {
-                  <img
-                    [src]="option.image"
-                    alt="{{ option.name }}"
-                    class="option-image"
-                  />
-                  }
-                  <div class="option-details">
-                    <span class="option-name">{{ option.name }}</span>
-                    @if (option.price > 0) {
-                    <span class="option-price"
-                      >+{{
-                        option.price | currency : "COP" : "symbol" : "1.0-0"
-                      }}</span
-                    >
+                  <div class="variant-options-grid">
+                    @for (option of variant.options; track option.name) {
+                      <div
+                        class="option-card"
+                        [class.active]="isSelected(variant.name, option.name)"
+                        [class.unavailable]="!isOptionAvailable(option)"
+                        (click)="
+                          !isOptionAvailable(option)
+                            ? null
+                            : selectOption(variant.name, option.name, option)
+                        "
+                      >
+                        @if (option.image) {
+                          <img
+                            [src]="option.image"
+                            alt="{{ option.name }}"
+                            class="option-image"
+                          />
+                        }
+                        <div class="option-details">
+                          <span class="option-name">{{ option.name }}</span>
+                          @if (option.price > 0) {
+                            <span class="option-price"
+                              >+{{
+                                option.price
+                                  | currency: "COP" : "symbol" : "1.0-0"
+                              }}</span
+                            >
+                          }
+                        </div>
+                      </div>
                     }
                   </div>
                 </div>
-                }
               </div>
-            </div>
+            }
           </div>
-          }
+        </div>
+
+        <!-- Acciones Desktop (Oculto en móvil) -->
+        <div class="actions desktop-only-actions">
+          <div class="quantity-selector">
+            <button (click)="decreaseQuantity()">-</button>
+            <span>{{ quantity() }}</span>
+            <button (click)="increaseQuantity()">+</button>
+          </div>
+
+          <button
+            class="add-to-cart-btn"
+            [class.success]="justAddedToCart()"
+            [disabled]="!canAddToCart()"
+            (click)="addToCart()"
+            appRipple
+          >
+            @if (justAddedToCart()) {
+              <span class="material-symbols-outlined">check</span> ¡Añadido!
+            } @else {
+              {{ canAddToCart() ? "Añadir al carrito" : "Agotado" }}
+            }
+          </button>
+
+          <button class="wishlist-btn" (click)="toggleWishlist()" appRipple>
+            <span class="material-symbols-outlined">{{
+              isProductInWishlist() ? "favorite" : "favorite_border"
+            }}</span>
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Acciones Desktop (Oculto en móvil) -->
-      <div class="actions desktop-only-actions">
-        <div class="quantity-selector">
-          <button (click)="decreaseQuantity()">-</button>
-          <span>{{ quantity() }}</span>
-          <button (click)="increaseQuantity()">+</button>
-        </div>
+    <app-product-addons></app-product-addons>
 
+    <!-- ======================== -->
+    <!-- TABS: DESCRIPCIÓN Y OPINIONES -->
+    <!-- ======================== -->
+    <div class="details-card card" data-aos="fade-up">
+      <div class="tab-header">
+        <button
+          class="tab-link"
+          [class.active]="activeTab() === 'description'"
+          (click)="activeTab.set('description')"
+        >
+          Descripción
+        </button>
+        <button
+          class="tab-link"
+          [class.active]="activeTab() === 'reviews'"
+          (click)="activeTab.set('reviews')"
+        >
+          Opiniones ({{ reviews().length }})
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Pestaña Descripción -->
+        @if (activeTab() === "description") {
+          <div
+            class="prose"
+            [innerHTML]="currentProduct.description | safeHtml"
+          ></div>
+        }
+
+        <!-- Pestaña Opiniones -->
+        @if (activeTab() === "reviews") {
+          <div class="reviews-section fade-in">
+            <div class="reviews-summary">
+              <h3 class="reviews-summary-title">
+                Lo que dicen nuestros clientes
+              </h3>
+              @if (canWriteReview()) {
+                <button
+                  class="btn btn-secondary"
+                  (click)="scrollToReviewForm()"
+                >
+                  Escribir una reseña
+                </button>
+              }
+            </div>
+
+            <div class="reviews-list">
+              @for (review of reviews(); track review._id) {
+                <div class="review-card">
+                  <div class="review-header">
+                    <div class="author-info">
+                      <div class="avatar-placeholder">
+                        {{ review.author.charAt(0) }}
+                      </div>
+                      <div>
+                        <span class="review-author">{{ review.author }}</span>
+                        <span class="review-date">{{
+                          review.createdAt | date: "mediumDate"
+                        }}</span>
+                      </div>
+                    </div>
+                    <!-- Estrellas (Solo lectura) -->
+                    <app-star-rating
+                      [rating]="review.rating"
+                      [readonly]="true"
+                    ></app-star-rating>
+                  </div>
+                  <h4 class="review-title">{{ review.title }}</h4>
+                  <p class="review-comment">{{ review.comment }}</p>
+                </div>
+              } @empty {
+                <div class="empty-reviews">
+                  <span class="material-symbols-outlined icon"
+                    >rate_review</span
+                  >
+                  <p>
+                    Aún no hay opiniones. ¡Sé el primero en compartir tu
+                    experiencia!
+                  </p>
+                </div>
+              }
+            </div>
+
+            <!-- Formulario -->
+            @if (canWriteReview()) {
+              <div class="review-form-container glass-panel" #reviewFormElement>
+                <h3 class="review-form-title">Comparte tu opinión</h3>
+                <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+                  <div class="form-field rating-field">
+                    <label>Tu Calificación</label>
+                    <!-- Estrellas Interactivas -->
+                    <app-star-rating formControlName="rating"></app-star-rating>
+                  </div>
+
+                  <div class="material-field">
+                    <input
+                      id="title"
+                      type="text"
+                      formControlName="title"
+                      placeholder=" "
+                      class="material-input"
+                    />
+                    <label for="title" class="material-label"
+                      >Título breve</label
+                    >
+                  </div>
+
+                  <div class="material-field textarea-field">
+                    <textarea
+                      id="comment"
+                      formControlName="comment"
+                      placeholder=" "
+                      rows="4"
+                      class="material-input"
+                    ></textarea>
+                    <label for="comment" class="material-label"
+                      >¿Qué tal te pareció el producto?</label
+                    >
+                  </div>
+
+                  <button
+                    type="submit"
+                    [disabled]="reviewForm.invalid"
+                    class="btn btn-primary submit-review-btn full-width"
+                  >
+                    Publicar Opinión
+                  </button>
+                </form>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- PRODUCTOS RELACIONADOS -->
+    <!-- ======================== -->
+    @if (relatedProducts().length > 0) {
+      <div class="related-products-section" data-aos="fade-up">
+        <app-product-carousel
+          title="También te podría gustar"
+          [products]="relatedProducts()"
+        ></app-product-carousel>
+      </div>
+    }
+    <!-- ======================== -->
+    <!-- BARRA FLOTANTE MÓVIL (STICKY) -->
+    <!-- ======================== -->
+    <div class="sticky-actions-bar">
+      <div class="qty-control">
+        <button (click)="decreaseQuantity()">-</button>
+        <span>{{ quantity() }}</span>
+        <button (click)="increaseQuantity()">+</button>
+      </div>
+      <div style="flex-grow: 1; display: flex; gap: 0.5rem">
         <button
           class="add-to-cart-btn"
           [class.success]="justAddedToCart()"
@@ -163,219 +351,19 @@
           (click)="addToCart()"
           appRipple
         >
-          @if(justAddedToCart()){
-          <span class="material-symbols-outlined">check</span> ¡Añadido! } @else
-          {
-          {{ canAddToCart() ? "Añadir al carrito" : "Agotado" }}
-          }
-        </button>
-
-        <button class="wishlist-btn" (click)="toggleWishlist()" appRipple>
-          <span class="material-symbols-outlined">{{
-            isProductInWishlist() ? "favorite" : "favorite_border"
-          }}</span>
+          {{
+            justAddedToCart()
+              ? "¡Listo!"
+              : "Añadir • " +
+                (finalPrice() * quantity()
+                  | currency: "COP" : "symbol" : "1.0-0")
+          }}
         </button>
       </div>
     </div>
   </div>
-
-  <!-- ======================== -->
-  <!-- TABS: DESCRIPCIÓN Y OPINIONES -->
-  <!-- ======================== -->
-  <div class="details-card card" data-aos="fade-up">
-    <div class="tab-header">
-      <button
-        class="tab-link"
-        [class.active]="activeTab() === 'description'"
-        (click)="activeTab.set('description')"
-      >
-        Descripción
-      </button>
-      <button
-        class="tab-link"
-        [class.active]="activeTab() === 'reviews'"
-        (click)="activeTab.set('reviews')"
-      >
-        Opiniones ({{ reviews().length }})
-      </button>
-    </div>
-
-    <div class="tab-content">
-      <!-- Pestaña Descripción -->
-      @if (activeTab() === 'description') {
-      <div
-        class="prose"
-        [innerHTML]="currentProduct.description | safeHtml"
-      ></div>
-      }
-
-      <!-- Pestaña Opiniones -->
-      @if (activeTab() === 'reviews') {
-      <div class="reviews-section fade-in">
-        <div class="reviews-summary">
-          <h3 class="reviews-summary-title">Lo que dicen nuestros clientes</h3>
-          @if(canWriteReview()){
-          <button class="btn btn-secondary" (click)="scrollToReviewForm()">
-            Escribir una reseña
-          </button>
-          }
-        </div>
-
-        <div class="reviews-list">
-          @for (review of reviews(); track review._id) {
-          <div class="review-card">
-            <div class="review-header">
-              <div class="author-info">
-                <div class="avatar-placeholder">
-                  {{ review.author.charAt(0) }}
-                </div>
-                <div>
-                  <span class="review-author">{{ review.author }}</span>
-                  <span class="review-date">{{
-                    review.createdAt | date : "mediumDate"
-                  }}</span>
-                </div>
-              </div>
-              <!-- Estrellas (Solo lectura) -->
-              <app-star-rating
-                [rating]="review.rating"
-                [readonly]="true"
-              ></app-star-rating>
-            </div>
-            <h4 class="review-title">{{ review.title }}</h4>
-            <p class="review-comment">{{ review.comment }}</p>
-          </div>
-          } @empty {
-          <div class="empty-reviews">
-            <span class="material-symbols-outlined icon">rate_review</span>
-            <p>
-              Aún no hay opiniones. ¡Sé el primero en compartir tu experiencia!
-            </p>
-          </div>
-          }
-        </div>
-
-        <!-- Formulario -->
-        @if (canWriteReview()) {
-        <div class="review-form-container glass-panel" #reviewFormElement>
-          <h3 class="review-form-title">Comparte tu opinión</h3>
-          <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
-            <div class="form-field rating-field">
-              <label>Tu Calificación</label>
-              <!-- Estrellas Interactivas -->
-              <app-star-rating formControlName="rating"></app-star-rating>
-            </div>
-
-            <div class="material-field">
-              <input
-                id="title"
-                type="text"
-                formControlName="title"
-                placeholder=" "
-                class="material-input"
-              />
-              <label for="title" class="material-label">Título breve</label>
-            </div>
-
-            <div class="material-field textarea-field">
-              <textarea
-                id="comment"
-                formControlName="comment"
-                placeholder=" "
-                rows="4"
-                class="material-input"
-              ></textarea>
-              <label for="comment" class="material-label"
-                >¿Qué tal te pareció el producto?</label
-              >
-            </div>
-
-            <button
-              type="submit"
-              [disabled]="reviewForm.invalid"
-              class="btn btn-primary submit-review-btn full-width"
-            >
-              Publicar Opinión
-            </button>
-          </form>
-        </div>
-        }
-      </div>
-      }
-    </div>
-  </div>
-
-  <!-- ======================== -->
-  <!-- PRODUCTOS RELACIONADOS -->
-  <!-- ======================== -->
-  @if (relatedProducts().length > 0) {
-  <div class="related-products-section" data-aos="fade-up">
-    <app-product-carousel
-      title="También te podría gustar"
-      [products]="relatedProducts()"
-    ></app-product-carousel>
-  </div>
-  }
-
-  <!-- ======================== -->
-  <!-- MÁS CATEGORÍAS -->
-  <!-- ======================== -->
-
-  @if (complementaryProducts().length > 0) {
-  <section class="complementary-section card" data-aos="fade-up">
-    <div class="complementary-header">
-      <span class="material-symbols-outlined icon">auto_awesome</span>
-      <h3>El Regalo Perfecto</h3>
-      <p>Añade un toque extra para hacerlo inolvidable.</p>
-    </div>
-
-    <div class="complementary-grid">
-      @for (product of complementaryProducts(); track product._id) {
-      <a [routerLink]="['/product', product._id]" class="complementary-card">
-        <div class="img-wrapper">
-          <img [src]="product.images[0]" [alt]="product.name" />
-        </div>
-        <div class="info">
-          <span class="name">{{ product.name }}</span>
-          <span class="price">{{
-            product.price | currency : "COP" : "symbol" : "1.0-0"
-          }}</span>
-        </div>
-      </a>
-      }
-    </div>
-  </section>
-  }
-  <!-- ======================== -->
-  <!-- BARRA FLOTANTE MÓVIL (STICKY) -->
-  <!-- ======================== -->
-  <div class="sticky-actions-bar">
-    <div class="qty-control">
-      <button (click)="decreaseQuantity()">-</button>
-      <span>{{ quantity() }}</span>
-      <button (click)="increaseQuantity()">+</button>
-    </div>
-    <div style="flex-grow: 1; display: flex; gap: 0.5rem">
-      <button
-        class="add-to-cart-btn"
-        [class.success]="justAddedToCart()"
-        [disabled]="!canAddToCart()"
-        (click)="addToCart()"
-        appRipple
-      >
-        {{
-          justAddedToCart()
-            ? "¡Listo!"
-            : "Añadir • " +
-              (finalPrice() * quantity()
-                | currency : "COP" : "symbol" : "1.0-0")
-        }}
-      </button>
-    </div>
-  </div>
-</div>
 } @else {
-<div class="loading-container">
-  <p>Cargando detalles...</p>
-</div>
+  <div class="loading-container">
+    <p>Cargando detalles...</p>
+  </div>
 }

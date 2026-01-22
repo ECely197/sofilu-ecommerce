@@ -84,6 +84,28 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
         setTimeout(() => this.setupNavAnimations(), 100);
       }
+      const cleanData = data.map((section) => {
+        // Dentro de cada sección, filtramos la lista de subcategorías
+        const filteredSubs = section.subCategories.filter(
+          (sub) =>
+            sub.id !== 'complementos' && // Ocultamos Complementos
+            sub.id !== 'plumones', // Ocultamos Plumones (si aún lo necesitas ocultar)
+        );
+
+        // Devolvemos la sección con la lista de hijos LIMPIA
+        return {
+          ...section,
+          subCategories: filteredSubs,
+        };
+      });
+
+      // Guardamos la data ya filtrada en la señal
+      this.navItems.set(cleanData);
+
+      // Configuración de animaciones (solo desktop)
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+        setTimeout(() => this.setupNavAnimations(), 100);
+      }
     });
 
     this.routerSub = this.router.events
@@ -116,7 +138,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     const headerDesktop =
       this.elementRef.nativeElement.querySelector('.sofilu-header');
     const headerMobile = this.elementRef.nativeElement.querySelector(
-      '.mobile-floating-header'
+      '.mobile-floating-header',
     );
     const footer = document.querySelector('app-footer');
 
@@ -187,7 +209,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     this.navLinks.forEach((linkRef) => {
       const linkWrapperEl = linkRef.nativeElement;
       const linkAnchorEl = linkWrapperEl.querySelector(
-        '.nav-link'
+        '.nav-link',
       ) as HTMLElement;
       if (!linkAnchorEl) return;
       const originalText = linkAnchorEl.querySelector('.nav-text-original');
@@ -258,7 +280,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       (linkRef) =>
         linkRef.nativeElement
           .querySelector('a')
-          ?.classList.contains('active') === true
+          ?.classList.contains('active') === true,
     );
 
     if (activeLinkWrapper) {
@@ -364,7 +386,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
       this.router.navigate(['/']).then(() => {
         setTimeout(
           () => this.scrollManager.requestScrollToCategory(subCategory.id),
-          100
+          100,
         );
       });
     }

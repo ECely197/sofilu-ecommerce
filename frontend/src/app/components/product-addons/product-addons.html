@@ -1,0 +1,39 @@
+@if (!isLoading() && addons().length > 0) {
+  <section class="addons-section">
+    <div class="header">
+      <div class="icon-wrapper">
+        <span class="material-symbols-outlined">card_giftcard</span>
+      </div>
+      <div class="titles">
+        <h3>Completa tu regalo</h3>
+        <p>Agrega un detalle extra para hacerlo inolvidable</p>
+      </div>
+    </div>
+
+    <!-- Scroll Horizontal -->
+    <div class="addons-scroll">
+      @for (product of addons(); track product._id) {
+        <div class="mini-card">
+          <div class="img-container">
+            <img
+              [src]="product.images[0]"
+              [alt]="product.name"
+              loading="lazy"
+            />
+          </div>
+
+          <div class="info">
+            <h4 class="name">{{ product.name }}</h4>
+            <p class="price">
+              {{ product.price | currency: "COP" : "symbol" : "1.0-0" }}
+            </p>
+          </div>
+
+          <button (click)="addToCart(product)" class="add-btn" appRipple>
+            <span class="material-symbols-outlined">add</span>
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+}

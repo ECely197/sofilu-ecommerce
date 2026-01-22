@@ -251,3 +251,124 @@
     opacity: 1;
   }
 }
+
+.highlight-card {
+  border: 1px solid var(--pastel-pink, #ffd1dc);
+  background: linear-gradient(135deg, #fff, #fff0f5);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  h4 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.btn-icon-small {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: var(--text-charcoal);
+    color: white;
+    transform: rotate(45deg); // Efecto de cierre (X)
+  }
+}
+
+.hint-text {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0;
+}
+
+// Mini Formulario Glass
+.mini-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  align-items: end; // Alinear botón con inputs
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+  }
+}
+
+.glass-input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+
+  &.code {
+    font-family: monospace;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #333;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    background: white;
+  }
+}
+
+.btn-primary-small {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 8px;
+  background: var(--text-charcoal);
+  color: white;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+
+  &:disabled {
+    background: #ccc;
+  }
+}

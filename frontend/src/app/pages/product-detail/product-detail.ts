@@ -32,6 +32,7 @@ import { OrderService } from '../../services/order';
 import { AuthService } from '../../services/auth';
 import { ToastService } from '../../services/toast.service';
 import { CategoryService, Category } from '../../services/category.service';
+import { ProductAddonsComponent } from '../../components/product-addons/product-addons';
 
 // --- Componentes Hijos ---
 import { CategoriesSection } from '../../components/home/categories-section/categories-section';
@@ -72,8 +73,8 @@ export class SafeHtmlPipe implements PipeTransform {
     RippleDirective,
     SafeHtmlPipe,
     StarRatingComponent,
-    RouterLink,
     ProductCarousel,
+    ProductAddonsComponent,
   ],
   templateUrl: './product-detail.html',
   styleUrl: './product-detail.scss',
@@ -81,7 +82,7 @@ export class SafeHtmlPipe implements PipeTransform {
     trigger('expandCollapse', [
       state(
         'collapsed',
-        style({ height: '0px', overflow: 'hidden', opacity: 0 })
+        style({ height: '0px', overflow: 'hidden', opacity: 0 }),
       ),
       state('expanded', style({ height: '*', overflow: 'hidden', opacity: 1 })),
       transition('expanded <=> collapsed', [
@@ -167,7 +168,7 @@ export class ProductDetailComponent
       const selectedOptionName = selections[variant.name];
       if (selectedOptionName) {
         const option = variant.options.find(
-          (o) => o.name === selectedOptionName
+          (o) => o.name === selectedOptionName,
         );
         // Si la opción tiene imagen y NO está ya en la lista base
         if (option && option.image && !images.includes(option.image)) {
@@ -205,7 +206,7 @@ export class ProductDetailComponent
       if (selectedOptionName) {
         const variant = p.variants.find((v) => v.name === variantName);
         const option = variant?.options.find(
-          (o) => o.name === selectedOptionName
+          (o) => o.name === selectedOptionName,
         );
         if (option && (option.stock || 0) <= 0) {
           return false;
@@ -226,7 +227,7 @@ export class ProductDetailComponent
         const selectedOptionName = selections[variant.name];
         if (selectedOptionName) {
           const option = variant.options.find(
-            (opt) => opt.name === selectedOptionName
+            (opt) => opt.name === selectedOptionName,
           );
           if (option && option.price) {
             totalPrice += option.price;
@@ -241,7 +242,7 @@ export class ProductDetailComponent
     const p = this.product();
     if (!p || !p.variants || p.variants.length === 0) return true;
     return p.variants.every(
-      (variant) => !!this.selectedVariants()[variant.name]
+      (variant) => !!this.selectedVariants()[variant.name],
     );
   });
 
@@ -341,7 +342,7 @@ export class ProductDetailComponent
               .getProductsByCategory(categorySlug)
               .subscribe((products) => {
                 const others = products.filter(
-                  (p) => p._id !== foundProduct._id
+                  (p) => p._id !== foundProduct._id,
                 );
                 this.relatedProducts.set(others);
               });
@@ -402,7 +403,7 @@ export class ProductDetailComponent
     if (!this.isInStock()) {
       this.toastService.show(
         'Lo sentimos, este producto está agotado.',
-        'error'
+        'error',
       );
       return;
     }
@@ -420,7 +421,7 @@ export class ProductDetailComponent
     } else {
       this.toastService.show(
         'La opción seleccionada no está disponible.',
-        'error'
+        'error',
       );
     }
   }
@@ -434,7 +435,7 @@ export class ProductDetailComponent
 
   toggleVariant(variantName: string): void {
     this.expandedVariant.update((current) =>
-      current === variantName ? null : variantName
+      current === variantName ? null : variantName,
     );
   }
 

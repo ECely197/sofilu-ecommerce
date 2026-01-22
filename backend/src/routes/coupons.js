@@ -14,6 +14,60 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 
 /**
  * @route   POST /api/coupons/validate
+ * @desc    Valida un código de cupón (incluyendo restricción de usuario).
+ * @access  Public (Pero recibe userId en el body si existe)
+ */
+router.post("/validate", async (req, res) => {
+  const { code, userId } = req.body; // <-- AHORA ESPERAMOS userId TAMBIÉN
+
+  if (!code) {
+    return res.status(400).json({ message: "Se requiere un código de cupón." });
+  }
+
+  try {
+    const coupon = await Coupon.findOne({ code: code.toUpperCase() });
+
+    if (!coupon)
+      return res.status(404).json({ message: "El cupón no existe." });
+
+    // 1. Validar Fechas
+    if (coupon.expirationDate && new Date() > new Date(coupon.expirationDate)) {
+      return res.status(400).json({ message: "Este cupón ha expirado." });
+    }
+
+    // 2. Validar Límites de Uso Global
+    if (coupon.usageLimit !== null && coupon.timesUsed >= coupon.usageLimit) {
+      return res
+        .status(400)
+        .json({ message: "Este cupón ha alcanzado su límite de usos." });
+    }
+
+    // 3. --- ¡NUEVO! VALIDAR USUARIO ASIGNADO ---
+    if (coupon.allowedUsers && coupon.allowedUsers.length > 0) {
+      if (!userId) {
+        return res
+          .status(403)
+          .json({
+            message: "Debes iniciar sesión para usar este cupón exclusivo.",
+          });
+      }
+      if (!coupon.allowedUsers.includes(userId)) {
+        return res
+          .status(403)
+          .json({ message: "Este cupón no es válido para tu cuenta." });
+      }
+    }
+
+    res.json(coupon);
+  } catch (error) {
+    console.error("Error validando cupón:", error);
+    res
+      .status(500)
+      .json({ message: "Error del servidor al validar el cupón." });
+  }
+});
+/**
+ * @route   POST /api/coupons/validate
  * @desc    Valida un código de cupón.
  * @access  Public
  */
@@ -109,18 +163,16 @@ router.put("/:id", async (req, res) => {
     const updatedCoupon = await Coupon.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     if (!updatedCoupon)
       return res.status(404).json({ message: "Cupón no encontrado." });
     res.json(updatedCoupon);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar el cupón.",
-        details: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar el cupón.",
+      details: error.message,
+    });
   }
 });
 

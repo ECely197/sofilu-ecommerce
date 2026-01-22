@@ -97,6 +97,78 @@
             } @else {
               <p class="empty-text">No ha usado cupones aún.</p>
             }
+
+            <!-- SECCIÓN: REGALAR CUPÓN -->
+            <div class="detail-card highlight-card">
+              <div class="card-header-flex">
+                <h4>
+                  <span class="material-symbols-outlined">redeem</span>
+                  Asignar Beneficio
+                </h4>
+                <button
+                  (click)="toggleCouponForm()"
+                  class="btn-icon-small"
+                  [class.active]="isCreatingCoupon()"
+                  appRipple
+                >
+                  <span class="material-symbols-outlined">add</span>
+                </button>
+              </div>
+
+              @if (isCreatingCoupon()) {
+                <form
+                  [formGroup]="couponForm"
+                  (ngSubmit)="createExclusiveCoupon()"
+                  class="mini-form"
+                >
+                  <div class="form-row">
+                    <div class="field">
+                      <label>Código</label>
+                      <input
+                        type="text"
+                        formControlName="code"
+                        class="glass-input code"
+                      />
+                    </div>
+                    <div class="field">
+                      <label>Valor</label>
+                      <input
+                        type="number"
+                        formControlName="value"
+                        class="glass-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="field">
+                      <label>Tipo</label>
+                      <select
+                        formControlName="discountType"
+                        class="glass-input"
+                      >
+                        <option value="Porcentaje">%</option>
+                        <option value="Monto Fijo">$</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <button
+                        type="submit"
+                        [disabled]="couponForm.invalid"
+                        class="btn-primary-small"
+                        appRipple
+                      >
+                        Crear
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              } @else {
+                <p class="hint-text">
+                  Crea un cupón exclusivo para este usuario.
+                </p>
+              }
+            </div>
           </div>
         }
         <!-- 4. SI NO HAY DATOS (ERROR O NULL) -->

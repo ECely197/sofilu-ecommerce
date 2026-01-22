@@ -100,7 +100,7 @@ export class Home implements OnInit {
       .pipe(
         switchMap((categories) => {
           const filteredCategories = categories.filter(
-            (cat) => cat.slug !== 'plumones',
+            (cat) => cat.slug !== 'plumones' && cat.slug !== 'complementos',
           ); // Filtra categorías si es necesario
           if (filteredCategories.length === 0) {
             return of({ productArrays: [], categories: [] });
