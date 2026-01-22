@@ -1,0 +1,69 @@
+<section class="account-section">
+  <h2 class="section-title">Mis Cupones y Regalos</h2>
+
+  @if (isLoading()) {
+    <div class="loading-state">Cargando tus beneficios...</div>
+  } @else if (coupons().length > 0) {
+    <div class="coupons-grid">
+      @for (coupon of coupons(); track coupon._id) {
+        <div class="coupon-ticket" [class.expired]="!isValid(coupon)">
+          <!-- Lado Izquierdo: Valor -->
+          <div class="ticket-left">
+            <div class="value">
+              @if (coupon.discountType === "Porcentaje") {
+                {{ coupon.value }}%
+              } @else {
+                <span class="currency">$</span
+                >{{ coupon.value | number: "1.0-0" }}
+              }
+            </div>
+            <div class="label">OFF</div>
+          </div>
+
+          <!-- Línea punteada decorativa -->
+          <div class="ticket-rip"></div>
+
+          <!-- Lado Derecho: Info -->
+          <div class="ticket-right">
+            <div class="info">
+              <span class="status-tag">
+                {{ isValid(coupon) ? "Activo" : "Usado / Vencido" }}
+              </span>
+              <p class="description">
+                Válido para
+                {{ coupon.appliesTo === "Envío" ? "el envío" : "tu compra" }}
+              </p>
+              @if (coupon.expirationDate) {
+                <small
+                  >Vence:
+                  {{ coupon.expirationDate | date: "mediumDate" }}</small
+                >
+              }
+            </div>
+
+            <button
+              (click)="copyCode(coupon.code)"
+              class="copy-btn"
+              [disabled]="!isValid(coupon)"
+              appRipple
+            >
+              <span class="code">{{ coupon.code }}</span>
+              <span class="material-symbols-outlined icon">content_copy</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state">
+      <img
+        src="assets/images/cat-gift.png"
+        alt="Sin cupones"
+        class="empty-img"
+      />
+      <!-- Asegúrate de tener una imagen o usa un icono -->
+      <p>Aún no tienes cupones exclusivos.</p>
+      <small>Mantente atento a tu correo o eventos especiales.</small>
+    </div>
+  }
+</section>

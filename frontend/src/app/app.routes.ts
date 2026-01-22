@@ -31,6 +31,7 @@ import { SearchResultsComponent } from './pages/search-results/search-results';
 import { MyOrdersComponent } from './pages/account/my-orders/my-orders';
 import { MyAddressesComponent } from './pages/account/my-addresses/my-addresses';
 import { MyDetailsComponent } from './pages/account/my-details/my-details';
+import { MyCouponsComponent } from './pages/account/my-coupons/my-coupons';
 
 // Páginas de Administración (Rutas Hijas de 'AdminLayout')
 import { Dashboard } from './pages/admin/dashboard/dashboard';
@@ -95,6 +96,7 @@ export const routes: Routes = [
       { path: 'orders', component: MyOrdersComponent },
       { path: 'addresses', component: MyAddressesComponent },
       { path: 'details', component: MyDetailsComponent },
+      { path: 'coupons', component: MyCouponsComponent },
     ],
   },
 

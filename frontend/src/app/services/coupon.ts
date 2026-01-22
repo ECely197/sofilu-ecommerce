@@ -64,4 +64,12 @@ export class Coupon {
     const url = `${this.apiUrl}/validate`;
     return this.http.post<any>(url, { code });
   }
+
+  /**
+   * Obtiene los cupones exclusivos asignados a un usuario.
+   * @param uid El UID del usuario.
+   */
+  getCouponsForUser(uid: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/user/${uid}`);
+  }
 }

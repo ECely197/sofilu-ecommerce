@@ -55,6 +55,7 @@ export class CustomerDetailModalComponent {
   customerDetails = signal<any | null>(null);
   isLoading = signal(false);
   isCreatingCoupon = signal(false); // Controla si se muestra el formulario
+  activeCoupons = signal<any[]>([]);
 
   // Formulario para el cupón rápido
   couponForm: FormGroup;
@@ -71,26 +72,37 @@ export class CustomerDetailModalComponent {
       const uid = this.customerDetailModalService.activeCustomerId();
       if (uid) {
         this.isLoading.set(true);
-        this.isCreatingCoupon.set(false); // Reset al abrir
+        this.isCreatingCoupon.set(false);
+
+        // 1. Cargar detalles del cliente
         this.customerService.getCustomerDetails(uid).subscribe({
           next: (details) => {
             this.customerDetails.set(details);
-            this.isLoading.set(false);
-            // Pre-llenar código sugerido
+            // Pre-llenar código...
             const namePart = (details.firstName || 'CLIENTE')
               .split(' ')[0]
               .toUpperCase();
-            this.couponForm.patchValue({
-              code: `${namePart}-REGALO`,
-            });
+            this.couponForm.patchValue({ code: `${namePart}-VIP` });
+
+            // 2. CARGAR CUPONES ACTIVOS DEL USUARIO (NUEVO)
+            this.loadUserCoupons(uid);
           },
-          error: () => {
-            this.isLoading.set(false);
-          },
+          error: () => this.isLoading.set(false),
         });
       } else {
         this.customerDetails.set(null);
+        this.activeCoupons.set([]);
       }
+    });
+  }
+
+  loadUserCoupons(uid: string) {
+    this.couponService.getCouponsForUser(uid).subscribe({
+      next: (coupons) => {
+        this.activeCoupons.set(coupons);
+        this.isLoading.set(false); // Terminamos carga aquí
+      },
+      error: () => this.isLoading.set(false),
     });
   }
 
@@ -117,8 +129,10 @@ export class CustomerDetailModalComponent {
           'success',
         );
         this.isCreatingCoupon.set(false);
+        this.loadUserCoupons(details.uid);
         // Opcional: Recargar detalles para ver si quieres mostrarlo en una lista
       },
+
       error: (err) => {
         this.toastService.show(
           err.error?.message || 'Error creando cupón',

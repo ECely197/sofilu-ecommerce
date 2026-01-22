@@ -372,3 +372,135 @@
     background: #ccc;
   }
 }
+
+// --- LISTA DE CUPONES ASIGNADOS ---
+.assigned-coupons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 150px;
+  overflow-y: auto; // Scroll interno si hay muchos
+  margin-top: 0.5rem;
+}
+
+.mini-coupon-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border: 1px dashed #ced4da;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+
+  .coupon-left {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+  }
+
+  .cp-code {
+    font-family: monospace;
+    font-weight: 700;
+    color: #333;
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+
+  .cp-value {
+    color: #16a34a; // Verde
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .cp-date {
+    font-size: 0.75rem;
+    color: #888;
+  }
+}
+
+.empty-text.small {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+// --- ARREGLO TARJETA ASIGNAR ---
+.highlight-card {
+  border: 1px solid rgba(255, 182, 193, 0.5);
+  background: linear-gradient(135deg, #fff, #fff5f7);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-text {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+
+  .icon-gift {
+    color: var(--pastel-pink);
+    font-size: 1.5rem;
+  }
+
+  .no-margin {
+    margin: 0;
+    font-size: 1rem;
+    color: #333;
+  }
+  .sub-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #888;
+  }
+}
+
+// --- BOTÓN (+) PERFECTAMENTE CENTRADO ---
+.btn-icon-round {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #eee;
+  background: white;
+  cursor: pointer;
+
+  // Flexbox para centrar el icono
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  color: #555;
+
+  // Ajuste del icono
+  .material-symbols-outlined {
+    font-size: 1.2rem;
+    line-height: 1; // Elimina altura de línea extra
+  }
+
+  &:hover {
+    background: var(--pastel-pink);
+    color: white;
+    border-color: var(--pastel-pink);
+    transform: scale(1.1);
+  }
+
+  &.active {
+    background: #333;
+    color: white;
+    border-color: #333;
+    transform: rotate(45deg); // Convertir + en x
+  }
+}
+
+// Formulario
+.btn-container {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}

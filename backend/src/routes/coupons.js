@@ -13,6 +13,33 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
 // ==========================================================================
 
 /**
+ * @route   GET /api/coupons/user/:uid
+ * @desc    Obtener los cupones asignados exclusivamente a un usuario.
+ * @access  Private (El usuario solo puede ver sus propios cupones)
+ */
+router.get("/user/:uid", authMiddleware, async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    // Seguridad: Verificar que el token pertenezca al uid solicitado (o sea admin)
+    if (req.user.uid !== uid && req.user.admin !== true) {
+      return res.status(403).json({ message: "Acceso denegado." });
+    }
+
+    const coupons = await Coupon.find({
+      allowedUsers: uid, // Busca que el UID esté en el array
+      // Opcional: Solo mostrar cupones vigentes
+      // expirationDate: { $gte: new Date() }
+    }).sort({ createdAt: -1 });
+
+    res.json(coupons);
+  } catch (error) {
+    console.error("Error obteniendo cupones del usuario:", error);
+    res.status(500).json({ message: "Error al obtener los cupones." });
+  }
+});
+
+/**
  * @route   POST /api/coupons/validate
  * @desc    Valida un código de cupón (incluyendo restricción de usuario).
  * @access  Public (Pero recibe userId en el body si existe)
@@ -45,11 +72,9 @@ router.post("/validate", async (req, res) => {
     // 3. --- ¡NUEVO! VALIDAR USUARIO ASIGNADO ---
     if (coupon.allowedUsers && coupon.allowedUsers.length > 0) {
       if (!userId) {
-        return res
-          .status(403)
-          .json({
-            message: "Debes iniciar sesión para usar este cupón exclusivo.",
-          });
+        return res.status(403).json({
+          message: "Debes iniciar sesión para usar este cupón exclusivo.",
+        });
       }
       if (!coupon.allowedUsers.includes(userId)) {
         return res

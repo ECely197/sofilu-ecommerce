@@ -318,7 +318,9 @@ html.lenis {
   // Por defecto, está oculto. Solo se mostrará cuando el body tenga la clase 'is-loading'.
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0.3s ease-out;
 
   img {
     width: 100px;
@@ -358,4 +360,24 @@ body.footer-visible {
     opacity: 0;
     pointer-events: none;
   }
+}
+
+/* ==========================================================================
+   UTILIDADES DE SCROLL (Scroll Isolation)
+   ========================================================================== */
+
+// Esta clase evita que el scroll se propague al padre cuando llegas al final
+.isolate-scroll {
+  overscroll-behavior: contain; // La magia moderna
+  -webkit-overflow-scrolling: touch; // Suavidad en iOS
+}
+
+// Aseguramos que los contenedores de scroll tengan estas propiedades
+.custom-scroll,
+.items-list,
+.menu-scroll-content,
+.sidebar-nav,
+.form-content,
+.dropdown-list {
+  overscroll-behavior: contain;
 }

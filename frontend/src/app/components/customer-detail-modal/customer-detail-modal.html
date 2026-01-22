@@ -73,102 +73,114 @@
           <!-- CUPONES USADOS -->
           <div class="detail-card">
             <h4>
-              <span class="material-symbols-outlined">local_activity</span>
-              Historial de Cupones
+              <span class="material-symbols-outlined">confirmation_number</span>
+              Cupones Asignados
             </h4>
-            @if (details.usedCoupons.length > 0) {
-              <div class="coupons-list">
-                @for (coupon of details.usedCoupons; track coupon.code) {
-                  <div class="coupon-item">
-                    <div class="code">{{ coupon.code }}</div>
-                    <div class="meta">
-                      <span>{{ coupon.timesUsed }} usos</span>
-                      <span class="saving"
-                        >Ahorro:
+
+            @if (activeCoupons().length > 0) {
+              <div class="assigned-coupons-list isolate-scroll">
+                @for (coupon of activeCoupons(); track coupon._id) {
+                  <div class="mini-coupon-row">
+                    <div class="coupon-left">
+                      <span class="cp-code">{{ coupon.code }}</span>
+                      <span class="cp-value">
                         {{
-                          coupon.totalDiscount
-                            | currency: "COP" : "symbol" : "1.0-0"
-                        }}</span
-                      >
+                          coupon.discountType === "Porcentaje"
+                            ? coupon.value + "%"
+                            : (coupon.value
+                              | currency: "COP" : "symbol" : "1.0-0")
+                        }}
+                        OFF
+                      </span>
+                    </div>
+                    <div class="coupon-right">
+                      <span class="cp-date" [class.expired]="!coupon.isActive">
+                        {{
+                          coupon.expirationDate
+                            ? (coupon.expirationDate | date: "shortDate")
+                            : "Sin fecha"
+                        }}
+                      </span>
+                      <!-- Podrías agregar botón de borrar aquí si quisieras -->
                     </div>
                   </div>
                 }
               </div>
             } @else {
-              <p class="empty-text">No ha usado cupones aún.</p>
+              <p class="empty-text small">
+                No tiene cupones activos asignados.
+              </p>
             }
+          </div>
 
-            <!-- SECCIÓN: REGALAR CUPÓN -->
-            <div class="detail-card highlight-card">
-              <div class="card-header-flex">
-                <h4>
-                  <span class="material-symbols-outlined">redeem</span>
-                  Asignar Beneficio
-                </h4>
-                <button
-                  (click)="toggleCouponForm()"
-                  class="btn-icon-small"
-                  [class.active]="isCreatingCoupon()"
-                  appRipple
-                >
-                  <span class="material-symbols-outlined">add</span>
-                </button>
+          <!-- 2. SECCIÓN CREAR (MEJORADA) -->
+          <div class="detail-card highlight-card">
+            <div class="card-header-flex">
+              <div class="header-text">
+                <span class="material-symbols-outlined icon-gift">redeem</span>
+                <div>
+                  <h4 class="no-margin">Asignar Nuevo Beneficio</h4>
+                  <p class="sub-text">Crear cupón exclusivo</p>
+                </div>
               </div>
 
-              @if (isCreatingCoupon()) {
-                <form
-                  [formGroup]="couponForm"
-                  (ngSubmit)="createExclusiveCoupon()"
-                  class="mini-form"
-                >
-                  <div class="form-row">
-                    <div class="field">
-                      <label>Código</label>
-                      <input
-                        type="text"
-                        formControlName="code"
-                        class="glass-input code"
-                      />
-                    </div>
-                    <div class="field">
-                      <label>Valor</label>
-                      <input
-                        type="number"
-                        formControlName="value"
-                        class="glass-input"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="form-row">
-                    <div class="field">
-                      <label>Tipo</label>
-                      <select
-                        formControlName="discountType"
-                        class="glass-input"
-                      >
-                        <option value="Porcentaje">%</option>
-                        <option value="Monto Fijo">$</option>
-                      </select>
-                    </div>
-                    <div class="field">
-                      <button
-                        type="submit"
-                        [disabled]="couponForm.invalid"
-                        class="btn-primary-small"
-                        appRipple
-                      >
-                        Crear
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              } @else {
-                <p class="hint-text">
-                  Crea un cupón exclusivo para este usuario.
-                </p>
-              }
+              <!-- BOTÓN ARREGLADO -->
+              <button
+                (click)="toggleCouponForm()"
+                class="btn-icon-round"
+                [class.active]="isCreatingCoupon()"
+                appRipple
+              >
+                <span class="material-symbols-outlined">add</span>
+              </button>
             </div>
+
+            @if (isCreatingCoupon()) {
+              <form
+                [formGroup]="couponForm"
+                (ngSubmit)="createExclusiveCoupon()"
+                class="mini-form"
+              >
+                <div class="form-row">
+                  <div class="field">
+                    <label>Código</label>
+                    <input
+                      type="text"
+                      formControlName="code"
+                      class="glass-input code"
+                    />
+                  </div>
+                  <div class="field">
+                    <label>Valor</label>
+                    <input
+                      type="number"
+                      formControlName="value"
+                      class="glass-input"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="field">
+                    <label>Tipo</label>
+                    <select formControlName="discountType" class="glass-input">
+                      <option value="Porcentaje">% Porcentaje</option>
+                      <option value="Monto Fijo">$ Fijo</option>
+                    </select>
+                  </div>
+                  <div class="field btn-container">
+                    <button
+                      type="submit"
+                      [disabled]="couponForm.invalid"
+                      class="btn-primary-small"
+                      appRipple
+                    >
+                      Confirmar
+                    </button>
+                  </div>
+                </div>
+              </form>
+            }
           </div>
         }
         <!-- 4. SI NO HAY DATOS (ERROR O NULL) -->

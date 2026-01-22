@@ -42,6 +42,19 @@
           </svg>
           <span>Detalles de la Cuenta</span>
         </a>
+
+        <a
+          routerLink="/account/coupons"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <svg class="nav-icon" fill="currentColor" viewBox="0 0 256 256">
+            <path
+              d="M232,104a8,8,0,0,0,8-8V80a16,16,0,0,0-16-16H32A16,16,0,0,0,16,80v16a8,8,0,0,0,8,8,24,24,0,0,1,0,48,8,8,0,0,0-8,8v16a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V160a8,8,0,0,0-8-8,24,24,0,0,1,0-48ZM32,80H224v6.64a40,40,0,0,0,0,74.72V176H32v-14.64a40,40,0,0,0,0-74.72Zm120,48a8,8,0,0,1,8-8h24a8,8,0,0,1,0,16H160A8,8,0,0,1,152,128Zm-48,0a8,8,0,0,1,8-8h0a8,8,0,0,1,0,16h0A8,8,0,0,1,104,128Z"
+            ></path>
+          </svg>
+          <span>Mis Cupones</span>
+        </a>
         <div class="nav-separator"></div>
         <button (click)="logout()" class="nav-item logout-button">
           <svg class="nav-icon" fill="currentColor" viewBox="0 0 256 256">
@@ -53,15 +66,15 @@
         </button>
         <!-- ¡BLOQUE DE CÓDIGO A AÑADIR! -->
         @if (authService.isAdmin$ | async) {
-        <div class="nav-separator"></div>
-        <a routerLink="/admin" class="nav-item admin-link">
-          <svg class="nav-icon" fill="currentColor" viewBox="0 0 256 256">
-            <path
-              d="M144,16H112a8,8,0,0,0-8,8V46.54a8,8,0,0,0,3,6.23l25.34,21.11a8,8,0,0,0,9.29,0L166.95,52.77a8,8,0,0,0,3-6.23V24A8,8,0,0,0,160,16Zm-24,38.54V32h16V54.54l-8,6.66ZM216,72H40a16,16,0,0,0-16,16v96a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72Zm0,112H40V88H216v96Z"
-            ></path>
-          </svg>
-          <span>Panel de Admin</span>
-        </a>
+          <div class="nav-separator"></div>
+          <a routerLink="/admin" class="nav-item admin-link">
+            <svg class="nav-icon" fill="currentColor" viewBox="0 0 256 256">
+              <path
+                d="M144,16H112a8,8,0,0,0-8,8V46.54a8,8,0,0,0,3,6.23l25.34,21.11a8,8,0,0,0,9.29,0L166.95,52.77a8,8,0,0,0,3-6.23V24A8,8,0,0,0,160,16Zm-24,38.54V32h16V54.54l-8,6.66ZM216,72H40a16,16,0,0,0-16,16v96a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V88A16,16,0,0,0,216,72Zm0,112H40V88H216v96Z"
+              ></path>
+            </svg>
+            <span>Panel de Admin</span>
+          </a>
         }
       </nav>
     </aside>
