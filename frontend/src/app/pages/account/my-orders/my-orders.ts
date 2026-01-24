@@ -189,4 +189,39 @@ export class MyOrdersComponent implements OnInit {
       });
     }
   }
+
+  // Lógica de cálculo de garantía
+  getWarrantyInfo(
+    orderDate: string,
+    product: any,
+  ): { isActive: boolean; deadline: Date; hasWarranty: boolean } {
+    if (!product || !product.warrantyType) {
+      return { isActive: false, deadline: new Date(), hasWarranty: false };
+    }
+
+    const purchaseDate = new Date(orderDate);
+    const months = product.warrantyType.durationMonths;
+
+    // Crear fecha de expiración
+    const deadline = new Date(purchaseDate);
+    deadline.setMonth(deadline.getMonth() + months);
+
+    const now = new Date();
+    const isActive = now <= deadline;
+
+    return { isActive, deadline, hasWarranty: true };
+  }
+
+  requestWarranty(item: any, orderId: string) {
+    // Aquí puedes abrir un modal de contacto o redirigir a WhatsApp con el mensaje predefinido
+    const productName = item.product.name;
+    const orderRef = orderId.slice(-6).toUpperCase();
+    const msg = `Hola, quiero solicitar garantía para el producto "${productName}" del pedido #${orderRef}.`;
+
+    // Redirigir a WhatsApp (ejemplo)
+    window.open(
+      `https://wa.me/573001234567?text=${encodeURIComponent(msg)}`,
+      '_blank',
+    );
+  }
 }

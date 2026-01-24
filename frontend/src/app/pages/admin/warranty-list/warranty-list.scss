@@ -1,0 +1,71 @@
+@use "../../../../buttons";
+@use "../../../forms";
+@use "../admin-shared";
+
+.grid-layout {
+  display: grid;
+  gap: 2rem;
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.glass-panel {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    strong {
+      color: #333;
+    }
+    .months {
+      color: #888;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 0.5rem;
+
+  &.edit {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  &.delete {
+    background: #fff1f2;
+    color: #e11d48;
+  }
+}
+
+.btn-material {
+  @extend .btn-material;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

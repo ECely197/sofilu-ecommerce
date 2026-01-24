@@ -1,0 +1,80 @@
+<header class="page-header">
+  <h1>Tipos de Garantía</h1>
+  <button (click)="openCreate()" class="btn-material" appRipple>
+    <span class="material-symbols-outlined">add</span> Nueva
+  </button>
+</header>
+
+<div class="grid-layout">
+  <!-- LISTA -->
+  <div class="card glass-panel">
+    <h3>Garantías Existentes</h3>
+    <div class="list-container custom-scroll">
+      @for (item of warranties(); track item._id) {
+        <div class="list-item">
+          <div class="info">
+            <strong>{{ item.name }}</strong>
+            <span class="months">{{ item.durationMonths }} Mes(es)</span>
+          </div>
+          <div class="actions">
+            <button (click)="openEdit(item)" class="icon-btn edit">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button (click)="delete(item._id)" class="icon-btn delete">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <p class="empty">No hay garantías creadas.</p>
+      }
+    </div>
+  </div>
+
+  <!-- FORMULARIO LATERAL (O Modal en Móvil) -->
+  @if (showForm()) {
+    <div class="card glass-panel form-card">
+      <h3>{{ isEditing() ? "Editar" : "Crear" }} Garantía</h3>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="material-field">
+          <input
+            type="text"
+            formControlName="name"
+            class="material-input"
+            placeholder=" "
+          />
+          <label class="material-label">Nombre (ej: 1 Año)</label>
+        </div>
+
+        <div class="material-field">
+          <input
+            type="number"
+            formControlName="durationMonths"
+            class="material-input"
+            placeholder=" "
+          />
+          <label class="material-label">Duración (Meses)</label>
+        </div>
+
+        <div class="material-field">
+          <input
+            type="text"
+            formControlName="description"
+            class="material-input"
+            placeholder=" "
+          />
+          <label class="material-label">Descripción corta</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" (click)="closeForm()" class="btn-secondary">
+            Cancelar
+          </button>
+          <button type="submit" [disabled]="form.invalid" class="btn-material">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

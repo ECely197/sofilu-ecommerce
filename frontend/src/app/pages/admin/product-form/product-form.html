@@ -354,6 +354,21 @@
         </div>
       </div>
 
+      <div class="select-field">
+        <label>Garantía</label>
+        <div class="select-wrapper">
+          <select formControlName="warrantyType">
+            <option [ngValue]="null">Sin Garantía</option>
+            @for (war of warranties(); track war._id) {
+              <option [value]="war._id">
+                {{ war.name }} ({{ war.durationMonths }} Meses)
+              </option>
+            }
+          </select>
+          <span class="material-symbols-outlined chevron">expand_more</span>
+        </div>
+      </div>
+
       <div class="checkbox-wrapper mt-2">
         <input
           id="isFeatured"

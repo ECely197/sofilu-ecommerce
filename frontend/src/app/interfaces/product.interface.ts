@@ -37,5 +37,6 @@ export interface Product {
   isOnSale: boolean;
   salePrice?: number;
   status: 'Activo' | 'Agotado';
+  warrantyType?: any;
   variants: Variant[];
 }

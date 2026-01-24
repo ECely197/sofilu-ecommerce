@@ -16,7 +16,11 @@ import { StorageService } from '../../../services/storage';
 import { CategoryService, Category } from '../../../services/category.service';
 import { ToastService } from '../../../services/toast.service';
 import { VendorService, Vendor } from '../../../services/vendor.service';
-// ¡NUEVAS IMPORTACIONES CORRECTAS!
+import {
+  WarrantyService,
+  WarrantyType,
+} from '../../../services/warranty.service';
+
 import {
   VariantTemplateService,
   VariantTemplate,
@@ -50,6 +54,7 @@ export class ProductForm implements OnInit {
   private toastService = inject(ToastService);
   private variantTemplateService = inject(VariantTemplateService);
   private vendorService = inject(VendorService);
+  private warrantyService = inject(WarrantyService);
 
   productForm!: FormGroup;
   isEditMode = signal(false);
@@ -60,6 +65,7 @@ export class ProductForm implements OnInit {
   private selectedFiles: File[] = [];
   isUploading = signal(false);
   variantTemplates = signal<VariantTemplate[]>([]);
+  warranties = signal<WarrantyType[]>([]);
 
   ngOnInit() {
     this.productForm = this.fb.group({
@@ -75,8 +81,13 @@ export class ProductForm implements OnInit {
       isFeatured: [false],
       isOnSale: [false],
       salePrice: [null],
+      warrantyType: [null],
       variants: this.fb.array([]),
     });
+
+    this.warrantyService
+      .getWarranties()
+      .subscribe((w) => this.warranties.set(w));
 
     this.categoryService
       .getCategories()
@@ -112,22 +123,23 @@ export class ProductForm implements OnInit {
             category: categoryId,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
+            warrantyType: product.warrantyType,
             salePrice: product.salePrice,
           });
 
           product.images.forEach((imgUrl) =>
-            this.images.push(this.fb.control(imgUrl))
+            this.images.push(this.fb.control(imgUrl)),
           );
           this.imagePreviews.set([...product.images]);
 
           product.variants.forEach((variant) => {
             const optionsArray = this.fb.array(
               (variant.options as any[]).map((opt) =>
-                this.newOption(opt.name, opt.price, opt.stock, opt.costPrice)
-              )
+                this.newOption(opt.name, opt.price, opt.stock, opt.costPrice),
+              ),
             );
             this.variants.push(
-              this.fb.group({ name: variant.name, options: optionsArray })
+              this.fb.group({ name: variant.name, options: optionsArray }),
             );
           });
         });
@@ -146,7 +158,7 @@ export class ProductForm implements OnInit {
     if (input.files && input.files.length > 0) {
       this.selectedFiles = Array.from(input.files);
       const previewUrls = this.selectedFiles.map((file) =>
-        URL.createObjectURL(file)
+        URL.createObjectURL(file),
       );
       this.imagePreviews.set(previewUrls);
     }
@@ -158,13 +170,13 @@ export class ProductForm implements OnInit {
 
     if (this.images.length === 0 && this.selectedFiles.length === 0) {
       this.toastService.show(
-        'Por favor, añade al menos una imagen para el producto.'
+        'Por favor, añade al menos una imagen para el producto.',
       );
       return;
     }
     if (this.productForm.invalid) {
       this.toastService.show(
-        'Por favor, completa todos los campos requeridos correctamente.'
+        'Por favor, completa todos los campos requeridos correctamente.',
       );
       return;
     }
@@ -175,17 +187,17 @@ export class ProductForm implements OnInit {
     if (this.selectedFiles.length > 0) {
       console.log('--- Detectados nuevos archivos. Subiendo imágenes... ---');
       const uploadOperations$ = forkJoin(
-        this.selectedFiles.map((file) => this.storageService.uploadImage(file))
+        this.selectedFiles.map((file) => this.storageService.uploadImage(file)),
       );
 
       uploadOperations$.subscribe({
         next: (newImageUrls) => {
           this.images.clear();
           newImageUrls.forEach((url: string) =>
-            this.images.push(this.fb.control(url))
+            this.images.push(this.fb.control(url)),
           );
           console.log(
-            '--- Imágenes subidas. Guardando datos del producto... ---'
+            '--- Imágenes subidas. Guardando datos del producto... ---',
           );
           this.saveProductData();
         },
@@ -197,7 +209,7 @@ export class ProductForm implements OnInit {
       });
     } else {
       console.log(
-        '--- No hay nuevos archivos. Guardando datos del producto directamente... ---'
+        '--- No hay nuevos archivos. Guardando datos del producto directamente... ---',
       );
 
       this.saveProductData();
@@ -220,6 +232,7 @@ export class ProductForm implements OnInit {
       salePrice: formValue.isOnSale ? formValue.salePrice : null,
       images: formValue.images,
       isFeatured: formValue.isFeatured,
+      warrantyType: formValue.warrantyType,
       variants: formValue.variants.map((variant: any) => ({
         name: variant.name,
         options: variant.options.map((option: any) => ({
@@ -243,7 +256,7 @@ export class ProductForm implements OnInit {
         this.isUploading.set(false);
         this.toastService.show(
           `Producto ${this.isEditMode() ? 'actualizado' : 'creado'} con éxito`,
-          'success'
+          'success',
         );
         this.router.navigate(['/admin/products']);
       },
@@ -254,7 +267,7 @@ export class ProductForm implements OnInit {
           err.error?.details ||
             err.error?.message ||
             'No se pudo guardar el producto.',
-          'error'
+          'error',
         );
       },
     });
@@ -264,7 +277,7 @@ export class ProductForm implements OnInit {
     const selectElement = event.target as HTMLSelectElement;
     const selectedTemplateName = (selectElement as any).value;
     const selectedTemplate = this.variantTemplates().find(
-      (t) => t.templateName === selectedTemplateName
+      (t) => t.templateName === selectedTemplateName,
     );
 
     if (selectedTemplate) {
@@ -284,15 +297,15 @@ export class ProductForm implements OnInit {
             opt.price,
             opt.stock,
             opt.costPrice,
-            opt.image
-          )
-        )
+            opt.image,
+          ),
+        ),
       ),
     });
     this.variants.push(newVariant);
     this.toastService.show(
       `Variante "${template.variantName}" añadida desde plantilla.`,
-      'success'
+      'success',
     );
   }
 
@@ -316,7 +329,7 @@ export class ProductForm implements OnInit {
     price: number | null = null,
     stock: number | null = null,
     costPrice: number | null = null,
-    image: string | null = null
+    image: string | null = null,
   ): FormGroup {
     return this.fb.group({
       name: [name, Validators.required],
@@ -343,13 +356,13 @@ export class ProductForm implements OnInit {
   onVariantImageSelected(
     event: Event,
     variantIndex: number,
-    optionIndex: number
+    optionIndex: number,
   ): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       const option = this.variantOptions(variantIndex).at(
-        optionIndex
+        optionIndex,
       ) as FormGroup;
 
       // Guardamos el objeto File en el formulario para subirlo más tarde.

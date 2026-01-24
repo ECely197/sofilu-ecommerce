@@ -30,7 +30,7 @@ const optionSchema = new Schema(
       type: Number,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 /**
@@ -42,7 +42,7 @@ const variantSchema = new Schema(
     name: { type: String, required: true },
     options: [optionSchema],
   },
-  { _id: false }
+  { _id: false },
 );
 
 /**
@@ -64,11 +64,16 @@ const productSchema = new Schema(
     isOnSale: { type: Boolean, default: false },
     salePrice: { type: Number },
     status: { type: String, enum: ["Activo", "Agotado"], default: "Activo" },
+    warrantyType: {
+      type: Schema.Types.ObjectId,
+      ref: "WarrantyType",
+      default: null,
+    },
     variants: [variantSchema],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("Product", productSchema);

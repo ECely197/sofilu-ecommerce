@@ -230,8 +230,11 @@ router.get("/user/:userId", authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.params.userId })
       .sort({ createdAt: -1 })
-      .populate("items.product")
-      .populate("selectedDeliveryOption"); // Mostrar opción de entrega
+      .populate({
+        path: "items.product",
+        populate: { path: "warrantyType" },
+      })
+      .populate("selectedDeliveryOption");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener historial." });

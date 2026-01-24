@@ -32,6 +32,7 @@ const vendorRoutes = require("./routes/vendors");
 const specialEventRoutes = require("./routes/specialEvents");
 const paymentRoutes = require("./routes/payments");
 const deliveryOptionRoutes = require("./routes/deliveryOptions");
+const warrantyTypeRoutes = require("./routes/warrantyTypes");
 
 // --------------------------------------------------------------------------
 // 2. INICIALIZACIÓN Y CONFIGURACIÓN
@@ -140,6 +141,7 @@ app.use(`${apiPrefix}/vendors`, vendorRoutes);
 app.use(`${apiPrefix}/special-events`, specialEventRoutes);
 app.use(`${apiPrefix}/payments`, paymentRoutes);
 app.use(`${apiPrefix}/delivery-options`, deliveryOptionRoutes);
+app.use(`${apiPrefix}/warranty-types`, warrantyTypeRoutes);
 
 // Ruta raíz de bienvenida
 app.get("/", (req, res) => {
