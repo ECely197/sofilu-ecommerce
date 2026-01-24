@@ -2,32 +2,33 @@
 
 :host {
   display: block;
-  min-height: 100vh;
-  background-color: #fdfbf9; // Fondo base del admin
+  height: 100vh; // Fija la altura a la pantalla
+  width: 100vw;
+  overflow: hidden; // ¡IMPORTANTE! Evita que el body se mueva
+  background-color: #fdfbf9;
 }
 
 .admin-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100%; // Hereda la altura fija
+  width: 100%;
   position: relative;
+  overflow: hidden; // Asegura contención
 }
 
 // --- SIDEBAR (M3/Glass) ---
 .sidebar {
   width: 280px;
-  background: rgba(255, 255, 255, 0.85); // Semitransparente
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(0, 0, 0, 0.05);
-  height: 100vh;
-  position: sticky;
-  top: 0;
+  height: 100%; // Ocupa el 100% del contenedor padre
   display: flex;
   flex-direction: column;
   z-index: 1000;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-
-  // Sombra suave a la derecha
   box-shadow: 5px 0 30px rgba(0, 0, 0, 0.02);
+  flex-shrink: 0; // Evita que se aplaste
 }
 
 .sidebar-header {
@@ -35,6 +36,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0; // El header no se encoge
 
   .logo {
     height: 40px;
@@ -42,9 +44,8 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 
-  // Botón cerrar solo visible en móvil
   .close-menu-btn {
-    display: none; // Oculto en desktop
+    display: none;
     background: #f0f0f0;
     border: none;
     width: 36px;
@@ -63,11 +64,21 @@
 
 .sidebar-nav {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: auto; // Scroll interno
+  overscroll-behavior: contain; // SOLUCIÓN AL BUG DEL VIDEO (Scroll Chaining)
   padding: 1rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+
+  // Ocultar barra de scroll fea pero mantener funcionalidad
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
 }
 
 // Etiquetas de Sección
@@ -135,10 +146,14 @@
 // --- CONTENIDO PRINCIPAL ---
 .main-content {
   flex-grow: 1;
-  width: 100%; // Ocupa el resto
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  height: 100%; // Altura completa
+  overflow-y: auto; // Scroll independiente aquí
+  overscroll-behavior: contain; // SOLUCIÓN AL BUG
+  -webkit-overflow-scrolling: touch;
 }
 
 .page-wrapper {
@@ -159,15 +174,18 @@
 @media (max-width: 1023px) {
   // 1. Sidebar Oculto (Off-Canvas)
   .sidebar {
-    position: fixed;
+    position: absolute; // Absolute dentro del container fixed
     top: 0;
     left: 0;
     bottom: 0;
-    height: 100%;
-    transform: translateX(-100%); // Escondido a la izquierda
-    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(-100%);
+    background: white; // Fondo sólido en móvil para legibilidad
     width: 85%;
     max-width: 300px;
+  }
+
+  .page-wrapper {
+    padding: 6rem 1rem 8rem; // Más espacio abajo para evitar cortes
   }
 
   // 2. Overlay
@@ -225,11 +243,6 @@
     .spacer {
       width: 40px;
     } // Para equilibrar el flex
-  }
-
-  // Ajuste de contenido
-  .page-wrapper {
-    padding: 6rem 1rem 2rem; // Más padding top por el header flotante
   }
 
   // --- ESTADO ABIERTO ---

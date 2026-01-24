@@ -15,73 +15,76 @@
       <div #navPill class="nav-pill"></div>
 
       @for (item of navItems(); track item.id) {
-      <div
-        #navLink
-        class="nav-item-wrapper"
-        (mouseenter)="handleMouseEnter(item)"
-        (mouseleave)="handleMouseLeave()"
-      >
-        <a
-          [routerLink]="item.subCategories.length === 0 ? item.slug : null"
-          [routerLinkActiveOptions]="{ exact: item.slug === '/' }"
-          routerLinkActive="active"
-          class="nav-link"
-        >
-          <span class="nav-text-original">{{ item.name }}</span>
-          <span class="nav-text-reveal">{{ item.name }}</span>
-        </a>
-
-        <!-- MEGA MENÚ -->
         <div
-          class="mega-menu-container"
-          [class.is-active]="activeMenu()?.id === item.id"
+          #navLink
+          class="nav-item-wrapper"
+          (mouseenter)="handleMouseEnter(item)"
+          (mouseleave)="handleMouseLeave()"
         >
-          @if (activeMenu()?.id === item.id) {
-          <div class="mega-menu-card">
-            <div
-              class="sub-category-list"
-              (mouseleave)="handleSubCategoryListLeave()"
-            >
-              <div #subCategoryPill class="hover-pill"></div>
-              @for (sub of activeMenu()!.subCategories; track sub.id) {
-              <a
-                href="javascript:void(0)"
-                (click)="handleSubCategoryClick($event, sub)"
-                #subCategoryLink
-                (mouseenter)="handleSubCategoryEnter(sub, $event)"
-                [class.active]="activeSubCategory()?.id === sub.id"
-                class="sub-category-link"
-              >
-                {{ sub.name }}
-              </a>
-              }
-            </div>
-            <div class="product-preview-container">
-              @if (activeSubCategory(); as subCat) {
-              <div class="product-preview-grid">
-                @for (product of subCat.products; track product._id) {
-                <a
-                  [routerLink]="['/product', product._id]"
-                  class="preview-product-card"
-                  #previewCard
+          <a
+            [routerLink]="item.subCategories.length === 0 ? item.slug : null"
+            [routerLinkActiveOptions]="{ exact: item.slug === '/' }"
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            <span class="nav-text-original">{{ item.name }}</span>
+            <span class="nav-text-reveal">{{ item.name }}</span>
+          </a>
+
+          <!-- MEGA MENÚ -->
+          <div
+            class="mega-menu-container"
+            [class.is-active]="activeMenu()?.id === item.id"
+          >
+            @if (activeMenu()?.id === item.id) {
+              <div class="mega-menu-card">
+                <div
+                  class="sub-category-list"
+                  (mouseleave)="handleSubCategoryListLeave()"
                 >
-                  <div class="preview-image-wrapper">
-                    @if(product.images.length > 0) {
-                    <img [src]="product.images[0]" [alt]="product.name" />
-                    } @else {
-                    <div class="image-placeholder"></div>
-                    }
-                  </div>
-                  <p>{{ product.name }}</p>
-                </a>
-                }
+                  <div #subCategoryPill class="hover-pill"></div>
+                  @for (sub of activeMenu()!.subCategories; track sub.id) {
+                    <a
+                      href="javascript:void(0)"
+                      (click)="handleSubCategoryClick($event, sub)"
+                      #subCategoryLink
+                      (mouseenter)="handleSubCategoryEnter(sub, $event)"
+                      [class.active]="activeSubCategory()?.id === sub.id"
+                      class="sub-category-link"
+                    >
+                      {{ sub.name }}
+                    </a>
+                  }
+                </div>
+                <div class="product-preview-container">
+                  @if (activeSubCategory(); as subCat) {
+                    <div class="product-preview-grid">
+                      @for (product of subCat.products; track product._id) {
+                        <a
+                          [routerLink]="['/product', product._id]"
+                          class="preview-product-card"
+                          #previewCard
+                        >
+                          <div class="preview-image-wrapper">
+                            @if (product.images.length > 0) {
+                              <img
+                                [src]="product.images[0]"
+                                [alt]="product.name"
+                              />
+                            } @else {
+                              <div class="image-placeholder"></div>
+                            }
+                          </div>
+                          <p>{{ product.name }}</p>
+                        </a>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
-              }
-            </div>
+            }
           </div>
-          }
         </div>
-      </div>
       }
     </nav>
 
@@ -100,43 +103,47 @@
       <button (click)="uiStateService.openWishlistFlyout()" class="icon-button">
         <span class="material-symbols-outlined">favorite</span>
         @if (wishlistService.wishlistProductIds().length > 0) {
-        <span class="badge">{{
-          wishlistService.wishlistProductIds().length
-        }}</span>
+          <span class="badge">{{
+            wishlistService.wishlistProductIds().length
+          }}</span>
         }
       </button>
 
       <button (click)="uiStateService.openCartFlyout()" class="icon-button">
         <span class="material-symbols-outlined">shopping_bag</span>
         @if (cartService.totalItems() > 0) {
-        <span class="badge">{{ cartService.totalItems() }}</span>
+          <span class="badge">{{ cartService.totalItems() }}</span>
         }
       </button>
 
       @if (currentUser$ | async; as user) {
-      <div class="profile-container">
-        <button (click)="toggleProfileMenu($event)" class="profile-button">
-          {{ user.email?.charAt(0)?.toUpperCase() }}
-        </button>
-        @if (isProfileMenuOpen()) {
-        <div #profileMenu class="profile-menu">
-          <div class="menu-header">
-            <p>{{ user.email }}</p>
-          </div>
-          <div class="menu-links">
-            <a routerLink="/account" (click)="toggleProfileMenu()">Mi Cuenta</a>
-            @if(isAdmin$ | async) { <a routerLink="/admin">Panel Admin</a> }
-          </div>
-          <div class="menu-footer">
-            <button (click)="logout()" class="logout-button">
-              Cerrar Sesión
-            </button>
-          </div>
+        <div class="profile-container">
+          <button (click)="toggleProfileMenu($event)" class="profile-button">
+            {{ user.email?.charAt(0)?.toUpperCase() }}
+          </button>
+          @if (isProfileMenuOpen()) {
+            <div #profileMenu class="profile-menu">
+              <div class="menu-header">
+                <p>{{ user.email }}</p>
+              </div>
+              <div class="menu-links">
+                <a routerLink="/account" (click)="toggleProfileMenu()"
+                  >Mi Cuenta</a
+                >
+                @if (isAdmin$ | async) {
+                  <a routerLink="/admin">Panel Admin</a>
+                }
+              </div>
+              <div class="menu-footer">
+                <button (click)="logout()" class="logout-button">
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          }
         </div>
-        }
-      </div>
       } @else {
-      <a routerLink="/login" class="login-button">Ingresar</a>
+        <a routerLink="/login" class="login-button">Ingresar</a>
       }
     </div>
   </div>
@@ -165,7 +172,7 @@
   >
     <span class="material-symbols-outlined">shopping_bag</span>
     @if (cartService.totalItems() > 0) {
-    <span class="badge-pulse">{{ cartService.totalItems() }}</span>
+      <span class="badge-pulse">{{ cartService.totalItems() }}</span>
     }
   </button>
 </div>
@@ -230,95 +237,107 @@
           >
             <div class="inner-body">
               @if (currentUser$ | async; as user) {
-              <div class="user-greeting">
-                <div class="avatar-circle">
-                  {{ user.email?.charAt(0)?.toUpperCase() }}
+                <div class="user-greeting">
+                  <div class="avatar-circle">
+                    {{ user.email?.charAt(0)?.toUpperCase() }}
+                  </div>
+                  <div class="greeting-text">
+                    <span>Hola,</span>
+                    <strong>{{ user.displayName || "Usuario" }}</strong>
+                  </div>
                 </div>
-                <div class="greeting-text">
-                  <span>Hola,</span>
-                  <strong>{{ user.displayName || "Usuario" }}</strong>
-                </div>
-              </div>
 
-              <!-- Opciones Usuario -->
-              <a
-                routerLink="/account/orders"
-                (click)="toggleMobileMenu()"
-                class="sub-link"
-              >
-                <span class="material-symbols-outlined icon-small"
-                  >inventory_2</span
+                <!-- Opciones Usuario -->
+                <a
+                  routerLink="/account/orders"
+                  (click)="toggleMobileMenu()"
+                  class="sub-link"
                 >
-                Mis Pedidos
-              </a>
-              <a
-                routerLink="/account/addresses"
-                (click)="toggleMobileMenu()"
-                class="sub-link"
-              >
-                <span class="material-symbols-outlined icon-small"
-                  >location_on</span
+                  <span class="material-symbols-outlined icon-small"
+                    >inventory_2</span
+                  >
+                  Mis Pedidos
+                </a>
+                <a
+                  routerLink="/account/addresses"
+                  (click)="toggleMobileMenu()"
+                  class="sub-link"
                 >
-                Direcciones
-              </a>
+                  <span class="material-symbols-outlined icon-small"
+                    >location_on</span
+                  >
+                  Direcciones
+                </a>
 
-              <!-- Favoritos -->
-              <a
-                (click)="
-                  uiStateService.openWishlistFlyout(); toggleMobileMenu()
-                "
-                class="sub-link"
-              >
-                <span class="material-symbols-outlined icon-small"
-                  >favorite</span
+                <a
+                  routerLink="/account/coupons"
+                  (click)="toggleMobileMenu()"
+                  class="sub-link"
                 >
-                Lista de Deseos @if (wishlistService.wishlistProductIds().length
-                > 0) {
-                <span class="mini-badge">{{
-                  wishlistService.wishlistProductIds().length
-                }}</span>
+                  <span class="material-symbols-outlined icon-small"
+                    >confirmation_number</span
+                  >
+                  Mis Cupones
+                </a>
+
+                <!-- Favoritos -->
+                <a
+                  (click)="
+                    uiStateService.openWishlistFlyout(); toggleMobileMenu()
+                  "
+                  class="sub-link"
+                >
+                  <span class="material-symbols-outlined icon-small"
+                    >favorite</span
+                  >
+                  Lista de Deseos
+                  @if (wishlistService.wishlistProductIds().length > 0) {
+                    <span class="mini-badge">{{
+                      wishlistService.wishlistProductIds().length
+                    }}</span>
+                  }
+                </a>
+
+                <!-- Panel Admin -->
+                @if (isAdmin$ | async) {
+                  <div class="divider-small"></div>
+                  <a
+                    routerLink="/admin"
+                    (click)="toggleMobileMenu()"
+                    class="sub-link admin-link"
+                  >
+                    <span class="material-symbols-outlined icon-small"
+                      >admin_panel_settings</span
+                    >
+                    Panel de Administración
+                  </a>
                 }
-              </a>
 
-              <!-- Panel Admin -->
-              @if (isAdmin$ | async) {
-              <div class="divider-small"></div>
-              <a
-                routerLink="/admin"
-                (click)="toggleMobileMenu()"
-                class="sub-link admin-link"
-              >
-                <span class="material-symbols-outlined icon-small"
-                  >admin_panel_settings</span
-                >
-                Panel de Administración
-              </a>
-              }
-
-              <div class="divider-small"></div>
-              <button (click)="logout()" class="sub-link logout">
-                <span class="material-symbols-outlined icon-small">logout</span>
-                Cerrar Sesión
-              </button>
-
+                <div class="divider-small"></div>
+                <button (click)="logout()" class="sub-link logout">
+                  <span class="material-symbols-outlined icon-small"
+                    >logout</span
+                  >
+                  Cerrar Sesión
+                </button>
               } @else {
-              <div class="guest-intro">
-                <p>Inicia sesión para ver tus pedidos y favoritos.</p>
-                <a
-                  routerLink="/login"
-                  (click)="toggleMobileMenu()"
-                  class="btn-glass primary full-width"
-                >
-                  Iniciar Sesión
-                </a>
-                <a
-                  routerLink="/register"
-                  (click)="toggleMobileMenu()"
-                  class="btn-glass secondary full-width"
-                >
-                  Crear Cuenta
-                </a>
-              </div>
+                <div class="guest-intro">
+                  <p>Inicia sesión para ver tus pedidos y favoritos.</p>
+                  <a
+                    routerLink="/login"
+                    (click)="toggleMobileMenu()"
+                    class="btn-glass primary full-width"
+                  >
+                    Iniciar Sesión
+                  </a>
+                  <a
+                    routerLink="/register"
+                    (click)="toggleMobileMenu()"
+                    class="btn-glass secondary full-width"
+                  >
+                    Crear Cuenta
+                  </a>
+                </div>
               }
             </div>
           </div>
@@ -330,54 +349,64 @@
         <!-- ACORDEÓN: CATEGORÍAS -->
         <div class="categories-list">
           @for (item of navItems(); track item.id) {
-          <!-- Solo mostramos items con subcategorías (catálogo) -->
-          @if (item.subCategories.length > 0) { @for (sub of item.subCategories;
-          track sub.id) {
-          <div class="accordion-group category-item">
-            <div
-              class="accordion-head"
-              (click)="toggleAccordion(sub.id)"
-              [class.active]="activeAccordion() === sub.id"
-            >
-              <span class="text">{{ sub.name }}</span>
-              <span class="material-symbols-outlined chevron">expand_more</span>
-            </div>
-
-            <div
-              class="accordion-body"
-              [class.open]="activeAccordion() === sub.id"
-            >
-              <div class="inner-body">
-                <a
-                  (click)="handleSubCategoryClick($event, sub)"
-                  class="view-all-link"
-                >
-                  Ver todo en {{ sub.name }}
-                  <span class="material-symbols-outlined">arrow_forward</span>
-                </a>
-
-                @if (sub.products && sub.products.length > 0) {
-                <div class="mini-gallery-scroll">
-                  @for (prod of sub.products | slice:0:5; track prod._id) {
-                  <a
-                    [routerLink]="['/product', prod._id]"
-                    (click)="toggleMobileMenu()"
-                    class="mini-product-card"
+            <!-- Solo mostramos items con subcategorías (catálogo) -->
+            @if (item.subCategories.length > 0) {
+              @for (sub of item.subCategories; track sub.id) {
+                <div class="accordion-group category-item">
+                  <div
+                    class="accordion-head"
+                    (click)="toggleAccordion(sub.id)"
+                    [class.active]="activeAccordion() === sub.id"
                   >
-                    <div class="img-wrapper">
-                      <img [src]="prod.images[0]" [alt]="prod.name" />
+                    <span class="text">{{ sub.name }}</span>
+                    <span class="material-symbols-outlined chevron"
+                      >expand_more</span
+                    >
+                  </div>
+
+                  <div
+                    class="accordion-body"
+                    [class.open]="activeAccordion() === sub.id"
+                  >
+                    <div class="inner-body">
+                      <a
+                        (click)="handleSubCategoryClick($event, sub)"
+                        class="view-all-link"
+                      >
+                        Ver todo en {{ sub.name }}
+                        <span class="material-symbols-outlined"
+                          >arrow_forward</span
+                        >
+                      </a>
+
+                      @if (sub.products && sub.products.length > 0) {
+                        <div class="mini-gallery-scroll">
+                          @for (
+                            prod of sub.products | slice: 0 : 5;
+                            track prod._id
+                          ) {
+                            <a
+                              [routerLink]="['/product', prod._id]"
+                              (click)="toggleMobileMenu()"
+                              class="mini-product-card"
+                            >
+                              <div class="img-wrapper">
+                                <img [src]="prod.images[0]" [alt]="prod.name" />
+                              </div>
+                              <span class="price">{{
+                                prod.price
+                                  | currency: "COP" : "symbol" : "1.0-0"
+                              }}</span>
+                            </a>
+                          }
+                        </div>
+                      }
                     </div>
-                    <span class="price">{{
-                      prod.price | currency : "COP" : "symbol" : "1.0-0"
-                    }}</span>
-                  </a>
-                  }
+                  </div>
                 </div>
-                }
-              </div>
-            </div>
-          </div>
-          } } }
+              }
+            }
+          }
         </div>
       </nav>
     </div>

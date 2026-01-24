@@ -3,19 +3,19 @@
 :host {
   display: block;
   // Bajamos el contenido para que no lo tape el header
-  padding-top: 8rem; 
-  
+  padding-top: 8rem;
+
   // Aseguramos que la página sea AL MENOS tan alta como la pantalla
   // para que el footer se quede abajo y no se asome
-  min-height: 100vh; 
-  
+  min-height: 100vh;
+
   position: relative;
   z-index: 2; // Por encima del footer
   background-color: var(--background-page); // Fondo sólido para tapar el footer
-  
+
   // Borde inferior redondeado para el efecto al scrollear
   border-radius: 0 0 3rem 3rem;
-  box-shadow: 0 10px 50px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1);
 }
 
 .cart-container {
@@ -31,7 +31,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  
+
   .cart-title {
     font-family: "Baloo 2", serif;
     font-size: 2.5rem;
@@ -49,7 +49,7 @@
     border-radius: 50px;
     padding: 0.6rem 1.5rem;
     transition: all 0.3s;
-    
+
     &:hover {
       background: #fff0f0;
       transform: scale(1.05);
@@ -63,7 +63,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 3rem;
-  
+
   @media (min-width: 1024px) {
     grid-template-columns: 2fr 1fr; // Más espacio para items
     align-items: start;
@@ -80,85 +80,112 @@
 // Tarjeta de Item Individual (Glass Bubble)
 .cart-item-card {
   display: grid;
-  grid-template-columns: auto 1fr auto; // Imagen - Info - Total/Acciones
+  // Desktop: Imagen | Info | Controles | Total
+  grid-template-columns: auto 1fr auto auto;
   gap: 1.5rem;
   align-items: center;
-  
+
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 2rem;
   padding: 1.5rem;
-  
-  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
+
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 15px 40px -5px rgba(0,0,0,0.1);
-    
-    .item-image { transform: scale(1.05) rotate(2deg); }
-  }
+    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.1);
 
+    .item-image {
+      transform: scale(1.05) rotate(2deg);
+    }
+  }
+  // --- MÓVIL (NUEVO DISEÑO) ---
   @media (max-width: 600px) {
-    grid-template-columns: 80px 1fr; // En móvil apilamos controles
-    grid-template-rows: auto auto;
-    
-    .item-controls { 
-      grid-column: 2; 
-      justify-self: start; 
-      margin-top: 0.5rem;
-    }
-    .item-total { 
-      grid-column: 2; 
-      justify-self: end; 
-      grid-row: 1; 
-    }
+    grid-template-columns: 80px 1fr; // Imagen | Info
+    grid-template-areas:
+      "image info"
+      "controls total";
+    gap: 1rem;
+    padding: 1rem; // Padding más compacto
+    align-items: start; // Alinear arriba
   }
 }
 
 .item-image {
+  grid-area: image; // Asignar área grid
   width: 100px;
   height: 100px;
   object-fit: cover;
   border-radius: 1.2rem;
   background: white;
   transition: transform 0.4s ease;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+  @media (max-width: 600px) {
+    width: 80px;
+    height: 80px;
+    border-radius: 1rem;
+  }
 }
 
 .item-info {
+  grid-area: info; // Asignar área grid
   display: flex;
   flex-direction: column;
   justify-content: center;
-  
+  min-width: 0; // Permite truncar texto si es necesario
+
   .item-name {
     font-family: "Baloo 2", sans-serif;
     font-size: 1.2rem;
     font-weight: 700;
     color: #333;
     margin: 0 0 0.3rem 0;
+    line-height: 1.2;
+
+    @media (max-width: 600px) {
+      font-size: 1rem;
+    }
   }
-  
+
   .item-variants {
     font-size: 0.9rem;
     color: #666;
-    margin-bottom: 0.3rem;
-    span { margin-right: 0.5rem; background: rgba(0,0,0,0.03); padding: 0.1rem 0.5rem; border-radius: 6px; }
-    strong { color: #444; }
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+
+    span {
+      background: rgba(0, 0, 0, 0.03);
+      padding: 0.1rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+    }
   }
-  
+
   .item-price-unit {
     font-size: 0.9rem;
     color: #888;
     font-weight: 500;
+    @media (max-width: 600px) {
+      display: none;
+    } // Ocultar precio unitario en móvil para ahorrar espacio
   }
 }
 
 .item-controls {
+  grid-area: controls; // Asignar área grid
   display: flex;
   align-items: center;
+
+  @media (max-width: 600px) {
+    margin-top: 0.5rem;
+  }
 }
 
 .quantity-selector {
@@ -167,28 +194,59 @@
   background: white;
   border-radius: 50px;
   padding: 0.3rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
   button {
-    width: 32px; height: 32px; border-radius: 50%; border: none; background: #f5f5f5;
-    cursor: pointer; font-size: 1.1rem; color: #555; transition: background 0.2s;
-    &:hover { background: #e0e0e0; }
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #555;
+    transition: background 0.2s;
+    display: grid;
+    place-items: center;
+    &:hover {
+      background: #e0e0e0;
+    }
+
+    @media (max-width: 600px) {
+      width: 28px;
+      height: 28px;
+      font-size: 1rem; // Más pequeños en móvil
+    }
   }
-  
+
   .quantity-text {
-    min-width: 30px; text-align: center; font-weight: 700; font-size: 1rem;
+    min-width: 30px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    @media (max-width: 600px) {
+      font-size: 0.9rem;
+      min-width: 24px;
+    }
   }
 }
 
 .item-total {
+  grid-area: total; // Asignar área grid
   font-family: "Baloo 2", sans-serif;
   font-size: 1.3rem;
   font-weight: 800;
   color: #333;
   text-align: right;
   min-width: 100px;
-  
-  @media (max-width: 600px) { min-width: auto; font-size: 1.1rem; }
+
+  @media (max-width: 600px) {
+    min-width: auto;
+    font-size: 1.1rem;
+    align-self: center; // Centrar verticalmente con los controles
+    margin-top: 0.5rem;
+  }
 }
 
 // --- RESUMEN (Columna Derecha) ---
@@ -196,18 +254,18 @@
   position: sticky;
   top: 2rem; // Se queda fijo al scrollear
   height: fit-content;
-  
+
   .summary-card {
     background: rgba(255, 255, 255, 0.8); // Más opaco para resaltar importancia
     backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 2.5rem;
     padding: 2.5rem;
-    box-shadow: 
-      0 30px 60px -10px rgba(0,0,0,0.08),
-      inset 0 0 0 1px rgba(255,255,255,0.5);
+    box-shadow:
+      0 30px 60px -10px rgba(0, 0, 0, 0.08),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
   }
-  
+
   .summary-title {
     font-family: "Baloo 2", sans-serif;
     font-size: 1.8rem;
@@ -217,25 +275,50 @@
   }
 
   .summary-details {
-    display: flex; flex-direction: column; gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     margin-bottom: 1.5rem;
   }
 
   .summary-row {
-    display: flex; justify-content: space-between; align-items: center;
-    span:first-child { color: #666; font-weight: 600; }
-    span:last-child { font-weight: 700; color: #333; font-size: 1.1rem; }
-    .summary-note { font-size: 0.85rem; color: #999; font-weight: 400; }
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    span:first-child {
+      color: #666;
+      font-weight: 600;
+    }
+    span:last-child {
+      font-weight: 700;
+      color: #333;
+      font-size: 1.1rem;
+    }
+    .summary-note {
+      font-size: 0.85rem;
+      color: #999;
+      font-weight: 400;
+    }
   }
 
   .summary-total {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
-    
-    span:first-child { font-size: 1.4rem; font-weight: 800; color: #333; }
-    span:last-child { font-size: 2rem; font-weight: 800; color: var(--text-charcoal); }
+
+    span:first-child {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #333;
+    }
+    span:last-child {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-charcoal);
+    }
   }
 
   .checkout-button {
@@ -244,15 +327,16 @@
     padding: 1.2rem;
     font-size: 1.2rem;
     text-decoration: none;
-    display: flex; justify-content: center;
-    
+    display: flex;
+    justify-content: center;
+
     background: linear-gradient(135deg, #333 0%, #000 100%);
     color: white;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     }
   }
 }
@@ -261,12 +345,17 @@
 .empty-cart-message {
   text-align: center;
   padding: 6rem 2rem;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 3rem;
-  border: 1px solid rgba(255,255,255,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 
-  p { font-size: 1.5rem; font-weight: 600; color: #555; margin-bottom: 2rem; }
-  
+  p {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 2rem;
+  }
+
   .explore-button {
     @extend .btn-material;
     text-decoration: none;
@@ -274,7 +363,10 @@
     color: white;
     padding: 1rem 2.5rem;
     box-shadow: 0 5px 20px rgba(255, 182, 193, 0.4);
-    
-    &:hover { background: #ffb6c1; transform: translateY(-3px); }
+
+    &:hover {
+      background: #ffb6c1;
+      transform: translateY(-3px);
+    }
   }
 }
