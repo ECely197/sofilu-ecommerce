@@ -497,56 +497,113 @@
     transform: translateY(0);
   }
 }
+// --- BLOQUE DE GARANTÍA (DISEÑO PREMIUM) ---
 .warranty-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: 0.5rem;
+  // Hacemos que ocupe todo el ancho disponible debajo de la info del producto
+  grid-column: 1 / -1;
+  margin-top: 1rem;
   width: 100%;
+  display: flex;
+  justify-content: flex-start; // Alineado a la izquierda
 }
 
+// 1. ESTADO ACTIVO (Cápsula Menta)
 .active-warranty {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  align-items: center;
+  gap: 1rem;
 
-  .valid-until {
-    color: #16a34a;
-    font-weight: 600;
-    font-size: 0.75rem;
+  // Fondo verde menta muy suave (Glass style)
+  background: rgba(236, 253, 245, 0.8);
+  backdrop-filter: blur(5px);
+  border: 1px solid #a7f3d0; // Borde verde suave
+  border-radius: 16px;
+  padding: 0.6rem 1rem;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  // Icono decorativo (opcional, se ve bien si añades un icono en el HTML)
+  &::before {
+    content: "verified_user"; // Icono de Material Symbols
+    font-family: "Material Symbols Outlined";
+    color: #10b981;
+    font-size: 1.2rem;
   }
 
+  // Texto de la fecha
+  .valid-until {
+    color: #047857; // Verde oscuro para lectura
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    display: flex;
+    flex-direction: column; // Fecha debajo del texto en móvil si es necesario
+
+    // En desktop, texto en una línea
+    @media (min-width: 500px) {
+      flex-direction: row;
+      gap: 0.4rem;
+    }
+  }
+
+  // Botón de Acción
   .btn-warranty-active {
-    background: white;
-    border: 1px solid #16a34a;
-    color: #16a34a;
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    background: #10b981; // Verde vibrante
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); // Sombra verde
+    transition: all 0.2s ease;
+    white-space: nowrap; // Evita que el texto del botón se rompa
 
     &:hover {
-      background: #f0fdf4;
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // RESPONSIVE: En móviles muy pequeños, apilamos
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+    width: 100%;
+
+    .btn-warranty-active {
+      width: 100%; // Botón ancho completo en móvil
     }
   }
 }
 
+// 2. ESTADO VENCIDO (Cápsula Gris)
 .expired-warranty {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #999;
-  background: #f5f5f5;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
+  gap: 0.8rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  color: #6b7280;
 
   .icon {
-    font-size: 1rem;
+    font-size: 1.2rem;
+    color: #9ca3af;
   }
+
   small {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 600;
   }
 }

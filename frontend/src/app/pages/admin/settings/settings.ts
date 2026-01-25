@@ -46,6 +46,7 @@ export class settings implements OnInit {
     this.settingsForm = this.fb.group({
       storeName: [''],
       contactEmail: ['', Validators.email],
+      whatsappNumber: ['', Validators.required],
       shippingCostBogota: [0, [Validators.required, Validators.min(0)]],
       shippingCostNational: [0, [Validators.required, Validators.min(0)]],
 

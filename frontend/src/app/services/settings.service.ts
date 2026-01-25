@@ -13,6 +13,7 @@ export interface AppSettings {
   storeName: string;
   storeLogoUrl: string;
   contactEmail: string;
+  whatsappNumber: string;
   shippingCostBogota: number;
   shippingCostNational: number;
   customDeliveryCost: number;

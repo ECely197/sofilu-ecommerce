@@ -19,7 +19,12 @@ import { OrderService } from '../../../services/order';
 import { AuthService } from '../../../services/auth';
 import { RippleDirective } from '../../../directives/ripple';
 import { ToastService } from '../../../services/toast.service';
-import { UiState } from '../../../services/ui-state'; // 1. IMPORTAR UI STATE
+import { UiState } from '../../../services/ui-state';
+// --- IMPORTACIONES CORREGIDAS ---
+import {
+  SettingsService,
+  AppSettings,
+} from '../../../services/settings.service';
 
 @Component({
   selector: 'app-my-orders',
@@ -45,7 +50,9 @@ export class MyOrdersComponent implements OnInit {
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
   private fb = inject(FormBuilder);
-  private uiState = inject(UiState); // 2. INYECTAR UI STATE
+  private uiState = inject(UiState);
+  // --- INYECCIÓN DEL SERVICIO DE AJUSTES ---
+  private settingsService = inject(SettingsService);
 
   // --- Signals de la Lista ---
   orders = signal<any[]>([]);
@@ -57,10 +64,20 @@ export class MyOrdersComponent implements OnInit {
   editingOrder = signal<any | null>(null);
   editAddressForm!: FormGroup;
 
+  // --- Signal para WhatsApp ---
+  whatsappNumber = signal('573000000000'); // Valor por defecto
+
   ngOnInit() {
     this.authService.currentUser$.subscribe((user: any) => {
       if (user) {
         this.loadOrders(user.uid);
+      }
+    });
+
+    // --- CARGAR NÚMERO DE WHATSAPP ---
+    this.settingsService.getSettings().subscribe((settings: AppSettings) => {
+      if (settings && settings.whatsappNumber) {
+        this.whatsappNumber.set(settings.whatsappNumber);
       }
     });
 
@@ -125,14 +142,14 @@ export class MyOrdersComponent implements OnInit {
     });
 
     this.isEditModalVisible.set(true);
-    this.uiState.setModalState(true); // 3. OCULTAR HEADER
+    this.uiState.setModalState(true);
     document.body.style.overflow = 'hidden';
   }
 
   closeEditModal() {
     this.isEditModalVisible.set(false);
     this.editingOrder.set(null);
-    this.uiState.setModalState(false); // 4. MOSTRAR HEADER
+    this.uiState.setModalState(false);
     document.body.style.overflow = '';
   }
 
@@ -165,7 +182,7 @@ export class MyOrdersComponent implements OnInit {
           orders.map((o) => (o._id === orderId ? updatedOrder : o)),
         );
         this.toastService.show('Datos actualizados correctamente.', 'success');
-        this.closeEditModal(); // Esto reactiva el header automáticamente
+        this.closeEditModal();
       },
       error: (err: any) => {
         this.toastService.show(
@@ -190,56 +207,13 @@ export class MyOrdersComponent implements OnInit {
     }
   }
 
-  // Lógica de cálculo de garantía
-  getWarrantyInfo(
-    orderDate: string,
-    product: any,
-  ): { isActive: boolean; deadline: Date; hasWarranty: boolean } {
-    if (!product || !product.warrantyType) {
-      return { isActive: false, deadline: new Date(), hasWarranty: false };
-    }
+  // --- FUNCIONES HELPER PARA GARANTÍA ---
 
-    const purchaseDate = new Date(orderDate);
-    const months = product.warrantyType.durationMonths;
-
-    // Crear fecha de expiración
-    const deadline = new Date(purchaseDate);
-    deadline.setMonth(deadline.getMonth() + months);
-
-    const now = new Date();
-    const isActive = now <= deadline;
-
-    return { isActive, deadline, hasWarranty: true };
-  }
-
-  requestWarranty(item: any, orderId: string) {
-    // Aquí puedes abrir un modal de contacto o redirigir a WhatsApp con el mensaje predefinido
-    const productName = item.product.name;
-    const orderRef = orderId.slice(-6).toUpperCase();
-    const msg = `Hola, quiero solicitar garantía para el producto "${productName}" del pedido #${orderRef}.`;
-
-    // Redirigir a WhatsApp (ejemplo)
-    window.open(
-      `https://wa.me/573001234567?text=${encodeURIComponent(msg)}`,
-      '_blank',
-    );
-  }
   hasWarranty(product: any): boolean {
-    // CHIVATO: Esto imprimirá en la consola qué productos tienen garantía
-    if (product && product.warrantyType) {
-      console.log(
-        `✅ Producto con garantía: ${product.name}`,
-        product.warrantyType,
-      );
-      return true;
-    } else {
-      // console.log(`❌ Producto SIN garantía: ${product?.name}`);
-      return false;
-    }
+    return !!(product && product.warrantyType);
   }
 
   getWarrantyDeadline(orderDate: string, product: any): Date {
-    // Validación de seguridad
     if (
       !product ||
       !product.warrantyType ||
@@ -250,8 +224,6 @@ export class MyOrdersComponent implements OnInit {
 
     const purchaseDate = new Date(orderDate);
     const months = product.warrantyType.durationMonths;
-
-    // Crear fecha de expiración sumando meses
     const deadline = new Date(purchaseDate);
     deadline.setMonth(deadline.getMonth() + months);
 
@@ -261,8 +233,18 @@ export class MyOrdersComponent implements OnInit {
   isWarrantyActive(orderDate: string, product: any): boolean {
     const deadline = this.getWarrantyDeadline(orderDate, product);
     const now = new Date();
-
-    // La garantía está activa si la fecha actual es MENOR o IGUAL a la fecha límite
     return now.getTime() <= deadline.getTime();
+  }
+
+  requestWarranty(item: any, orderId: string) {
+    const productName = item.product.name;
+    const orderRef = orderId.slice(-6).toUpperCase();
+    const msg = `Hola, quiero solicitar garantía para el producto "${productName}" del pedido #${orderRef}.`;
+
+    // USAR EL NÚMERO DEL SIGNAL
+    window.open(
+      `https://wa.me/${this.whatsappNumber()}?text=${encodeURIComponent(msg)}`,
+      '_blank',
+    );
   }
 }

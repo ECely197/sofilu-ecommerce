@@ -21,6 +21,7 @@ const settingSchema = new Schema({
   storeName: { type: String, default: "Sofilu Store" },
   storeLogoUrl: { type: String, default: "" },
   contactEmail: { type: String, default: "" },
+  whatsappNumber: { type: String, default: "573001234567" },
 
   // --- Envíos ---
   shippingCostBogota: { type: Number, default: 0 },
