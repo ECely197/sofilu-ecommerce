@@ -1,77 +1,112 @@
 <header class="page-header">
   <h1>Tipos de Garantía</h1>
   <button (click)="openCreate()" class="btn-material" appRipple>
-    <span class="material-symbols-outlined">add</span> Nueva
+    <span class="material-symbols-outlined">add</span>
+    Nueva Garantía
   </button>
 </header>
 
 <div class="grid-layout">
-  <!-- LISTA -->
-  <div class="card glass-panel">
-    <h3>Garantías Existentes</h3>
-    <div class="list-container custom-scroll">
-      @for (item of warranties(); track item._id) {
-        <div class="list-item">
-          <div class="info">
-            <strong>{{ item.name }}</strong>
-            <span class="months">{{ item.durationMonths }} Mes(es)</span>
+  <!-- COLUMNA 1: LISTA -->
+  <div class="list-section card glass-panel">
+    <h3 class="card-title">Opciones Disponibles</h3>
+
+    @if (isLoading()) {
+      <div class="loading-state">Cargando...</div>
+    } @else if (warranties().length > 0) {
+      <div class="warranty-list custom-scroll">
+        @for (item of warranties(); track item._id) {
+          <div class="warranty-item">
+            <div class="info">
+              <strong class="name">{{ item.name }}</strong>
+              <div class="meta">
+                <span class="badge">{{ item.durationMonths }} Meses</span>
+                @if (item.description) {
+                  <span class="desc">{{ item.description }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="actions">
+              <button
+                (click)="openEdit(item)"
+                class="icon-btn edit"
+                title="Editar"
+              >
+                <span class="material-symbols-outlined">edit</span>
+              </button>
+              <button
+                (click)="delete(item._id)"
+                class="icon-btn delete"
+                title="Eliminar"
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
           </div>
-          <div class="actions">
-            <button (click)="openEdit(item)" class="icon-btn edit">
-              <span class="material-symbols-outlined">edit</span>
-            </button>
-            <button (click)="delete(item._id)" class="icon-btn delete">
-              <span class="material-symbols-outlined">delete</span>
-            </button>
-          </div>
-        </div>
-      } @empty {
-        <p class="empty">No hay garantías creadas.</p>
-      }
-    </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p>No has creado tipos de garantía aún.</p>
+      </div>
+    }
   </div>
 
-  <!-- FORMULARIO LATERAL (O Modal en Móvil) -->
+  <!-- COLUMNA 2: FORMULARIO -->
   @if (showForm()) {
-    <div class="card glass-panel form-card">
-      <h3>{{ isEditing() ? "Editar" : "Crear" }} Garantía</h3>
-      <form [formGroup]="form" (ngSubmit)="submit()">
+    <div id="warrantyForm" class="form-section card glass-panel fade-in">
+      <h3 class="card-title">
+        {{ isEditing() ? "Editar" : "Crear" }} Garantía
+      </h3>
+
+      <form [formGroup]="warrantyForm" (ngSubmit)="submit()">
         <div class="material-field">
           <input
             type="text"
+            id="name"
             formControlName="name"
             class="material-input"
             placeholder=" "
           />
-          <label class="material-label">Nombre (ej: 1 Año)</label>
+          <label for="name" class="material-label">Nombre (ej: Estándar)</label>
         </div>
 
         <div class="material-field">
           <input
             type="number"
+            id="months"
             formControlName="durationMonths"
             class="material-input"
             placeholder=" "
           />
-          <label class="material-label">Duración (Meses)</label>
+          <label for="months" class="material-label">Duración (Meses)</label>
+          <span class="hint">0 para sin garantía</span>
         </div>
 
         <div class="material-field">
-          <input
-            type="text"
+          <textarea
+            id="desc"
             formControlName="description"
             class="material-input"
+            rows="3"
             placeholder=" "
-          />
-          <label class="material-label">Descripción corta</label>
+          ></textarea>
+          <label for="desc" class="material-label"
+            >Descripción (Opcional)</label
+          >
         </div>
 
         <div class="form-actions">
           <button type="button" (click)="closeForm()" class="btn-secondary">
             Cancelar
           </button>
-          <button type="submit" [disabled]="form.invalid" class="btn-material">
-            Guardar
+          <button
+            type="submit"
+            [disabled]="warrantyForm.invalid || isSaving()"
+            class="btn-material full-width"
+          >
+            {{ isSaving() ? "Guardando..." : "Guardar" }}
           </button>
         </div>
       </form>

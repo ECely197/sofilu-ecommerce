@@ -11,10 +11,11 @@ import {
   WarrantyType,
 } from '../../../services/warranty.service';
 import { ToastService } from '../../../services/toast.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
 import { RippleDirective } from '../../../directives/ripple';
 
 @Component({
-  selector: 'app-warranty-list',
+  selector: 'app-warranties',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RippleDirective],
   templateUrl: './warranty-list.html',
@@ -23,69 +24,121 @@ import { RippleDirective } from '../../../directives/ripple';
 export class WarrantyListComponent implements OnInit {
   private warrantyService = inject(WarrantyService);
   private toast = inject(ToastService);
+  private confirmationService = inject(ConfirmationService);
   private fb = inject(FormBuilder);
 
+  // Signals
   warranties = signal<WarrantyType[]>([]);
+  isLoading = signal(true);
+  isSaving = signal(false);
+
+  // Estado del Formulario
   showForm = signal(false);
   isEditing = signal(false);
   editingId = signal<string | null>(null);
 
-  form: FormGroup = this.fb.group({
-    name: ['', Validators.required],
-    durationMonths: [1, [Validators.required, Validators.min(0)]],
-    description: [''],
-  });
+  warrantyForm: FormGroup;
+
+  constructor() {
+    this.warrantyForm = this.fb.group({
+      name: ['', Validators.required],
+      durationMonths: [1, [Validators.required, Validators.min(0)]],
+      description: [''],
+    });
+  }
 
   ngOnInit() {
     this.loadData();
   }
 
   loadData() {
-    this.warrantyService
-      .getWarranties()
-      .subscribe((data) => this.warranties.set(data));
+    this.isLoading.set(true);
+    this.warrantyService.getWarranties().subscribe({
+      next: (data) => {
+        this.warranties.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
+    });
   }
+
+  // --- ACCIONES DEL FORMULARIO ---
 
   openCreate() {
     this.isEditing.set(false);
     this.editingId.set(null);
-    this.form.reset({ durationMonths: 1 });
+    this.warrantyForm.reset({ durationMonths: 1 });
     this.showForm.set(true);
+    // Scroll al formulario en móvil
+    setTimeout(() => {
+      const formEl = document.getElementById('warrantyForm');
+      if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 
   openEdit(warranty: WarrantyType) {
     this.isEditing.set(true);
     this.editingId.set(warranty._id);
-    this.form.patchValue(warranty);
+    this.warrantyForm.patchValue(warranty);
     this.showForm.set(true);
+    setTimeout(() => {
+      const formEl = document.getElementById('warrantyForm');
+      if (formEl) formEl.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 
   closeForm() {
     this.showForm.set(false);
+    this.warrantyForm.reset();
   }
 
   submit() {
-    if (this.form.invalid) return;
+    if (this.warrantyForm.invalid) {
+      this.toast.show('Completa los campos requeridos', 'error');
+      return;
+    }
 
-    const obs$ = this.isEditing()
-      ? this.warrantyService.updateWarranty(this.editingId()!, this.form.value)
-      : this.warrantyService.createWarranty(this.form.value);
+    this.isSaving.set(true);
+    const operation$ = this.isEditing()
+      ? this.warrantyService.updateWarranty(
+          this.editingId()!,
+          this.warrantyForm.value,
+        )
+      : this.warrantyService.createWarranty(this.warrantyForm.value);
 
-    obs$.subscribe({
+    operation$.subscribe({
       next: () => {
-        this.toast.show(this.isEditing() ? 'Actualizado' : 'Creado', 'success');
+        this.toast.show(
+          `Garantía ${this.isEditing() ? 'actualizada' : 'creada'}`,
+          'success',
+        );
         this.loadData();
         this.closeForm();
+        this.isSaving.set(false);
       },
-      error: () => this.toast.show('Error al guardar', 'error'),
+      error: (err) => {
+        this.toast.show(err.error?.message || 'Error al guardar', 'error');
+        this.isSaving.set(false);
+      },
     });
   }
 
-  delete(id: string) {
-    if (!confirm('¿Eliminar esta garantía?')) return;
-    this.warrantyService.deleteWarranty(id).subscribe(() => {
-      this.toast.show('Eliminado', 'success');
-      this.loadData();
+  async delete(id: string) {
+    const confirmed = await this.confirmationService.confirm({
+      title: '¿Eliminar Garantía?',
+      message:
+        'Esta acción no se puede deshacer. Los productos con esta garantía podrían quedar sin ella.',
+      confirmText: 'Sí, eliminar',
     });
+
+    if (confirmed) {
+      this.warrantyService.deleteWarranty(id).subscribe({
+        next: () => {
+          this.toast.show('Eliminado correctamente', 'success');
+          this.loadData(); // Recargar lista
+        },
+        error: () => this.toast.show('No se pudo eliminar', 'error'),
+      });
+    }
   }
 }

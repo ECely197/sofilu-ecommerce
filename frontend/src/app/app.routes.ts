@@ -51,6 +51,7 @@ import { SectionsComponent } from './pages/admin/sections/sections';
 import { VendorsComponent } from './pages/admin/vendors/vendors';
 import { SpecialEvents } from './pages/admin/special-events/special-events';
 import { DeliveryOptionsComponent } from './pages/admin/delivery-options/delivery-options';
+import { WarrantyListComponent } from './pages/admin/warranty-list/warranty-list';
 
 export const routes: Routes = [
   // ===================================
@@ -130,6 +131,7 @@ export const routes: Routes = [
       { path: 'vendors', component: VendorsComponent },
       { path: 'special-events', component: SpecialEvents },
       { path: 'delivery-options', component: DeliveryOptionsComponent },
+      { path: 'warranties', component: WarrantyListComponent },
     ],
   },
 
