@@ -232,7 +232,7 @@ router.get("/user/:userId", authMiddleware, async (req, res) => {
       .sort({ createdAt: -1 })
       .populate({
         path: "items.product",
-        populate: { path: "warrantyType" },
+        populate: { path: "warrantyType", model: "WarrantyType" },
       })
       .populate("selectedDeliveryOption");
     res.json(orders);

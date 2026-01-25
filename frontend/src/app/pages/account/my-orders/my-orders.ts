@@ -224,4 +224,45 @@ export class MyOrdersComponent implements OnInit {
       '_blank',
     );
   }
+  hasWarranty(product: any): boolean {
+    // CHIVATO: Esto imprimirá en la consola qué productos tienen garantía
+    if (product && product.warrantyType) {
+      console.log(
+        `✅ Producto con garantía: ${product.name}`,
+        product.warrantyType,
+      );
+      return true;
+    } else {
+      // console.log(`❌ Producto SIN garantía: ${product?.name}`);
+      return false;
+    }
+  }
+
+  getWarrantyDeadline(orderDate: string, product: any): Date {
+    // Validación de seguridad
+    if (
+      !product ||
+      !product.warrantyType ||
+      !product.warrantyType.durationMonths
+    ) {
+      return new Date();
+    }
+
+    const purchaseDate = new Date(orderDate);
+    const months = product.warrantyType.durationMonths;
+
+    // Crear fecha de expiración sumando meses
+    const deadline = new Date(purchaseDate);
+    deadline.setMonth(deadline.getMonth() + months);
+
+    return deadline;
+  }
+
+  isWarrantyActive(orderDate: string, product: any): boolean {
+    const deadline = this.getWarrantyDeadline(orderDate, product);
+    const now = new Date();
+
+    // La garantía está activa si la fecha actual es MENOR o IGUAL a la fecha límite
+    return now.getTime() <= deadline.getTime();
+  }
 }

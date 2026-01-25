@@ -80,17 +80,21 @@
                     </p>
 
                     <div class="warranty-block">
-                      <!-- Calculamos la info de garantía al vuelo -->
-                      @let wInfo =
-                        getWarrantyInfo(order.createdAt, item.product);
+                      <!-- Usamos una variable de plantilla solo si el framework lo permite, si no, llamamos directo -->
 
-                      @if (wInfo.hasWarranty) {
-                        @if (wInfo.isActive) {
+                      <!-- Opción A: Llamada directa (Más seguro) -->
+                      @if (hasWarranty(item.product)) {
+                        @if (isWarrantyActive(order.createdAt, item.product)) {
                           <div class="active-warranty">
-                            <small class="valid-until"
-                              >Garantía válida hasta
-                              {{ wInfo.deadline | date: "mediumDate" }}</small
-                            >
+                            <small class="valid-until">
+                              Garantía válida hasta
+                              {{
+                                getWarrantyDeadline(
+                                  order.createdAt,
+                                  item.product
+                                ) | date: "mediumDate"
+                              }}
+                            </small>
                             <button
                               (click)="requestWarranty(item, order._id)"
                               class="btn-warranty-active"
@@ -103,10 +107,15 @@
                             <span class="material-symbols-outlined icon"
                               >event_busy</span
                             >
-                            <small
-                              >Garantía finalizada el
-                              {{ wInfo.deadline | date: "mediumDate" }}</small
-                            >
+                            <small>
+                              Garantía finalizada el
+                              {{
+                                getWarrantyDeadline(
+                                  order.createdAt,
+                                  item.product
+                                ) | date: "mediumDate"
+                              }}
+                            </small>
                           </div>
                         }
                       }
