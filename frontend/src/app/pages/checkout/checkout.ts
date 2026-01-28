@@ -16,6 +16,7 @@ import { Coupon } from '../../services/coupon';
 import { ToastService } from '../../services/toast.service';
 import { RippleDirective } from '../../directives/ripple';
 import { PaymentService } from '../../services/payment.service';
+import { AuthService } from '../../services/auth';
 import { CartItem } from '../../interfaces/cart-item.interface';
 import {
   DeliveryOption,
@@ -49,6 +50,7 @@ export class checkout implements OnInit {
   private paymentService = inject(PaymentService);
   private fb = inject(FormBuilder);
   private deliveryOptionService = inject(DeliveryOptionService);
+  private authService = inject(AuthService);
 
   @ViewChild(AddressFormModalComponent)
   addressModal!: AddressFormModalComponent;
@@ -136,7 +138,9 @@ export class checkout implements OnInit {
 
   applyCoupon(code: string): void {
     if (!code.trim()) return;
-    this.couponService.validateCoupon(code).subscribe({
+    const currentUser = this.authService.auth.currentUser;
+    const uid = currentUser ? currentUser.uid : undefined;
+    this.couponService.validateCoupon(code, uid).subscribe({
       next: (coupon) => {
         const subtotal = this.cartService.subTotal();
         let discount = 0;

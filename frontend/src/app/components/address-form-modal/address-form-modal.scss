@@ -201,3 +201,40 @@
     transform: translateY(0);
   }
 }
+
+.field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.error-msg {
+  color: #e11d48; // Rojo
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+// Estado Inválido del Input
+.material-field.invalid {
+  .material-input {
+    border-bottom-color: #e11d48;
+    background-color: #fff1f2;
+  }
+  .material-label {
+    color: #e11d48;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

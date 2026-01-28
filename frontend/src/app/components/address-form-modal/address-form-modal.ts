@@ -53,7 +53,26 @@ export class AddressFormModalComponent {
     this.isOpen.set(false);
   }
 
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.addressForm.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
   handleSubmit() {
+    if (this.addressForm.invalid) {
+      // 1. Marcar todo como tocado para que salgan los mensajes rojos
+      this.addressForm.markAllAsTouched();
+
+      // 2. Mostrar toast
+      this.toastService.show(
+        'Por favor, completa los campos requeridos.',
+        'error',
+      );
+
+      // 3. Scroll al primer error
+      this.scrollToFirstError();
+      return;
+    }
     if (this.addressForm.invalid) {
       this.toastService.show('Por favor, completa todos los campos.', 'error');
       return;
@@ -72,5 +91,22 @@ export class AddressFormModalComponent {
       error: () =>
         this.toastService.show('No se pudo guardar la dirección.', 'error'),
     });
+  }
+
+  private scrollToFirstError() {
+    // Busca el primer input que tenga la clase ng-invalid dentro del formulario
+    // Se usa setTimeout para asegurar que Angular ya actualizó las clases CSS
+    setTimeout(() => {
+      const firstInvalidControl = document.querySelector(
+        '.ng-invalid[formControlName]',
+      );
+      if (firstInvalidControl) {
+        firstInvalidControl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+        (firstInvalidControl as HTMLElement).focus(); // También le damos foco
+      }
+    }, 100);
   }
 }

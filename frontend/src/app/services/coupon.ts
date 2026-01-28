@@ -57,12 +57,14 @@ export class Coupon {
   }
 
   /**
-   * Valida un código de cupón contra el backend.
-   * @param code El código del cupón a validar.
+   * Valida un código de cupón.
+   * @param code El código del cupón.
+   * @param userId (Opcional) El UID del usuario logueado para cupones exclusivos.
    */
-  validateCoupon(code: string): Observable<any> {
+  validateCoupon(code: string, userId?: string): Observable<any> {
     const url = `${this.apiUrl}/validate`;
-    return this.http.post<any>(url, { code });
+    // Enviamos también el userId si existe
+    return this.http.post<any>(url, { code, userId });
   }
 
   /**
