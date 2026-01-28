@@ -10,12 +10,20 @@ const admin = require("firebase-admin"); // Importamos firebase-admin
 // 1. Configuración del Transporter de Nodemailer (sin cambios)
 const transporter = nodemailer.createTransport({
   host: "smtp.resend.com",
-  secure: true,
-  port: 465,
+  port: 587, // CAMBIO: Usamos 587 en lugar de 465
+  secure: false, // CAMBIO: false para puerto 587 (usa STARTTLS automáticamente)
   auth: {
     user: "resend",
     pass: process.env.RESEND_API_KEY,
   },
+  // Opciones adicionales para evitar timeouts en Render
+  tls: {
+    ciphers: "SSLv3",
+    rejectUnauthorized: true,
+  },
+  connectionTimeout: 10000, // 10 segundos
+  greetingTimeout: 10000, // 10 segundos
+  socketTimeout: 10000, // 10 segundos
 });
 
 /**
@@ -42,13 +50,13 @@ async function getAdminEmails() {
     } while (nextPageToken);
 
     console.log(
-      `[Email Service] Se encontraron ${adminEmails.length} administradores para notificar.`
+      `[Email Service] Se encontraron ${adminEmails.length} administradores para notificar.`,
     );
     return adminEmails;
   } catch (error) {
     console.error(
       "ERROR: No se pudo obtener la lista de administradores:",
-      error
+      error,
     );
     return []; // Devolvemos un array vacío en caso de error
   }
@@ -63,7 +71,7 @@ async function sendOrderConfirmationEmail(order) {
   console.log("[Email Service] Verificando RESEND_API_KEY...");
   if (!process.env.RESEND_API_KEY) {
     console.error(
-      "[Email Service] ¡ERROR FATAL! La variable de entorno RESEND_API_KEY no fue encontrada."
+      "[Email Service] ¡ERROR FATAL! La variable de entorno RESEND_API_KEY no fue encontrada.",
     );
     return; // Detenemos la función si no hay clave
   }
@@ -73,7 +81,7 @@ async function sendOrderConfirmationEmail(order) {
     const adminRecipients = await getAdminEmails();
     const templatePath = path.join(
       __dirname,
-      "../views/order-confirmation-email.ejs"
+      "../views/order-confirmation-email.ejs",
     );
     const html = await ejs.renderFile(templatePath, {
       order: order.toObject(),
@@ -98,7 +106,7 @@ async function sendOrderConfirmationEmail(order) {
         to: mailOptions.to,
         bcc: mailOptions.bcc,
         subject: mailOptions.subject,
-      }
+      },
     );
 
     await transporter.sendMail(mailOptions);
@@ -106,7 +114,7 @@ async function sendOrderConfirmationEmail(order) {
   } catch (error) {
     console.error(
       "[Email Service] ERROR al intentar enviar con transporter.sendMail:",
-      error
+      error,
     );
   }
 }
