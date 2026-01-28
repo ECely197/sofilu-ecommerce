@@ -49,42 +49,62 @@ export class OrderConfirmation implements OnInit {
 
   private verifyOrder(orderId: string) {
     this.isLoading.set(true);
+
     this.paymentService.checkPaymentStatus(orderId).subscribe({
       next: (response) => {
+        // VALIDACIÓN DE SEGURIDAD (Evita el error de consola)
+        if (!response || !response.status) {
+          console.warn('Respuesta inválida del servidor, reintentando...');
+          this.handleRetry(orderId);
+          return;
+        }
+
         const status = response.status;
+
+        // Si la orden ya trae datos, los mostramos aunque el pago siga pendiente
+        if (response.order) {
+          this.orderDetails.set(response.order);
+        }
+
         this.paymentStatus.set(status);
-        this.orderDetails.set(response.order);
 
         if (status === 'APPROVED') {
           this.cartService.clearCart();
-          localStorage.removeItem('pendingOrderData');
+          localStorage.removeItem('pendingOrderData'); // Limpieza
           this.toastService.show('¡Pedido confirmado!', 'success');
-          this.isLoading.set(false);
+          this.isLoading.set(false); // ¡ÉXITO RÁPIDO!
         } else if (status === 'PENDING') {
+          // Si está pendiente, seguimos intentando pero mostramos algo al usuario si tenemos datos
           if (this.retryCount < this.maxRetries) {
-            this.retryCount++;
-            setTimeout(() => this.verifyOrder(orderId), 3000);
+            this.handleRetry(orderId);
           } else {
+            // Se acabó el tiempo, mostramos estado pendiente final
             this.error.set(
-              'Tu pago se está procesando. Te avisaremos por correo.'
+              'Tu pago se está procesando. Te avisaremos por correo.',
             );
             this.isLoading.set(false);
           }
         } else {
-          this.error.set('El pago no fue aprobado.');
+          // DECLINED, ERROR, VOIDED
+          this.error.set('El pago no fue aprobado o fue rechazado.');
           this.isLoading.set(false);
         }
       },
       error: (err) => {
-        console.error(err);
-        if (this.retryCount < this.maxRetries) {
-          this.retryCount++;
-          setTimeout(() => this.verifyOrder(orderId), 3000);
-        } else {
-          this.error.set('Error verificando el pedido.');
-          this.isLoading.set(false);
-        }
+        console.error('Error de red al verificar:', err);
+        this.handleRetry(orderId);
       },
     });
+  }
+  private handleRetry(orderId: string) {
+    if (this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      // Aumentamos el tiempo entre intentos para darle aire al servidor
+      const delay = this.retryCount * 1000;
+      setTimeout(() => this.verifyOrder(orderId), delay);
+    } else {
+      this.error.set('No pudimos verificar el estado final. Revisa tu correo.');
+      this.isLoading.set(false);
+    }
   }
 }

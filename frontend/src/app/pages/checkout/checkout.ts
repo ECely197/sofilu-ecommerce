@@ -217,7 +217,7 @@ export class checkout implements OnInit {
       reference: wompiParams.reference,
       publicKey: wompiParams.publicKey,
       signature: { integrity: wompiParams.signature },
-      redirectUrl: wompiParams.redirectUrl,
+      //redirectUrl: wompiParams.redirectUrl,
       customerData: {
         email: customerInfo.email,
         fullName: customerInfo.name,
@@ -231,11 +231,9 @@ export class checkout implements OnInit {
       if (transaction.status === 'APPROVED') {
         this.toastService.show('¡Pago aprobado! Redirigiendo...', 'success');
         this.cartService.clearCart();
-        setTimeout(() => {
-          this.router.navigate(['/order-confirmation'], {
-            queryParams: { status: 'success', id: wompiParams.reference },
-          });
-        }, 1500);
+        this.router.navigate(['/order-confirmation'], {
+          queryParams: { id: wompiParams.reference },
+        });
       } else {
         this.toastService.show('El pago fue rechazado o falló.', 'error');
       }

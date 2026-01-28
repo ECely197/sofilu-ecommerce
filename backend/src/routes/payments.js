@@ -21,7 +21,6 @@ const WOMPI_API_URL = isProduction
 // ==========================================================================
 router.post("/init-transaction", authMiddleware, async (req, res) => {
   try {
-    // --- AQUÍ RECIBIMOS LOS NUEVOS DATOS DEL FRONTEND ---
     const {
       customerInfo,
       shippingAddress,
@@ -31,7 +30,7 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
       totalAmount,
       deliveryType,
       orderNotes,
-      deliveryNotes, // <-- Los nuevos campos
+      deliveryNotes,
     } = req.body;
 
     const userId = req.user.uid;
@@ -46,8 +45,6 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
       totalAmount,
       status: "Pendiente",
       paymentMethod: "Wompi Widget",
-
-      // --- Y LOS GUARDAMOS EN EL MODELO ---
       deliveryType,
       orderNotes,
       deliveryNotes,
@@ -55,7 +52,6 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // --- Lógica de firma (sin cambios) ---
     const reference = savedOrder._id.toString();
     const amountInCents = Math.round(totalAmount * 100);
     const currency = "COP";
@@ -86,44 +82,88 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
 });
 
 // ==========================================================================
-// 2. WEBHOOK Y VERIFICACIÓN (Sin cambios, pero crucial que estén)
+// 2. VERIFICACIÓN MANUAL (Llamada por el Frontend al cargar OrderConfirmation)
 // ==========================================================================
-
-// --- RUTA DE VERIFICACIÓN ---
 router.get("/check-status/:orderId", async (req, res) => {
   try {
     const { orderId } = req.params;
-    const order = await Order.findById(orderId).populate("items.product");
-    if (!order) return res.status(404).json({ message: "Orden no encontrada" });
 
-    if (order.status === "Procesando" || order.status === "Enviado") {
+    // Buscamos la orden
+    const order = await Order.findById(orderId).populate("items.product");
+
+    if (!order) {
+      return res.status(404).json({ message: "Orden no encontrada" });
+    }
+
+    // 1. Si ya estaba procesada, devolvemos éxito inmediatamente (evita re-procesar)
+    if (
+      order.status === "Procesando" ||
+      order.status === "Enviado" ||
+      order.status === "Entregado"
+    ) {
       return res.json({ status: "APPROVED", order });
     }
 
+    // 2. Si sigue pendiente, consultamos a Wompi
     try {
+      // Usamos la llave privada para consultar la API de Wompi
       const response = await axios.get(
         `${WOMPI_API_URL}/transactions?reference=${orderId}`,
         {
           headers: { Authorization: `Bearer ${process.env.WOMPI_PRIVATE_KEY}` },
         },
       );
+
       const transactions = response.data.data;
+
       if (transactions && transactions.length > 0) {
+        // Tomamos la transacción más reciente
         const lastTransaction = transactions[0];
+
         if (lastTransaction.status === "APPROVED") {
-          await processTransactionUpdate(
-            orderId,
-            lastTransaction.id,
-            "APPROVED",
+          // --- LÓGICA DE APROBACIÓN ---
+          console.log(
+            `[Check-Status] Pago APROBADO en Wompi para orden ${orderId}`,
           );
-          const updatedOrder =
+
+          // Actualizamos la orden
+          order.status = "Procesando";
+          order.paymentId = lastTransaction.id;
+          order.paymentStatus = "APPROVED";
+          await order.save();
+
+          // Re-popular para asegurar que el email tenga toda la info (imágenes, nombres)
+          const populatedOrder =
             await Order.findById(orderId).populate("items.product");
-          return res.json({ status: "APPROVED", order: updatedOrder });
+
+          // ENVIAR CORREO (Intentar, pero no bloquear respuesta si falla)
+          console.log(`[Check-Status] Intentando enviar correo...`);
+          try {
+            await sendOrderConfirmationEmail(populatedOrder);
+            console.log(`[Check-Status] Correo enviado exitosamente.`);
+          } catch (emailError) {
+            console.error(
+              `[Check-Status] ERROR enviando correo:`,
+              emailError.message,
+            );
+          }
+
+          return res.json({ status: "APPROVED", order: populatedOrder });
+        } else if (
+          ["DECLINED", "VOIDED", "ERROR"].includes(lastTransaction.status)
+        ) {
+          // --- LÓGICA DE RECHAZO ---
+          order.status = "Cancelado";
+          order.paymentStatus = lastTransaction.status;
+          await order.save();
+          return res.json({ status: "DECLINED", order });
         }
       }
     } catch (wompiError) {
       console.error("Error consultando API Wompi:", wompiError.message);
     }
+
+    // Si llegamos aquí, sigue pendiente o no hubo respuesta clara
     res.json({
       status: order.status === "Cancelado" ? "DECLINED" : "PENDING",
       order,
@@ -134,17 +174,23 @@ router.get("/check-status/:orderId", async (req, res) => {
   }
 });
 
-// --- WEBHOOK ---
+// ==========================================================================
+// 3. WEBHOOK (Respaldo asíncrono)
+// ==========================================================================
 router.post("/webhook", async (req, res) => {
   try {
     const { data } = req.body;
     if (!data?.transaction) return res.status(200).send("No data");
+
     const transaction = data.transaction;
+
+    // Llamamos a la función auxiliar para procesar
     await processTransactionUpdate(
       transaction.reference,
       transaction.id,
       transaction.status,
     );
+
     res.status(200).send("Webhook received");
   } catch (error) {
     console.error("Error en Webhook:", error);
@@ -152,27 +198,42 @@ router.post("/webhook", async (req, res) => {
   }
 });
 
-// --- FUNCIÓN AUXILIAR DE ACTUALIZACIÓN ---
+/**
+ * Función auxiliar para actualizar la orden desde el Webhook.
+ * Se usa para casos donde el usuario cerró el navegador antes de ver la confirmación.
+ */
 async function processTransactionUpdate(orderId, paymentId, status) {
-  const order = await Order.findById(orderId);
-  if (!order || order.status === "Procesando" || order.status === "Enviado")
-    return;
+  try {
+    const order = await Order.findById(orderId);
 
-  if (status === "APPROVED") {
-    order.status = "Procesando";
-    order.paymentId = paymentId;
-    order.paymentStatus = "APPROVED";
-    await order.save();
-    // Lógica de inventario...
-    // Lógica de cupón...
-    const populatedOrder =
-      await Order.findById(orderId).populate("items.product");
-    await sendOrderConfirmationEmail(populatedOrder);
-    console.log(`Orden ${orderId} actualizada a PROCESANDO`);
-  } else if (["DECLINED", "VOIDED", "ERROR"].includes(status)) {
-    order.status = "Cancelado";
-    order.paymentStatus = status;
-    await order.save();
+    // Si no existe o ya fue procesada, no hacemos nada
+    if (
+      !order ||
+      ["Procesando", "Enviado", "Entregado"].includes(order.status)
+    ) {
+      console.log(`[Webhook] Orden ${orderId} ya procesada o no encontrada.`);
+      return;
+    }
+
+    if (status === "APPROVED") {
+      order.status = "Procesando";
+      order.paymentId = paymentId;
+      order.paymentStatus = "APPROVED";
+      await order.save();
+
+      // Enviar Correo
+      console.log(`[Webhook] Enviando correo para orden ${orderId}`);
+      const populatedOrder =
+        await Order.findById(orderId).populate("items.product");
+      await sendOrderConfirmationEmail(populatedOrder);
+    } else if (["DECLINED", "VOIDED", "ERROR"].includes(status)) {
+      order.status = "Cancelado";
+      order.paymentStatus = status;
+      await order.save();
+      console.log(`[Webhook] Orden ${orderId} CANCELADA.`);
+    }
+  } catch (error) {
+    console.error(`[Webhook] Error procesando actualización:`, error);
   }
 }
 
