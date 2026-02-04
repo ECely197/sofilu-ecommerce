@@ -12,13 +12,13 @@ const { authMiddleware, adminOnly } = require("../middleware/authMiddleware");
  */
 router.get("/active", async (req, res) => {
   try {
-    // CAMBIO: find en lugar de findOne para traer array
     const activeEvents = await SpecialEvent.find({ isActive: true }).populate({
       path: "linkedProducts",
-      populate: { path: "category", model: "Category" },
+      populate: { path: "categories", model: "Category" },
     });
     res.json(activeEvents);
   } catch (error) {
+    console.error("Error obteniendo eventos activos:", error);
     res.status(500).json({ message: "Error al obtener eventos activos." });
   }
 });
