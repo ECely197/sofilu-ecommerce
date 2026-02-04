@@ -118,8 +118,10 @@ router.get("/category/:slug", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate("categories")
-      .populate("category vendor");
+      .populate("categories") // Nuevo array
+      .populate("vendor")
+      .populate("warrantyType"); // <--- ¡IMPORTANTE! Popular garantía para que el formulario la vea
+
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado." });
     }

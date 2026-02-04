@@ -4,7 +4,7 @@
 
 :host {
   display: block;
-  padding-bottom: 100px; // Espacio para el footer móvil
+  padding-bottom: 120px; // Espacio para el footer móvil
 }
 
 // --- HEADER ---
@@ -64,8 +64,11 @@
 .form-container {
   display: grid;
   gap: 2rem;
+  height: auto;
+  overflow: visible;
+
   @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr; // Columna principal más ancha
+    grid-template-columns: 2fr 1fr;
     align-items: start;
   }
 }
@@ -446,6 +449,9 @@
   .btn-material {
     background: #333;
     color: white;
+  }
+  @media (min-width: 1024px) {
+    display: none;
   }
 }
 

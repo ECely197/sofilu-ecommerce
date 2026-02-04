@@ -419,20 +419,19 @@
         <label for="isFeatured">Producto Destacado</label>
       </div>
     </div>
+    <!-- BARRA FLOTANTE MÓVIL (STICKY) -->
+    <div class="sticky-footer-actions mobile-only">
+      <button type="button" routerLink="/admin/products" class="btn-secondary">
+        Cancelar
+      </button>
+      <button
+        type="button"
+        (click)="handleSubmit()"
+        [disabled]="productForm.invalid || isUploading()"
+        class="btn-material"
+      >
+        {{ isUploading() ? "..." : "Guardar" }}
+      </button>
+    </div>
   </div>
 </form>
-
-<!-- BARRA FLOTANTE MÓVIL (STICKY) -->
-<div class="sticky-footer-actions mobile-only">
-  <button type="button" routerLink="/admin/products" class="btn-secondary">
-    Cancelar
-  </button>
-  <button
-    type="button"
-    (click)="handleSubmit()"
-    [disabled]="productForm.invalid || isUploading()"
-    class="btn-material"
-  >
-    {{ isUploading() ? "..." : "Guardar" }}
-  </button>
-</div>

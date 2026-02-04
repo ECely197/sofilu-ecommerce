@@ -69,6 +69,7 @@ export class ProductForm implements OnInit {
   isCategoryDropdownOpen = signal(false);
 
   ngOnInit() {
+    // 1. Inicialización del Formulario
     this.productForm = this.fb.group({
       name: ['', Validators.required],
       description: ['', Validators.required],
@@ -77,7 +78,7 @@ export class ProductForm implements OnInit {
       price: [null, [Validators.min(0)]],
       costPrice: [null, [Validators.min(0)]],
       stock: [null, [Validators.min(0)]],
-      categories: [[], Validators.required],
+      categories: [[], Validators.required], // Array para multi-select
       images: this.fb.array([]),
       isFeatured: [false],
       isOnSale: [false],
@@ -86,6 +87,7 @@ export class ProductForm implements OnInit {
       variants: this.fb.array([]),
     });
 
+    // 2. Cargar Dependencias (Selects)
     this.warrantyService
       .getWarranties()
       .subscribe((w) => this.warranties.set(w));
@@ -102,48 +104,92 @@ export class ProductForm implements OnInit {
       this.variantTemplates.set(templates);
     });
 
+    // 3. Cargar Datos del Producto (Modo Edición)
     this.productId = this.route.snapshot.paramMap.get('id');
+
     if (this.productId) {
       this.isEditMode.set(true);
+
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
-          const categoryIds = product.categories
-            ? product.categories.map((c: any) =>
-                typeof c === 'object' ? c._id : c,
-              )
-            : [];
+          // --- LOGICA DE CATEGORÍAS (Robustez) ---
+          // Verifica si es el formato nuevo (array) o el viejo (single)
+          let categoryIds: string[] = [];
 
+          if (
+            product.categories &&
+            Array.isArray(product.categories) &&
+            product.categories.length > 0
+          ) {
+            // Caso 1: Nuevo formato (Array de objetos o IDs)
+            categoryIds = product.categories.map((c: any) =>
+              typeof c === 'object' ? c._id : c,
+            );
+          } else if ((product as any).category) {
+            // Caso 2: Formato antiguo (Un solo ID u objeto)
+            const cat = (product as any).category;
+            categoryIds = [typeof cat === 'object' ? cat._id : cat];
+          }
+
+          // --- LÓGICA DE GARANTÍA (Robustez) ---
+          // Extrae el ID si viene populado como objeto
+          const warrantyId = product.warrantyType
+            ? typeof product.warrantyType === 'object'
+              ? (product.warrantyType as any)._id
+              : product.warrantyType
+            : null;
+
+          // --- LÓGICA DE VENDEDOR ---
+          const vendorId = product.vendor
+            ? typeof product.vendor === 'object'
+              ? (product.vendor as any)._id
+              : product.vendor
+            : null;
+
+          // Asignar valores al formulario
           this.productForm.patchValue({
             name: product.name,
             description: product.description,
             sku: product.sku,
-            vendor: (product.vendor as Vendor)?._id,
+            vendor: vendorId,
             price: product.price,
             costPrice: product.costPrice,
             stock: product.stock,
-            categories: categoryIds,
+            categories: categoryIds, // Usamos el array procesado
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
-            warrantyType: product.warrantyType,
+            warrantyType: warrantyId, // Usamos el ID procesado
             salePrice: product.salePrice,
           });
 
-          product.images.forEach((imgUrl) =>
-            this.images.push(this.fb.control(imgUrl)),
-          );
-          this.imagePreviews.set([...product.images]);
+          // Cargar Imágenes
+          if (product.images) {
+            product.images.forEach((imgUrl) =>
+              this.images.push(this.fb.control(imgUrl)),
+            );
+            this.imagePreviews.set([...product.images]);
+          }
 
-          product.variants.forEach((variant) => {
-            const optionsArray = this.fb.array(
-              (variant.options as any[]).map((opt) =>
-                this.newOption(opt.name, opt.price, opt.stock, opt.costPrice),
-              ),
-            );
-            this.variants.push(
-              this.fb.group({ name: variant.name, options: optionsArray }),
-            );
-          });
+          // Cargar Variantes
+          if (product.variants) {
+            product.variants.forEach((variant) => {
+              const optionsArray = this.fb.array(
+                (variant.options as any[]).map((opt) =>
+                  this.newOption(
+                    opt.name,
+                    opt.price,
+                    opt.stock,
+                    opt.costPrice,
+                    opt.image,
+                  ),
+                ),
+              );
+              this.variants.push(
+                this.fb.group({ name: variant.name, options: optionsArray }),
+              );
+            });
+          }
         });
     }
   }
