@@ -332,11 +332,10 @@ export class ProductDetailComponent
         this.setupSeo(foundProduct);
         this.setStructuredData(foundProduct);
 
-        if (foundProduct.category) {
+        if (foundProduct.categories && foundProduct.categories.length > 0) {
+          const firstCat = foundProduct.categories[0];
           const categorySlug =
-            typeof foundProduct.category === 'object'
-              ? foundProduct.category.slug
-              : '';
+            typeof firstCat === 'object' ? firstCat.slug : '';
           if (categorySlug) {
             this.productService
               .getProductsByCategory(categorySlug)

@@ -15,7 +15,7 @@ import { RippleDirective } from '../../../directives/ripple';
 import Swiper from 'swiper';
 import { Autoplay, EffectFade, Pagination } from 'swiper/modules';
 
-// Registrar módulos globalmente (por si acaso)
+// Registrar módulos globalmente
 Swiper.use([Autoplay, EffectFade, Pagination]);
 
 @Component({
@@ -33,10 +33,8 @@ export class SpecialEventBanner implements OnChanges, OnDestroy {
   private zone = inject(NgZone);
   private swiperInstance: Swiper | undefined;
 
-  // Detectamos cuando llegan los datos del Home
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['events'] && this.events.length > 0) {
-      // Reiniciamos el Swiper cuando los eventos cambian/llegan
       this.initSwiper();
     }
   }
@@ -48,41 +46,31 @@ export class SpecialEventBanner implements OnChanges, OnDestroy {
   }
 
   private initSwiper() {
-    // Ejecutamos fuera de Angular para mejorar rendimiento
     this.zone.runOutsideAngular(() => {
-      // Damos un pequeño respiro para que el HTML se pinte
       setTimeout(() => {
         const container = this.el.nativeElement.querySelector('.swiper');
         if (!container) return;
 
-        // Si ya existe, lo destruimos para recrearlo limpio
         if (this.swiperInstance) this.swiperInstance.destroy(true, true);
 
         this.swiperInstance = new Swiper(container, {
-          // Importante: pasar los módulos aquí también
           modules: [Autoplay, EffectFade, Pagination],
-
-          // --- CONFIGURACIÓN DE AUTOPLAY CORREGIDA ---
-          observer: true, // ¡CLAVE! Observa cambios en el DOM
+          observer: true,
           observeParents: true,
           effect: 'fade',
           fadeEffect: { crossFade: true },
-          speed: 1500, // Transición suave (1.5 seg)
-          loop: this.events.length > 1, // Solo loop si hay más de 1
-
+          speed: 1500,
+          loop: this.events.length > 1,
           autoplay: {
-            delay: 4000, // 4 segundos por banner
-            disableOnInteraction: false, // No detener si el usuario toca
-            pauseOnMouseEnter: false, // No pausar con el mouse (opcional)
+            delay: 4000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: false,
           },
-
           pagination: {
             el: '.swiper-pagination',
             clickable: true,
             dynamicBullets: true,
           },
-
-          // Deshabilitar swipe si solo hay 1 evento
           allowTouchMove: this.events.length > 1,
         });
       }, 50);
@@ -91,8 +79,13 @@ export class SpecialEventBanner implements OnChanges, OnDestroy {
 
   scrollToProducts(event: SpecialEvent): void {
     if (!event.linkedProducts || event.linkedProducts.length === 0) return;
+    const product = event.linkedProducts[0];
 
-    const category = event.linkedProducts[0].category as any;
+    const category =
+      product.categories && product.categories.length > 0
+        ? (product.categories[0] as any)
+        : null;
+
     const categorySlug = category?.slug;
 
     if (!categorySlug) return;

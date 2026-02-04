@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
     }
 
     if (category) {
-      query.category = category;
+      query.categories = { $in: [category] };
     }
 
     if (sortBy) {
@@ -44,6 +44,7 @@ router.get("/", async (req, res) => {
 
     const products = await Product.find(query)
       .populate("vendor")
+      .populate("categories")
       .sort(sortOptions);
 
     res.json(products);
@@ -96,7 +97,9 @@ router.get("/category/:slug", async (req, res) => {
       // No es un error, simplemente no hay productos para una categoría inexistente.
       return res.json([]);
     }
-    const products = await Product.find({ category: category._id });
+    const products = await Product.find({
+      categories: { $in: [category._id] },
+    }).populate("categories");
     res.json(products);
   } catch (error) {
     console.error("Error al obtener productos por categoría:", error);
@@ -114,9 +117,9 @@ router.get("/category/:slug", async (req, res) => {
  */
 router.get("/:id", async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate(
-      "category vendor"
-    );
+    const product = await Product.findById(req.params.id)
+      .populate("categories")
+      .populate("category vendor");
     if (!product) {
       return res.status(404).json({ message: "Producto no encontrado." });
     }
@@ -162,7 +165,7 @@ router.put("/:id", async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true } // Opciones para devolver el doc actualizado y correr validaciones.
+      { new: true, runValidators: true }, // Opciones para devolver el doc actualizado y correr validaciones.
     );
 
     if (!updatedProduct) {
@@ -194,7 +197,7 @@ router.patch("/:id/status", [authMiddleware, adminOnly], async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       { $set: { status: status } },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedProduct) {

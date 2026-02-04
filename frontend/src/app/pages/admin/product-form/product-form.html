@@ -328,17 +328,57 @@
         <label for="sku" class="material-label">SKU</label>
       </div>
 
-      <div class="select-field">
-        <label>Categoría</label>
-        <div class="select-wrapper">
-          <select formControlName="category">
-            <option [ngValue]="null" disabled>Seleccionar...</option>
-            @for (cat of categories(); track cat._id) {
-              <option [value]="cat._id">{{ cat.name }}</option>
+      <div class="custom-multiselect">
+        <label class="field-label">Categorías</label>
+
+        <!-- Área de Selección (Trigger) -->
+        <div
+          class="select-trigger"
+          (click)="isCategoryDropdownOpen.set(!isCategoryDropdownOpen())"
+          [class.active]="isCategoryDropdownOpen()"
+        >
+          <div class="chips-container">
+            @if (productForm.get("categories")?.value?.length > 0) {
+              @for (
+                catId of productForm.get("categories")?.value;
+                track catId
+              ) {
+                <span class="category-chip" (click)="$event.stopPropagation()">
+                  {{ getCategoryName(catId) }}
+                  <span class="remove" (click)="toggleCategory(catId)">×</span>
+                </span>
+              }
+            } @else {
+              <span class="placeholder">Seleccionar categorías...</span>
             }
-          </select>
+          </div>
           <span class="material-symbols-outlined chevron">expand_more</span>
         </div>
+
+        <!-- Lista Desplegable -->
+        @if (isCategoryDropdownOpen()) {
+          <div class="dropdown-list custom-scroll">
+            @for (cat of categories(); track cat._id) {
+              <div
+                class="dropdown-item"
+                [class.selected]="isCategorySelected(cat._id)"
+                (click)="toggleCategory(cat._id)"
+              >
+                <div class="checkbox">
+                  @if (isCategorySelected(cat._id)) {
+                    <span class="material-symbols-outlined check">check</span>
+                  }
+                </div>
+                <span>{{ cat.name }}</span>
+              </div>
+            }
+          </div>
+          <!-- Overlay transparente para cerrar al hacer clic afuera -->
+          <div
+            class="click-overlay"
+            (click)="isCategoryDropdownOpen.set(false)"
+          ></div>
+        }
       </div>
 
       <div class="select-field">

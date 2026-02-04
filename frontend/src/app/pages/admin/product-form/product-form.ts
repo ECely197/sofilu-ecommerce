@@ -66,6 +66,7 @@ export class ProductForm implements OnInit {
   isUploading = signal(false);
   variantTemplates = signal<VariantTemplate[]>([]);
   warranties = signal<WarrantyType[]>([]);
+  isCategoryDropdownOpen = signal(false);
 
   ngOnInit() {
     this.productForm = this.fb.group({
@@ -76,7 +77,7 @@ export class ProductForm implements OnInit {
       price: [null, [Validators.min(0)]],
       costPrice: [null, [Validators.min(0)]],
       stock: [null, [Validators.min(0)]],
-      category: [null, Validators.required],
+      categories: [[], Validators.required],
       images: this.fb.array([]),
       isFeatured: [false],
       isOnSale: [false],
@@ -107,10 +108,11 @@ export class ProductForm implements OnInit {
       this.productService
         .getProductById(this.productId)
         .subscribe((product) => {
-          const categoryId =
-            typeof product.category === 'string'
-              ? product.category
-              : (product.category as Category)?._id;
+          const categoryIds = product.categories
+            ? product.categories.map((c: any) =>
+                typeof c === 'object' ? c._id : c,
+              )
+            : [];
 
           this.productForm.patchValue({
             name: product.name,
@@ -120,7 +122,7 @@ export class ProductForm implements OnInit {
             price: product.price,
             costPrice: product.costPrice,
             stock: product.stock,
-            category: categoryId,
+            categories: categoryIds,
             isFeatured: product.isFeatured,
             isOnSale: product.isOnSale,
             warrantyType: product.warrantyType,
@@ -216,6 +218,36 @@ export class ProductForm implements OnInit {
     }
   }
 
+  // --- MÉTODOS PARA EL MULTI-SELECT ---
+
+  toggleCategory(categoryId: string): void {
+    const currentCategories = this.productForm.get('categories')?.value || [];
+    const index = currentCategories.indexOf(categoryId);
+
+    if (index > -1) {
+      // Si ya existe, lo quitamos
+      currentCategories.splice(index, 1);
+    } else {
+      // Si no, lo agregamos
+      currentCategories.push(categoryId);
+    }
+
+    // Actualizamos el form control manualmente
+    this.productForm.patchValue({ categories: currentCategories });
+    this.productForm.get('categories')?.markAsDirty();
+  }
+
+  isCategorySelected(categoryId: string): boolean {
+    const current = this.productForm.get('categories')?.value || [];
+    return current.includes(categoryId);
+  }
+
+  // Helper para mostrar nombres en los chips
+  getCategoryName(id: string): string {
+    const cat = this.categories().find((c) => c._id === id);
+    return cat ? cat.name : 'Desconocida';
+  }
+
   private saveProductData(): void {
     const formValue = this.productForm.getRawValue();
 
@@ -224,7 +256,7 @@ export class ProductForm implements OnInit {
       description: formValue.description,
       sku: formValue.sku,
       vendor: formValue.vendor,
-      category: formValue.category,
+      categories: formValue.categories,
       price: formValue.price,
       costPrice: formValue.costPrice,
       stock: formValue.stock,

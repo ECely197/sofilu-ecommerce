@@ -58,7 +58,12 @@ const productSchema = new Schema(
     stock: { type: Number, default: 0 },
     sku: { type: String, trim: true, uppercase: true },
     vendor: { type: Schema.Types.ObjectId, ref: "Vendor" },
-    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    categories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
     images: [{ type: String, required: true }],
     isFeatured: { type: Boolean, default: false },
     isOnSale: { type: Boolean, default: false },

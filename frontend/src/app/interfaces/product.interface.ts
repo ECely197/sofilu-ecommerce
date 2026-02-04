@@ -31,7 +31,7 @@ export interface Product {
   price: number;
   costPrice?: number;
   stock: number;
-  category: Category;
+  categories: Category[];
   images: string[];
   isFeatured: boolean;
   isOnSale: boolean;
