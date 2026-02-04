@@ -12,7 +12,7 @@
       </button>
     </div>
 
-    <nav class="sidebar-nav custom-scroll">
+    <nav class="sidebar-nav custom-scroll" data-lenis-prevent>
       <!-- DASHBOARD -->
       <a
         routerLink="/admin/dashboard"
@@ -120,7 +120,7 @@
   </aside>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <main class="main-content">
+  <main class="main-content" data-lenis-prevent>
     <!-- Header Móvil -->
     <header class="mobile-top-bar glass-panel">
       <button class="menu-trigger" (click)="toggleSidebar()">

@@ -64,14 +64,16 @@
 
 .sidebar-nav {
   flex-grow: 1;
-  overflow-y: auto; // Scroll interno
-  overscroll-behavior: contain; // SOLUCIÓN AL BUG DEL VIDEO (Scroll Chaining)
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding: 1rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 
-  // Ocultar barra de scroll fea pero mantener funcionalidad
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -148,12 +150,14 @@
   flex-grow: 1;
   width: 100%;
   min-width: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100%; // Altura completa
-  overflow-y: auto; // Scroll independiente aquí
-  overscroll-behavior: contain; // SOLUCIÓN AL BUG
+  overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  position: relative;
 }
 
 .page-wrapper {
