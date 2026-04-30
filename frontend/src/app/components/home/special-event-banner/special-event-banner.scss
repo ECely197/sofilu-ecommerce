@@ -12,7 +12,7 @@
   transform: translateX(-50%);
   margin-top: 0;
 
-  // Bordes redondeados inferiores GRANDES
+  // Bordes redondeados (Se mantienen intactos como pediste)
   border-radius: 0 0 3rem 3rem;
   overflow: hidden;
   margin-bottom: 3rem;
@@ -31,13 +31,8 @@
   }
 }
 
-.swiper {
-  width: 100%;
-  height: 100%;
-}
-
+.swiper,
 .swiper-slide {
-  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -61,13 +56,15 @@
   .overlay {
     position: absolute;
     inset: 0;
-    // Gradiente un poco más fuerte abajo para que el botón resalte
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0) 30%,
-      rgba(0, 0, 0, 0.7) 100%
-    );
+    // MEJORA: Un gradiente más oscuro en el fondo para garantizar
+    // que el texto blanco siempre se lea perfecto, sea cual sea la foto.
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(0, 0, 0, 0.1) 0%,
+        rgba(0, 0, 0, 0.4) 100%
+      ),
+      linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%);
   }
 }
 
@@ -77,60 +74,74 @@
   z-index: 2;
   height: 100%;
   width: 100%;
-
   display: flex;
   flex-direction: column;
-  justify-content: center; // Centra el texto verticalmente en el espacio disponible
+  justify-content: center;
   align-items: center;
   text-align: center;
   color: white;
 
-  // Padding para que el texto no toque los bordes ni el botón
-  padding: 4rem 2rem 8rem 2rem;
+  // Ajustado para dar respiro al texto
+  padding: 2rem 5% 8rem 5%;
 }
 
 .text-content {
+  width: 100%;
   max-width: 900px;
-  // Asegura que el texto esté centrado visualmente
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1rem; // Espaciado limpio entre título y subtítulo
 }
 
 .event-title {
-  font-family: "Baloo 2", serif;
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-family: "Baloo 2", sans-serif;
+  // Lo hice un poquitito más grande en pantallas anchas para que impacte más
+  font-size: clamp(2.5rem, 5vw + 1rem, 4.8rem);
   font-weight: 800;
   line-height: 1.1;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+  text-wrap: balance;
+  margin: 0;
   opacity: 0;
-  animation: slideUpFade 0.8s 0.3s forwards;
+  animation: slideUpText 0.8s 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+
+  background: linear-gradient(135deg, #ffffff 0%, #fff4f7 50%, #ffe9f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.4))
+    drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .event-subtitle {
-  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
   font-weight: 500;
-  margin-bottom: 0; // El margen lo maneja el posicionamiento absoluto del botón
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  max-width: 800px;
+  line-height: 1.5;
+  text-wrap: balance;
+  margin: 0;
   opacity: 0;
-  animation: slideUpFade 0.8s 0.5s forwards;
+  animation: slideUpText 0.8s 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.5px;
+
+  filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.5));
 }
 
-// --- BOTÓN (POSICIÓN FIJA ABSOLUTA) ---
+// --- BOTÓN ---
 .cta-container {
-  position: absolute; // ¡ESTA ES LA CLAVE!
-  bottom: 15%; // Fijo al 15% desde abajo
+  position: absolute;
+  bottom: 12%;
   left: 50%;
-  transform: translateX(-50%); // Centrado horizontal
   z-index: 10;
-
-  opacity: 0;
-  animation: slideUpFade 0.8s 0.7s forwards;
+  // Usamos la animación específica para elementos absolutos centrados
+  animation: slideUpBtn 0.8s 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 
   @media (max-width: 768px) {
-    bottom: 12%; // Un poco más abajo en móvil
+    bottom: 10%;
   }
 }
 
@@ -139,30 +150,45 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2.5rem;
-  border-radius: 50px;
+  border-radius: 99px; // Forma de píldora perfecta
 
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  // Mejor Glassmorphism
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 
   color: white;
-  font-family: "Baloo 2";
-  font-weight: 700;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 600;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+
+  .material-symbols-outlined {
+    transition: transform 0.3s ease;
+  }
 
   &:hover {
-    background: white;
-    color: #333;
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    background: rgba(
+      255,
+      255,
+      255,
+      0.3
+    ); // Aclara el vidrio sin quitar la transparencia
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+
+    // Animación chula de la flecha al hacer hover
+    .material-symbols-outlined {
+      transform: translateY(4px);
+    }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.97);
   }
 }
 
@@ -183,17 +209,32 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-// Posicionamos la paginación un poco más arriba del borde
 ::ng-deep .swiper-pagination {
   bottom: 20px !important;
 }
 
-// Animaciones
-@keyframes slideUpFade {
+// ==========================================
+// --- ANIMACIONES CORREGIDAS ---
+// ==========================================
+
+// Animación para Títulos (Sin desplazar en X porque ya están centrados con Flexbox)
+@keyframes slideUpText {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Animación exclusiva para el botón (Mantiene el centrado absoluto)
+@keyframes slideUpBtn {
   from {
     opacity: 0;
     transform: translate(-50%, 30px);
-  } // Ajustado para mantener el centro X
+  }
   to {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -201,8 +242,9 @@
 }
 
 .fade-in {
-  animation: fadeIn 1s ease-out;
+  animation: fadeIn 1.2s ease-out;
 }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
