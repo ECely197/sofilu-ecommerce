@@ -33,6 +33,7 @@ const specialEventRoutes = require("./routes/specialEvents");
 const paymentRoutes = require("./routes/payments");
 const deliveryOptionRoutes = require("./routes/deliveryOptions");
 const warrantyTypeRoutes = require("./routes/warrantyTypes");
+const uploadRoutes = require("./routes/upload");
 
 // --------------------------------------------------------------------------
 // 2. INICIALIZACIÓN Y CONFIGURACIÓN
@@ -51,6 +52,7 @@ try {
 
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    storageBucket: "sofilu-ecommerce.firebasestorage.app",
   });
   console.log("Firebase Admin SDK inicializado correctamente.");
 } catch (error) {
@@ -142,6 +144,7 @@ app.use(`${apiPrefix}/special-events`, specialEventRoutes);
 app.use(`${apiPrefix}/payments`, paymentRoutes);
 app.use(`${apiPrefix}/delivery-options`, deliveryOptionRoutes);
 app.use(`${apiPrefix}/warranty-types`, warrantyTypeRoutes);
+app.use(`${apiPrefix}/upload`, uploadRoutes);
 
 // Ruta raíz de bienvenida
 app.get("/", (req, res) => {

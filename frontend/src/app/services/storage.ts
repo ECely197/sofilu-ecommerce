@@ -1,41 +1,33 @@
 /**
  * @fileoverview Servicio de Almacenamiento (Storage).
- * Encapsula la lógica para interactuar con Firebase Cloud Storage,
- * principalmente para la subida de archivos como imágenes de productos.
+ * Encapsula la lógica para interactuar con la subida de archivos,
+ * delegando la conversión y almacenamiento en el backend de Node.js.
  */
 import { Injectable, inject } from '@angular/core';
-import {
-  Storage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from '@angular/fire/storage';
-import { from, Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
-  private storage: Storage = inject(Storage);
+  private http = inject(HttpClient);
 
   constructor() {}
 
   /**
-   * Sube un archivo a Firebase Storage y devuelve la URL de descarga pública.
-   * @param file El archivo (ej. una imagen) a subir.
-   * @returns Un Observable que emite la URL de descarga una vez que la subida se completa.
+   * Sube una imagen al backend para ser procesada a WebP y almacenada en Firebase Storage.
+   * @param file El archivo (imagen) a subir.
+   * @returns Un Observable que emite la URL de descarga pública.
    */
   uploadImage(file: File): Observable<string> {
-    // Crea una ruta única para el archivo para evitar colisiones de nombres.
-    const filePath = `product-images/${Date.now()}_${file.name}`;
-    const storageRef = ref(this.storage, filePath);
+    const formData = new FormData();
+    formData.append('image', file);
 
-    // Usa `from` de RxJS para convertir la Promesa de `uploadBytes` en un Observable.
-    return from(uploadBytes(storageRef, file)).pipe(
-      // Una vez que la subida termina, `switchMap` cambia a un nuevo Observable
-      // que obtiene la URL de descarga del archivo.
-      switchMap((snapshot) => from(getDownloadURL(snapshot.ref)))
-    );
+    return this.http
+      .post<{ imageUrl: string }>(`${environment.apiUrl}/upload`, formData)
+      .pipe(map((response) => response.imageUrl));
   }
 }
