@@ -12,7 +12,7 @@
   transform: translateX(-50%);
   margin-top: 0;
 
-  // Bordes redondeados (Se mantienen intactos como pediste)
+  // Bordes redondeados
   border-radius: 0 0 3rem 3rem;
   overflow: hidden;
   margin-bottom: 3rem;
@@ -51,13 +51,15 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+    opacity: 0;
+    transform: scale(1.12);
+    will-change: transform, opacity;
   }
 
   .overlay {
     position: absolute;
     inset: 0;
-    // MEJORA: Un gradiente más oscuro en el fondo para garantizar
-    // que el texto blanco siempre se lea perfecto, sea cual sea la foto.
+    // Un gradiente más oscuro en el fondo para garantizar buena legibilidad del texto
     background:
       radial-gradient(
         circle at center,
@@ -81,8 +83,8 @@
   text-align: center;
   color: white;
 
-  // Ajustado para dar respiro al texto
-  padding: 2rem 5% 8rem 5%;
+  // Espaciado generoso (Layout aireado)
+  padding: 2.5rem 5% 8rem 5%;
 }
 
 .text-content {
@@ -91,12 +93,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem; // Espaciado limpio entre título y subtítulo
+  gap: 1.5rem; // Espaciado generoso
 }
 
 .event-title {
   font-family: "Baloo 2", sans-serif;
-  // Lo hice un poquitito más grande en pantallas anchas para que impacte más
   font-size: clamp(2.5rem, 5vw + 1rem, 4.8rem);
   font-weight: 800;
   line-height: 1.1;
@@ -104,7 +105,7 @@
   text-wrap: balance;
   margin: 0;
   opacity: 0;
-  animation: slideUpText 0.8s 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  will-change: transform, opacity, clip-path;
 
   background: linear-gradient(135deg, #ffffff 0%, #fff4f7 50%, #ffe9f0 100%);
   -webkit-background-clip: text;
@@ -116,14 +117,14 @@
 }
 
 .event-subtitle {
-  font-family: "Baloo 2", sans-serif;
+  font-family: "Inter", sans-serif; // M3 Expressive: Títulos 'Baloo 2', Cuerpo 'Inter'
   font-size: clamp(1.1rem, 2vw, 1.4rem);
   font-weight: 500;
   line-height: 1.5;
   text-wrap: balance;
   margin: 0;
   opacity: 0;
-  animation: slideUpText 0.8s 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  will-change: transform, opacity;
 
   color: rgba(255, 255, 255, 0.95);
   letter-spacing: 0.5px;
@@ -131,64 +132,98 @@
   filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.5));
 }
 
-// --- BOTÓN ---
+// --- CONTENEDOR BOTÓN ---
 .cta-container {
   position: absolute;
   bottom: 12%;
   left: 50%;
   z-index: 10;
-  // Usamos la animación específica para elementos absolutos centrados
-  animation: slideUpBtn 0.8s 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  opacity: 0;
+  transform: translate(-50%, 40px);
+  will-change: transform, opacity;
 
   @media (max-width: 768px) {
     bottom: 10%;
   }
 }
 
-.btn-glass {
+// --- BOTÓN EXPRESSIVE (Material 3 Expressive) ---
+.btn-expressive {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2.5rem;
-  border-radius: 99px; // Forma de píldora perfecta
-
-  // Mejor Glassmorphism
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-
-  color: white;
+  gap: 0.75rem;
+  padding: 1.1rem 3rem;
+  border-radius: 9999px; // Forma de píldora perfecta
+  
+  // Colores de Sofilu
+  background-color: var(--pastel-pink, #ffd1dc);
+  color: var(--text-charcoal, #2c3e50);
+  border: none;
+  
   font-family: "Baloo 2", sans-serif;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  
+  // Transición usando el Easing Enfatizado para estados interactivos
+  transition: 
+    transform 200ms cubic-bezier(0.4, 0.0, 0.2, 1.0),
+    box-shadow 200ms cubic-bezier(0.4, 0.0, 0.2, 1.0),
+    background-color 200ms cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  
+  box-shadow: 
+    0 8px 24px rgba(253, 209, 220, 0.3), 
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  
+  position: relative;
+  overflow: hidden;
 
+  // Icono con peso (Material Symbols con FILL 1)
   .material-symbols-outlined {
-    transition: transform 0.3s ease;
+    font-variation-settings: 'FILL' 1;
+    transition: transform 300ms cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  }
+
+  // Capa de estado para Hover / Pressed (State Layers)
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--text-charcoal, #2c3e50);
+    opacity: 0;
+    transition: opacity 150ms linear;
+    pointer-events: none;
   }
 
   &:hover {
-    background: rgba(
-      255,
-      255,
-      255,
-      0.3
-    ); // Aclara el vidrio sin quitar la transparencia
-    border-color: rgba(255, 255, 255, 0.8);
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+    // M3 Expressive: Elevación sutil en hover
+    transform: translateY(-2px);
+    box-shadow: 
+      0 12px 28px rgba(253, 209, 220, 0.5), 
+      0 8px 16px rgba(0, 0, 0, 0.15);
+    
+    // Activa la capa de estado hover (8%)
+    &::before {
+      opacity: 0.08;
+    }
 
-    // Animación chula de la flecha al hacer hover
+    // Animación de flecha en hover (feedback de acción)
     .material-symbols-outlined {
       transform: translateY(4px);
     }
   }
 
   &:active {
-    transform: translateY(0) scale(0.97);
+    // M3 Expressive: Pressed state (se hunde un poco)
+    transform: translateY(0);
+    box-shadow: 
+      0 4px 10px rgba(253, 209, 220, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    &::before {
+      opacity: 0.16; // Aumenta la opacidad al presionar (16%)
+    }
   }
 }
 
@@ -214,33 +249,32 @@
 }
 
 // ==========================================
-// --- ANIMACIONES CORREGIDAS ---
+// --- COREOGRAFÍA DE ANIMACIONES (M3) ---
 // ==========================================
 
-// Animación para Títulos (Sin desplazar en X porque ya están centrados con Flexbox)
-@keyframes slideUpText {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+.swiper-slide-active {
+  .banner-background img {
+    // Easing Estándar para la entrada de la imagen de fondo
+    animation: zoomOutBg 1.4s cubic-bezier(0.2, 0.0, 0, 1.0) forwards;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .event-title {
+    // Revelado más dramático con clip-path usando Easing Enfatizado
+    animation: revealTitle 0.9s 0.15s cubic-bezier(0.4, 0.0, 0.2, 1.0) forwards;
+  }
+
+  .event-subtitle {
+    // Entrada más suave para el subtítulo con Easing Estándar
+    animation: softFadeInSubtitle 0.8s 0.35s cubic-bezier(0.2, 0.0, 0, 1.0) forwards;
+  }
+
+  .cta-container {
+    // Entrada del CTA al final con Easing Enfatizado
+    animation: slideUpBtnExpressive 0.85s 0.55s cubic-bezier(0.4, 0.0, 0.2, 1.0) forwards;
   }
 }
 
-// Animación exclusiva para el botón (Mantiene el centrado absoluto)
-@keyframes slideUpBtn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 30px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
+// Fades generales
 .fade-in {
   animation: fadeIn 1.2s ease-out;
 }
@@ -251,5 +285,52 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+// Animaciones de Swiper Slide
+@keyframes zoomOutBg {
+  from {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes revealTitle {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes softFadeInSubtitle {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpBtnExpressive {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 }
