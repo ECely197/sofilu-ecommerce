@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
         const subCategories = await Promise.all(
           categoriesInSection.map(async (category) => {
             const randomProducts = await Product.aggregate([
-              { $match: { category: category._id } }, // Filtrar por categoría
+              { $match: { categories: category._id } }, // Filtrar por categoría
               { $sample: { size: 4 } }, // Tomar una muestra aleatoria
               { $project: { name: 1, images: 1, price: 1 } }, // Devolver solo campos necesarios
             ]);
