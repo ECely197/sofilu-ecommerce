@@ -138,13 +138,25 @@
 
     <!-- 3. ACCIONES -->
     <div class="header-right">
-      <form class="search-form" (submit)="handleSearch($event, searchInput)">
-        <span class="material-symbols-outlined search-icon">search</span>
+      <form
+        class="search-form"
+        [class.expanded]="isSearchExpanded()"
+        (submit)="handleSearch($event, searchInput)"
+      >
+        <button
+          type="button"
+          class="search-toggle-btn"
+          (click)="toggleSearch($event, searchInput)"
+          aria-label="Buscar"
+        >
+          <span class="material-symbols-outlined search-icon">search</span>
+        </button>
         <input
           #searchInput
           type="text"
           placeholder="Buscar..."
           class="search-input"
+          (blur)="onSearchBlur(searchInput)"
         />
       </form>
 

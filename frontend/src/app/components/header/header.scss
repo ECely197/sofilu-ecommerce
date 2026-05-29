@@ -49,13 +49,20 @@
   justify-content: center;
   pointer-events: none;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+  
   &.is-scrolled {
     top: 0.5rem;
     .header-pill {
       width: 95%;
-      height: 55px;
-      background-color: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      height: 60px;
+      background-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(25px) saturate(180%);
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 15px 35px rgba(255, 209, 220, 0.25),
+        0 5px 15px rgba(0, 0, 0, 0.05),
+        inset 0 2px 8px rgba(255, 255, 255, 0.65);
     }
   }
 }
@@ -70,16 +77,32 @@
   align-items: center;
   padding: 0 2rem;
   gap: 1rem;
-  background-color: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  
+  // Vidrio Aurora (Luz líquida con gradiente y sombras de profundidad)
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 244, 246, 0.75) 40%,
+    rgba(242, 245, 255, 0.75) 80%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  
+  // Borde brillante superior
+  border: 1.5px solid rgba(255, 255, 255, 0.65);
+  border-top-color: rgba(255, 255, 255, 0.95);
   border-radius: 9999px;
+  
+  // Resplandor aurora y sombras tridimensionales
   box-shadow:
-    0 20px 40px -10px rgba(255, 209, 220, 0.3),
+    0 20px 40px -10px rgba(255, 209, 220, 0.25),
     0 5px 15px rgba(0, 0, 0, 0.02),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    inset 0 2px 8px rgba(255, 255, 255, 0.65),
+    0 -2px 10px rgba(255, 255, 255, 0.2);
+    
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
 }
 
 .logo-wrapper {
@@ -123,7 +146,7 @@
   height: 46px;
   border-radius: 23px;
   background-color: var(--pastel-pink, #ffd1dc);
-  box-shadow: 0 4px 20px rgba(255, 182, 193, 0.6);
+  box-shadow: 0 8px 24px rgba(255, 182, 193, 0.5);
   z-index: 1;
   opacity: 0;
   pointer-events: none;
@@ -144,7 +167,7 @@
   overflow: hidden;
   .nav-text-original {
     grid-area: 1 / 1;
-    color: #4a4a4a;
+    color: var(--text-charcoal, #2c3e50);
     transition: none;
   }
   .nav-text-reveal {
@@ -387,37 +410,108 @@
   align-items: center;
   gap: 0.8rem;
 }
+
+// --- ACCIONES DE BÚSQUEDA ---
 .search-form {
   position: relative;
-  .search-input {
-    background: rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 50px;
-    padding: 0.7rem 1rem 0.7rem 2.8rem;
-    width: 42px;
-    cursor: pointer;
-    transition: all 0.4s;
-    &:focus,
-    &:not(:placeholder-shown) {
-      background: white;
-      width: 240px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-      cursor: text;
-    }
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border-radius: 9999px; // Forma de píldora
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1); // Easing Enfatizado
+  background-color: transparent;
+  border: 1px solid transparent;
+
+  &.expanded {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 8px 24px rgba(255, 209, 220, 0.15),
+      inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    width: 250px;
+    padding-right: 0.5rem;
   }
-  .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.4rem;
-    color: #666;
-    pointer-events: none;
+
+  &:not(.expanded) {
+    width: 44px;
   }
 }
+
+.search-toggle-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-charcoal, #2c3e50);
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: var(--text-charcoal, #2c3e50);
+    opacity: 0;
+    transition: opacity 150ms linear;
+  }
+
+  &:hover::before {
+    opacity: 0.08;
+  }
+
+  .search-icon {
+    font-variation-settings: 'FILL' 0;
+    font-size: 1.45rem;
+    color: var(--text-charcoal, #2c3e50);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover .search-icon {
+    transform: scale(1.1);
+  }
+}
+
+.search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-charcoal, #2c3e50);
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  transition:
+    width 350ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 250ms ease,
+    padding 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.search-form.expanded {
+  .search-input {
+    width: 100%;
+    opacity: 1;
+    padding: 0 0.5rem 0 0.2rem;
+    pointer-events: auto;
+  }
+}
+
+// --- BOTONES DE ACCIÓN M3 ---
 .icon-button {
   background: transparent;
-  border: 1px solid transparent;
+  border: none;
   cursor: pointer;
   width: 44px;
   height: 44px;
@@ -425,22 +519,59 @@
   place-items: center;
   border-radius: 50%;
   position: relative;
-  transition: all 0.3s;
-  &:hover {
-    background: rgba(255, 255, 255, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition:
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-charcoal, #2c3e50);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: var(--text-charcoal, #2c3e50);
+    opacity: 0;
+    transition: opacity 150ms linear;
+    pointer-events: none;
   }
+
   .material-symbols-outlined {
-    font-size: 1.5rem;
-    color: #444;
+    font-size: 1.45rem;
+    color: var(--text-charcoal, #2c3e50);
+    font-variation-settings: 'FILL' 0;
+    transition:
+      transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+      font-variation-settings 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 209, 220, 0.25);
+
+    &::before {
+      opacity: 0.06; // State Layer Hover (6%)
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1; // Rellena el ícono en hover (Material 3 Expressive)
+      transform: scale(1.08);
+    }
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+    &::before {
+      opacity: 0.12; // State Layer Pressed (12%)
+    }
+  }
+
   .badge {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 2px;
+    right: 2px;
     background: var(--pastel-pink, #ffd1dc);
-    color: #fff;
+    color: var(--text-charcoal, #2c3e50); // Contrasting charcoal text
     font-size: 0.7rem;
     font-weight: 800;
     width: 18px;
@@ -448,24 +579,57 @@
     border-radius: 50%;
     display: grid;
     place-items: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(255, 209, 220, 0.4);
+    border: 1.5px solid white;
+    z-index: 3;
+    animation: badgePop 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
 .profile-button {
   width: 44px;
   height: 44px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ffd1dc, #e6e6fa);
-  color: #555;
+  color: var(--text-charcoal, #2c3e50);
   border: 2px solid white;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--text-charcoal, #2c3e50);
+    opacity: 0;
+    transition: opacity 150ms linear;
+  }
+
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 8px 16px rgba(255, 209, 220, 0.35);
+    &::before {
+      opacity: 0.06;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96) translateY(0);
+    &::before {
+      opacity: 0.12;
+    }
   }
 }
+
 .profile-menu {
   position: absolute;
   top: 130%;
@@ -509,18 +673,43 @@
     }
   }
 }
+
 .login-button {
   text-decoration: none;
-  background: #333;
+  background: var(--text-charcoal, #2c3e50);
   color: white;
-  padding: 0.7rem 1.5rem;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  transition: all 0.2s;
+  padding: 0.75rem 1.8rem;
+  border-radius: 9999px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: white;
+    opacity: 0;
+    transition: opacity 150ms linear;
+  }
+
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(44, 62, 80, 0.3);
+    &::before {
+      opacity: 0.12;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    &::before {
+      opacity: 0.2;
+    }
   }
 }
 
@@ -813,7 +1002,6 @@
 .accordion-body {
   display: grid;
   grid-template-rows: 0fr;
-  // Usamos una curva bezier personalizada para un efecto de rebote suave al final
   transition: grid-template-rows 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   background: white;
 
@@ -825,7 +1013,6 @@
     overflow: hidden;
     opacity: 0;
     transform: translateY(-10px);
-    // Retrasamos la aparición del contenido hasta que el acordeón empiece a abrirse
     transition:
       opacity 0.4s 0.1s ease-out,
       transform 0.4s 0.1s cubic-bezier(0.16, 1, 0.3, 1);
@@ -957,19 +1144,15 @@
   gap: 1rem;
   overflow-x: auto;
   padding-bottom: 10px;
-  padding-left: 0.5rem; // Espacio inicial
+  padding-left: 0.5rem;
 
-  // Ocultar scrollbar pero permitir scroll
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 
-  // Scroll suave nativo
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-
-  // Snap para que las tarjetas se detengan en su sitio
   scroll-snap-type: x mandatory;
 }
 .mini-product-card {
@@ -981,9 +1164,8 @@
   align-items: center;
   gap: 0.5rem;
 
-  scroll-snap-align: start; // Alineación al soltar
+  scroll-snap-align: start;
 
-  // Estado inicial para animación (si quisiéramos animar entrada)
   opacity: 0.9;
   transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
 
@@ -995,19 +1177,18 @@
     width: 90px;
     height: 90px;
     background: #f9f9f9;
-    border-radius: 16px; // Más redondo = más moderno
+    border-radius: 16px;
     padding: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid #f0f0f0;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); // Sombra sutil
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
 
     img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      // Efecto suave al cargar
       transition: transform 0.3s;
     }
   }
@@ -1019,14 +1200,11 @@
   }
 }
 
-// ANIMACIÓN DE CASCADA (Stagger)
-// Esto hará que los productos entren uno por uno cuando se abra el acordeón
 .accordion-body.open .mini-product-card {
   animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0; // Empiezan invisibles
+  opacity: 0;
 }
 
-// Definimos retrasos para los primeros 5 items
 .accordion-body.open .mini-product-card:nth-child(1) {
   animation-delay: 0.1s;
 }
@@ -1075,7 +1253,6 @@
   }
 }
 
-// --- REGLA: Ocultar si hay un modal abierto ---
 :host-context(body.modal-is-open) .sofilu-header,
 :host-context(body.modal-is-open) .mobile-floating-header {
   transform: translateY(-120%);

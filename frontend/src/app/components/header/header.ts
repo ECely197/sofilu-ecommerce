@@ -65,6 +65,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   isProfileMenuOpen = signal(false);
   isMobileMenuOpen = signal(false);
   activeAccordion = signal<string | null>(null);
+  isSearchExpanded = signal(false);
 
   navItems = signal<NavItem[]>([]);
   activeMenu = signal<NavItem | null>(null);
@@ -190,10 +191,65 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     this.splitTexts = [];
   }
 
+  private animatePill(targetX: number, targetWidth: number): void {
+    if (!this.navPill) return;
+    const pillEl = this.navPill.nativeElement;
+    
+    // Si la píldora estaba invisible (opacity 0), la mostramos con un fade suave sin estiramiento
+    const currentOpacity = parseFloat(gsap.getProperty(pillEl, 'opacity') as string) || 0;
+    if (currentOpacity === 0) {
+      gsap.set(pillEl, { x: targetX, width: targetWidth });
+      gsap.to(pillEl, { opacity: 1, duration: 0.35, ease: 'power2.out' });
+      return;
+    }
+
+    const currentX = gsap.getProperty(pillEl, 'x') as number || 0;
+    const delta = targetX - currentX;
+    const dist = Math.abs(delta);
+
+    if (dist > 10) {
+      // Determinamos el factor de estiramiento ("liquid stretch") basado en la distancia
+      const stretchVal = Math.min(dist * 0.3, 75);
+      
+      // Si va a la derecha: el inicio de la píldora se queda en currentX, y crece su ancho cubriendo la distancia
+      // Si va a la izquierda: el inicio va a targetX, y su ancho se expande cubriendo la distancia hasta el viejo currentX
+      const tempX = delta > 0 ? currentX : targetX;
+      const currentWidth = parseFloat(gsap.getProperty(pillEl, 'width') as string) || targetWidth;
+      const tempWidth = dist + (delta > 0 ? targetWidth : currentWidth) + stretchVal;
+
+      // Fase 1: Estirar
+      gsap.to(pillEl, {
+        x: tempX,
+        width: tempWidth,
+        duration: 0.22,
+        ease: 'power3.out',
+        overwrite: 'auto',
+        onComplete: () => {
+          // Fase 2: Contraer y asentar elásticamente en su destino final
+          gsap.to(pillEl, {
+            x: targetX,
+            width: targetWidth,
+            duration: 0.48,
+            ease: 'elastic.out(1.1, 0.72)',
+            overwrite: 'auto',
+          });
+        },
+      });
+    } else {
+      // Movimiento corto, transición de acomodación simple
+      gsap.to(pillEl, {
+        x: targetX,
+        width: targetWidth,
+        duration: 0.4,
+        ease: 'power3.out',
+        overwrite: 'auto',
+      });
+    }
+  }
+
   setupNavAnimations(): void {
     if (!this.navPill || !this.navLinks || window.innerWidth < 1024) return;
     this.revertSplitText();
-    const pillEl = this.navPill.nativeElement;
 
     this.navLinks.forEach((linkRef) => {
       const linkWrapperEl = linkRef.nativeElement;
@@ -213,26 +269,21 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
         linkWrapperEl.onmouseenter = () => {
           const targetX = linkWrapperEl.offsetLeft;
           const targetWidth = linkWrapperEl.offsetWidth;
-          gsap.to(pillEl, {
-            x: targetX,
-            width: targetWidth,
-            opacity: 1,
-            duration: 0.5,
-            ease: 'elastic.out(1, 0.75)',
-            overwrite: true,
-          });
+          
+          this.animatePill(targetX, targetWidth);
+
           gsap.to(splitOriginal.chars, {
             yPercent: -150,
-            stagger: 0.02,
-            duration: 0.3,
-            ease: 'power2.out',
+            stagger: 0.015,
+            duration: 0.35,
+            ease: 'power3.out',
             overwrite: true,
           });
           gsap.to(splitReveal.chars, {
             yPercent: -100,
-            stagger: 0.02,
-            duration: 0.3,
-            ease: 'power2.out',
+            stagger: 0.015,
+            duration: 0.35,
+            ease: 'power3.out',
             overwrite: true,
           });
         };
@@ -241,16 +292,16 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
           if (!linkAnchorEl.classList.contains('active')) {
             gsap.to(splitOriginal.chars, {
               yPercent: 0,
-              stagger: 0.02,
-              duration: 0.3,
-              ease: 'power2.in',
+              stagger: 0.015,
+              duration: 0.35,
+              ease: 'power3.inOut',
               overwrite: true,
             });
             gsap.to(splitReveal.chars, {
               yPercent: 100,
-              stagger: 0.02,
-              duration: 0.3,
-              ease: 'power2.in',
+              stagger: 0.015,
+              duration: 0.35,
+              ease: 'power3.inOut',
               overwrite: true,
             });
           }
@@ -264,7 +315,6 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   updatePillToActiveLink(): void {
     if (!this.navPill || !this.navLinks || window.innerWidth < 1024) return;
 
-    // CORRECCIÓN TYPESCRIPT (=== true)
     const activeLinkWrapper = this.navLinks.find(
       (linkRef) =>
         linkRef.nativeElement
@@ -274,14 +324,7 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
 
     if (activeLinkWrapper) {
       const el = activeLinkWrapper.nativeElement;
-      gsap.to(this.navPill.nativeElement, {
-        x: el.offsetLeft,
-        width: el.offsetWidth,
-        opacity: 1,
-        duration: 0.5,
-        ease: 'elastic.out(1, 0.75)',
-        overwrite: 'auto',
-      });
+      this.animatePill(el.offsetLeft, el.offsetWidth);
 
       this.navLinks.forEach((wrapper) => {
         const isActive = wrapper === activeLinkWrapper;
@@ -296,23 +339,27 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
             if (isActive) {
               gsap.to(charsOrig, {
                 yPercent: -150,
-                duration: 0.3,
+                duration: 0.35,
+                ease: 'power3.out',
                 overwrite: true,
               });
               gsap.to(charsReveal, {
                 yPercent: -100,
-                duration: 0.3,
+                duration: 0.35,
+                ease: 'power3.out',
                 overwrite: true,
               });
             } else {
               gsap.to(charsOrig, {
                 yPercent: 0,
-                duration: 0.3,
+                duration: 0.35,
+                ease: 'power3.out',
                 overwrite: true,
               });
               gsap.to(charsReveal, {
                 yPercent: 100,
-                duration: 0.3,
+                duration: 0.35,
+                ease: 'power3.out',
                 overwrite: true,
               });
             }
@@ -420,7 +467,31 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     if (query) {
       this.router.navigate(['/search'], { queryParams: { q: query } });
       searchInput.value = '';
+      this.isSearchExpanded.set(false);
       searchInput.blur();
+    }
+  }
+
+  toggleSearch(event: MouseEvent, input: HTMLInputElement): void {
+    event.stopPropagation();
+    if (!this.isSearchExpanded()) {
+      this.isSearchExpanded.set(true);
+      setTimeout(() => input.focus(), 80);
+    } else {
+      const query = input.value.trim();
+      if (query) {
+        this.router.navigate(['/search'], { queryParams: { q: query } });
+        input.value = '';
+        this.isSearchExpanded.set(false);
+      } else {
+        this.isSearchExpanded.set(false);
+      }
+    }
+  }
+
+  onSearchBlur(input: HTMLInputElement): void {
+    if (!input.value.trim()) {
+      this.isSearchExpanded.set(false);
     }
   }
   toggleProfileMenu(event?: MouseEvent): void {
