@@ -56,29 +56,77 @@
                     </a>
                   }
                 </div>
+
                 <div class="product-preview-container">
                   @if (activeSubCategory(); as subCat) {
-                    <div class="product-preview-grid">
-                      @for (product of subCat.products; track product._id) {
+                    <!-- PROTECCIÓN: Solo mostramos la cuadrícula si realmente HAY productos -->
+                    @if (subCat.products && subCat.products.length > 0) {
+                      <div class="product-preview-grid">
+                        <!-- PROTECCIÓN 2: Slice limita a máximo 3 productos para no romper el menú -->
+                        @for (
+                          product of subCat.products | slice: 0 : 3;
+                          track product._id
+                        ) {
+                          <a
+                            [routerLink]="['/product', product._id]"
+                            (click)="closeMegaMenu()"
+                            class="preview-product-card"
+                            #previewCard
+                          >
+                            <div class="preview-image-wrapper">
+                              @if (product.images.length > 0) {
+                                <img
+                                  [src]="product.images[0]"
+                                  [alt]="product.name"
+                                />
+                              } @else {
+                                <div class="image-placeholder">
+                                  <span class="material-symbols-outlined"
+                                    >image</span
+                                  >
+                                </div>
+                              }
+                            </div>
+                            <p>{{ product.name }}</p>
+                          </a>
+                        }
+                      </div>
+
+                      <!-- Botón para ver todo el catálogo de esa sección -->
+                      <div class="view-all-container">
                         <a
-                          [routerLink]="['/product', product._id]"
-                          class="preview-product-card"
-                          #previewCard
+                          href="javascript:void(0)"
+                          (click)="handleSubCategoryClick($event, subCat)"
+                          class="view-all-link-desktop"
                         >
-                          <div class="preview-image-wrapper">
-                            @if (product.images.length > 0) {
-                              <img
-                                [src]="product.images[0]"
-                                [alt]="product.name"
-                              />
-                            } @else {
-                              <div class="image-placeholder"></div>
-                            }
-                          </div>
-                          <p>{{ product.name }}</p>
+                          Ver todo en {{ subCat.name }}
+                          <span class="material-symbols-outlined"
+                            >arrow_forward</span
+                          >
                         </a>
-                      }
-                    </div>
+                      </div>
+                    } @else {
+                      <!-- ESTO APARECERÁ SI LA CATEGORÍA NO TIENE PRODUCTOS CARGADOS -->
+                      <div class="empty-products-msg fade-in">
+                        <div class="icon-circle">
+                          <span class="material-symbols-outlined"
+                            >inventory_2</span
+                          >
+                        </div>
+                        <div class="empty-text">
+                          <h4>Descubre {{ subCat.name }}</h4>
+                          <p>
+                            Explora la colección completa de esta categoría.
+                          </p>
+                        </div>
+                        <button
+                          (click)="handleSubCategoryClick($event, subCat)"
+                          class="btn-explore"
+                        >
+                          Ver Colección
+                        </button>
+                      </div>
+                    }
                   }
                 </div>
               </div>

@@ -87,22 +87,38 @@ router.get("/section/sale", async (req, res) => {
 
 /**
  * @route   GET /api/products/category/:slug
- * @desc    Obtener todos los productos de una categoría específica por su slug.
+ * @desc    Obtener todos los productos de una categoría y SUS SUBCATEGORÍAS por slug.
  * @access  Public
  */
 router.get("/category/:slug", async (req, res) => {
   try {
-    const category = await Category.findOne({ slug: req.params.slug });
-    if (!category) {
-      // No es un error, simplemente no hay productos para una categoría inexistente.
+    // 1. Buscamos la categoría principal por su slug
+    const parentCategory = await Category.findOne({ slug: req.params.slug });
+
+    if (!parentCategory) {
+      // Si no existe, devolvemos un array vacío como antes.
       return res.json([]);
     }
+
+    // 2. Buscamos todas las subcategorías que pertenecen a esta categoría principal.
+    const subCategories = await Category.find({ parentCategory: parentCategory._id });
+
+    // 3. Creamos un array que contenga el ID de la categoría principal Y los IDs de todas sus subcategorías.
+    const categoryIds = [
+      parentCategory._id,
+      ...subCategories.map(sub => sub._id)
+    ];
+
+    // 4. ✨ LA CONSULTA CORREGIDA ✨
+    // Ahora buscamos productos cuyo campo 'categories' contenga CUALQUIERA de los IDs que encontramos.
     const products = await Product.find({
-      categories: { $in: [category._id] },
+      categories: { $in: categoryIds },
     }).populate("categories");
+
     res.json(products);
+
   } catch (error) {
-    console.error("Error al obtener productos por categoría:", error);
+    console.error("Error al obtener productos por categoría y subcategorías:", error);
     res
       .status(500)
       .json({ message: "Error al obtener productos por categoría." });

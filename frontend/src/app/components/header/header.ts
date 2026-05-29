@@ -79,34 +79,23 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
   constructor() {}
 
   ngOnInit() {
-    this.navigationService.getNavigationData().subscribe((data) => {
-      this.navItems.set(data);
-      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-        setTimeout(() => this.setupNavAnimations(), 100);
-      }
-      const cleanData = data.map((section) => {
-        // Dentro de cada sección, filtramos la lista de subcategorías
-        const filteredSubs = section.subCategories.filter(
-          (sub) =>
-            sub.id !== 'complementos' && // Ocultamos Complementos
-            sub.id !== 'plumones', // Ocultamos Plumones (si aún lo necesitas ocultar)
-        );
+    this.navigationService.getNavigationData()
+      .pipe(
+        // 'filter' se asegura de que solo continuemos si los datos no son null.
+        filter((data): data is NavItem[] => data !== null) 
+      )
+      .subscribe((data) => {
+        // El resto de tu código para filtrar 'complementos' y 'plumones'
+        // puede ir aquí si todavía lo necesitas, o manejarlo directamente en la vista.
+        this.navItems.set(data);
 
-        // Devolvemos la sección con la lista de hijos LIMPIA
-        return {
-          ...section,
-          subCategories: filteredSubs,
-        };
+        // Ya no necesitas el segundo bloque de filtrado, el servicio ya entrega todo listo.
+        // Solo necesitas configurar las animaciones después de recibir los datos.
+        if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+          // Un pequeño retraso para asegurar que el DOM se haya actualizado.
+          setTimeout(() => this.setupNavAnimations(), 50); 
+        }
       });
-
-      // Guardamos la data ya filtrada en la señal
-      this.navItems.set(cleanData);
-
-      // Configuración de animaciones (solo desktop)
-      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
-        setTimeout(() => this.setupNavAnimations(), 100);
-      }
-    });
 
     this.routerSub = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -340,6 +329,28 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     if (item.subCategories && item.subCategories.length > 0) {
       this.activeMenu.set(item);
       this.activeSubCategory.set(item.subCategories[0]);
+
+      console.log('Categoría actual:', item.subCategories[0].name);
+      console.log(
+        'Productos que llegaron del servicio:',
+        item.subCategories[0].products,
+      );
+
+      // FIX: Posicionar la píldora rosa inmediatamente en el primer elemento
+      setTimeout(() => {
+        this.zone.runOutsideAngular(() => {
+          const list =
+            this.elementRef.nativeElement.querySelector('.sub-category-list');
+          const firstLink = list?.querySelector('.sub-category-link');
+          if (firstLink && this.subCategoryPill) {
+            gsap.set(this.subCategoryPill.nativeElement, {
+              top: firstLink.offsetTop,
+              height: firstLink.offsetHeight,
+              opacity: 1,
+            });
+          }
+        });
+      }, 0);
     } else {
       this.activeMenu.set(null);
     }
@@ -364,12 +375,23 @@ export class Header implements OnInit, AfterViewInit, OnDestroy {
     });
   }
   handleSubCategoryListLeave(): void {
+    // FIX MEJORADO: Cuando sacas el mouse de la lista, la píldora vuelve al elemento seleccionado
+    // en lugar de desaparecer. Así el usuario siempre sabe en qué categoría está.
     this.zone.runOutsideAngular(() => {
       if (this.subCategoryPill) {
-        gsap.to(this.subCategoryPill.nativeElement, {
-          opacity: 0,
-          duration: 0.2,
-        });
+        const list =
+          this.elementRef.nativeElement.querySelector('.sub-category-list');
+        const activeLink = list?.querySelector('.sub-category-link.active');
+
+        if (activeLink) {
+          gsap.to(this.subCategoryPill.nativeElement, {
+            top: (activeLink as HTMLElement).offsetTop,
+            height: (activeLink as HTMLElement).offsetHeight,
+            opacity: 1,
+            duration: 0.3,
+            ease: 'power2.out',
+          });
+        }
       }
     });
   }

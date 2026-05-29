@@ -134,8 +134,8 @@
 .main-image-wrapper {
   flex-grow: 1;
   background: white;
-  border-radius: 1.5rem;
-  overflow: hidden;
+  border-radius: 1.5rem; // Mantenemos el radio en el contenedor por si la imagen no carga
+  overflow: hidden; // Lo dejamos como buena práctica
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,6 +149,11 @@
       opacity 0.4s ease-in-out,
       transform 0.5s ease;
     filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.08));
+    padding: 2rem;
+
+    // ✨ LA SOLUCIÓN INFALIBLE ESTÁ AQUÍ ✨
+    // Forzamos a la imagen a tener los mismos bordes redondeados que su contenedor.
+    border-radius: inherit; 
 
     &.fade-out {
       opacity: 0;
@@ -799,5 +804,225 @@ app-product-addons {
   @media (min-width: 1024px) {
     margin-top: 4rem;
     margin-bottom: 4rem;
+  }
+}
+
+
+/* ==========================================================================
+   ESTILOS PARA CONTENIDO ENRIQUECIDO (MARKDOWN/HTML)
+   ========================================================================== */
+.prose {
+  // --- Estilos base para todo el texto ---
+  line-height: 1.8;
+  color: #555;
+  font-size: 1rem;
+  font-family: 'Inter', sans-serif; // Una fuente más legible para textos largos
+
+  // --- Párrafos ( <p> ) ---
+  // Crea el espacio entre un párrafo y el siguiente.
+  p {
+    margin-bottom: 1.5em; // "em" es relativo al tamaño de la fuente, es más consistente.
+    &:last-child {
+      margin-bottom: 0; // El último párrafo no necesita espacio extra abajo.
+    }
+  }
+
+  // --- Títulos dentro de la descripción ( <h3>, <h4> ) ---
+  // Si usas títulos para separar secciones
+  h3, h4 {
+    font-family: 'Baloo 2', sans-serif;
+    color: #333;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    line-height: 1.3;
+  }
+  h3 { font-size: 1.4em; }
+  h4 { font-size: 1.2em; }
+
+  // --- Negritas ( <strong> ) ---
+  // Las hace más notorias y con el color principal del texto.
+  strong {
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  // --- Listas con Viñetas ( <ul> ) ---
+  ul {
+    list-style: none; // Quitamos la viñeta redonda y negra por defecto.
+    padding-left: 1.5em; // Espacio a la izquierda para alinear nuestras viñetas.
+    margin-bottom: 1.5em;
+  }
+
+  // --- Cada elemento de la lista ( <li> ) ---
+  li {
+    position: relative; // Necesario para posicionar nuestra viñeta personalizada.
+    padding-left: 1.2em; // Espacio para que el texto no se monte en la viñeta.
+    margin-bottom: 0.8em; // Aire entre cada punto de la lista.
+
+    // ✨ ¡LA VIÑETA BONITA! ✨
+    // Creamos una viñeta personalizada con el color rosa de tu marca.
+    &::before {
+      content: '•'; // El carácter de la viñeta
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--pastel-pink, #ffd1dc); // ¡El color de tu marca!
+      font-size: 1.5em; // Hacemos el punto un poco más grande y llamativo.
+      line-height: 1;
+    }
+  }
+
+  // --- Cursiva / Énfasis ( <em> o <i> ) ---
+  em, i {
+    color: #4a4a4a;
+    font-style: italic;
+  }
+}
+
+/* ==========================================================================
+   MEJORAS VISUALES PREMIUM PARA LA PÁGINA DE PRODUCTO
+   ========================================================================== */
+
+// --- 1. GALERÍA: Hacer que la imagen "flote" ---
+// Hacemos que la imagen principal no cubra todo el fondo blanco, sino que se contenga.
+.main-image-wrapper img {
+  object-fit: contain; // Cambia 'cover' por 'contain'
+  padding: 2rem;       // Le da un aire para que no toque los bordes
+  
+  @media (max-width: 1023px) {
+    padding: 1rem;
+  }
+}
+
+// --- 2. TARJETA DE INFO: Mejoramos el layout general ---
+.info-card {
+  // Le damos un poco más de aire y estructura interna
+  gap: 1.5rem; 
+
+  @media (min-width: 1024px) {
+    padding: 2.5rem; // Más padding en escritorio para un look más lujoso
+  }
+}
+
+// --- 3. TÍTULO Y PRECIO (Jerarquía Visual Corregida) ---
+.product-title {
+  // Reducimos el tamaño para que sea elegante, no abrumador
+  font-size: clamp(1.8rem, 4vw, 2.5rem); 
+  font-weight: 700; // Un poco menos grueso que 800 para más refinamiento
+  letter-spacing: -0.5px;
+  color: #333;
+}
+
+.product-price {
+  // ¡HACEMOS EL PRECIO PROTAGONISTA!
+  font-size: clamp(2.2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px dashed #e0e0e0; // Una línea sutil para separar
+}
+
+// --- 4. BLOQUE DE ACCIONES (CTA POTENCIADO) ---
+// En desktop, la clase que creamos en el HTML anterior
+.desktop-only-actions {
+  display: grid;
+  // AQUÍ ESTÁ LA CORRECCIÓN: Definimos 3 columnas para los 3 elementos.
+  // Cantidad (auto), Añadir (1fr, ocupa el espacio sobrante), Wishlist (auto).
+  grid-template-columns: auto 1fr auto; 
+  gap: 1rem;
+  align-items: center; // Esto asegura que todos se alineen verticalmente
+  margin-top: 1rem;
+}
+
+// Selector de cantidad mejorado
+.quantity-selector {
+  // Lo hacemos más alto y robusto
+  height: 55px;
+  background: #f1f2f6;
+  border-radius: 50px;
+  padding: 0.4rem;
+
+  button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+  span {
+    font-size: 1.2rem;
+    width: 40px;
+  }
+}
+
+// ✨ BOTÓN DE AÑADIR AL CARRITO (¡LA ESTRELLA!) ✨
+.add-to-cart-btn {
+  height: 55px;
+  // ¡USAMOS EL COLOR DE TU MARCA PARA EL CTA MÁS IMPORTANTE!
+  background: var(--pastel-pink, #ffd1dc); 
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-radius: 50px;
+  // Sombra que combina con el color rosa
+  box-shadow: 0 8px 25px -5px rgba(255, 182, 193, 0.7);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  // Añadimos un ícono para más claridad
+  &::before {
+    content: 'shopping_bag';
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px -5px rgba(255, 182, 193, 0.9);
+  }
+
+  &.success {
+    background: #2ecc71; // Mantenemos el verde para el éxito
+    box-shadow: 0 8px 25px -5px rgba(46, 204, 113, 0.7);
+  }
+}
+
+// Botón de Wishlist rediseñado
+.wishlist-btn {
+  width: 55px;
+  height: 55px;
+  background: #fff0f5; // Un fondo rosa muy pálido
+  border: 1px solid transparent;
+
+  &:hover {
+    border-color: var(--pastel-pink);
+  }
+}
+
+// --- 5. PÍLDORAS DE CONFIANZA (Opcional pero recomendado) ---
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap; // Permite que se acomoden en pantallas pequeñas
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px dashed #e0e0e0;
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8f9fa;
+    padding: 0.6rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    border: 1px solid #f0f0f0;
+    
+    .material-symbols-outlined {
+      font-size: 1.2rem;
+      color: #aaa;
+    }
   }
 }
