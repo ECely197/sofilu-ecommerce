@@ -364,3 +364,87 @@
     transform: translateY(0);
   }
 }
+
+// --- NUEVOS ESTILOS PARA OPCIONES UNIFICADAS ---
+
+.card-meta {
+  margin: 0.5rem 0;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  
+  &.standard {
+    background: #dcfce7;
+    color: #15803d;
+  }
+  &.local {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+  &.pickup {
+    background: #ffedd5;
+    color: #c2410c;
+  }
+  &.special {
+    background: #f3e8ff;
+    color: #7e22ce;
+  }
+}
+
+.card-icon-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  
+  .material-symbols-outlined {
+    font-size: 4rem;
+  }
+  
+  &.standard {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  &.local {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  &.pickup {
+    background: #fff7ed;
+    color: #ea580c;
+  }
+  &.special {
+    background: #faf5ff;
+    color: #9333ea;
+  }
+}
+
+// Estilos para material-select
+.material-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.5rem;
+  padding-right: 2.5rem;
+}
+
+.select-field {
+  position: relative;
+  
+  .select-label {
+    top: -0.5rem;
+    left: 1rem;
+    font-size: 0.8rem;
+    color: var(--pastel-pink, #ffd1dc);
+    background: white;
+    padding: 0 0.4rem;
+  }
+}
+

@@ -547,3 +547,62 @@
     box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.3);
   }
 }
+
+// --- ESTILOS ADICIONALES PARA OPCIONES DE ENVÍO UNIFICADAS ---
+
+.option-image-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.option-icon-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  
+  .material-symbols-outlined {
+    font-size: 2rem;
+  }
+  
+  &.standard {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+  &.local {
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  &.pickup {
+    background: #fff7ed;
+    color: #ea580c;
+  }
+  &.special {
+    background: #faf5ff;
+    color: #9333ea;
+  }
+}
+
+.cost-badge {
+  display: inline-block;
+  background-color: #f3f4f6; // Gris claro
+  color: #374151; // Gris oscuro
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  
+  &.free {
+    background-color: #dcfce7; // Verde claro
+    color: #15803d; // Verde oscuro
+  }
+}
+

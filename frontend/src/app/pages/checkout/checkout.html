@@ -58,73 +58,46 @@
         </div>
       </div>
 
-      <!-- 2. TIPO DE ENTREGA -->
+      <!-- 2. MÉTODO DE ENVÍO -->
       <div class="step-container">
-        <h2 class="step-title">Tipo de Entrega</h2>
+        <h2 class="step-title">Método de Envío</h2>
         <div class="selector-list">
-          <!-- Opción 1: Envío Estándar -->
-          <div
-            class="card-selector"
-            [class.selected]="deliveryType() === 'Normal'"
-            (click)="selectDeliveryType('Normal')"
-            appRipple
-          >
-            <div class="radio-selector"><div class="radio-dot"></div></div>
-            <div class="card-details">
-              <p class="card-title-text">Envío Estándar</p>
-              <p class="card-subtitle-text">
-                Llega por transportadora a todo el país.
-              </p>
-            </div>
-          </div>
-          <!-- Opción 2: Envío Personalizado -->
-          <div
-            class="card-selector"
-            [class.selected]="deliveryType() === 'Personalizada'"
-            (click)="selectDeliveryType('Personalizada')"
-            appRipple
-          >
-            <div class="radio-selector"><div class="radio-dot"></div></div>
-            <div class="card-details">
-              <p class="card-title-text">Entrega Especial</p>
-              <p class="card-subtitle-text">
-                ¡Haz que sea inolvidable! Elige una de nuestras opciones.
-              </p>
-            </div>
-          </div>
-
-          <!-- ACORDEÓN DE OPCIONES ESPECIALES -->
-          <div
-            class="special-delivery-options"
-            [class.open]="deliveryType() === 'Personalizada'"
-          >
-            <div class="options-inner-container">
-              @for (option of deliveryOptions(); track option._id) {
-                <div
-                  class="option-card-small"
-                  [class.selected]="
-                    selectedDeliveryOption()?._id === option._id
-                  "
-                  (click)="selectDeliveryOption(option)"
-                >
-                  <img [src]="option.imageUrl" [alt]="option.name" />
-                  <div class="info">
-                    <strong>{{ option.name }}</strong>
-                    <span
-                      >+{{
-                        option.cost | currency: "COP" : "symbol" : "1.0-0"
-                      }}</span
-                    >
-                  </div>
+          @for (option of filteredDeliveryOptions(); track option._id) {
+            <div
+              class="card-selector"
+              [class.selected]="selectedDeliveryOption()?._id === option._id"
+              (click)="selectDeliveryOption(option)"
+              appRipple
+            >
+              <div class="radio-selector"><div class="radio-dot"></div></div>
+              
+              @if (option.imageUrl) {
+                <img [src]="option.imageUrl" [alt]="option.name" class="option-image-preview" />
+              } @else {
+                <div class="option-icon-preview" [ngClass]="option.type || 'special'">
+                  <span class="material-symbols-outlined">
+                    {{ option.type === 'standard' ? 'local_shipping' : option.type === 'local' ? 'moped' : option.type === 'pickup' ? 'storefront' : 'featured_seasonal_and_gifts' }}
+                  </span>
                 </div>
-              } @empty {
-                <p class="no-options-msg">
-                  No hay opciones de entrega especial disponibles por el
-                  momento.
-                </p>
               }
+              
+              <div class="card-details">
+                <p class="card-title-text">
+                  {{ option.name }}
+                  @if (option.cost > 0) {
+                    <span class="cost-badge">+{{ option.cost | currency: "COP" : "symbol" : "1.0-0" }}</span>
+                  } @else {
+                    <span class="cost-badge free">Gratis</span>
+                  }
+                </p>
+                <p class="card-subtitle-text">{{ option.description }}</p>
+              </div>
             </div>
-          </div>
+          } @empty {
+            <div class="no-items-message">
+              <p>No hay opciones de envío disponibles para tu dirección.</p>
+            </div>
+          }
         </div>
       </div>
 
@@ -245,15 +218,13 @@
         }
 
         <!-- LÓGICA DE ENVÍO CORREGIDA -->
-        @if (finalShippingCost() > 0) {
+        @if (selectedDeliveryOption(); as selectedOpt) {
           <div class="summary-row">
+            <span>{{ selectedOpt.name }}</span>
             <span>{{
-              deliveryType() === "Normal"
-                ? "Envío Estándar"
-                : selectedDeliveryOption()?.name || "Entrega Especial"
-            }}</span>
-            <span>{{
-              finalShippingCost() | currency: "COP" : "symbol" : "1.0-0"
+              finalShippingCost() > 0
+                ? (finalShippingCost() | currency: "COP" : "symbol" : "1.0-0")
+                : "Gratis"
             }}</span>
           </div>
         }

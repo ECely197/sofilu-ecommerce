@@ -42,7 +42,8 @@ export class DeliveryOptionsComponent implements OnInit {
       name: ['', Validators.required],
       description: ['', Validators.required],
       cost: [0, [Validators.required, Validators.min(0)]],
-      imageUrl: ['', Validators.required],
+      imageUrl: [''],
+      type: ['special', Validators.required],
       isActive: [true],
     });
     this.loadOptions();
@@ -61,15 +62,37 @@ export class DeliveryOptionsComponent implements OnInit {
       // Editando
       this.editingOptionId.set(option._id);
       this.deliveryForm.patchValue(option);
-      this.imagePreview.set(option.imageUrl);
+      this.imagePreview.set(option.imageUrl || null);
     } else {
       // Creando
       this.editingOptionId.set(null);
-      this.deliveryForm.reset({ isActive: true, cost: 0 });
+      this.deliveryForm.reset({ isActive: true, cost: 0, type: 'special' });
       this.imagePreview.set(null);
     }
     this.isFormVisible.set(true);
     document.body.style.overflow = 'hidden';
+  }
+
+  getIconForType(type?: string): string {
+    switch (type) {
+      case 'standard': return 'local_shipping';
+      case 'local': return 'moped';
+      case 'pickup': return 'storefront';
+      case 'special':
+      default:
+        return 'featured_seasonal_and_gifts';
+    }
+  }
+
+  getLabelForType(type?: string): string {
+    switch (type) {
+      case 'standard': return 'Envío Nacional';
+      case 'local': return 'Envío Bogotá';
+      case 'pickup': return 'Recoger en Tienda';
+      case 'special':
+      default:
+        return 'Entrega Especial';
+    }
   }
 
   closeForm() {

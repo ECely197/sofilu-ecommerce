@@ -8,9 +8,10 @@ export interface DeliveryOption {
   _id: string;
   name: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
   cost: number;
   isActive: boolean;
+  type?: 'standard' | 'local' | 'pickup' | 'special';
 }
 
 @Injectable({

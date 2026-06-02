@@ -17,7 +17,13 @@ const deliveryOptionSchema = new Schema(
     },
     imageUrl: {
       type: String,
-      required: [true, "La imagen es obligatoria."],
+      required: false,
+    },
+    type: {
+      type: String,
+      enum: ["standard", "local", "pickup", "special"],
+      default: "special",
+      required: true,
     },
     cost: {
       type: Number,

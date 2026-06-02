@@ -77,12 +77,27 @@ export class checkout implements OnInit {
 
   // --- COMPUTED SIGNALS (LÓGICA MEJORADA) ---
 
+  // Filtro de opciones según dirección seleccionada
+  filteredDeliveryOptions = computed(() => {
+    const address = this.selectedAddress();
+    const options = this.deliveryOptions();
+    if (!address) return [];
+
+    const isBogota = address.city.toLowerCase().includes('bogot');
+
+    return options.filter((option) => {
+      const type = option.type || 'special';
+      if (isBogota) {
+        return type === 'local' || type === 'pickup' || type === 'special';
+      } else {
+        return type === 'standard' || type === 'special';
+      }
+    });
+  });
+
   // Calcula el costo de envío final basándose en la selección
   finalShippingCost = computed(() => {
-    if (this.deliveryType() === 'Personalizada') {
-      return this.selectedDeliveryOption()?.cost ?? 0;
-    }
-    return this.shippingCost(); // Costo estándar
+    return this.selectedDeliveryOption()?.cost ?? 0;
   });
 
   grandTotal = computed(() => {
@@ -119,6 +134,7 @@ export class checkout implements OnInit {
     // Cargar opciones de entrega especial
     this.deliveryOptionService.getActiveOptions().subscribe((options) => {
       this.deliveryOptions.set(options);
+      this.updateDefaultDeliveryOption();
     });
   }
 
@@ -127,12 +143,29 @@ export class checkout implements OnInit {
   selectAddress(address: Address): void {
     this.selectedAddress.set(address);
     if (this.appSettings) {
-      const isBogota = address.city.toLowerCase().includes('bogota');
+      const isBogota = address.city.toLowerCase().includes('bogot');
       this.shippingCost.set(
         isBogota
           ? this.appSettings.shippingCostBogota
           : this.appSettings.shippingCostNational,
       );
+    }
+    this.updateDefaultDeliveryOption();
+  }
+
+  updateDefaultDeliveryOption() {
+    const options = this.filteredDeliveryOptions();
+    if (options.length > 0) {
+      const current = this.selectedDeliveryOption();
+      if (!current || !options.some((o) => o._id === current._id)) {
+        // Priorizar tipo standard o local antes que pickup o especiales
+        const preferred =
+          options.find((o) => o.type === 'local' || o.type === 'standard') ||
+          options[0];
+        this.selectDeliveryOption(preferred);
+      }
+    } else {
+      this.selectedDeliveryOption.set(null);
     }
   }
 
@@ -165,16 +198,12 @@ export class checkout implements OnInit {
 
   selectDeliveryType(type: 'Normal' | 'Personalizada') {
     this.deliveryType.set(type);
-    if (type === 'Normal') {
-      this.selectedDeliveryOption.set(null); // Limpiar selección si vuelven a normal
-    }
   }
 
   selectDeliveryOption(option: DeliveryOption) {
-    // Si tocan la misma, se deselecciona. Si es otra, se selecciona.
-    this.selectedDeliveryOption.update((current) =>
-      current?._id === option._id ? null : option,
-    );
+    this.selectedDeliveryOption.set(option);
+    const type = option.type || 'special';
+    this.deliveryType.set(type === 'special' ? 'Personalizada' : 'Normal');
   }
 
   openAddressModal() {

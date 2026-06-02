@@ -31,6 +31,7 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
       deliveryType,
       orderNotes,
       deliveryNotes,
+      selectedDeliveryOption,
     } = req.body;
 
     const userId = req.user.uid;
@@ -48,6 +49,7 @@ router.post("/init-transaction", authMiddleware, async (req, res) => {
       deliveryType,
       orderNotes,
       deliveryNotes,
+      selectedDeliveryOption,
     });
 
     const savedOrder = await newOrder.save();
