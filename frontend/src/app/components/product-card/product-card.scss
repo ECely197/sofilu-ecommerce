@@ -192,38 +192,84 @@
 // --- AJUSTES MÓVILES ---
 @media (max-width: 768px) {
   .product-card {
-    background: white; // Fondo sólido para mejor rendimiento y contraste
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); // Sombra ligera
+    background: rgba(255, 255, 255, 0.85); // Glassmorphism lechoso en móvil
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 1.8rem;
+    box-shadow: 0 8px 24px rgba(255, 182, 193, 0.08); // Sombra rosa sutil
+    padding: 0.8rem;
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s;
 
-    // Desactivamos la animación de hover exagerada en móvil
+    // Desactivamos la animación de hover de desktop en móvil
     &:hover {
       transform: none;
+      box-shadow: 0 8px 24px rgba(255, 182, 193, 0.08);
+      
+      .product-name {
+        color: var(--text-charcoal, #2c3e50);
+      }
+    }
+
+    // Feedback táctil expresivo al presionar (Material 3)
+    &:active {
+      transform: scale(0.97);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 12px rgba(255, 182, 193, 0.04);
     }
   }
 
   .image-container {
     height: 180px; // Altura fija móvil
-    background-color: #f9f9f9; // Fondo grisáceo suave
+    border-radius: 1.2rem;
+    background-color: #fcfcfc;
+    margin-bottom: 0.75rem;
   }
 
   .action-bubbles {
-    // ¡Siempre visibles!
+    // ¡Siempre visibles en móvil!
     opacity: 1;
     transform: translateY(0);
+    bottom: 0.6rem;
+    right: 0.6rem;
+    gap: 0.4rem;
 
-    // Un poco más grandes para el dedo
     .bubble-button {
       width: 38px;
       height: 38px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      color: #555;
+
+      &:active {
+        transform: scale(0.9);
+      }
+
+      &:first-child:hover,
+      &:first-child:active {
+        background: var(--pastel-pink, #ffd1dc);
+        color: white;
+      }
+
+      &.active {
+        color: #e11d48;
+        background: #fff0f5;
+        border-color: rgba(255, 182, 193, 0.4);
+      }
     }
   }
 
   .product-name {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-charcoal, #2c3e50);
   }
+  
   .price {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #e11d48; // Usar color de acento de marca en precio móvil
+    margin-top: 0.25rem;
   }
 }

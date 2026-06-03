@@ -25,9 +25,9 @@
 
   // Aspect Ratio Móvil
   @media (max-width: 768px) {
-    aspect-ratio: 4 / 5;
-    min-height: 60vh;
-    border-radius: 0 0 2.5rem 2.5rem;
+    aspect-ratio: 16 / 11;
+    min-height: 280px;
+    border-radius: 0 0 2rem 2rem;
   }
 }
 
@@ -85,6 +85,10 @@
 
   // Espaciado generoso (Layout aireado)
   padding: 2.5rem 5% 8rem 5%;
+
+  @media (max-width: 768px) {
+    padding: 4.5rem 1rem 5rem 1rem; // Más padding arriba para no colisionar con los botones flotantes del header
+  }
 }
 
 .text-content {
@@ -94,6 +98,10 @@
   flex-direction: column;
   align-items: center;
   gap: 1.5rem; // Espaciado generoso
+
+  @media (max-width: 768px) {
+    gap: 0.8rem;
+  }
 }
 
 .event-title {
@@ -114,6 +122,11 @@
 
   filter: drop-shadow(0px 8px 16px rgba(0, 0, 0, 0.4))
     drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+
+  @media (max-width: 768px) {
+    font-size: 1.9rem !important; // Evitamos desbordamiento
+    line-height: 1.2;
+  }
 }
 
 .event-subtitle {
@@ -130,6 +143,11 @@
   letter-spacing: 0.5px;
 
   filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.5));
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem !important;
+    line-height: 1.4;
+  }
 }
 
 // --- CONTENEDOR BOTÓN ---
@@ -143,7 +161,11 @@
   will-change: transform, opacity;
 
   @media (max-width: 768px) {
-    bottom: 10%;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: translateY(30px);
+    margin-top: 1.2rem;
   }
 }
 
@@ -155,9 +177,9 @@
   padding: 1.1rem 3rem;
   border-radius: 9999px; // Forma de píldora perfecta
   
-  // Colores de Sofilu
-  background-color: var(--pastel-pink, #ffd1dc);
-  color: var(--text-charcoal, #2c3e50);
+  // Colores de Sofilu (Degradado rosa a coral pastel)
+  background: linear-gradient(135deg, var(--pastel-pink, #ffd1dc) 0%, #ffb6c1 100%);
+  color: white; // Texto blanco de alto contraste sobre el degradado
   border: none;
   
   font-family: "Baloo 2", sans-serif;
@@ -173,11 +195,16 @@
     background-color 200ms cubic-bezier(0.4, 0.0, 0.2, 1.0);
   
   box-shadow: 
-    0 8px 24px rgba(253, 209, 220, 0.3), 
+    0 8px 24px rgba(255, 182, 193, 0.3), 
     0 4px 8px rgba(0, 0, 0, 0.1);
   
   position: relative;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 2.2rem;
+    font-size: 1rem;
+  }
 
   // Icono con peso (Material Symbols con FILL 1)
   .material-symbols-outlined {
@@ -190,7 +217,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--text-charcoal, #2c3e50);
+    background-color: white;
     opacity: 0;
     transition: opacity 150ms linear;
     pointer-events: none;
@@ -200,12 +227,12 @@
     // M3 Expressive: Elevación sutil en hover
     transform: translateY(-2px);
     box-shadow: 
-      0 12px 28px rgba(253, 209, 220, 0.5), 
+      0 12px 28px rgba(255, 182, 193, 0.5), 
       0 8px 16px rgba(0, 0, 0, 0.15);
     
-    // Activa la capa de estado hover (8%)
+    // Activa la capa de estado hover (12%)
     &::before {
-      opacity: 0.08;
+      opacity: 0.12;
     }
 
     // Animación de flecha en hover (feedback de acción)
@@ -216,13 +243,13 @@
 
   &:active {
     // M3 Expressive: Pressed state (se hunde un poco)
-    transform: translateY(0);
+    transform: translateY(0) scale(0.97);
     box-shadow: 
-      0 4px 10px rgba(253, 209, 220, 0.3),
+      0 4px 10px rgba(255, 182, 193, 0.3),
       0 2px 4px rgba(0, 0, 0, 0.1);
     
     &::before {
-      opacity: 0.16; // Aumenta la opacidad al presionar (16%)
+      opacity: 0.2; // Aumenta la opacidad al presionar
     }
   }
 }
@@ -271,6 +298,10 @@
   .cta-container {
     // Entrada del CTA al final con Easing Enfatizado
     animation: slideUpBtnExpressive 0.85s 0.55s cubic-bezier(0.4, 0.0, 0.2, 1.0) forwards;
+    
+    @media (max-width: 768px) {
+      animation: slideUpBtnMobile 0.85s 0.55s cubic-bezier(0.4, 0.0, 0.2, 1.0) forwards;
+    }
   }
 }
 
@@ -332,5 +363,16 @@
   to {
     opacity: 1;
     transform: translate(-50%, 0);
+  }
+}
+
+@keyframes slideUpBtnMobile {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

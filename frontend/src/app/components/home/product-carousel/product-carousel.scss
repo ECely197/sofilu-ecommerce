@@ -54,15 +54,22 @@
   }
 
   .btn-secondary {
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #fff0f5; // brand highlight background
+    border: 1px solid rgba(255, 182, 193, 0.3);
     border-radius: 50px;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: #555;
+    color: #e11d48; // brand text color
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 10px rgba(255, 182, 193, 0.1);
+    transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+
+    &:hover {
+      background: var(--pastel-pink, #ffd1dc);
+      color: white;
+      box-shadow: 0 6px 15px rgba(255, 182, 193, 0.35);
+    }
 
     &:active {
       transform: scale(0.95);
