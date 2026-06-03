@@ -1024,3 +1024,43 @@ app-product-addons {
     }
   }
 }
+
+// --- 6. DISPONIBILIDAD DE ENTREGA ---
+.delivery-availability-info {
+  display: flex;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.availability-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  .material-symbols-outlined {
+    font-size: 1.3rem;
+  }
+
+  &.immediate {
+    background-color: #dcfce7; // Verde claro pastel
+    color: #15803d; // Verde oscuro
+    border: 1px solid #bbf7d0;
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.1);
+  }
+
+  &.manufacturing {
+    background-color: #fef9c3; // Amarillo claro pastel
+    color: #854d0e; // Amarillo/marrón oscuro
+    border: 1px solid #fef08a;
+    box-shadow: 0 4px 10px rgba(234, 179, 8, 0.1);
+  }
+}

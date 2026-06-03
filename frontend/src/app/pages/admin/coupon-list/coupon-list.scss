@@ -67,7 +67,7 @@
 .coupon-list-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 1.2rem;
 }
 
 // FILA
@@ -76,18 +76,17 @@
   // Columnas: Código | Descuento | Usos | Fecha | Acciones
   grid-template-columns: 1.5fr 1.5fr 1fr 1fr 0.8fr;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1.2rem 2rem;
   background: white;
-  border-radius: 1rem;
+  border-radius: 1.8rem;
   border: 1px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.015);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 0 15px 35px rgba(255, 209, 220, 0.15); // Sombra rosa Sofilu
+    border-color: rgba(255, 182, 193, 0.3);
     z-index: 1;
   }
 
@@ -95,13 +94,13 @@
     background: transparent;
     border: none;
     box-shadow: none;
-    padding-bottom: 0.5rem;
+    padding: 0 2rem 0.5rem;
     .col {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      font-weight: 700;
-      color: #999;
-      letter-spacing: 0.5px;
+      font-weight: 800;
+      color: #7f8c8d;
+      letter-spacing: 0.8px;
     }
     &:hover {
       transform: none;
@@ -115,8 +114,10 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-family: "Inter", sans-serif;
   font-size: 0.95rem;
-  color: #555;
+  font-weight: 500;
+  color: #2c3e50;
   &.center {
     text-align: center;
   }
@@ -131,16 +132,18 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fff0f5;
-  border: 1px dashed var(--pastel-pink);
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  color: #d63384;
-  font-family: monospace;
-  font-size: 1rem;
-  font-weight: 700;
+  background: #fff0f5; // Fondo rosa sutil
+  border: 2px dashed rgba(255, 182, 193, 0.6); // Borde punteado de ticket
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  color: #e11d48;
+  font-family: "Inter", monospace;
+  font-size: 0.95rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(255, 182, 193, 0.1);
+  letter-spacing: 0.5px;
   .icon {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
 }
 
@@ -148,67 +151,76 @@
 .discount-value {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  line-height: 1.3;
   .percent,
   .amount {
     font-weight: 800;
-    color: #333;
-    font-size: 1.1rem;
+    color: #2c3e50;
+    font-size: 1.15rem;
   }
   .target {
     font-size: 0.75rem;
-    color: #888;
+    color: #7f8c8d;
+    font-weight: 600;
     text-transform: lowercase;
   }
 }
 
 // PILL DE USOS
 .usage-pill {
-  background: #f3f4f6;
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
+  background: #f1f2f6;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px; // Píldora
   font-size: 0.8rem;
-  font-weight: 600;
-  color: #555;
+  font-weight: 700;
+  color: #2c3e50;
+  border: 1px solid rgba(0, 0, 0, 0.03);
   &.limit-reached {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: #fff1f2;
+    color: #e11d48;
+    border-color: rgba(225, 29, 72, 0.1);
   }
 }
 
 .no-expire {
   color: #16a34a;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 // ACCIONES
 .actions-wrapper {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 .action-btn {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   &.edit {
-    background: #f0f9ff;
-    color: #0284c7;
+    background: #fff0f5;
+    color: #e11d48;
     &:hover {
-      background: #e0f2fe;
+      background: var(--pastel-pink, #ffd1dc);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 182, 193, 0.4);
     }
   }
   &.delete {
     background: #fff1f2;
     color: #e11d48;
     &:hover {
-      background: #ffe4e6;
+      background: #e11d48;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
     }
   }
 }

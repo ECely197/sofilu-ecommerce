@@ -106,43 +106,7 @@
   gap: 1rem;
 }
 
-// SELECT
-.select-field {
-  margin-bottom: 1.5rem;
-  label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #777;
-    margin-bottom: 0.5rem;
-  }
-  .select-wrapper {
-    position: relative;
-    select {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      background: #f9f9f9;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      appearance: none;
-      &:focus {
-        outline: none;
-        background: white;
-        border-color: var(--pastel-pink);
-      }
-    }
-    .chevron {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: #777;
-    }
-  }
-}
+
 
 // ACCIONES
 .form-actions {

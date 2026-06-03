@@ -24,19 +24,20 @@
 // --- TARJETAS ---
 .glass-panel {
   background: white;
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 2rem; // M3 Expressive
+  padding: 2.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .card-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0 0 1.5rem 0;
+  font-family: "Baloo 2", serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0 0 2rem 0;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid #f0f0f0;
-  color: #333;
+  border-bottom: 2px dashed rgba(0, 0, 0, 0.04);
 }
 
 // --- FORMULARIO ---
@@ -48,10 +49,11 @@
 }
 
 .form-description {
+  font-family: "Inter", sans-serif;
   font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
+  color: #7f8c8d;
+  margin-bottom: 1.8rem;
+  line-height: 1.6;
 }
 .material-field {
   margin-bottom: 1.5rem;
@@ -60,21 +62,23 @@
 .btn-material {
   @extend .btn-material;
   width: 100%;
-  padding: 0.8rem;
-  border-radius: 12px;
-  background: var(--text-charcoal);
+  padding: 0.85rem;
+  border-radius: 9999px; // Píldora
+  background: #2c3e50;
   color: white;
   font-weight: 700;
   border: none;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:disabled {
     background: #ccc;
     cursor: not-allowed;
+    box-shadow: none;
   }
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(44, 62, 80, 0.25);
   }
 }
 
@@ -82,23 +86,23 @@
 .vendors-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 .vendor-card {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding: 1.2rem;
   background: white;
-  border: 1px solid #eee;
-  border-radius: 1rem;
-  transition: all 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 1.5rem; // Orgánico
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    border-color: var(--pastel-pink);
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 0 10px 25px rgba(255, 209, 220, 0.15);
+    border-color: rgba(255, 182, 193, 0.3);
   }
 }
 
@@ -107,40 +111,42 @@
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e0f2fe, #bae6fd); // Azul suave
-  color: #0369a1;
+  background: linear-gradient(135deg, #fff0f5, var(--pastel-pink, #ffd1dc)); // Rosa suave
+  color: #e11d48;
   font-weight: 800;
   font-size: 1.2rem;
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(255, 182, 193, 0.2);
 }
 
 .vendor-info {
   flex-grow: 1;
   .vendor-name {
+    font-family: "Inter", sans-serif;
     font-weight: 700;
-    color: #333;
+    color: #2c3e50;
     font-size: 1rem;
     display: block;
   }
 }
 
 .delete-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: transparent;
   border: none;
-  color: #ccc;
+  color: #7f8c8d;
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    background: #fff5f5;
+    background: #fff1f2;
     color: #e11d48;
+    transform: scale(1.05);
   }
   span {
     font-size: 1.2rem;

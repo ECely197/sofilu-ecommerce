@@ -67,6 +67,9 @@ export class ProductForm implements OnInit {
   variantTemplates = signal<VariantTemplate[]>([]);
   warranties = signal<WarrantyType[]>([]);
   isCategoryDropdownOpen = signal(false);
+  isTemplateDropdownOpen = signal(false);
+  isVendorDropdownOpen = signal(false);
+  isWarrantyDropdownOpen = signal(false);
 
   ngOnInit() {
     // 1. Inicialización del Formulario
@@ -84,6 +87,8 @@ export class ProductForm implements OnInit {
       isOnSale: [false],
       salePrice: [null],
       warrantyType: [null],
+      immediateDelivery: [true],
+      manufacturingDays: [0, [Validators.min(0)]],
       variants: this.fb.array([]),
     });
 
@@ -161,6 +166,8 @@ export class ProductForm implements OnInit {
             isOnSale: product.isOnSale,
             warrantyType: warrantyId, // Usamos el ID procesado
             salePrice: product.salePrice,
+            immediateDelivery: product.immediateDelivery !== false,
+            manufacturingDays: product.manufacturingDays || 0,
           });
 
           // Cargar Imágenes
@@ -311,6 +318,8 @@ export class ProductForm implements OnInit {
       images: formValue.images,
       isFeatured: formValue.isFeatured,
       warrantyType: formValue.warrantyType,
+      immediateDelivery: formValue.immediateDelivery,
+      manufacturingDays: formValue.immediateDelivery ? 0 : formValue.manufacturingDays,
       variants: formValue.variants.map((variant: any) => ({
         name: variant.name,
         options: variant.options.map((option: any) => ({
@@ -361,6 +370,37 @@ export class ProductForm implements OnInit {
     if (selectedTemplate) {
       this.addVariantFromTemplate(selectedTemplate);
     }
+  }
+
+  getSelectedVendorName(): string {
+    const id = this.productForm?.get('vendor')?.value;
+    if (!id) return 'Ninguno';
+    const vend = this.vendors().find((v) => v._id === id);
+    return vend ? vend.name : 'Ninguno';
+  }
+
+  getSelectedWarrantyName(): string {
+    const id = this.productForm?.get('warrantyType')?.value;
+    if (!id) return 'Sin Garantía';
+    const war = this.warranties().find((w) => w._id === id);
+    return war ? `${war.name} (${war.durationMonths} Meses)` : 'Sin Garantía';
+  }
+
+  selectVendor(vendorId: string | null): void {
+    this.productForm.patchValue({ vendor: vendorId });
+    this.productForm.get('vendor')?.markAsDirty();
+    this.isVendorDropdownOpen.set(false);
+  }
+
+  selectWarranty(warrantyId: string | null): void {
+    this.productForm.patchValue({ warrantyType: warrantyId });
+    this.productForm.get('warrantyType')?.markAsDirty();
+    this.isWarrantyDropdownOpen.set(false);
+  }
+
+  selectTemplate(template: VariantTemplate): void {
+    this.addVariantFromTemplate(template);
+    this.isTemplateDropdownOpen.set(false);
   }
 
   addVariantFromTemplate(template: VariantTemplate): void {

@@ -8,11 +8,12 @@
 
   <!-- Acciones principales en el header para escritorio -->
   <div class="header-actions desktop-only">
-    <a routerLink="/admin/products" class="btn-secondary">Cancelar</a>
+    <a routerLink="/admin/products" class="btn-secondary" appRipple>Cancelar</a>
     <button
       (click)="handleSubmit()"
       [disabled]="productForm.invalid || isUploading()"
       class="btn-material"
+      appRipple
     >
       {{ isUploading() ? "Guardando..." : "Guardar Producto" }}
     </button>
@@ -57,25 +58,38 @@
         <h2 class="card-title">Variantes y Opciones</h2>
 
         <div class="template-actions">
-          <div class="select-wrapper">
-            <select
-              #templateSelect
-              (change)="onTemplateSelected($event); templateSelect.value = ''"
-              class="template-select"
+          <div class="custom-dropdown template-dropdown">
+            <div
+              class="select-trigger"
+              (click)="isTemplateDropdownOpen.set(!isTemplateDropdownOpen())"
+              [class.active]="isTemplateDropdownOpen()"
             >
-              <option value="" disabled selected>Usar Plantilla...</option>
-              @for (template of variantTemplates(); track template._id) {
-                <option [ngValue]="template">
-                  {{ template.templateName }}
-                </option>
-              }
-            </select>
-            <span class="material-symbols-outlined chevron">expand_more</span>
+              <span class="placeholder">Usar Plantilla...</span>
+              <span class="material-symbols-outlined chevron">expand_more</span>
+            </div>
+            @if (isTemplateDropdownOpen()) {
+              <div class="dropdown-list custom-scroll">
+                @for (template of variantTemplates(); track template._id) {
+                  <div
+                    class="dropdown-item"
+                    (click)="selectTemplate(template)"
+                    appRipple
+                  >
+                    <span>{{ template.templateName }}</span>
+                  </div>
+                }
+              </div>
+              <div
+                class="click-overlay"
+                (click)="isTemplateDropdownOpen.set(false)"
+              ></div>
+            }
           </div>
           <button
             type="button"
             (click)="addVariant()"
             class="btn-secondary small"
+            appRipple
           >
             <span class="material-symbols-outlined">add</span> Variante
           </button>
@@ -100,6 +114,7 @@
                 (click)="removeVariant(i)"
                 class="btn-icon delete"
                 title="Eliminar Variante"
+                appRipple
               >
                 <span class="material-symbols-outlined">delete</span>
               </button>
@@ -197,6 +212,7 @@
                 type="button"
                 (click)="addVariantOption(i)"
                 class="btn-dashed full-width"
+                appRipple
               >
                 + Añadir Opción
               </button>
@@ -314,6 +330,36 @@
       }
     </div>
 
+    <!-- Disponibilidad de Entrega -->
+    <div class="card glass-panel">
+      <h2 class="card-title">Disponibilidad de Entrega</h2>
+      <div class="toggle-row">
+        <div class="checkbox-wrapper">
+          <input
+            id="immediateDelivery"
+            type="checkbox"
+            formControlName="immediateDelivery"
+            class="custom-checkbox"
+          />
+          <label for="immediateDelivery">Disponible para entrega inmediata</label>
+        </div>
+      </div>
+
+      @if (!productForm.get('immediateDelivery')?.value) {
+        <div class="material-field mt-2 fade-in">
+          <input
+            id="manufacturingDays"
+            type="text"
+            appNumericFormat
+            formControlName="manufacturingDays"
+            class="material-input"
+            placeholder=" "
+          />
+          <label for="manufacturingDays" class="material-label">Tiempo de Fabricación (Días)</label>
+        </div>
+      }
+    </div>
+
     <!-- Organización -->
     <div class="card glass-panel">
       <h2 class="card-title">Organización</h2>
@@ -381,32 +427,80 @@
         }
       </div>
 
-      <div class="select-field">
-        <label>Vendedor</label>
-        <div class="select-wrapper">
-          <select formControlName="vendor">
-            <option [ngValue]="null">Ninguno</option>
-            @for (vend of vendors(); track vend._id) {
-              <option [value]="vend._id">{{ vend.name }}</option>
-            }
-          </select>
+      <div class="custom-multiselect select-field">
+        <label class="field-label">Vendedor</label>
+        <div
+          class="select-trigger"
+          (click)="isVendorDropdownOpen.set(!isVendorDropdownOpen())"
+          [class.active]="isVendorDropdownOpen()"
+        >
+          <span class="selected-value">{{ getSelectedVendorName() }}</span>
           <span class="material-symbols-outlined chevron">expand_more</span>
         </div>
+        @if (isVendorDropdownOpen()) {
+          <div class="dropdown-list custom-scroll">
+            <div
+              class="dropdown-item"
+              [class.selected]="productForm.get('vendor')?.value === null"
+              (click)="selectVendor(null)"
+              appRipple
+            >
+              <span>Ninguno</span>
+            </div>
+            @for (vend of vendors(); track vend._id) {
+              <div
+                class="dropdown-item"
+                [class.selected]="productForm.get('vendor')?.value === vend._id"
+                (click)="selectVendor(vend._id)"
+                appRipple
+              >
+                <span>{{ vend.name }}</span>
+              </div>
+            }
+          </div>
+          <div
+            class="click-overlay"
+            (click)="isVendorDropdownOpen.set(false)"
+          ></div>
+        }
       </div>
 
-      <div class="select-field">
-        <label>Garantía</label>
-        <div class="select-wrapper">
-          <select formControlName="warrantyType">
-            <option [ngValue]="null">Sin Garantía</option>
-            @for (war of warranties(); track war._id) {
-              <option [value]="war._id">
-                {{ war.name }} ({{ war.durationMonths }} Meses)
-              </option>
-            }
-          </select>
+      <div class="custom-multiselect select-field">
+        <label class="field-label">Garantía</label>
+        <div
+          class="select-trigger"
+          (click)="isWarrantyDropdownOpen.set(!isWarrantyDropdownOpen())"
+          [class.active]="isWarrantyDropdownOpen()"
+        >
+          <span class="selected-value">{{ getSelectedWarrantyName() }}</span>
           <span class="material-symbols-outlined chevron">expand_more</span>
         </div>
+        @if (isWarrantyDropdownOpen()) {
+          <div class="dropdown-list custom-scroll">
+            <div
+              class="dropdown-item"
+              [class.selected]="productForm.get('warrantyType')?.value === null"
+              (click)="selectWarranty(null)"
+              appRipple
+            >
+              <span>Sin Garantía</span>
+            </div>
+            @for (war of warranties(); track war._id) {
+              <div
+                class="dropdown-item"
+                [class.selected]="productForm.get('warrantyType')?.value === war._id"
+                (click)="selectWarranty(war._id)"
+                appRipple
+              >
+                <span>{{ war.name }} ({{ war.durationMonths }} Meses)</span>
+              </div>
+            }
+          </div>
+          <div
+            class="click-overlay"
+            (click)="isWarrantyDropdownOpen.set(false)"
+          ></div>
+        }
       </div>
 
       <div class="checkbox-wrapper mt-2">
@@ -421,7 +515,7 @@
     </div>
     <!-- BARRA FLOTANTE MÓVIL (STICKY) -->
     <div class="sticky-footer-actions mobile-only">
-      <button type="button" routerLink="/admin/products" class="btn-secondary">
+      <button type="button" routerLink="/admin/products" class="btn-secondary" appRipple>
         Cancelar
       </button>
       <button
@@ -429,6 +523,7 @@
         (click)="handleSubmit()"
         [disabled]="productForm.invalid || isUploading()"
         class="btn-material"
+        appRipple
       >
         {{ isUploading() ? "..." : "Guardar" }}
       </button>

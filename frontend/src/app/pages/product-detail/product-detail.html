@@ -76,6 +76,21 @@
           }
         </p>
 
+        <!-- Disponibilidad / Tiempo de Fabricación -->
+        <div class="delivery-availability-info">
+          @if (currentProduct.immediateDelivery !== false) {
+            <div class="availability-badge immediate">
+              <span class="material-symbols-outlined">bolt</span>
+              <span>Entrega inmediata</span>
+            </div>
+          } @else {
+            <div class="availability-badge manufacturing">
+              <span class="material-symbols-outlined">schedule</span>
+              <span>Bajo pedido: Listo en {{ currentProduct.manufacturingDays || 0 }} días hábiles</span>
+            </div>
+          }
+        </div>
+
         <div class="trust-badges">
           <div class="badge">
             <span class="material-symbols-outlined">local_shipping</span>

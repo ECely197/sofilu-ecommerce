@@ -36,6 +36,7 @@ export class CategoryFormComponent implements OnInit {
   isEditMode = signal(false);
   private categoryId: string | null = null;
   sections = signal<Section[]>([]);
+  isSectionDropdownOpen = signal(false);
 
   imagePreview = signal<string | null>(null);
   private selectedFile: File | null = null;
@@ -154,5 +155,18 @@ export class CategoryFormComponent implements OnInit {
         );
       },
     });
+  }
+
+  getSelectedSectionName(): string {
+    const sectionId = this.categoryForm?.get('section')?.value;
+    if (!sectionId) return 'Seleccionar...';
+    const sec = this.sections().find((s) => s._id === sectionId);
+    return sec ? sec.name : 'Seleccionar...';
+  }
+
+  selectSection(sectionId: string): void {
+    this.categoryForm.patchValue({ section: sectionId });
+    this.categoryForm.get('section')?.markAsDirty();
+    this.isSectionDropdownOpen.set(false);
   }
 }

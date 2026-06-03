@@ -41,4 +41,6 @@ export interface Product {
 
   // --- CAMPO NUEVO ---
   warrantyType?: any; // Puede ser string (ID) o objeto (WarrantyType)
+  immediateDelivery?: boolean;
+  manufacturingDays?: number;
 }

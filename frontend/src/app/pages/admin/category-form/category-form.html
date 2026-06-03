@@ -27,17 +27,34 @@
       <label for="name" class="material-label">Nombre de la Categoría</label>
     </div>
 
-    <div class="select-field">
-      <label>Sección (Dónde aparecerá)</label>
-      <div class="select-wrapper">
-        <select formControlName="section">
-          <option [ngValue]="null" disabled>Seleccionar...</option>
-          @for (sec of sections(); track sec._id) {
-            <option [value]="sec._id">{{ sec.name }}</option>
-          }
-        </select>
+    <div class="custom-multiselect select-field">
+      <label class="field-label">Sección (Dónde aparecerá)</label>
+      <div
+        class="select-trigger"
+        (click)="isSectionDropdownOpen.set(!isSectionDropdownOpen())"
+        [class.active]="isSectionDropdownOpen()"
+      >
+        <span class="selected-value">{{ getSelectedSectionName() }}</span>
         <span class="material-symbols-outlined chevron">expand_more</span>
       </div>
+      @if (isSectionDropdownOpen()) {
+        <div class="dropdown-list custom-scroll">
+          @for (sec of sections(); track sec._id) {
+            <div
+              class="dropdown-item"
+              [class.selected]="categoryForm.get('section')?.value === sec._id"
+              (click)="selectSection(sec._id)"
+              appRipple
+            >
+              <span>{{ sec.name }}</span>
+            </div>
+          }
+        </div>
+        <div
+          class="click-overlay"
+          (click)="isSectionDropdownOpen.set(false)"
+        ></div>
+      }
     </div>
   </div>
 
@@ -52,7 +69,7 @@
       } @else {
         <div class="uploader-placeholder">
           <span class="material-symbols-outlined">add_photo_alternate</span>
-          <span>Subir Icono/Imagen</span>
+          <span class="uploader-text">Subir Icono/Imagen</span>
         </div>
       }
       @if (isUploading()) {
@@ -70,11 +87,12 @@
 
   <!-- ACCIONES FLOTANTES (Móvil) / ESTÁTICAS (Desktop) -->
   <div class="form-actions">
-    <a routerLink="/admin/categories" class="btn-secondary">Cancelar</a>
+    <a routerLink="/admin/categories" class="btn-secondary" appRipple>Cancelar</a>
     <button
       type="submit"
       [disabled]="categoryForm.invalid || isUploading()"
       class="btn-material"
+      appRipple
     >
       {{ isUploading() ? "Guardando..." : "Guardar Categoría" }}
     </button>

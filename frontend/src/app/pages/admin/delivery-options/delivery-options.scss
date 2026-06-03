@@ -26,30 +26,29 @@
 .options-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 2rem; // Espaciado más amplio
 }
 
 .option-card {
   background: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 2rem; // Curvas orgánicas M3
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.015);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition:
-    opacity 0.3s,
-    transform 0.3s;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.03);
 
   &.inactive {
-    opacity: 0.6;
+    opacity: 0.75;
     .card-img {
       filter: grayscale(80%);
     }
   }
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-6px) scale(1.005);
+    box-shadow: 0 18px 45px rgba(255, 209, 220, 0.15); // Sombra rosa Sofilu
+    border-color: rgba(255, 182, 193, 0.3);
   }
 
   .card-img-wrapper {
@@ -63,7 +62,7 @@
     object-fit: cover;
   }
   .card-content {
-    padding: 1.5rem;
+    padding: 1.8rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -75,50 +74,68 @@
     gap: 1rem;
   }
   .card-title {
-    font-weight: 700;
-    font-size: 1.1rem;
+    font-family: "Baloo 2", serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #2c3e50;
     margin: 0;
     line-height: 1.3;
   }
   .cost-pill {
-    background: #eef2ff;
-    color: #4338ca;
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
+    background: #fff0f5; // Fondo rosa Sofilu
+    color: #e11d48;
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px; // Píldora
     font-size: 0.8rem;
-    font-weight: bold;
+    font-weight: 800;
+    font-family: "Inter", sans-serif;
   }
   .card-desc {
-    color: #666;
+    color: #7f8c8d;
+    font-family: "Inter", sans-serif;
     font-size: 0.9rem;
-    margin: 0.5rem 0 1.5rem;
+    margin: 0.6rem 0 1.6rem;
     flex-grow: 1;
+    line-height: 1.5;
   }
   .card-actions {
     display: flex;
     gap: 0.8rem;
-    margin-top: auto; // Empuja los botones al final de la tarjeta
-    padding-top: 1rem;
-    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
 
     .btn-secondary,
     .btn-danger {
-      flex: 1; // Ocupan el mismo espacio
-      padding: 0.6rem 1rem;
+      flex: 1;
+      padding: 0.75rem 1.2rem;
       font-size: 0.9rem;
-      border-radius: 8px;
-      font-weight: 600;
-      transition: all 0.2s;
+      border-radius: 9999px; // Píldora M3
+      font-weight: 700;
+      font-family: "Baloo 2", sans-serif;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #f1f2f6;
+      color: #2c3e50;
+      &:hover {
+        background: #e8e9ed;
+        transform: translateY(-2px);
+      }
     }
 
     .btn-danger {
-      background-color: #fff5f5;
-      color: #e74c3c;
-      border: 1px solid #fecaca;
+      background-color: #fff1f2;
+      color: #e11d48;
 
       &:hover {
-        background-color: #e74c3c;
+        background-color: #e11d48;
         color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
       }
     }
   }

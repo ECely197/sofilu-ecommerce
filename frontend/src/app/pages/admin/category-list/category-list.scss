@@ -75,20 +75,19 @@
 .category-row {
   display: grid;
   // Columnas: Imagen | Nombre | Slug | Acciones
-  grid-template-columns: 80px 1.5fr 1.5fr 1fr;
+  grid-template-columns: 100px 1.5fr 1.5fr 1fr;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: 1.2rem 2rem;
   background: white;
-  border-radius: 1rem;
+  border-radius: 1.8rem; // Curvas orgánicas
   border: 1px solid rgba(0, 0, 0, 0.03);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.015);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    transform: translateY(-4px) scale(1.005);
+    box-shadow: 0 15px 35px rgba(255, 209, 220, 0.15); // Sombra rosa Sofilu
+    border-color: rgba(255, 182, 193, 0.3);
     z-index: 1;
   }
 
@@ -96,13 +95,13 @@
     background: transparent;
     border: none;
     box-shadow: none;
-    padding-bottom: 0.5rem;
+    padding: 0 2rem 0.5rem;
     .col {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       text-transform: uppercase;
-      font-weight: 700;
-      color: #999;
-      letter-spacing: 0.5px;
+      font-weight: 800;
+      color: #7f8c8d;
+      letter-spacing: 0.8px;
     }
     &:hover {
       transform: none;
@@ -116,8 +115,10 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-family: "Inter", sans-serif;
   font-size: 0.95rem;
-  color: #555;
+  font-weight: 500;
+  color: #2c3e50;
   &.right {
     display: flex;
     justify-content: flex-end;
@@ -125,11 +126,12 @@
 }
 
 .img-col .img-wrapper {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  background: #f9f9f9;
-  padding: 5px;
+  width: 60px;
+  height: 60px;
+  border-radius: 1.2rem; // Orgánico y redondeado
+  background: #fbf8f9;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
   img {
     width: 100%;
     height: 100%;
@@ -139,47 +141,53 @@
 
 .name-col {
   font-weight: 700;
-  color: #333;
-  font-size: 1rem;
+  color: #2c3e50;
+  font-size: 1.05rem;
 }
 
 .url-badge {
-  background: #f0f9ff;
-  color: #0284c7;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
+  background: #fff0f5; // Rosa sutil Sofilu
+  color: #e11d48;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px; // Píldora
   font-size: 0.8rem;
-  font-family: monospace;
+  font-weight: 700;
 }
 
 // ACCIONES
 .actions-wrapper {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 .action-btn {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: none;
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
 
   &.edit {
-    background: #eff6ff;
-    color: #2563eb;
+    background: #fff0f5;
+    color: #e11d48;
     &:hover {
-      background: #dbeafe;
+      background: var(--pastel-pink, #ffd1dc);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 182, 193, 0.4);
     }
   }
   &.delete {
     background: #fff1f2;
     color: #e11d48;
     &:hover {
-      background: #ffe4e6;
+      background: #e11d48;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
     }
   }
 }

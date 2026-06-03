@@ -74,6 +74,8 @@ const productSchema = new Schema(
       ref: "WarrantyType",
       default: null,
     },
+    immediateDelivery: { type: Boolean, default: true },
+    manufacturingDays: { type: Number, default: 0 },
     variants: [variantSchema],
   },
   {
